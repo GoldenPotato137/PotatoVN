@@ -65,9 +65,14 @@ public partial class App : Application
 
             // Core Services
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
+            services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<LibraryViewModel>();
+            services.AddTransient<LibraryPage>();
+            services.AddTransient<GalgameFolderViewModel>();
+            services.AddTransient<GalgameFolderPage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
             services.AddTransient<GalgameViewModel>();

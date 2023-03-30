@@ -19,7 +19,8 @@ namespace GalgameManager.Services;
 // 5. Models/SampleOrderDetail.cs
 public class GalgameCollectionService : IDataCollectionService<Galgame>
 {
-    private ObservableCollection<Galgame> _galgames = new(); //key: Path
+    private ObservableCollection<Galgame> _galgames = new(); 
+    private ObservableCollection<GalgameFolder> _galgameFolders = new();
     private ILocalSettingsService LocalSettingsService { get; }
     
     public GalgameCollectionService(ILocalSettingsService localSettingsService)
@@ -60,6 +61,18 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await Task.CompletedTask;
         return _galgames;
+    }
+    
+    public async Task<ObservableCollection<GalgameFolder>> GetGalgameFolders()
+    {
+        _galgameFolders = new()
+        {
+            new GalgameFolder(@"D:\Game"),
+            new GalgameFolder(@"D:\GalGame")
+        };
+
+        await Task.CompletedTask;
+        return _galgameFolders;
     }
 
     private static async Task<List<Galgame>> GetGalFromFolder(string folder)

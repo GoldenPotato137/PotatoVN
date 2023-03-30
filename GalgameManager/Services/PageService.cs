@@ -17,6 +17,8 @@ public class PageService : IPageService
         Configure<HomeViewModel, HomePage>();
         Configure<GalgameViewModel, HomeDetailPage>();
         Configure<SettingsViewModel, SettingsPage>();
+        Configure<LibraryViewModel, LibraryPage>();
+        Configure<GalgameFolderViewModel, GalgameFolderPage>();
     }
 
     public Type GetPageType(string key)
