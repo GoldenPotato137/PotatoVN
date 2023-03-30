@@ -1,0 +1,118 @@
+﻿using GalgameManager.Contracts.Services;
+using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Core.Helpers;
+using GalgameManager.Helpers;
+using GalgameManager.Models;
+
+using Microsoft.Extensions.Options;
+using Windows.Storage;
+
+using Newtonsoft.Json;
+
+namespace GalgameManager.Services;
+
+public class LocalSettingsService : ILocalSettingsService
+{
+    private const string DefaultApplicationDataFolder = "GalgameManager/ApplicationData";
+    private const string DefaultLocalSettingsFile = "LocalSettings.json";
+
+    private readonly IFileService _fileService;
+    private readonly LocalSettingsOptions _options;
+
+    private readonly string _localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    private readonly string _applicationDataFolder;
+    private readonly string _localsettingsFile;
+
+    private IDictionary<string, object> _settings;
+
+    private bool _isInitialized;
+
+    public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
+    {
+        _fileService = fileService;
+        _options = options.Value;
+
+        _applicationDataFolder = Path.Combine(_localApplicationData, _options.ApplicationDataFolder ?? DefaultApplicationDataFolder);
+        _localsettingsFile = _options.LocalSettingsFile ?? DefaultLocalSettingsFile;
+
+        _settings = new Dictionary<string, object>();
+    }
+
+    private async Task InitializeAsync()
+    {
+        if (!_isInitialized)
+        {
+            _settings = await Task.Run(() => _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile)) ?? new Dictionary<string, object>();
+
+            _isInitialized = true;
+        }
+    }
+
+    public async Task<T?> ReadSettingAsync<T>(string key)
+    {
+        if (RuntimeHelper.IsMSIX)
+        {
+            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
+            {
+                return obj is string? JsonConvert.DeserializeObject<T>(obj.ToString()!): default;
+            }
+        }
+        else
+        {
+            await InitializeAsync();
+
+            if (_settings.TryGetValue(key, out var obj))
+            {
+                return obj is string? JsonConvert.DeserializeObject<T>(obj.ToString()!): default;
+            }
+        }
+
+        return default;
+    }
+
+    public async Task SaveSettingAsync<T>(string key, T value)
+    {
+        if (RuntimeHelper.IsMSIX)
+        {
+            ApplicationData.Current.LocalSettings.Values[key] = JsonConvert.SerializeObject(value);
+        }
+        else if(value!=null)
+        {
+            await InitializeAsync();
+
+            _settings[key] = JsonConvert.SerializeObject(value);
+
+            await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
+        }
+    }
+    
+    public async Task RemoveSettingAsync(string key)
+    {
+        if (RuntimeHelper.IsMSIX)
+        {
+            ApplicationData.Current.LocalSettings.Values.Remove(key);
+        }
+        else
+        {
+            await InitializeAsync();
+
+            _settings.Remove(key);
+
+            await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
+        }
+    }
+
+}
+
+public static class KeyValues
+{
+    public const string BangumiToken = "bangumiToken";
+    public const string RssType = "rssType";
+}
+
+public enum RssType
+{
+    Bangumi,
+    Bilibili,
+    Moegirl
+}

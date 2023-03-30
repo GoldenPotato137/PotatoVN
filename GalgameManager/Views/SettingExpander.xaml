@@ -1,0 +1,34 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<UserControl
+    x:Class="GalgameManager.Views.SettingExpander"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+            <Expander.Header>
+                <Grid Padding="0,18,0,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="{x:Bind SettingIcon}" />
+                    <StackPanel Grid.Column="1" Margin="25,0,0,0" HorizontalAlignment="Left">
+                        <TextBlock Text="{x:Bind SettingTitle}" Margin="0 0 0 5"/>
+                        <TextBlock Text="{x:Bind SettingDescription}" 
+                                   FontSize="12"
+                                   Opacity="0.6"/>
+                    </StackPanel>
+                </Grid>
+            </Expander.Header>
+            <Expander.Content>
+                <ContentPresenter Content="{x:Bind SettingContent}"  Padding="25 0 0 0" />
+            </Expander.Content>
+        </Expander>
+    </Grid>
+</UserControl>
