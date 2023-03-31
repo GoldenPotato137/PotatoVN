@@ -47,9 +47,10 @@
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <!-- <FontIcon -->
-                            <!--     Glyph="{x:Bind Symbol}" -->
-                            <!--     AutomationProperties.Name="{x:Bind SymbolName}" /> -->
+                            <FontIcon
+                                Glyph="&#xE8B7;"
+                                FontFamily="Segoe Fluent Icons"
+                                FontSize="50"/>
                             <TextBlock
                                 Margin="{StaticResource XXSmallTopMargin}"
                                 HorizontalAlignment="Center"

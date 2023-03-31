@@ -44,7 +44,7 @@
             <controls:DataGrid.Columns>
                 <controls:DataGridTextColumn Binding="{Binding Name}" Header="游戏名" />
                 <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" />
-                <!-- <controls:DataGridTextColumn Binding="{Binding Company}" Header="Company" /> -->
+                <controls:DataGridTextColumn Binding="{Binding RssType}" Header="数据源" />
                 <!-- <controls:DataGridTextColumn Binding="{Binding ShipTo}" Header="ShipTo" /> -->
                 <!-- <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" /> -->
                 <!-- <controls:DataGridTextColumn Binding="{Binding Status}" Header="Status" /> -->
