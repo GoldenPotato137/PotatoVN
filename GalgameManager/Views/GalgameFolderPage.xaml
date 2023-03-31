@@ -11,6 +11,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         
         
@@ -18,7 +19,11 @@
             <TextBlock Text="{x:Bind ViewModel.Item.Path}"
                        Style="{ThemeResource TitleTextBlockStyle}"/>
             <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                <AppBarButton Icon="Add" Label="手动添加游戏"/>
+                <AppBarButton Icon="Add" Label="手动添加游戏" Command="{x:Bind ViewModel.AddGalgameCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="A" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
                 <AppBarButton Icon="Refresh" Label="自动寻找游戏"/>
                 <AppBarButton Icon="Download" Label="下载游戏数据"/>
                 <CommandBar.SecondaryCommands>
@@ -61,5 +66,12 @@
                 <!-- </controls:DataGridTemplateColumn> -->
             </controls:DataGrid.Columns>
         </controls:DataGrid>
+        
+        <InfoBar
+            Grid.Row="2" 
+            IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+            Margin="0 0 0 20"
+            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
     </Grid>
 </Page>

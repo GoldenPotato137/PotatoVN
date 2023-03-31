@@ -40,23 +40,31 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         // }
     }
 
+    public enum AddGalgameResult
+    {
+        Success,
+        AlreadyExists,
+        NotFoundInRss
+    }
+
     /// <summary>
     /// 试图添加一个galgame，若已存在则不添加
     /// </summary>
     /// <param name="path">galgame路径</param>
     /// <param name="isForce">是否强制添加（若RSS源中找不到相关游戏信息）</param>
-    public async Task TryAddGalgameAsync(string path, bool isForce = false)
+    public async Task<AddGalgameResult> TryAddGalgameAsync(string path, bool isForce = false)
     {
         if (_galgames.Any(gal => gal.Path == path))
-            return;
+            return AddGalgameResult.AlreadyExists;
 
         var galgame = new Galgame(path);
         galgame = await PhraserAsync(galgame, new BgmPhraser(LocalSettingsService));
         if(!isForce && galgame.RssType == RssType.None)
-            return;
+            return AddGalgameResult.NotFoundInRss;
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames);
+        return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
     
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)

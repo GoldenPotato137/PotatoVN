@@ -76,11 +76,11 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
         }
         catch (Exception e)
         {
-            _isInfoBarOpen = true;
-            _infoBarMessage = e.Message;
-            _infoBarSeverity = InfoBarSeverity.Error;
+            IsInfoBarOpen = true;
+            InfoBarMessage = e.Message;
+            InfoBarSeverity = InfoBarSeverity.Error;
             await Task.Delay(3000);
-            _isInfoBarOpen = false;
+            IsInfoBarOpen = false;
         }
     }
 }

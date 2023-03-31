@@ -3,10 +3,13 @@
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Services;
 
+using Newtonsoft.Json;
+
 namespace GalgameManager.Models;
 
 public class GalgameFolder
 {
+    [JsonIgnore]
     public GalgameCollectionService Service;
     public string Path
     {

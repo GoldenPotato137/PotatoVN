@@ -47,7 +47,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         _galgameFolders.Add(new GalgameFolder(path, _galgameService));
         if (!Directory.Exists(path)) return ;
         foreach (var subPath in Directory.GetDirectories(path))
-            await _galgameService.TryAddGalgameAsync(subPath, true); //todo:这里应该是false
+            await _galgameService.TryAddGalgameAsync(subPath);
         await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders);
     }
 }

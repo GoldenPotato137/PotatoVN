@@ -64,8 +64,9 @@
         
         <InfoBar
             Grid.Row="2" 
-            IsOpen="{x:Bind ViewModel.IsInfoBarOpen}"
-            Severity="{x:Bind ViewModel.InfoBarSeverity}"
-            Message="{x:Bind ViewModel.InfoBarMessage}" />
+            IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+            Margin="0 0 0 20"
+            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
     </Grid>
 </Page>
