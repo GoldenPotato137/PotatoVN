@@ -10,16 +10,18 @@ namespace GalgameManager.Services;
 public class GalgameFolderCollectionService : IDataCollectionService<GalgameFolder>
 {
     private readonly ObservableCollection<GalgameFolder> _galgameFolders;
+    private readonly IDataCollectionService<Galgame> _galCollectionService;
     private ILocalSettingsService LocalSettingsService { get; }
     
-    public GalgameFolderCollectionService(ILocalSettingsService localSettingsService)
+    public GalgameFolderCollectionService(ILocalSettingsService localSettingsService, IDataCollectionService<Galgame> galCollectionService)
     {
         LocalSettingsService = localSettingsService;
+        _galCollectionService = galCollectionService;
         
         _galgameFolders = new()
         {
-            new GalgameFolder(@"D:\Game"),
-            new GalgameFolder(@"D:\GalGame")
+            new GalgameFolder(@"D:\Game", _galCollectionService),
+            new GalgameFolder(@"D:\GalGame", _galCollectionService)
         };
     }
 

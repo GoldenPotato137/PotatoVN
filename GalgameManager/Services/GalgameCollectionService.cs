@@ -62,18 +62,6 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         await Task.CompletedTask;
         return _galgames;
     }
-    
-    public async Task<ObservableCollection<GalgameFolder>> GetGalgameFolders()
-    {
-        _galgameFolders = new()
-        {
-            new GalgameFolder(@"D:\Game"),
-            new GalgameFolder(@"D:\GalGame")
-        };
-
-        await Task.CompletedTask;
-        return _galgameFolders;
-    }
 
     private static async Task<List<Galgame>> GetGalFromFolder(string folder)
     {

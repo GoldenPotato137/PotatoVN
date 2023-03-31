@@ -8,8 +8,58 @@
     mc:Ignorable="d">
 
     <Grid>
-        <TextBlock Text="{x:Bind ViewModel.Item.Path}">
-            
-        </TextBlock>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        
+        <RelativePanel Grid.Row="0">
+            <TextBlock Text="{x:Bind ViewModel.Item.Path}"
+                       Style="{ThemeResource TitleTextBlockStyle}"/>
+            <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+                <AppBarButton Icon="Add" Label="手动添加游戏"/>
+                <AppBarButton Icon="Refresh" Label="自动寻找游戏"/>
+                <AppBarButton Icon="Download" Label="下载游戏数据"/>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Setting" Label="Settings">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="I" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
+        </RelativePanel>
+        
+        <controls:DataGrid
+            Grid.Row="1"
+            Margin="0 20 0 0"
+            AutoGenerateColumns="False"
+            GridLinesVisibility="Horizontal"
+            IsReadOnly="True"
+            ItemsSource="{x:Bind ViewModel.Galgames, Mode=OneWay}">
+            <!-- <controls:DataGrid.Resources> -->
+            <!--     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" /> -->
+            <!-- </controls:DataGrid.Resources> -->
+            <controls:DataGrid.Columns>
+                <controls:DataGridTextColumn Binding="{Binding Name}" Header="游戏名" />
+                <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" />
+                <!-- <controls:DataGridTextColumn Binding="{Binding Company}" Header="Company" /> -->
+                <!-- <controls:DataGridTextColumn Binding="{Binding ShipTo}" Header="ShipTo" /> -->
+                <!-- <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" /> -->
+                <!-- <controls:DataGridTextColumn Binding="{Binding Status}" Header="Status" /> -->
+                <!-- <controls:DataGridTemplateColumn Header="Symbol"> -->
+                <!--     <controls:DataGridTemplateColumn.CellTemplate> -->
+                <!--         <DataTemplate> -->
+                <!--             <FontIcon -->
+                <!--                 HorizontalAlignment="Left" -->
+                <!--                 FontFamily="{ThemeResource SymbolThemeFontFamily}" -->
+                <!--                 Glyph="{Binding Symbol}" -->
+                <!--                 AutomationProperties.Name="{Binding SymbolName}" /> -->
+                <!--         </DataTemplate> -->
+                <!--     </controls:DataGridTemplateColumn.CellTemplate> -->
+                <!-- </controls:DataGridTemplateColumn> -->
+            </controls:DataGrid.Columns>
+        </controls:DataGrid>
     </Grid>
 </Page>

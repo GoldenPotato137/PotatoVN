@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+
+using CommunityToolkit.Mvvm.ComponentModel;
 
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
@@ -10,11 +12,18 @@ public class GalgameFolderViewModel : ObservableObject, INavigationAware
 {
     private readonly IDataCollectionService<GalgameFolder> _dataCollectionService;
     private GalgameFolder? _item;
+    public ObservableCollection<Galgame> Galgames = new();
 
     public GalgameFolder? Item
     {
         get => _item;
-        set => SetProperty(ref _item, value);
+
+        set
+        {
+            SetProperty(ref _item, value);
+            if (value != null)
+                Galgames = value.GetGalgameList().Result;
+        }
     }
 
     public GalgameFolderViewModel(IDataCollectionService<GalgameFolder> dataCollectionService)
