@@ -116,5 +116,6 @@ public enum RssType
 {
     Bangumi,
     Bilibili,
-    Moegirl
+    Moegirl,
+    None
 }

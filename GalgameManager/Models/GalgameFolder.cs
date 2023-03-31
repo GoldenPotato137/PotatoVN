@@ -7,7 +7,7 @@ namespace GalgameManager.Models;
 
 public class GalgameFolder
 {
-    private readonly GalgameCollectionService _service;
+    public GalgameCollectionService Service;
     public string Path
     {
         get;
@@ -17,12 +17,12 @@ public class GalgameFolder
     public GalgameFolder(string path, IDataCollectionService<Galgame> service)
     {
         Path = path;
-        _service = ((GalgameCollectionService?)service)!;
+        Service = ((GalgameCollectionService?)service)!;
     }
     
     public async Task<ObservableCollection<Galgame>> GetGalgameList()
     {
-        var games = await _service.GetContentGridDataAsync();
+        var games = await Service.GetContentGridDataAsync();
         return new ObservableCollection<Galgame>(games.Where(g => g.Path.StartsWith(Path)).ToList());;
     }
 }

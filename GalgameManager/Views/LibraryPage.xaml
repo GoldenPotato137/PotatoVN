@@ -9,7 +9,31 @@
     mc:Ignorable="d">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+            <AppBarButton Icon="Add" Label="新增库" Command="{x:Bind ViewModel.AddLibraryCommand}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="N"/>
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
+            <!-- <AppBarButton Icon="Edit" Label="Edit"/> -->
+            <!-- <AppBarButton Icon="Share" Label="Share"/> -->
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Setting" Label="Settings">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="I" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+        
         <controls:AdaptiveGridView
+            Grid.Row="1" 
             DesiredWidth="180"
             ItemHeight="160"
             IsItemClickEnabled="True"
@@ -36,5 +60,11 @@
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>
         </controls:AdaptiveGridView>
+        
+        <InfoBar
+            Grid.Row="2" 
+            IsOpen="{x:Bind ViewModel.IsInfoBarOpen}"
+            Severity="{x:Bind ViewModel.InfoBarSeverity}"
+            Message="{x:Bind ViewModel.InfoBarMessage}" />
     </Grid>
 </Page>

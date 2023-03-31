@@ -2,6 +2,8 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
+using GalgameManager.Services;
+
 namespace GalgameManager.Models;
 
 public class Galgame : ObservableObject
@@ -11,11 +13,13 @@ public class Galgame : ObservableObject
     public string Path
     {
         get;
+        set;
     } = "";
 
     public string? ImagePath
     {
         get;
+        set;
     }
 
     public string Name
@@ -27,14 +31,20 @@ public class Galgame : ObservableObject
     public string? Description
     {
         get;
-        internal set;
+        set;
     }
 
     public string? Developer
     {
         get;
-        internal set;
+        set;
     }
+
+    public RssType RssType
+    {
+        get;
+        set;
+    } = RssType.None;
 
     public Galgame()
     {
@@ -53,4 +63,8 @@ public class Galgame : ObservableObject
     {
         return Directory.Exists(Path);
     }
+
+    public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
+    
+    public override int GetHashCode() => Path.GetHashCode();
 }

@@ -107,4 +107,6 @@ public class BgmPhraser : IGalInfoPhraser
         result.Developer = developerInfoBox==null?null:developerInfoBox["value"]!.ToObject<string>()!;
         return result;
     }
+
+    public RssType GetPhraseType() => RssType.Bangumi;
 }
