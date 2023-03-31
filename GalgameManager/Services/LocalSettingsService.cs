@@ -108,6 +108,8 @@ public static class KeyValues
 {
     public const string BangumiToken = "bangumiToken";
     public const string RssType = "rssType";
+    public const string GalgameFolders = "galgameFolders";
+    public const string Galgames = "galgames";
 }
 
 public enum RssType

@@ -31,18 +31,18 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
     private async void GetGalgames()
     {
-        _galgames = new();
-        _galgames.Add(new Galgame(@"D:\Game\魔女的夜宴"));
-        _galgames.Add(new Galgame(@"D:\Game\星光咖啡馆与死神之蝶"));
-        _galgames.Add(new Galgame(@"D:\Game\大图书馆的牧羊人"));
-
-        foreach (var galgame in await GetGalFromFolder(@"D:\GalGame"))
-            _galgames.Add(galgame);
-
-        for(var i=0;i<_galgames.Count;i++)
-        {
-            _galgames[i] = await PhraserAsync(_galgames[i], new BgmPhraser(LocalSettingsService));
-        }
+        _galgames = await LocalSettingsService.ReadSettingAsync<ObservableCollection<Galgame>>(KeyValues.Galgames) ?? new ObservableCollection<Galgame>();
+        // _galgames.Add(new Galgame(@"D:\Game\魔女的夜宴"));
+        // _galgames.Add(new Galgame(@"D:\Game\星光咖啡馆与死神之蝶"));
+        // _galgames.Add(new Galgame(@"D:\Game\大图书馆的牧羊人"));
+        //
+        // foreach (var galgame in await GetGalFromFolder(@"D:\GalGame"))
+        //     _galgames.Add(galgame);
+        //
+        // for(var i=0;i<_galgames.Count;i++)
+        // {
+        //     _galgames[i] = await PhraserAsync(_galgames[i], new BgmPhraser(LocalSettingsService));
+        // }
     }
     
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)

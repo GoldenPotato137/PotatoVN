@@ -3,6 +3,7 @@
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
+
 // ReSharper disable EnforceForeachStatementBraces
 
 namespace GalgameManager.Services;
@@ -11,18 +12,19 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 {
     private readonly ObservableCollection<GalgameFolder> _galgameFolders;
     private readonly IDataCollectionService<Galgame> _galCollectionService;
-    private ILocalSettingsService LocalSettingsService { get; }
-    
+
+    private ILocalSettingsService LocalSettingsService
+    {
+        get;
+    }
+
     public GalgameFolderCollectionService(ILocalSettingsService localSettingsService, IDataCollectionService<Galgame> galCollectionService)
     {
         LocalSettingsService = localSettingsService;
         _galCollectionService = galCollectionService;
-        
-        _galgameFolders = new()
-        {
-            new GalgameFolder(@"D:\Game", _galCollectionService),
-            new GalgameFolder(@"D:\GalGame", _galCollectionService)
-        };
+
+        _galgameFolders = localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders).Result
+                          ?? new ObservableCollection<GalgameFolder>();
     }
 
     public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()

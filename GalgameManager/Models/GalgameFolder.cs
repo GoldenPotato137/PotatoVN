@@ -7,7 +7,7 @@ namespace GalgameManager.Models;
 
 public class GalgameFolder
 {
-    private GalgameCollectionService _service;
+    private readonly GalgameCollectionService _service;
     public string Path
     {
         get;
