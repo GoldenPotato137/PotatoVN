@@ -27,9 +27,9 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         LocalSettingsService = localSettingsService;
         GetGalgames();
         
-        App.MainWindow.AppWindow.Closing += (_, _) =>
+        App.MainWindow.AppWindow.Closing += async (_, _) =>
         {
-            SaveGalgamesAsync();
+            await SaveGalgamesAsync();
         };
     }
 
@@ -65,7 +65,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             return AddGalgameResult.NotFoundInRss;
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
-        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
+        await SaveGalgamesAsync();
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
@@ -133,7 +133,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <summary>
     /// 保存galgame列表（以及其内部的galgame）
     /// </summary>
-    private async void SaveGalgamesAsync()
+    private async Task SaveGalgamesAsync()
     {
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
     }

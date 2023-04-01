@@ -42,14 +42,14 @@
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;"/>
                 </AppBarButton.Icon>
             </AppBarButton>
-            <AppBarButton Icon="Edit" Label="编辑"/>
-            <AppBarButton Label="下载数据">
+            <AppBarButton Icon="Edit" Label="编辑" IsEnabled="False"/>
+            <AppBarButton Label="下载数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
                 </AppBarButton.Icon>
             </AppBarButton>
             <CommandBar.SecondaryCommands>
-                <AppBarButton Icon="Setting" Label="Settings">
+                <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Modifiers="Control" Key="I" />
                     </AppBarButton.KeyboardAccelerators>
@@ -74,7 +74,7 @@
                             VerticalAlignment="Center"
                             MaxWidth="250"
                             MaxHeight="250"
-                            Source="{x:Bind ViewModel.Item.ImagePath}">
+                            Source="{x:Bind ViewModel.Item.ImagePath, Mode=OneWay}">
                         </Image>
                     </Grid>
         
@@ -124,7 +124,7 @@
                     Text="简介" />
                 <TextBlock
                     Style="{ThemeResource BodyTextBlockStyle}"
-                    Text="{x:Bind ViewModel.Item.Description}" />
+                    Text="{x:Bind ViewModel.Item.Description, Mode=OneWay}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

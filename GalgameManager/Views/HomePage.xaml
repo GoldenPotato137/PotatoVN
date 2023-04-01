@@ -9,7 +9,35 @@
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right" Margin="0 -67 0 0">
+            <AppBarButton Icon="Add" Label="添加游戏" Command="{x:Bind ViewModel.AddGalgameCommand}"/>
+            <AppBarButton Label="排序" IsEnabled="False">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton Label="过滤" IsEnabled="False">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="I" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+        
         <controls:AdaptiveGridView
+            Grid.Row="1"
             DesiredWidth="175"
             ItemHeight="300"
             IsItemClickEnabled="True"
@@ -41,5 +69,13 @@
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>
         </controls:AdaptiveGridView>
+        
+        <InfoBar
+            Grid.Row="2" 
+            IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+            Margin="0 0 0 20"
+            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}">
+        </InfoBar>
     </Grid>
 </Page>

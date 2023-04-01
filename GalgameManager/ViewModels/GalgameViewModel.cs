@@ -8,6 +8,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
+using GalgameManager.Services;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +19,7 @@ namespace GalgameManager.ViewModels;
 public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 {
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
+    private readonly GalgameCollectionService _galgameService;
     private Galgame? _item;
     public XamlRoot? XamlRoot { get; set; }
 
@@ -37,6 +39,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, ILocalSettingsService localSettingsService)
     {
         _dataCollectionService = dataCollectionService;
+        _galgameService = (GalgameCollectionService)dataCollectionService;
         Task.Run(()=> Init(localSettingsService));
     }
 
@@ -98,6 +101,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             };
             process.Start();
         }
+    }
+
+    [ICommand]
+    private async void GetInfoFromRss()
+    {
+        if (Item == null) return;
+        await _galgameService.PhraseGalInfoAsync(Item);
     }
 }
 

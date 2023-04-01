@@ -23,6 +23,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
     {
         LocalSettingsService = localSettingsService;
         _galgameService = ((GalgameCollectionService?)galgameService)!;
+        _galgameService.GalgameAddedEvent += OnGalgameAdded;
 
         _galgameFolders = localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders, true).Result
                           ?? new ObservableCollection<GalgameFolder>();
@@ -36,13 +37,26 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         await Task.CompletedTask;
         return _galgameFolders;
     }
-    
+
+    private async void OnGalgameAdded(Galgame galgame)
+    {
+        try
+        {
+            await AddGalgameFolderAsync(galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
+
     /// <summary>
     /// 试图添加一个galgame库
     /// </summary>
     /// <param name="path">库路径</param>
+    /// <param name="tryGetGalgame">是否自动寻找库里游戏</param>
     /// <exception cref="Exception">库已经添加过了</exception>
-    public async Task AddGalgameFolderAsync(string path)
+    public async Task AddGalgameFolderAsync(string path, bool tryGetGalgame = true)
     {
         if (_galgameFolders.Any(galFolder => galFolder.Path == path))
         {
@@ -52,7 +66,8 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         var galgameFolder = new GalgameFolder(path, _galgameService);
         _galgameFolders.Add(galgameFolder);
         await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
-        await galgameFolder.GetGalgameInFolder();
+        if(tryGetGalgame)
+            await galgameFolder.GetGalgameInFolder();
     }
 }
 

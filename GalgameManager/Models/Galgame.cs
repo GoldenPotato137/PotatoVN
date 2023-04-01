@@ -92,6 +92,7 @@ public partial class Galgame : ObservableObject
     
     public List<string> GetExes()
     {
-        return Directory.GetFiles(Path).Where(file => file.EndsWith(".exe")).ToList();
+        var result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
+        return result;
     }
 }
