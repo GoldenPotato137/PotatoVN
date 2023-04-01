@@ -22,13 +22,10 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private readonly GalgameCollectionService _galgameService;
     private GalgameFolder? _item;
     public ObservableCollection<Galgame> Galgames = new();
-    
-    [ObservableProperty]
-    private bool _isInfoBarOpen;
-    [ObservableProperty]
-    private string _infoBarMessage = string.Empty;
-    [ObservableProperty]
-    private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+
+    [ObservableProperty] private bool _isInfoBarOpen;
+    [ObservableProperty] private string _infoBarMessage = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
 
     public GalgameFolder? Item
     {
@@ -45,7 +42,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     public GalgameFolderViewModel(IDataCollectionService<GalgameFolder> dataCollectionService, IDataCollectionService<Galgame> galgameService)
     {
         _dataCollectionService = dataCollectionService;
-        _galgameService = (GalgameCollectionService) galgameService;
+        _galgameService = (GalgameCollectionService)galgameService;
         _galgameService.GalgameAddedEvent += ReloadGalgameList;
     }
 
@@ -55,7 +52,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         if (galgame.Path.StartsWith(_item.Path))
             Galgames.Add(galgame);
     }
-    
+
     public async void OnNavigatedTo(object parameter)
     {
         if (parameter is string path)
@@ -84,6 +81,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
                 var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
                 if (folder.StartsWith(_item!.Path) == false)
                     throw new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）");
+
                 var result = await _galgameService.TryAddGalgameAsync(folder, true);
                 if (result == GalgameCollectionService.AddGalgameResult.Success)
                 {
@@ -113,5 +111,21 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
             await Task.Delay(3000);
             IsInfoBarOpen = false;
         }
+    }
+
+    [ICommand]
+    private async void GetInfoFromRss()
+    {
+        foreach (var galgame in Galgames)
+        {
+            await _galgameService.PhraseGalInfoAsync(galgame);
+        }
+    }
+
+    [ICommand]
+    private async void GetGalInFolder()
+    {
+        if (_item == null) return;
+        await _item.GetGalgameInFolder();
     }
 }

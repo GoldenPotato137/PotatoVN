@@ -36,6 +36,7 @@ public class GalgameViewModel : ObservableRecipient, INavigationAware
         {
             var data = await _dataCollectionService.GetContentGridDataAsync();
             Item = data.First(i => i.Name == name);
+            Item.CheckSavePosition();
         }
     }
 

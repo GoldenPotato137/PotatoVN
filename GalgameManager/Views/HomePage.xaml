@@ -10,8 +10,8 @@
 
     <Grid x:Name="ContentArea">
         <controls:AdaptiveGridView
-            DesiredWidth="180"
-            ItemHeight="160"
+            DesiredWidth="175"
+            ItemHeight="300"
             IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
             ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
@@ -22,7 +22,12 @@
                     <Grid
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center">
+                            <Image 
+                                Source="{x:Bind ImagePath}"
+                                Height="230"
+                                Width="150">
+                            </Image>
                             <!-- <FontIcon -->
                             <!--     Glyph="{x:Bind Symbol}" -->
                             <!--     AutomationProperties.Name="{x:Bind SymbolName}" /> -->

@@ -8,9 +8,10 @@
     xmlns:helpers="using:GalgameManager.Helpers"
     xmlns:xaml="using:Microsoft.UI.Xaml"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
     <Page.Resources>
-        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 

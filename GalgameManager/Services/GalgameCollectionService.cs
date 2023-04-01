@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 
+using Windows.Storage;
+
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -27,17 +29,9 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private async void GetGalgames()
     {
         _galgames = await LocalSettingsService.ReadSettingAsync<ObservableCollection<Galgame>>(KeyValues.Galgames) ?? new ObservableCollection<Galgame>();
-        // _galgames.Add(new Galgame(@"D:\Game\魔女的夜宴"));
-        // _galgames.Add(new Galgame(@"D:\Game\星光咖啡馆与死神之蝶"));
-        // _galgames.Add(new Galgame(@"D:\Game\大图书馆的牧羊人"));
-        //
-        // foreach (var galgame in await GetGalFromFolder(@"D:\GalGame"))
-        //     _galgames.Add(galgame);
-        //
-        // for(var i=0;i<_galgames.Count;i++)
-        // {
-        //     _galgames[i] = await PhraserAsync(_galgames[i], new BgmPhraser(LocalSettingsService));
-        // }
+        var toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
+        foreach (var galgame in toRemove)
+            _galgames.Remove(galgame);
     }
 
     public enum AddGalgameResult
@@ -66,19 +60,62 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
+
+
+    /// <summary>
+    /// 从下载源获取这个galgame的信息
+    /// </summary>
+    /// <param name="galgame">galgame</param>
+    /// <returns>获取信息后的galgame，如果信息源不可达则galgame保持不变</returns>
+    public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame)
+    {
+        var result =  await PhraserAsync(galgame, new BgmPhraser(LocalSettingsService));
+        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames);
+        return result;
+    }
     
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)
     {
-        var tmp = await phraser.GetGalgameInfo(galgame.Name);
+        var tmp = await phraser.GetGalgameInfo(galgame);
         if (tmp == null) return galgame;
 
+        galgame.Id = tmp.Id;
         galgame.Description = tmp.Description;
-        galgame.Developer = tmp.Developer;
+        if(tmp.Developer != Galgame.DefaultString) galgame.Developer = tmp.Developer;
+        if (tmp.ExpectedPlayTime != Galgame.DefaultString) galgame.ExpectedPlayTime = tmp.ExpectedPlayTime;
         galgame.Name = tmp.Name;
+        galgame.ImageUrl = tmp.ImageUrl;
+        galgame.Rating = tmp.Rating;
         galgame.RssType = phraser.GetPhraseType();
+        galgame.ImagePath = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+        galgame.CheckSavePosition();
         return galgame;
     }
     
+    private static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl)
+    {
+        if (imageUrl == null) return null;
+        var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync(imageUrl);
+        response.EnsureSuccessStatusCode();
+
+        var imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+        var localFolder = ApplicationData.Current.LocalFolder;
+        var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
+        var storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+
+        await using (var fileStream = await storageFile.OpenStreamForWriteAsync())
+        {
+            using var memoryStream = new MemoryStream(imageBytes);
+            memoryStream.Position = 0;
+            await memoryStream.CopyToAsync(fileStream);
+        }
+
+        // 返回本地文件的路径
+        return storageFile.Path;
+    }
+
     public async Task<ObservableCollection<Galgame>> GetContentGridDataAsync()
     {
         await Task.CompletedTask;

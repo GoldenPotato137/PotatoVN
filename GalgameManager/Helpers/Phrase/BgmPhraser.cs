@@ -21,7 +21,7 @@ public class BgmPhraser : IGalInfoPhraser
     {
         var bgmToken = localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result;
         _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (no on github yet)");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         if(bgmToken != null)
@@ -35,7 +35,6 @@ public class BgmPhraser : IGalInfoPhraser
             var url = "https://api.bgm.tv/search/subject/" + HttpUtility.UrlEncode(name) + "?type=4";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null;
-            var tmp = await response.Content.ReadAsStringAsync();
             var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
             var games = jsonToken["list"]!.ToObject<List<JToken>>();
             if (games==null || games.Count == 0) return null;
@@ -86,9 +85,19 @@ public class BgmPhraser : IGalInfoPhraser
 
     #endregion
     
-    public async Task<Galgame?> GetGalgameInfo(string name)
+    public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
-        var id = await GetId(name);
+        var name = galgame.Name;
+        int? id;
+        try
+        {
+            id = Convert.ToInt32(galgame.Id ?? "");
+        }
+        catch (Exception)
+        {
+            id = await GetId(name);
+        }
+        
         if (id == null) return null;
         var url = "https://api.bgm.tv/v0/subjects/" + id;
         var response = await _httpClient.GetAsync(url);
@@ -97,14 +106,22 @@ public class BgmPhraser : IGalInfoPhraser
         var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
 
         Galgame result = new();
+        // id
+        result.Id = jsonToken["id"]!.ToObject<string>()!;
         // name
         result.Name = jsonToken["name"]!.ToObject<string>()!;
         // description
         result.Description = jsonToken["summary"]!.ToObject<string>()!;
+        // imageUrl
+        result.ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!;
+        // rating
+        result.Rating = jsonToken["rating"]!["score"]!.ToObject<float>()!;
         // developer
         var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
-        result.Developer = developerInfoBox==null?null:developerInfoBox["value"]!.ToObject<string>()!;
+        result.Developer = (developerInfoBox==null?null:developerInfoBox["value"]!.ToObject<string>()!) ?? Galgame.DefaultString;
+        // rssType
+        result.RssType = RssType.Bangumi;
         return result;
     }
 

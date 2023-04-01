@@ -17,89 +17,129 @@
                         <AdaptiveTrigger MinWindowWidth="641" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="propertiesGroup1.(RelativePanel.RightOf)" Value="itemHero" />
-                        <Setter Target="propertiesGroup1.(RelativePanel.Below)" Value="title" />
-                        <Setter Target="propertiesGroup2.(RelativePanel.RightOf)" Value="propertiesGroup1" />
-                        <Setter Target="propertiesGroup2.(RelativePanel.Below)" Value="title" />
-                        <Setter Target="propertiesGroup1.Width" Value="200" />
+                        <Setter Target="GameInfoBlock.(RelativePanel.RightOf)" Value="ImageBlock" />
+                        <Setter Target="GameInfoBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="GameInfoBlock.Width" Value="180" />
+                        <Setter Target="PlayInfoBlock.(RelativePanel.RightOf)" Value="GameInfoBlock" />
+                        <Setter Target="PlayInfoBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="PlayInfoBlock.Width" Value="180" />
+                        <Setter Target="RatingBlock.(RelativePanel.RightOf)" Value="PlayInfoBlock" />
+                        <Setter Target="RatingBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="RatingBlock.Width" Value="180" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+            <AppBarButton Label="开始游戏">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton Icon="Edit" Label="编辑"/>
+            <AppBarButton Label="下载数据">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Setting" Label="Settings">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="I" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
 
-        <ScrollViewer
-            IsTabStop="True">
-            <StackPanel
-                x:Name="contentPanel">
+        <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
+            <StackPanel>
+                <StackPanel.Resources>
+                    <Style x:Key="InfoTitle" TargetType="TextBlock">
+                        <!-- <Setter Property="FontFamily" Value="Segoe UI" /> -->
+                        <Setter Property="FontSize" Value="20" />
+                        <Setter Property="FontWeight" Value= "Bold" />
+                        <Setter Property="Foreground" Value="DarkSlateBlue" />
+                    </Style>
+                    <Style x:Key="Info" TargetType="TextBlock">
+                        <!-- <Setter Property="FontFamily" Value="Segoe UI" /> -->
+                        <Setter Property="FontSize" Value="20" />
+                        <Setter Property="FontWeight" Value= "Bold" />
+                        <Setter Property="Foreground" Value="DarkSlateBlue" />
+                    </Style>
+                </StackPanel.Resources>
+                
                 <RelativePanel>
                     <Grid
-                        x:Name="itemHero"
-                        Width="200"
-                        Height="200"
+                        x:Name="ImageBlock"
+                        Height="250"
                         Margin="{StaticResource SmallRightMargin}"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
                         RelativePanel.AlignTopWithPanel="True"
                         RelativePanel.AlignLeftWithPanel="True">
-                        <!-- <FontIcon -->
-                        <!--     HorizontalAlignment="Center" -->
-                        <!--     VerticalAlignment="Center" -->
-                        <!--     FontSize="70" -->
-                        <!--     Glyph="{x:Bind ViewModel.Item.Symbol}" -->
-                        <!--     AutomationProperties.Name="{x:Bind ViewModel.Item.SymbolName}" /> -->
+                        <Image
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            MaxWidth="250"
+                            MaxHeight="250"
+                            Source="{x:Bind ViewModel.Item.ImagePath}">
+                        </Image>
                     </Grid>
         
                     <TextBlock
-                        x:Name="title"
+                        x:Name="Title"
                         Margin="{StaticResource XXSmallTopMargin}"
                         RelativePanel.AlignTopWithPanel="True"
-                        RelativePanel.RightOf="itemHero"
+                        RelativePanel.RightOf="ImageBlock"
                         Style="{ThemeResource TitleTextBlockStyle}"
                         Text="{x:Bind ViewModel.Item.Name, Mode=OneWay}" />
         
-                    <StackPanel x:Name="propertiesGroup1" RelativePanel.Below="itemHero">
+                    <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                         <StackPanel x:Name="statusGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Status" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="Status" />
+                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="开发"/>
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.Developer}" />
                         </StackPanel>
         
                         <StackPanel x:Name="orderDateGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Order date" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="OrderDate" />
+                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="预计游戏时长" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.ExpectedPlayTime}" />
                         </StackPanel>
                     </StackPanel>
         
-                    <StackPanel x:Name="propertiesGroup2" RelativePanel.Below="propertiesGroup1">
+                    <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
                         <StackPanel x:Name="shipToGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Ship to" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="ShipTo" />
+                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="存档位置" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.SavePosition}" />
                         </StackPanel>
         
                         <StackPanel x:Name="orderTotalGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Order total" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="OrderTotal" />
+                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="上次游玩" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.LastPlay}" />
                         </StackPanel>
                     </StackPanel>
-        
+
+                    <StackPanel x:Name="RatingBlock" RelativePanel.Below="PlayInfoBlock">
+                        <StackPanel>
+                            <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="{x:Bind ViewModel.Item.Rating}" />
+                        </StackPanel>
+                    </StackPanel>
+
                 </RelativePanel>
         
                 <TextBlock
-                    Margin="{StaticResource SmallTopMargin}"
+                    Margin="{StaticResource SmallTopBottomMargin}"
                     Style="{ThemeResource SubtitleTextBlockStyle}"
                     Text="简介" />
                 <TextBlock
                     Style="{ThemeResource BodyTextBlockStyle}"
                     Text="{x:Bind ViewModel.Item.Description}" />
-        
-                <TextBlock
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{ThemeResource SubtitleTextBlockStyle}"
-                    Text="Note 2" />
-                <TextBlock
-                    Margin="{StaticResource MediumBottomMargin}"
-                    Style="{ThemeResource BodyTextBlockStyle}"
-                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis quis hendrerit nulla, vel molestie libero. In nec ultricies magna, ultricies molestie ipsum. Mauris non dignissim velit. Etiam malesuada blandit mauris eu maximus. Quisque ornare, felis nec scelerisque mollis, risus dolor posuere magna, in gravida quam mi id nisi. Nullam mattis consequat ex. Cras nulla neque, dictum ac urna et, vestibulum feugiat ex. Pellentesque malesuada accumsan ligula, vel fringilla lacus facilisis sit amet. Proin convallis tempor arcu, ac placerat libero pretium ut. Praesent hendrerit nisl at lobortis viverra. Fusce vitae velit odio. Nam ut tortor sed purus finibus sollicitudin quis at ante. Ut sodales dolor vel eros mollis suscipit. Donec eu nulla id urna ultricies consequat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

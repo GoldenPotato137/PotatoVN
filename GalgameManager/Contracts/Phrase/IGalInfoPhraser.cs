@@ -5,6 +5,6 @@ namespace GalgameManager.Contracts.Phrase;
 
 public interface IGalInfoPhraser
 {
-    public Task<Galgame?> GetGalgameInfo(string name);
+    public Task<Galgame?> GetGalgameInfo(Galgame galgame);
     public RssType GetPhraseType();
 }

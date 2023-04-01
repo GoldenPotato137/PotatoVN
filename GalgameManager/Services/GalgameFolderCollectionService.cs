@@ -28,7 +28,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
                           ?? new ObservableCollection<GalgameFolder>();
 
         foreach (var folder in _galgameFolders)
-            folder.Service = _galgameService;
+            folder.GalgameService = _galgameService;
     }
 
     public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()
@@ -37,6 +37,11 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         return _galgameFolders;
     }
     
+    /// <summary>
+    /// 试图添加一个galgame库
+    /// </summary>
+    /// <param name="path">库路径</param>
+    /// <exception cref="Exception">库已经添加过了</exception>
     public async Task AddGalgameFolderAsync(string path)
     {
         if (_galgameFolders.Any(galFolder => galFolder.Path == path))
@@ -44,10 +49,9 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
             throw new Exception($"这个galgame库{path}已经添加过了");
         }
 
-        _galgameFolders.Add(new GalgameFolder(path, _galgameService));
-        if (!Directory.Exists(path)) return ;
-        foreach (var subPath in Directory.GetDirectories(path))
-            await _galgameService.TryAddGalgameAsync(subPath);
+        var galgameFolder = new GalgameFolder(path, _galgameService);
+        _galgameFolders.Add(galgameFolder);
+        await galgameFolder.GetGalgameInFolder();
         await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders);
     }
 }

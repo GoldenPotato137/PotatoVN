@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
-namespace GalgameManager.Helpers.Phrase;
+namespace GalgameManager.Helpers.Converter;
 
 public class BoolToVisibilityConverter : IValueConverter
 {
