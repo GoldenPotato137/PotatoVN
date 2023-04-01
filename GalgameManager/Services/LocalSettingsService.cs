@@ -32,7 +32,8 @@ public class LocalSettingsService : ILocalSettingsService
         _fileService = fileService;
         _options = options.Value;
 
-        _applicationDataFolder = Path.Combine(_localApplicationData, _options.ApplicationDataFolder ?? DefaultApplicationDataFolder);
+        // _applicationDataFolder = Path.Combine(_localApplicationData, _options.ApplicationDataFolder ?? DefaultApplicationDataFolder);
+        _applicationDataFolder = ApplicationData.Current.LocalFolder.Path;
         _localsettingsFile = _options.LocalSettingsFile ?? DefaultLocalSettingsFile;
 
         _settings = new Dictionary<string, object>();
@@ -48,9 +49,9 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
-    public async Task<T?> ReadSettingAsync<T>(string key)
+    public async Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false)
     {
-        if (RuntimeHelper.IsMSIX)
+        if (RuntimeHelper.IsMSIX && !isLarge)
         {
             if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
             {
@@ -70,9 +71,9 @@ public class LocalSettingsService : ILocalSettingsService
         return default;
     }
 
-    public async Task SaveSettingAsync<T>(string key, T value)
+    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false)
     {
-        if (RuntimeHelper.IsMSIX)
+        if (RuntimeHelper.IsMSIX && !isLarge)
         {
             ApplicationData.Current.LocalSettings.Values[key] = JsonConvert.SerializeObject(value);
         }

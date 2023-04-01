@@ -31,6 +31,7 @@ public partial class Galgame : ObservableObject
     [ObservableProperty] private float _rating;
     [ObservableProperty] private string? _id;
     [ObservableProperty] private string _savePosition = "本地";
+    [ObservableProperty] private string? _exePath;
     private bool _isSaveInCloud;
 
     private bool IsSaveInCloud
@@ -87,5 +88,10 @@ public partial class Galgame : ObservableObject
             return (fileInfo.Attributes & symlinkAttribute) == symlinkAttribute;
         }
         throw new NotSupportedException("Unsupported operating system.");
+    }
+    
+    public List<string> GetExes()
+    {
+        return Directory.GetFiles(Path).Where(file => file.EndsWith(".exe")).ToList();
     }
 }

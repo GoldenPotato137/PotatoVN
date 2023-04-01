@@ -8,6 +8,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
+using GalgameManager.Services;
 
 namespace GalgameManager.ViewModels;
 
@@ -27,6 +28,8 @@ public class HomeViewModel : ObservableRecipient, INavigationAware
     {
         _navigationService = navigationService;
         _dataCollectionService = dataCollectionService;
+        
+        ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
@@ -34,14 +37,6 @@ public class HomeViewModel : ObservableRecipient, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         Source = await _dataCollectionService.GetContentGridDataAsync();
-        // Source.Clear();
-        //
-        // // TODO: Replace with real data.
-        // var data = await _dataCollectionService.GetContentGridDataAsync();
-        // foreach (var item in data)
-        // {
-        //     Source.Add(item);
-        // }
     }
 
     public void OnNavigatedFrom()

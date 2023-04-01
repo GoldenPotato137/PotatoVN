@@ -24,7 +24,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         LocalSettingsService = localSettingsService;
         _galgameService = ((GalgameCollectionService?)galgameService)!;
 
-        _galgameFolders = localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders).Result
+        _galgameFolders = localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders, true).Result
                           ?? new ObservableCollection<GalgameFolder>();
 
         foreach (var folder in _galgameFolders)
@@ -51,8 +51,8 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
         var galgameFolder = new GalgameFolder(path, _galgameService);
         _galgameFolders.Add(galgameFolder);
+        await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
         await galgameFolder.GetGalgameInFolder();
-        await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders);
     }
 }
 

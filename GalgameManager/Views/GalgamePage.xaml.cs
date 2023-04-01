@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.WinUI.UI.Animations;
-
-using GalgameManager.Contracts.Services;
+﻿using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +17,7 @@ public sealed partial class HomeDetailPage : Page
     {
         ViewModel = App.GetService<GalgameViewModel>();
         InitializeComponent();
+        ViewModel.XamlRoot = App.MainWindow.Content.XamlRoot;
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)

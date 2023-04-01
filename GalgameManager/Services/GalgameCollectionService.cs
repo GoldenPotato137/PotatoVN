@@ -19,19 +19,27 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private ILocalSettingsService LocalSettingsService { get; }
     public delegate void GalgameAddedEventHandler(Galgame galgame);
     public event GalgameAddedEventHandler? GalgameAddedEvent;
+    public delegate void GalgameLoadedEventHandler();
+    public event GalgameLoadedEventHandler? GalgameLoadedEvent;
     
     public GalgameCollectionService(ILocalSettingsService localSettingsService)
     {
         LocalSettingsService = localSettingsService;
         GetGalgames();
+        
+        App.MainWindow.AppWindow.Closing += (_, _) =>
+        {
+            SaveGalgamesAsync();
+        };
     }
 
     private async void GetGalgames()
     {
-        _galgames = await LocalSettingsService.ReadSettingAsync<ObservableCollection<Galgame>>(KeyValues.Galgames) ?? new ObservableCollection<Galgame>();
+        _galgames = await LocalSettingsService.ReadSettingAsync<ObservableCollection<Galgame>>(KeyValues.Galgames, true) ?? new ObservableCollection<Galgame>();
         var toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
         foreach (var galgame in toRemove)
             _galgames.Remove(galgame);
+        GalgameLoadedEvent?.Invoke();
     }
 
     public enum AddGalgameResult
@@ -57,7 +65,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             return AddGalgameResult.NotFoundInRss;
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
-        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames);
+        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
@@ -70,7 +78,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame)
     {
         var result =  await PhraserAsync(galgame, new BgmPhraser(LocalSettingsService));
-        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames);
+        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         return result;
     }
     
@@ -120,5 +128,13 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await Task.CompletedTask;
         return _galgames;
+    }
+    
+    /// <summary>
+    /// 保存galgame列表（以及其内部的galgame）
+    /// </summary>
+    private async void SaveGalgamesAsync()
+    {
+        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
     }
 }

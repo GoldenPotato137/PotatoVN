@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
+using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Services;
 

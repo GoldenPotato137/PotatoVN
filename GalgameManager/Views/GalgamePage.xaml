@@ -37,7 +37,7 @@
         </Grid.RowDefinitions>
         
         <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-            <AppBarButton Label="开始游戏">
+            <AppBarButton Label="开始游戏" Command="{x:Bind ViewModel.PlayCommand}">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;"/>
                 </AppBarButton.Icon>
@@ -59,21 +59,6 @@
 
         <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
             <StackPanel>
-                <StackPanel.Resources>
-                    <Style x:Key="InfoTitle" TargetType="TextBlock">
-                        <!-- <Setter Property="FontFamily" Value="Segoe UI" /> -->
-                        <Setter Property="FontSize" Value="20" />
-                        <Setter Property="FontWeight" Value= "Bold" />
-                        <Setter Property="Foreground" Value="DarkSlateBlue" />
-                    </Style>
-                    <Style x:Key="Info" TargetType="TextBlock">
-                        <!-- <Setter Property="FontFamily" Value="Segoe UI" /> -->
-                        <Setter Property="FontSize" Value="20" />
-                        <Setter Property="FontWeight" Value= "Bold" />
-                        <Setter Property="Foreground" Value="DarkSlateBlue" />
-                    </Style>
-                </StackPanel.Resources>
-                
                 <RelativePanel>
                     <Grid
                         x:Name="ImageBlock"
@@ -104,30 +89,30 @@
                     <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                         <StackPanel x:Name="statusGroup" Margin="{StaticResource SmallTopMargin}">
                             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="开发"/>
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.Developer}" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay}" />
                         </StackPanel>
         
                         <StackPanel x:Name="orderDateGroup" Margin="{StaticResource SmallTopMargin}">
                             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="预计游戏时长" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.ExpectedPlayTime}" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
         
                     <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
                         <StackPanel x:Name="shipToGroup" Margin="{StaticResource SmallTopMargin}">
                             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="存档位置" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.SavePosition}" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.SavePosition, Mode=OneWay}" />
                         </StackPanel>
         
                         <StackPanel x:Name="orderTotalGroup" Margin="{StaticResource SmallTopMargin}">
                             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="上次游玩" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.LastPlay}" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel x:Name="RatingBlock" RelativePanel.Below="PlayInfoBlock">
                         <StackPanel>
-                            <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="{x:Bind ViewModel.Item.Rating}" />
+                            <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="{x:Bind ViewModel.Item.Rating, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
 
