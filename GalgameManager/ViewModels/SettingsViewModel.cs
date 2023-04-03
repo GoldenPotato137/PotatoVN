@@ -103,14 +103,14 @@ public class SettingsViewModel : ObservableRecipient
         }
     }
     
-    public bool RssSelectBilibili
+    public bool RssSelectVndb
     {
-        get => _infoSettingSelected[(int)RssType.Bilibili];
+        get => _infoSettingSelected[(int)RssType.Vndb];
         set
         {
-            SetProperty(ref _infoSettingSelected[(int)RssType.Bilibili], value);
+            SetProperty(ref _infoSettingSelected[(int)RssType.Vndb], value);
             if (value)
-                _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Bilibili);
+                _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Vndb);
         }
     }
     

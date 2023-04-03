@@ -26,6 +26,12 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddGalgameCommand))] 
+    [NotifyCanExecuteChangedFor(nameof(GetInfoFromRssCommand))]
+    [NotifyCanExecuteChangedFor(nameof(GetGalInFolderCommand))]
+    private bool _canExecute; //是否正在运行命令
 
     public GalgameFolder? Item
     {
@@ -59,6 +65,11 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         {
             var data = await _dataCollectionService.GetContentGridDataAsync();
             Item = data.First(i => i.Path == path);
+            if (Item != null)
+            {
+                Item.ProgressChangedEvent += UpdateInfoBar;
+                UpdateInfoBar();
+            }
         }
     }
 
@@ -66,7 +77,17 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
     }
 
-    [ICommand]
+    private void UpdateInfoBar()
+    {
+        if(Item == null) return;
+        CanExecute = !Item.IsRunning;
+        IsInfoBarOpen = Item.IsRunning;
+        InfoBarMessage = Item.ProgressText;
+        InfoBarSeverity = InfoBarSeverity.Success;
+    }
+    
+
+    [RelayCommand(CanExecute = nameof(CanExecute))]
     private async void AddGalgame()
     {
         try
@@ -113,16 +134,14 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         }
     }
 
-    [ICommand]
+    [RelayCommand(CanExecute = nameof(CanExecute))]
     private async void GetInfoFromRss()
     {
-        foreach (var galgame in Galgames)
-        {
-            await _galgameService.PhraseGalInfoAsync(galgame);
-        }
+        if (Item == null) return;
+        await Item.GetInfoFromRss();
     }
 
-    [ICommand]
+    [RelayCommand(CanExecute = nameof(CanExecute))]
     private async void GetGalInFolder()
     {
         if (_item == null) return;

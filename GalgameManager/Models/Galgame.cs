@@ -39,7 +39,7 @@ public partial class Galgame : ObservableObject
         set
         {
             _isSaveInCloud = value;
-            _savePosition = _isSaveInCloud? "云端" : "本地";
+            SavePosition = _isSaveInCloud ? "云端" : "本地";
         }
     }
 

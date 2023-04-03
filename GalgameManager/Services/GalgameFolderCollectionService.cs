@@ -30,6 +30,12 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
         foreach (var folder in _galgameFolders)
             folder.GalgameService = _galgameService;
+        
+        // 检查启动前是否有新的游戏添加
+        var list = LocalSettingsService.ReadSettingAsync<List<string>>(KeyValues.LibToCheck, true).Result ?? new List<string>();
+        foreach(var path in list)
+            _ = AddGalgameFolderAsync(path, false);
+        LocalSettingsService.SaveSettingAsync(KeyValues.LibToCheck, new List<string>(), true);
     }
 
     public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()

@@ -61,7 +61,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    [ICommand]
+    [RelayCommand]
     private async void AddGalgame()
     {
         try

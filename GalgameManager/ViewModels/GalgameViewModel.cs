@@ -57,7 +57,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
     }
 
-    [ICommand]
+    [RelayCommand]
     private async void Play()
     {
         if (Item == null) return;
@@ -103,7 +103,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    [ICommand]
+    [RelayCommand]
     private async void GetInfoFromRss()
     {
         if (Item == null) return;

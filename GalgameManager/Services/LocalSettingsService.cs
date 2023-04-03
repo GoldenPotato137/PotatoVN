@@ -111,12 +111,13 @@ public static class KeyValues
     public const string RssType = "rssType";
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
+    public const string LibToCheck = "libToCheck";
 }
 
 public enum RssType
 {
+    Vndb,
     Bangumi,
-    Bilibili,
     Moegirl,
     None
 }

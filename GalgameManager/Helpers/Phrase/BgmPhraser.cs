@@ -91,6 +91,7 @@ public class BgmPhraser : IGalInfoPhraser
         int? id;
         try
         {
+            if (galgame.RssType != RssType.Bangumi) throw new Exception();
             id = Convert.ToInt32(galgame.Id ?? "");
         }
         catch (Exception)

@@ -21,12 +21,20 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public event GalgameAddedEventHandler? GalgameAddedEvent;
     public delegate void GalgameLoadedEventHandler();
     public event GalgameLoadedEventHandler? GalgameLoadedEvent;
-    
+
+    private IGalInfoPhraser[] PhraserList
+    {
+        get;
+    } = new IGalInfoPhraser[5];
+
     public GalgameCollectionService(ILocalSettingsService localSettingsService)
     {
         LocalSettingsService = localSettingsService;
+        PhraserList[(int)RssType.Bangumi] = new BgmPhraser(localSettingsService);
+        PhraserList[(int)RssType.Vndb] = new VndbPhraser();
+
         GetGalgames();
-        
+
         App.MainWindow.AppWindow.Closing += async (_, _) =>
         {
             await SaveGalgamesAsync();
@@ -60,12 +68,21 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             return AddGalgameResult.AlreadyExists;
 
         var galgame = new Galgame(path);
-        galgame = await PhraserAsync(galgame, new BgmPhraser(LocalSettingsService));
+        galgame = await PhraseGalInfoAsync(galgame);
         if(!isForce && galgame.RssType == RssType.None)
             return AddGalgameResult.NotFoundInRss;
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
+        //为了防止在Home添加游戏的时候galgameFolderService还没有初始化，把要加的库暂存起来
+        var libToCheck = await LocalSettingsService.ReadSettingAsync<List<string>>(KeyValues.LibToCheck) ?? new List<string>();
+        var libPath = galgame.Path[..galgame.Path.LastIndexOf('\\')];
+        if (!libToCheck.Contains(libPath))
+        {
+            libToCheck.Add(libPath);
+            await LocalSettingsService.SaveSettingAsync(KeyValues.LibToCheck, libToCheck, true);
+        }
+        
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
@@ -74,10 +91,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// 从下载源获取这个galgame的信息
     /// </summary>
     /// <param name="galgame">galgame</param>
+    /// <param name="rssType">信息源，若设置为None则使用设置中的默认信息源</param>
     /// <returns>获取信息后的galgame，如果信息源不可达则galgame保持不变</returns>
-    public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame)
+    public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None)
     {
-        var result =  await PhraserAsync(galgame, new BgmPhraser(LocalSettingsService));
+        var selectedRss = rssType==RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : rssType;
+        var result =  await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         return result;
     }
