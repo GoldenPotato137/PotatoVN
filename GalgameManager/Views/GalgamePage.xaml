@@ -42,7 +42,7 @@
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;"/>
                 </AppBarButton.Icon>
             </AppBarButton>
-            <AppBarButton Icon="Edit" Label="编辑" IsEnabled="False"/>
+            <AppBarButton Icon="Edit" Label="编辑" Command="{x:Bind ViewModel.SettingCommand}"/>
             <AppBarButton Label="下载数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
@@ -84,7 +84,7 @@
                         RelativePanel.AlignTopWithPanel="True"
                         RelativePanel.RightOf="ImageBlock"
                         Style="{ThemeResource TitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Item.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay}" />
         
                     <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                         <StackPanel x:Name="statusGroup" Margin="{StaticResource SmallTopMargin}">

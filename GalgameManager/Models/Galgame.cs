@@ -22,7 +22,7 @@ public partial class Galgame : ObservableObject
 
     public string? ImageUrl;
     
-    [ObservableProperty] private string _name = "";
+    [ObservableProperty] private LockableProperty<string> _name = "";
     [ObservableProperty] private string? _description;
     [ObservableProperty] private string _developer = DefaultString;
     [ObservableProperty] private string _lastPlay = DefaultString;
@@ -62,7 +62,7 @@ public partial class Galgame : ObservableObject
     }
 
     /// <summary>
-    /// 更新游戏存档位置信息
+    /// 更新游戏存档位置（云端/本地）信息
     /// </summary>
     public void CheckSavePosition()
     {

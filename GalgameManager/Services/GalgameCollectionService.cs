@@ -16,7 +16,7 @@ namespace GalgameManager.Services;
 public class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private ObservableCollection<Galgame> _galgames = new();
-    private ILocalSettingsService LocalSettingsService { get; }
+    private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     public delegate void GalgameAddedEventHandler(Galgame galgame);
     public event GalgameAddedEventHandler? GalgameAddedEvent;
     public delegate void GalgameLoadedEventHandler();
@@ -110,7 +110,8 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.Description = tmp.Description;
         if(tmp.Developer != Galgame.DefaultString) galgame.Developer = tmp.Developer;
         if (tmp.ExpectedPlayTime != Galgame.DefaultString) galgame.ExpectedPlayTime = tmp.ExpectedPlayTime;
-        galgame.Name = tmp.Name;
+        if(await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
+            galgame.Name.Value = tmp.Name;
         galgame.ImageUrl = tmp.ImageUrl;
         galgame.Rating = tmp.Rating;
         galgame.RssType = phraser.GetPhraseType();
@@ -152,7 +153,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <summary>
     /// 保存galgame列表（以及其内部的galgame）
     /// </summary>
-    private async Task SaveGalgamesAsync()
+    public async Task SaveGalgamesAsync()
     {
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
     }

@@ -96,7 +96,7 @@ public class BgmPhraser : IGalInfoPhraser
         }
         catch (Exception)
         {
-            id = await GetId(name);
+            id = await GetId(name!);
         }
         
         if (id == null) return null;

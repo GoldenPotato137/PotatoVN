@@ -39,9 +39,7 @@ public class SettingsViewModel : ObservableRecipient
     {
         get;
     }
-
-    public ICommand OnFinishBgmTokenInputCommand => new RelayCommand(OnFinishBgmTokenInput);
-
+    
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService)
     {
         var themeSelectorService1 = themeSelectorService;
@@ -60,16 +58,14 @@ public class SettingsViewModel : ObservableRecipient
         
         _localSettingsService = localSettingsService;
         
+        //RSS
         var currentRss = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         _infoSettingSelected[(int)currentRss] = true;
         _bangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
+        //DOWNLOAD_BEHAVIOR
+        _overrideLocalLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
     }
-
-    private async void OnFinishBgmTokenInput()
-    {
-        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, _bangumiToken);
-    }
-
+    
     private static string GetVersionDescription()
     {
         Version version;
@@ -87,14 +83,15 @@ public class SettingsViewModel : ObservableRecipient
 
         return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
-    
+
+    #region RSS
+
     private readonly bool[] _infoSettingSelected = new bool[3]; //信息源：表示第几个选项有没有被选中 
     private string _bangumiToken;
 
     public bool RssSelectBangumi
     {
         get => _infoSettingSelected[(int)RssType.Bangumi];
-
         set
         {
             SetProperty(ref _infoSettingSelected[(int)RssType.Bangumi], value);
@@ -102,7 +99,7 @@ public class SettingsViewModel : ObservableRecipient
                 _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Bangumi);
         }
     }
-    
+
     public bool RssSelectVndb
     {
         get => _infoSettingSelected[(int)RssType.Vndb];
@@ -113,7 +110,7 @@ public class SettingsViewModel : ObservableRecipient
                 _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Vndb);
         }
     }
-    
+
     public bool RssSelectMoegirl
     {
         get => _infoSettingSelected[(int)RssType.Moegirl];
@@ -124,7 +121,9 @@ public class SettingsViewModel : ObservableRecipient
                 _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Moegirl);
         }
     }
-    
+
+    public ICommand OnFinishBgmTokenInputCommand => new RelayCommand(OnFinishBgmTokenInput);
+
     public string BangumiToken
     {
         get => _bangumiToken;
@@ -134,4 +133,26 @@ public class SettingsViewModel : ObservableRecipient
             OnFinishBgmTokenInputCommand.Execute(null);
         }
     }
+    
+    private async void OnFinishBgmTokenInput()
+    {
+        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, _bangumiToken);
+    }
+    #endregion
+
+    #region DOWNLOAD_BEHAVIOR
+
+    private bool _overrideLocalLocalName;
+
+    public bool OverrideLocalName
+    {
+        get => _overrideLocalLocalName;
+        set
+        {
+            SetProperty(ref _overrideLocalLocalName, value);
+            _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
+        }
+    }
+
+    #endregion
 }

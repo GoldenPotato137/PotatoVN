@@ -52,9 +52,9 @@ public class GalgameFolder
         {
             _progressValue++;
             ProgressText = $"正在扫描路径:{subPath} , {_progressValue}/{_progressMax}";
+            ProgressChangedEvent?.Invoke();
             var result = await GalgameService.TryAddGalgameAsync(subPath);
             if (result == GalgameCollectionService.AddGalgameResult.Success) cnt++;
-            ProgressChangedEvent?.Invoke();
         }
 
         ProgressText = $"扫描完成, 共添加了{cnt}个游戏";

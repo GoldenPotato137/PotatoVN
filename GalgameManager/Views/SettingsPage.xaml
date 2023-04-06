@@ -5,10 +5,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:GalgameManager.Views"
-    xmlns:helpers="using:GalgameManager.Helpers"
     xmlns:xaml="using:Microsoft.UI.Xaml"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d">
     <Page.Resources>
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
@@ -17,13 +17,13 @@
 
 
     <Grid>
-        <ScrollViewer HorizontalScrollMode="Disabled">
+        <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden">
             <StackPanel Margin="0 10 0 0">
 
-                <local:SettingExpander SettingTitle="外观"
+                <control:SettingExpander SettingTitle="外观"
                                        SettingDescription="切换深色或浅色模式"
                                        SettingIcon="&#xE790;">
-                    <local:SettingExpander.SettingContent>
+                    <control:SettingExpander.SettingContent>
                         <StackPanel>
                             <RadioButton
                                 x:Uid="Settings_Theme_Light"
@@ -56,14 +56,14 @@
                                 </RadioButton.CommandParameter>
                             </RadioButton>
                         </StackPanel>
-                    </local:SettingExpander.SettingContent>
-                </local:SettingExpander>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
 
-                <local:SettingExpander
+                <control:SettingExpander
                     SettingTitle="信息源"
                     SettingDescription="选择galgame信息默认获取源"
                     SettingIcon="&#xE701;">
-                    <local:SettingExpander.SettingContent>
+                    <control:SettingExpander.SettingContent>
                         <StackPanel>
                             <RadioButton
                                 Content="Bangumi"
@@ -88,9 +88,29 @@
                                 IsChecked="{x:Bind ViewModel.RssSelectMoegirl, Mode=TwoWay}">
                             </RadioButton>
                         </StackPanel>
-                    </local:SettingExpander.SettingContent>
-                </local:SettingExpander>
-
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+                
+                <control:SettingExpander 
+                    SettingTitle="下载行为"
+                    SettingDescription="从信息源获取信息有关的设置"
+                    SettingIcon="&#xE896;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Orientation="Vertical" Spacing="13">
+                            <local:SettingToggleSwitch
+                                Title="覆盖名字"
+                                Description="是否将信息源获取到的galgame名字覆盖本地名字"
+                                IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}">
+                            </local:SettingToggleSwitch>
+                            
+                            <!-- <local:SettingToggleSwitch -->
+                            <!--     Title="覆盖名字" -->
+                            <!--     Description="是否将信息源获取到的galgame名字覆盖本地名字" -->
+                            <!--     IsOn="True"> -->
+                            <!-- </local:SettingToggleSwitch> -->
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
 
                 <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
 

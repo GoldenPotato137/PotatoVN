@@ -55,7 +55,7 @@
                                 Margin="{StaticResource XXSmallTopMargin}"
                                 HorizontalAlignment="Center"
                                 Style="{ThemeResource BodyTextStyle}"
-                                Text="{x:Bind Path, Mode=OneWay}" />
+                                Text="{x:Bind Path}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

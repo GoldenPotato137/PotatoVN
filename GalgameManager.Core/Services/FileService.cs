@@ -20,15 +20,24 @@ public class FileService : IFileService
         return default;
     }
 
-    public void Save<T>(string folderPath, string fileName, T content)
+    public async Task Save<T>(string folderPath, string fileName, T content)
     {
+        if (folderPath == null)
+        {
+            throw new Exception("folderPath is null");
+        }
+
         if (!Directory.Exists(folderPath))
         {
             Directory.CreateDirectory(folderPath);
         }
 
         var fileContent = JsonConvert.SerializeObject(content);
-        File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
+        var filePath = Path.Combine(folderPath, fileName);
+
+        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+        await using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
+        await streamWriter.WriteAsync(fileContent);
     }
 
     public void Delete(string folderPath, string fileName)

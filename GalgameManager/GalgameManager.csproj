@@ -43,6 +43,9 @@
     <Page Update="Views\SettingExpander.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Views\Control\SettingToggleSwitch.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
@@ -51,10 +54,6 @@
 
   <ItemGroup>
     <Content Include="Strings\en-us\Resources.resw" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Remove="Themes\Generic.xaml" />
   </ItemGroup>
   
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">

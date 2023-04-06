@@ -20,6 +20,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 {
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
+    private readonly INavigationService _navigationService;
     private Galgame? _item;
     public XamlRoot? XamlRoot { get; set; }
 
@@ -36,19 +37,20 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await Task.CompletedTask;
     }
 
-    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, ILocalSettingsService localSettingsService)
+    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, ILocalSettingsService localSettingsService, INavigationService navigationService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
-        Task.Run(()=> Init(localSettingsService));
+        _navigationService = navigationService;
+        Task.Run(() => Init(localSettingsService));
     }
 
     public async void OnNavigatedTo(object parameter)
     {
-        if (parameter is string name)
+        if (parameter is not string path) return;
         {
             var data = await _dataCollectionService.GetContentGridDataAsync();
-            Item = data.First(i => i.Name == name);
+            Item = data.First(i => i.Path == path);
             Item.CheckSavePosition();
         }
     }
@@ -108,6 +110,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         if (Item == null) return;
         await _galgameService.PhraseGalInfoAsync(Item);
+    }
+
+    [RelayCommand]
+    private void Setting()
+    {
+        if(Item == null) return;
+        _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, Item);
     }
 }
 

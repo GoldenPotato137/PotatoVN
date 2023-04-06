@@ -107,4 +107,7 @@
   <data name="Shell_Library.Content" xml:space="preserve">
     <value>Library</value>
   </data>
+  <data name="Shell_GalgameSetting.Content" xml:space="preserve">
+    <value>GalgameSetting</value>
+  </data>
 </root>

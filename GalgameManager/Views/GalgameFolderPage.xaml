@@ -47,7 +47,7 @@
             <!--     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" /> -->
             <!-- </controls:DataGrid.Resources> -->
             <controls:DataGrid.Columns>
-                <controls:DataGridTextColumn Binding="{Binding Name}" Header="游戏名" />
+                <controls:DataGridTextColumn Binding="{Binding Name.Value}" Header="游戏名" />
                 <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" />
                 <controls:DataGridTextColumn Binding="{Binding RssType}" Header="数据源" />
                 <controls:DataGridTextColumn Binding="{Binding Id}" Header="id" />
