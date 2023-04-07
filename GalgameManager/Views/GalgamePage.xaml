@@ -4,11 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
 
-    <Grid x:Name="ContentArea">
+    <Page.Resources>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"></converters:InverseBooleanConverter>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
+    </Page.Resources>
 
+    <Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState>
@@ -30,102 +34,125 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        
-        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-            <AppBarButton Label="开始游戏" Command="{x:Bind ViewModel.PlayCommand}">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton Icon="Edit" Label="编辑" Command="{x:Bind ViewModel.SettingCommand}"/>
-            <AppBarButton Label="下载数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-            <CommandBar.SecondaryCommands>
-                <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Modifiers="Control" Key="I" />
-                    </AppBarButton.KeyboardAccelerators>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+                <AppBarButton Label="开始游戏" Command="{x:Bind ViewModel.PlayCommand}">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;" />
+                    </AppBarButton.Icon>
                 </AppBarButton>
-            </CommandBar.SecondaryCommands>
-        </CommandBar>
+                <AppBarButton Icon="Edit" Label="编辑" Command="{x:Bind ViewModel.SettingCommand}" />
+                <AppBarButton
+                    Label="下载数据"
+                    Command="{x:Bind ViewModel.GetInfoFromRssCommand}"
+                    IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="I" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
 
-        <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
-            <StackPanel>
-                <RelativePanel>
-                    <Grid
-                        x:Name="ImageBlock"
-                        Height="250"
-                        Margin="{StaticResource SmallRightMargin}"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        RelativePanel.AlignTopWithPanel="True"
-                        RelativePanel.AlignLeftWithPanel="True">
-                        <Image
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            MaxWidth="250"
-                            MaxHeight="250"
-                            Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay}">
-                        </Image>
-                    </Grid>
-        
+            <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
+                <StackPanel>
+                    <RelativePanel>
+                        <Grid
+                            x:Name="ImageBlock"
+                            Height="250"
+                            Margin="{StaticResource SmallRightMargin}"
+                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            RelativePanel.AlignTopWithPanel="True"
+                            RelativePanel.AlignLeftWithPanel="True">
+                            <Image
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                MaxWidth="250"
+                                MaxHeight="250"
+                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}">
+                            </Image>
+                        </Grid>
+
+                        <TextBlock
+                            x:Name="Title"
+                            Margin="{StaticResource XXSmallTopMargin}"
+                            RelativePanel.AlignTopWithPanel="True"
+                            RelativePanel.RightOf="ImageBlock"
+                            Style="{ThemeResource TitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay, FallbackValue={}}" />
+
+                        <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="开发" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="预计游戏时长" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="存档位置" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.SavePosition, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="上次游玩" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel x:Name="RatingBlock" RelativePanel.Below="PlayInfoBlock">
+                            <StackPanel>
+                                <TextBlock Style="{ThemeResource DisplayTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.Rating.Value, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                    </RelativePanel>
+
                     <TextBlock
-                        x:Name="Title"
-                        Margin="{StaticResource XXSmallTopMargin}"
-                        RelativePanel.AlignTopWithPanel="True"
-                        RelativePanel.RightOf="ImageBlock"
-                        Style="{ThemeResource TitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay}" />
-        
-                    <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
-                        <StackPanel x:Name="statusGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="开发"/>
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay}" />
-                        </StackPanel>
-        
-                        <StackPanel x:Name="orderDateGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="预计游戏时长" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay}" />
-                        </StackPanel>
-                    </StackPanel>
-        
-                    <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
-                        <StackPanel x:Name="shipToGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="存档位置" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.SavePosition, Mode=OneWay}" />
-                        </StackPanel>
-        
-                        <StackPanel x:Name="orderTotalGroup" Margin="{StaticResource SmallTopMargin}">
-                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="上次游玩" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay}" />
-                        </StackPanel>
-                    </StackPanel>
+                        Margin="{StaticResource SmallTopBottomMargin}"
+                        Style="{ThemeResource SubtitleTextBlockStyle}"
+                        Text="简介" />
+                    <TextBlock
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
 
-                    <StackPanel x:Name="RatingBlock" RelativePanel.Below="PlayInfoBlock">
-                        <StackPanel>
-                            <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="{x:Bind ViewModel.Item.Rating.Value, Mode=OneWay}" />
-                        </StackPanel>
-                    </StackPanel>
-
-                </RelativePanel>
-        
-                <TextBlock
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    Style="{ThemeResource SubtitleTextBlockStyle}"
-                    Text="简介" />
-                <TextBlock
-                    Style="{ThemeResource BodyTextBlockStyle}"
-                    Text="{x:Bind ViewModel.Item.Description, Mode=OneWay}" />
-            </StackPanel>
-        </ScrollViewer>
+        <Grid
+            Background="#00000000"
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <ProgressRing
+                IsActive="True"
+                Width="100"
+                Height="100"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            </ProgressRing>
+        </Grid>
     </Grid>
+
 </Page>

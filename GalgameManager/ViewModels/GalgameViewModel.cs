@@ -23,26 +23,20 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private Galgame? _item;
     public XamlRoot? XamlRoot { get; set; }
+    [ObservableProperty] private bool _isPhrasing;
 
     public Galgame? Item
     {
         get => _item;
         private set => SetProperty(ref _item, value);
     }
-
-    private async Task Init(ILocalSettingsService localSettingsService)
-    {
-        var tmp = await localSettingsService.ReadSettingAsync<string>("AppBackgroundRequestedTheme");
-        Console.WriteLine(tmp);
-        await Task.CompletedTask;
-    }
-
+    
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, ILocalSettingsService localSettingsService, INavigationService navigationService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
-        Task.Run(() => Init(localSettingsService));
+        _galgameService.PhrasedEvent += () => IsPhrasing = false;
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -109,6 +103,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private async void GetInfoFromRss()
     {
         if (Item == null) return;
+        IsPhrasing = true;
         await _galgameService.PhraseGalInfoAsync(Item);
     }
 

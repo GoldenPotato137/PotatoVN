@@ -24,6 +24,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    [ObservableProperty] private bool _isPhrasing;
 
     public ICommand ItemClickCommand
     {
@@ -39,6 +40,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _galgameService = (GalgameCollectionService)_dataCollectionService;
         
         ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
+        _galgameService.PhrasedEvent += () => IsPhrasing = false;
+        IsPhrasing = _galgameService.IsPhrasing;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
@@ -74,6 +77,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             if (file != null)
             {
                 var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
+                IsPhrasing = true;
                 var result = await _galgameService.TryAddGalgameAsync(folder, true);
                 if (result == GalgameCollectionService.AddGalgameResult.Success)
                 {
@@ -99,6 +103,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         }
         catch (Exception e)
         {
+            IsPhrasing = false;
             IsInfoBarOpen = true;
             InfoBarMessage = e.Message;
             InfoBarSeverity = InfoBarSeverity.Error;
