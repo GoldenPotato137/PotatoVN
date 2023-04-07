@@ -52,7 +52,7 @@
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
                         <StackPanel HorizontalAlignment="Center">
                             <Image 
-                                Source="{x:Bind ImagePath}"
+                                Source="{x:Bind ImagePath.Value}"
                                 Height="230"
                                 Width="150">
                             </Image>

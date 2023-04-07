@@ -25,7 +25,10 @@
 
         <TextBox Grid.Column="1"
                  Text="{x:Bind Value, Mode=TwoWay}"
-                 IsEnabled="{x:Bind IsEditable, Mode=OneWay}">
+                 IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 IsSpellCheckEnabled="False">
         </TextBox>
         
         <ToggleSwitch Grid.Column="2"
@@ -33,7 +36,6 @@
                       Margin="30 0 -50 0"
                       OnContent="已锁定"
                       OffContent="已解锁">
-        
         </ToggleSwitch>
     </Grid>
 </UserControl>

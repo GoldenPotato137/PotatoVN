@@ -74,7 +74,7 @@
                             VerticalAlignment="Center"
                             MaxWidth="250"
                             MaxHeight="250"
-                            Source="{x:Bind ViewModel.Item.ImagePath, Mode=OneWay}">
+                            Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay}">
                         </Image>
                     </Grid>
         
@@ -112,7 +112,7 @@
 
                     <StackPanel x:Name="RatingBlock" RelativePanel.Below="PlayInfoBlock">
                         <StackPanel>
-                            <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="{x:Bind ViewModel.Item.Rating, Mode=OneWay}" />
+                            <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="{x:Bind ViewModel.Item.Rating.Value, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
 

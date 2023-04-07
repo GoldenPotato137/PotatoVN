@@ -5,36 +5,124 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:converters="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
+    
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
+    </Page.Resources>
+    
+    <Grid Margin="0 0 0 40">
+        <ScrollViewer VerticalScrollBarVisibility="Hidden">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
+                <CommandBar  Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+                    <AppBarButton Label="回到上个界面" Command="{x:Bind ViewModel.BackCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="从数据源更新数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                </CommandBar>
 
-        <CommandBar  Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-            <AppBarButton Label="回到上个界面" Command="{x:Bind ViewModel.BackCommand}">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton Label="从数据源更新数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-        </CommandBar>
+                <StackPanel Grid.Row="1" Spacing="25" Margin="{StaticResource MediumTopMargin}">
+                    <control:LockableSetting
+                        Title="游戏名"
+                        Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay}"
+                        IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}">
+                    </control:LockableSetting>
 
-        <StackPanel Grid.Row="1" Spacing="5" Margin="{StaticResource MediumTopMargin}">
-            <control:LockableSetting
-                Title="游戏名"
-                Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay}"
-                IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}">
-        
-            </control:LockableSetting>
-        </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
 
+                        <StackPanel Orientation="Horizontal" Grid.Column="0">
+                            <TextBlock Text="id" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <TextBox Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}"/>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1" Margin="50 0 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="数据源" VerticalAlignment="Center" Margin="0 0 15 0"/>
+                            <TextBox Grid.Column="1" Text="{x:Bind ViewModel.Gal.RssType, Mode=OneWay}" HorizontalAlignment="Stretch" IsEnabled="False"/>
+                        </Grid>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">
+                            <TextBlock Text="存档位置" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <TextBox Text="{x:Bind ViewModel.Gal.SavePosition}" IsEnabled="False"/>
+                        </StackPanel>
+
+                        <control:LockableSetting 
+                            Grid.Column="3" 
+                            Title="评分"
+                            Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
+                            IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
+                            Margin="50 0 0 0">
+                        </control:LockableSetting>
+                    </Grid>
+
+                    <control:LockableSetting 
+                        Title="开发商"
+                        Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay}"
+                        IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}">
+                    </control:LockableSetting>
+
+                    <control:LockableSetting 
+                        Title="预计游戏时长"
+                        Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay}"
+                        IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}">
+                    </control:LockableSetting>
+
+                    <control:LockableSetting
+                        Title="游戏简介"
+                        Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay}"
+                        IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}">
+                    </control:LockableSetting>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <control:LockableSetting 
+                            Grid.Column="0"
+                            Title="封面图"
+                            Value="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=TwoWay}"
+                            IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}">
+                        </control:LockableSetting>
+                        <Button Grid.Column="1" Content="选择图片" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    
+        <Grid 
+            Grid.Row="0" 
+            Background="#00000000" 
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <ProgressRing 
+                IsActive="True" 
+                Width="100" 
+                Height="100" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center">
+            </ProgressRing>
+        </Grid>
     </Grid>
 </Page>

@@ -5,6 +5,7 @@ using Windows.Storage;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 
@@ -18,9 +19,11 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private ObservableCollection<Galgame> _galgames = new();
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     public delegate void GalgameAddedEventHandler(Galgame galgame);
-    public event GalgameAddedEventHandler? GalgameAddedEvent;
+    public event GalgameAddedEventHandler? GalgameAddedEvent; //当有galgame添加时触发
     public delegate void GalgameLoadedEventHandler();
-    public event GalgameLoadedEventHandler? GalgameLoadedEvent;
+    public event GalgameLoadedEventHandler? GalgameLoadedEvent; //当galgame列表加载完成时触发
+    public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
+    public bool IsPhrasing;
 
     private IGalInfoPhraser[] PhraserList
     {
@@ -95,9 +98,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>获取信息后的galgame，如果信息源不可达则galgame保持不变</returns>
     public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None)
     {
+        IsPhrasing = true;
         var selectedRss = rssType==RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : rssType;
         var result =  await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
+        IsPhrasing = false;
+        PhrasedEvent?.Invoke();
         return result;
     }
     
@@ -107,15 +113,20 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         if (tmp == null) return galgame;
 
         galgame.Id = tmp.Id;
-        galgame.Description = tmp.Description;
-        if(tmp.Developer != Galgame.DefaultString) galgame.Developer = tmp.Developer;
-        if (tmp.ExpectedPlayTime != Galgame.DefaultString) galgame.ExpectedPlayTime = tmp.ExpectedPlayTime;
+        if(!galgame.Description.IsLock)
+            galgame.Description.Value = tmp.Description.Value;
+        if(tmp.Developer != Galgame.DefaultString && !galgame.Developer.IsLock) 
+            galgame.Developer.Value = tmp.Developer.Value;
+        if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock) 
+            galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
         if(await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
-            galgame.Name.Value = tmp.Name;
+            galgame.Name.Value = tmp.Name.Value;
         galgame.ImageUrl = tmp.ImageUrl;
-        galgame.Rating = tmp.Rating;
+        if(!galgame.Rating.IsLock)
+            galgame.Rating.Value = tmp.Rating.Value;
         galgame.RssType = phraser.GetPhraseType();
-        galgame.ImagePath = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+        if(!galgame.ImagePath.IsLock)
+            galgame.ImagePath.Value = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.CheckSavePosition();
         return galgame;
     }

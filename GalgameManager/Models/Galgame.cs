@@ -18,17 +18,17 @@ public partial class Galgame : ObservableObject
         set;
     } = "";
     
-    [ObservableProperty] private string _imagePath = DefaultImagePath;
+    [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
     public string? ImageUrl;
     
     [ObservableProperty] private LockableProperty<string> _name = "";
-    [ObservableProperty] private string? _description;
-    [ObservableProperty] private string _developer = DefaultString;
-    [ObservableProperty] private string _lastPlay = DefaultString;
-    [ObservableProperty] private string _expectedPlayTime = DefaultString;
+    [ObservableProperty] private LockableProperty<string> _description = "";
+    [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
+    [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
+    [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private RssType _rssType = RssType.None;
-    [ObservableProperty] private float _rating;
+    [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private string? _id;
     [ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
