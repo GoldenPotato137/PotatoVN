@@ -29,6 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230313.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+    <PackageReference Include="SharpCompress" Version="0.33.0" />
     <PackageReference Include="VndbSharp" Version="1.1.1" />
     <PackageReference Include="WinUIEx" Version="2.1" />
   </ItemGroup>

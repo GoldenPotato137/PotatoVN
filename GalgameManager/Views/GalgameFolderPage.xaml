@@ -5,73 +5,112 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converter:BoolToVisibilityConverter>
+    </Page.Resources>
+    
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        
-        
-        <RelativePanel Grid.Row="0">
-            <TextBlock Text="{x:Bind ViewModel.Item.Path}"
-                       Style="{ThemeResource TitleTextBlockStyle}"/>
-            <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                <AppBarButton Icon="Add" Label="手动添加游戏" Command="{x:Bind ViewModel.AddGalgameCommand}">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Modifiers="Control" Key="A" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton Icon="Refresh" Label="自动寻找游戏" Command="{x:Bind ViewModel.GetGalInFolderCommand}"/>
-                <AppBarButton Icon="Download" Label="下载游戏数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}"/>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Setting" Label="Settings">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <RelativePanel Grid.Row="0">
+                <TextBlock Text="{x:Bind ViewModel.Item.Path}"
+                           Style="{ThemeResource TitleTextBlockStyle}" />
+                <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
+                            DefaultLabelPosition="Right">
+                    <AppBarButton Icon="Add" Label="手动添加游戏" Command="{x:Bind ViewModel.AddGalgameCommand}">
                         <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Modifiers="Control" Key="I" />
+                            <KeyboardAccelerator Modifiers="Control" Key="A" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
-                </CommandBar.SecondaryCommands>
-            </CommandBar>
-        </RelativePanel>
+                    <AppBarButton Label="添加游戏(压缩包)" Command="{x:Bind ViewModel.AddGalFromZipCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF012;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Icon="Refresh" Label="自动寻找游戏" Command="{x:Bind ViewModel.GetGalInFolderCommand}" />
+                    <AppBarButton Icon="Download" Label="下载游戏数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}" />
+                    <CommandBar.SecondaryCommands>
+                        <AppBarButton Icon="Setting" Label="Settings">
+                            <AppBarButton.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="I" />
+                            </AppBarButton.KeyboardAccelerators>
+                        </AppBarButton>
+                    </CommandBar.SecondaryCommands>
+                </CommandBar>
+            </RelativePanel>
+
+            <controls:DataGrid
+                Grid.Row="1"
+                Margin="0 20 0 0"
+                AutoGenerateColumns="False"
+                GridLinesVisibility="Horizontal"
+                IsReadOnly="True"
+                ItemsSource="{x:Bind ViewModel.Galgames, Mode=OneWay}">
+                <!-- <controls:DataGrid.Resources> -->
+                <!--     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" /> -->
+                <!-- </controls:DataGrid.Resources> -->
+                <controls:DataGrid.Columns>
+                    <controls:DataGridTextColumn Binding="{Binding Name.Value}" Header="游戏名" />
+                    <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" />
+                    <controls:DataGridTextColumn Binding="{Binding RssType}" Header="数据源" />
+                    <controls:DataGridTextColumn Binding="{Binding Id}" Header="id" />
+                    <!-- <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" /> -->
+                    <!-- <controls:DataGridTextColumn Binding="{Binding Status}" Header="Status" /> -->
+                    <!-- <controls:DataGridTemplateColumn Header="Symbol"> -->
+                    <!--     <controls:DataGridTemplateColumn.CellTemplate> -->
+                    <!--         <DataTemplate> -->
+                    <!--             <FontIcon -->
+                    <!--                 HorizontalAlignment="Left" -->
+                    <!--                 FontFamily="{ThemeResource SymbolThemeFontFamily}" -->
+                    <!--                 Glyph="{Binding Symbol}" -->
+                    <!--                 AutomationProperties.Name="{Binding SymbolName}" /> -->
+                    <!--         </DataTemplate> -->
+                    <!--     </controls:DataGridTemplateColumn.CellTemplate> -->
+                    <!-- </controls:DataGridTemplateColumn> -->
+                </controls:DataGrid.Columns>
+            </controls:DataGrid>
+
+            <InfoBar
+                Grid.Row="2"
+                IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+                Margin="0 0 0 20"
+                Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
+        </Grid>
         
-        <controls:DataGrid
-            Grid.Row="1"
-            Margin="0 20 0 0"
-            AutoGenerateColumns="False"
-            GridLinesVisibility="Horizontal"
-            IsReadOnly="True"
-            ItemsSource="{x:Bind ViewModel.Galgames, Mode=OneWay}">
-            <!-- <controls:DataGrid.Resources> -->
-            <!--     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" /> -->
-            <!-- </controls:DataGrid.Resources> -->
-            <controls:DataGrid.Columns>
-                <controls:DataGridTextColumn Binding="{Binding Name.Value}" Header="游戏名" />
-                <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" />
-                <controls:DataGridTextColumn Binding="{Binding RssType}" Header="数据源" />
-                <controls:DataGridTextColumn Binding="{Binding Id}" Header="id" />
-                <!-- <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" /> -->
-                <!-- <controls:DataGridTextColumn Binding="{Binding Status}" Header="Status" /> -->
-                <!-- <controls:DataGridTemplateColumn Header="Symbol"> -->
-                <!--     <controls:DataGridTemplateColumn.CellTemplate> -->
-                <!--         <DataTemplate> -->
-                <!--             <FontIcon -->
-                <!--                 HorizontalAlignment="Left" -->
-                <!--                 FontFamily="{ThemeResource SymbolThemeFontFamily}" -->
-                <!--                 Glyph="{Binding Symbol}" -->
-                <!--                 AutomationProperties.Name="{Binding SymbolName}" /> -->
-                <!--         </DataTemplate> -->
-                <!--     </controls:DataGridTemplateColumn.CellTemplate> -->
-                <!-- </controls:DataGridTemplateColumn> -->
-            </controls:DataGrid.Columns>
-        </controls:DataGrid>
-        
-        <InfoBar
-            Grid.Row="2" 
-            IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-            Margin="0 0 0 20"
-            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
+        <Grid
+            Margin ="25 10 25 100 "
+            Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+            Visibility="{x:Bind ViewModel.IsUnpacking, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <ProgressRing
+                Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}"
+                Background="LightGray"
+                IsActive="True"
+                IsIndeterminate="False"
+                Width="100"
+                Height="100"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            </ProgressRing>
+            <TextBlock Grid.Row="1" 
+                       Text="{x:Bind ViewModel.ProgressMsg, Mode=OneWay}"
+                       Margin="0 -80 0 50"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top">
+            </TextBlock>
+        </Grid>
     </Grid>
+
 </Page>

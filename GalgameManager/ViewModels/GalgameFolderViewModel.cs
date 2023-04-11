@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
+using Windows.Storage;
 using Windows.Storage.Pickers;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,6 +12,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
@@ -26,6 +28,9 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    [ObservableProperty] private bool _isUnpacking;
+    [ObservableProperty] private int _progressValue;
+    [ObservableProperty] private string _progressMsg = string.Empty;
     
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddGalgameCommand))] 
@@ -67,8 +72,8 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
             Item = data.First(i => i.Path == path);
             if (Item != null)
             {
-                Item.ProgressChangedEvent += UpdateInfoBar;
-                UpdateInfoBar();
+                Item.ProgressChangedEvent += Update;
+                Update();
             }
         }
     }
@@ -77,61 +82,84 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
     }
 
-    private void UpdateInfoBar()
+    private void Update()
     {
         if(Item == null) return;
         CanExecute = !Item.IsRunning;
         IsInfoBarOpen = Item.IsRunning;
         InfoBarMessage = Item.ProgressText;
         InfoBarSeverity = InfoBarSeverity.Success;
+        
+        IsUnpacking = Item.IsUnpacking;
+        ProgressValue = (int)((double)Item.ProgressValue / Item.ProgressMax * 100);
+        ProgressMsg = Item.ProgressText;
     }
     
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
     private async void AddGalgame()
     {
+        var openPicker = new FileOpenPicker();
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add(".exe");
+        var file = await openPicker.PickSingleFileAsync();
+        if (file != null)
+        {
+            var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
+            if (folder.StartsWith(_item!.Path) == false)
+                throw new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）");
+
+            await TryAddGalgame(folder);
+        }
+    }
+
+    /// <summary>
+    /// 试图添加游戏，如果添加失败，会显示错误信息
+    /// </summary>
+    /// <param name="folder">游戏文件夹路径</param>
+    private async Task TryAddGalgame(string folder)
+    {
         try
         {
-            var openPicker = new FileOpenPicker();
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.FileTypeFilter.Add(".exe");
-            var file = await openPicker.PickSingleFileAsync();
-            if (file != null)
-            {
-                var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
-                if (folder.StartsWith(_item!.Path) == false)
-                    throw new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）");
-
-                var result = await _galgameService.TryAddGalgameAsync(folder, true);
-                if (result == GalgameCollectionService.AddGalgameResult.Success)
-                {
-                    IsInfoBarOpen = true;
-                    InfoBarMessage = "已成功添加游戏到当前库";
-                    InfoBarSeverity = InfoBarSeverity.Success;
-                    await Task.Delay(3000);
-                    IsInfoBarOpen = false;
-                }
-                else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
-                    throw new Exception("库里已经有这个游戏了");
-                else //NotFoundInRss
-                {
-                    IsInfoBarOpen = true;
-                    InfoBarMessage = "成功添加游戏，但没有从信息源中找到这个游戏的信息";
-                    InfoBarSeverity = InfoBarSeverity.Warning;
-                    await Task.Delay(3000);
-                    IsInfoBarOpen = false;
-                }
-            }
+            var result = await _galgameService.TryAddGalgameAsync(folder, true);
+            if (result == GalgameCollectionService.AddGalgameResult.Success)
+                await ShowSuccessInfoBar();
+            else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
+                throw new Exception("库里已经有这个游戏了");
+            else //NotFoundInRss
+                await ShowNotFoundInfoBar();
         }
         catch (Exception e)
         {
-            IsInfoBarOpen = true;
-            InfoBarMessage = e.Message;
-            InfoBarSeverity = InfoBarSeverity.Error;
-            await Task.Delay(3000);
-            IsInfoBarOpen = false;
+            await ShowGameExistedInfoBar(e);
         }
+    }
+    
+    private async Task ShowGameExistedInfoBar(Exception e)
+    {
+
+        IsInfoBarOpen = true;
+        InfoBarMessage = e.Message;
+        InfoBarSeverity = InfoBarSeverity.Error;
+        await Task.Delay(3000);
+        IsInfoBarOpen = false;
+    }
+    private async Task ShowNotFoundInfoBar()
+    {
+        IsInfoBarOpen = true;
+        InfoBarMessage = "成功添加游戏，但没有从信息源中找到这个游戏的信息";
+        InfoBarSeverity = InfoBarSeverity.Warning;
+        await Task.Delay(3000);
+        IsInfoBarOpen = false;
+    }
+    private async Task ShowSuccessInfoBar()
+    {
+        IsInfoBarOpen = true;
+        InfoBarMessage = "已成功添加游戏到当前库";
+        InfoBarSeverity = InfoBarSeverity.Success;
+        await Task.Delay(3000);
+        IsInfoBarOpen = false;
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
@@ -146,5 +174,73 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
         if (_item == null) return;
         await _item.GetGalgameInFolder();
+    }
+    
+    [RelayCommand]
+    private async void AddGalFromZip()
+    {
+        var openPicker = new FileOpenPicker
+        {
+            ViewMode = PickerViewMode.Thumbnail,
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary
+        };
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        openPicker.FileTypeFilter.Add(".zip");
+        openPicker.FileTypeFilter.Add(".7zip");
+        openPicker.FileTypeFilter.Add(".rar");
+        openPicker.FileTypeFilter.Add(".tar");
+        var file = await openPicker.PickSingleFileAsync();
+
+        if (file == null || _item == null) return;
+
+        var storageFile = await StorageFile.GetFileFromPathAsync(file.Path);
+        if (storageFile == null) return;
+
+        var result = await _item.UnpackGame(storageFile, null);
+        while (result==null)
+        {
+            var dialog = new PasswdDialog(App.MainWindow.Content.XamlRoot, "请输入压缩包解压密码");
+            await dialog.ShowAsync();
+            if(dialog.Password == null) //取消
+                return;
+            result = await _item.UnpackGame(storageFile, dialog.Password);
+        }
+
+        IsUnpacking = true;
+        ProgressMsg = "正在从信息源中获取游戏信息...";
+        await TryAddGalgame(result);
+        IsUnpacking = false;
+    }
+}
+
+public class PasswdDialog : ContentDialog
+{
+    public string? Password;
+    private TextBox? _textBox;
+
+    public PasswdDialog(XamlRoot xamlRoot, string title)
+    {
+        XamlRoot = xamlRoot;
+        Title = title;
+        Content = CreateContent();
+        PrimaryButtonText = "确定";
+        SecondaryButtonText = "取消";
+
+        IsPrimaryButtonEnabled = false;
+
+        PrimaryButtonClick += (_, _) => { Password = _textBox?.Text;};
+        SecondaryButtonClick += (_, _) => { Password = null; };
+    }
+
+    private UIElement CreateContent()
+    {
+        var stackPanel = new StackPanel();
+        _textBox = new TextBox
+        {
+            PlaceholderText = "请输入压缩包解压密码",
+        };
+        _textBox.TextChanged += (_, _) => IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(_textBox?.Text); 
+        stackPanel.Children.Add(_textBox);
+        return stackPanel;
     }
 }
