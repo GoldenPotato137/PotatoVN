@@ -12,6 +12,12 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"></converters:InverseBooleanConverter>
+        <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
+            <AppBarButton Icon="Edit" ToolTipService.ToolTip="修改游戏信息" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Download" ToolTipService.ToolTip="下载游戏信息" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Delete" ToolTipService.ToolTip="从库中移除游戏" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Cancel" ToolTipService.ToolTip="彻底删除游戏" Command="{x:Bind ViewModel.GalFlyOutDeleteFromDiskCommand}" CommandParameter="{Binding}"/>
+        </CommandBarFlyout>
     </Page.Resources>
 
     <Grid>
@@ -61,16 +67,14 @@
                     <DataTemplate x:DataType="models:Galgame">
                         <Grid
                             x:Name="itemThumbnail"
-                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
+                            ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image
                                     Source="{x:Bind ImagePath.Value}"
                                     Height="230"
                                     Width="150">
                                 </Image>
-                                <!-- <FontIcon -->
-                                <!--     Glyph="{x:Bind Symbol}" -->
-                                <!--     AutomationProperties.Name="{x:Bind SymbolName}" /> -->
                                 <TextBlock
                                     Margin="{StaticResource XXSmallTopMargin}"
                                     HorizontalAlignment="Center"

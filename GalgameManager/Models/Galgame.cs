@@ -75,6 +75,14 @@ public partial class Galgame : ObservableObject
         IsSaveInCloud = false;
     }
 
+    /// <summary>
+    /// 删除游戏文件夹
+    /// </summary>
+    public void Delete()
+    {
+        new DirectoryInfo(Path).Delete(true);
+    }
+
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
     
     // ReSharper disable once NonReadonlyMemberInGetHashCode

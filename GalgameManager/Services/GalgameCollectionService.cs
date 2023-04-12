@@ -20,8 +20,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     public delegate void GalgameAddedEventHandler(Galgame galgame);
     public event GalgameAddedEventHandler? GalgameAddedEvent; //当有galgame添加时触发
-    public delegate void GalgameLoadedEventHandler();
-    public event GalgameLoadedEventHandler? GalgameLoadedEvent; //当galgame列表加载完成时触发
+    public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
     public bool IsPhrasing;
 
@@ -58,6 +57,19 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         Success,
         AlreadyExists,
         NotFoundInRss
+    }
+
+    /// <summary>
+    /// 移除一个galgame
+    /// </summary>
+    /// <param name="galgame">galgame</param>
+    /// <param name="removeFromDisk">是否要从硬盘移除游戏</param>
+    public async Task RemoveGalgame(Galgame galgame,bool removeFromDisk = false)
+    {
+        _galgames.Remove(galgame);
+        if(removeFromDisk)
+            galgame.Delete();
+        await SaveGalgamesAsync();
     }
 
     /// <summary>

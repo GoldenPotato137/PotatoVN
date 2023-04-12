@@ -167,6 +167,8 @@ public class GalgameFolder
                 ProgressChangedEvent?.Invoke();
             });
         });
+        if(result != null && (result[^1]=='\\' || result[^1]=='/')) // 删除最后的反斜杠
+            result = result[..^1];
         return result;
     }
 

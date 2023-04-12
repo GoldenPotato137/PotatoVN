@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 
 using Windows.Storage.Pickers;
@@ -16,6 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
+[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public partial class HomeViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
@@ -41,7 +43,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         
         ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
-        IsPhrasing = _galgameService.IsPhrasing;
+        // IsPhrasing = _galgameService.IsPhrasing;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
@@ -110,5 +112,61 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             await Task.Delay(3000);
             IsInfoBarOpen = false;
         }
+    }
+
+    [RelayCommand]
+    private async void GalFlyOutDelete(Galgame? galgame)
+    {
+        if(galgame == null) return;
+        var dialog = new ContentDialog
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "取消托管",
+            Content = "确定要取消托管这个游戏吗",
+            PrimaryButtonText = "确定",
+            SecondaryButtonText = "取消"
+        };
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            await _galgameService.RemoveGalgame(galgame);
+        };
+        
+        await dialog.ShowAsync();
+    }
+    
+    [RelayCommand]
+    private void GalFlyOutEdit(Galgame? galgame)
+    {
+        if(galgame == null) return;
+        _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, galgame);
+    }
+    
+    [RelayCommand]
+    private async void GalFlyOutDeleteFromDisk(Galgame? galgame)
+    {
+        if(galgame == null) return;
+        var dialog = new ContentDialog
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "删除游戏",
+            Content = "确定要从硬盘上移除这个游戏吗，这个操作不可逆哦",
+            PrimaryButtonText = "确定",
+            SecondaryButtonText = "取消"
+        };
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            await _galgameService.RemoveGalgame(galgame, true);
+        };
+        
+        await dialog.ShowAsync();
+    }
+
+    [RelayCommand]
+    private async void GalFlyOutGetInfoFromRss(Galgame? galgame)
+    {
+        if(galgame == null) return;
+        IsPhrasing = true;
+        await _galgameService.PhraseGalInfoAsync(galgame);
+        IsPhrasing = false;
     }
 }
