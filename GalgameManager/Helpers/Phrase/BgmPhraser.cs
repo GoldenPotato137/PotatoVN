@@ -15,11 +15,18 @@ namespace GalgameManager.Helpers.Phrase;
 
 public class BgmPhraser : IGalInfoPhraser
 {
-    private readonly HttpClient _httpClient;
+    private HttpClient _httpClient;
+    private readonly ILocalSettingsService _localSettingsService;
 
     public BgmPhraser(ILocalSettingsService localSettingsService)
     {
-        var bgmToken = localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result;
+        _localSettingsService = localSettingsService;
+        _httpClient = new HttpClient();
+    }
+    
+    private void GetHttpClient()
+    {
+        var bgmToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result;
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -87,6 +94,7 @@ public class BgmPhraser : IGalInfoPhraser
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
+        GetHttpClient(); // refresh token
         var name = galgame.Name;
         int? id;
         try
