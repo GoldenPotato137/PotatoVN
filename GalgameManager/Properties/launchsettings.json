@@ -1,10 +1,10 @@
-﻿{
-    "profiles": {
-      "GalgameManager (Package)": {
-        "commandName": "MsixPackage"
-      },
-      "GalgameManager (Unpackaged)": {
-        "commandName": "Project"
-      }
+{
+  "profiles": {
+    "GalgameManager (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "GalgameManager (Unpackaged)": {
+      "commandName": "Project"
     }
+  }
 }

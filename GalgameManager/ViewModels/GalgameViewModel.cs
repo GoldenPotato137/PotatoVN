@@ -21,8 +21,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly INavigationService _navigationService;
+    private readonly JumpListService _jumpListService;
     private Galgame? _item;
-    public XamlRoot? XamlRoot { get; set; }
+    public XamlRoot? XamlRoot
+    {
+        get; set;
+    }
     [ObservableProperty] private bool _isPhrasing;
 
     public Galgame? Item
@@ -30,13 +34,15 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         get => _item;
         private set => SetProperty(ref _item, value);
     }
-    
-    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, ILocalSettingsService localSettingsService, INavigationService navigationService)
+
+    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, IJumpListService jumpListService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
+        _jumpListService = (JumpListService)jumpListService;
+        Item = new Galgame();
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -44,8 +50,15 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if (parameter is not string path) return;
         {
             var data = await _dataCollectionService.GetContentGridDataAsync();
-            Item = data.First(i => i.Path == path);
-            Item.CheckSavePosition();
+            try
+            {
+                Item = data.First(i => i.Path == path);
+                Item.CheckSavePosition();
+            }
+            catch (Exception) //找不到这个游戏，回到主界面
+            {
+                _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+            }
         }
     }
 
@@ -76,13 +89,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             }
             else
             {
-                var dialog = new FilePickerDialog(XamlRoot!,"选择可执行文件", exes);
+                var dialog = new FilePickerDialog(XamlRoot!, "选择可执行文件", exes);
                 await dialog.ShowAsync();
                 if (dialog.SelectedFile != null)
                     Item.ExePath = dialog.SelectedFile;
             }
         }
-        
+
         if (Item.ExePath != null)
         {
             Item.LastPlay = DateTime.Now.ToShortDateString();
@@ -96,6 +109,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                 }
             };
             process.Start();
+            await _jumpListService.AddToJumpListAsync(Item);
         }
     }
 
@@ -110,7 +124,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private void Setting()
     {
-        if(Item == null) return;
+        if (Item == null) return;
         _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, Item);
     }
 }
@@ -118,7 +132,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 
 public class FilePickerDialog : ContentDialog
 {
-    public string? SelectedFile { get; private set; }
+    public string? SelectedFile
+    {
+        get; private set;
+    }
     private StackPanel StackPanel { get; set; } = null!;
 
     public FilePickerDialog(XamlRoot xamlRoot, string title, List<string> files)
@@ -145,7 +162,7 @@ public class FilePickerDialog : ContentDialog
                 Content = file,
                 GroupName = "ExeFiles"
             };
-        
+
             radioButton.Checked += RadioButton_Checked;
             StackPanel.Children.Add(radioButton);
         }

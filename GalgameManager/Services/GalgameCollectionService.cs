@@ -18,37 +18,39 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private ObservableCollection<Galgame> _galgames = new();
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
+    private readonly IJumpListService _jumpListService;
     public delegate void GalgameAddedEventHandler(Galgame galgame);
     public event GalgameAddedEventHandler? GalgameAddedEvent; //当有galgame添加时触发
     public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
     public bool IsPhrasing;
+    private bool _isInit;
 
     private IGalInfoPhraser[] PhraserList
     {
         get;
     } = new IGalInfoPhraser[5];
 
-    public GalgameCollectionService(ILocalSettingsService localSettingsService)
+    public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService)
     {
         LocalSettingsService = localSettingsService;
+        _jumpListService = jumpListService;
         PhraserList[(int)RssType.Bangumi] = new BgmPhraser(localSettingsService);
         PhraserList[(int)RssType.Vndb] = new VndbPhraser();
 
-        GetGalgames();
-
         App.MainWindow.AppWindow.Closing += async (_, _) =>
-        {
+        { 
             await SaveGalgamesAsync();
         };
     }
 
-    private async void GetGalgames()
+    private async Task GetGalgames()
     {
         _galgames = await LocalSettingsService.ReadSettingAsync<ObservableCollection<Galgame>>(KeyValues.Galgames, true) ?? new ObservableCollection<Galgame>();
         var toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
         foreach (var galgame in toRemove)
             _galgames.Remove(galgame);
+        _isInit = true;
         GalgameLoadedEvent?.Invoke();
     }
 
@@ -64,10 +66,10 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </summary>
     /// <param name="galgame">galgame</param>
     /// <param name="removeFromDisk">是否要从硬盘移除游戏</param>
-    public async Task RemoveGalgame(Galgame galgame,bool removeFromDisk = false)
+    public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
-        if(removeFromDisk)
+        if (removeFromDisk)
             galgame.Delete();
         await SaveGalgamesAsync();
     }
@@ -84,7 +86,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
         var galgame = new Galgame(path);
         galgame = await PhraseGalInfoAsync(galgame);
-        if(!isForce && galgame.RssType == RssType.None)
+        if (!isForce && galgame.RssType == RssType.None)
             return AddGalgameResult.NotFoundInRss;
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
@@ -97,7 +99,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             libToCheck.Add(libPath);
             await LocalSettingsService.SaveSettingAsync(KeyValues.LibToCheck, libToCheck, true);
         }
-        
+
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
@@ -111,38 +113,38 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None)
     {
         IsPhrasing = true;
-        var selectedRss = rssType==RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : rssType;
-        var result =  await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
+        var selectedRss = rssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : rssType;
+        var result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
         return result;
     }
-    
+
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)
     {
         var tmp = await phraser.GetGalgameInfo(galgame);
         if (tmp == null) return galgame;
 
         galgame.Id = tmp.Id;
-        if(!galgame.Description.IsLock)
+        if (!galgame.Description.IsLock)
             galgame.Description.Value = tmp.Description.Value;
-        if(tmp.Developer != Galgame.DefaultString && !galgame.Developer.IsLock) 
+        if (tmp.Developer != Galgame.DefaultString && !galgame.Developer.IsLock)
             galgame.Developer.Value = tmp.Developer.Value;
-        if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock) 
+        if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock)
             galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
-        if(await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
             galgame.Name.Value = tmp.Name.Value;
         galgame.ImageUrl = tmp.ImageUrl;
-        if(!galgame.Rating.IsLock)
+        if (!galgame.Rating.IsLock)
             galgame.Rating.Value = tmp.Rating.Value;
         galgame.RssType = phraser.GetPhraseType();
-        if(!galgame.ImagePath.IsLock)
+        if (!galgame.ImagePath.IsLock)
             galgame.ImagePath.Value = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.CheckSavePosition();
         return galgame;
     }
-    
+
     private static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl)
     {
         if (imageUrl == null) return null;
@@ -169,10 +171,14 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
     public async Task<ObservableCollection<Galgame>> GetContentGridDataAsync()
     {
-        await Task.CompletedTask;
+        if (!_isInit)
+        {
+            await GetGalgames();
+            await _jumpListService.CheckJumpListAsync(_galgames.ToList());
+        }
         return _galgames;
     }
-    
+
     /// <summary>
     /// 保存galgame列表（以及其内部的galgame）
     /// </summary>

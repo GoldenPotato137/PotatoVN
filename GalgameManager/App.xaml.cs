@@ -50,15 +50,15 @@ public partial class App : Application
         ConfigureServices((context, services) =>
         {
             // Default Activation Handler
-            services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+            services.AddTransient<ActivationHandler<List<string>>, DefaultActivationHandler>();
 
             // Other Activation Handlers
 
             // Services
+            services.AddTransient<INavigationViewService, NavigationViewService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
-            services.AddTransient<INavigationViewService, NavigationViewService>();
-
+            services.AddTransient<IJumpListService, JumpListService>();
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
@@ -102,6 +102,8 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        await App.GetService<IActivationService>().ActivateAsync(args);
+        //已知bug：args的参数永远是空string
+        //见：https://github.com/microsoft/microsoft-ui-xaml/issues/3368
+        await App.GetService<IActivationService>().ActivateAsync(Environment.GetCommandLineArgs().ToList());
     }
 }

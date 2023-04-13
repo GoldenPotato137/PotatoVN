@@ -50,6 +50,12 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
+        // var newItems = await _dataCollectionService.GetContentGridDataAsync();
+        // Source.Clear();
+        // foreach (var item in newItems)
+        // {
+        //     Source.Add(item);
+        // }
         Source = await _dataCollectionService.GetContentGridDataAsync();
     }
 
