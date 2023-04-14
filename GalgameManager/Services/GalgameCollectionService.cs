@@ -108,12 +108,14 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// 从下载源获取这个galgame的信息
     /// </summary>
     /// <param name="galgame">galgame</param>
-    /// <param name="rssType">信息源，若设置为None则使用设置中的默认信息源</param>
+    /// <param name="rssType">信息源，若设置为None则使用galgame指定的数据源，若不存在则使用设置中的默认数据源</param>
     /// <returns>获取信息后的galgame，如果信息源不可达则galgame保持不变</returns>
     public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None)
     {
         IsPhrasing = true;
-        var selectedRss = rssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : rssType;
+        var selectedRss = rssType;
+        if(selectedRss == RssType.None)
+            selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         var result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
@@ -126,6 +128,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         var tmp = await phraser.GetGalgameInfo(galgame);
         if (tmp == null) return galgame;
 
+        galgame.RssType = phraser.GetPhraseType();
         galgame.Id = tmp.Id;
         if (!galgame.Description.IsLock)
             galgame.Description.Value = tmp.Description.Value;
@@ -138,7 +141,6 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.ImageUrl = tmp.ImageUrl;
         if (!galgame.Rating.IsLock)
             galgame.Rating.Value = tmp.Rating.Value;
-        galgame.RssType = phraser.GetPhraseType();
         if (!galgame.ImagePath.IsLock)
             galgame.ImagePath.Value = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.CheckSavePosition();

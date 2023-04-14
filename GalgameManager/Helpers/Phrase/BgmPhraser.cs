@@ -115,6 +115,8 @@ public class BgmPhraser : IGalInfoPhraser
         var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
 
         Galgame result = new();
+        // rssType
+        result.RssType = RssType.Bangumi;
         // id
         result.Id = jsonToken["id"]!.ToObject<string>()!;
         // name
@@ -129,8 +131,6 @@ public class BgmPhraser : IGalInfoPhraser
         var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
         result.Developer = (developerInfoBox==null?null:developerInfoBox["value"]!.ToObject<string>()!) ?? Galgame.DefaultString;
-        // rssType
-        result.RssType = RssType.Bangumi;
         return result;
     }
 

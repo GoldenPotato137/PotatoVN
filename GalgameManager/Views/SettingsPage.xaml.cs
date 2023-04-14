@@ -17,9 +17,4 @@ public sealed partial class SettingsPage : Page
         ViewModel = App.GetService<SettingsViewModel>();
         InitializeComponent();
     }
-
-    private void TextBox_OnTextChanged(object sender, TextChangedEventArgs e)
-    {
-        ViewModel.OnFinishBgmTokenInputCommand.Execute(null);
-    }
 }

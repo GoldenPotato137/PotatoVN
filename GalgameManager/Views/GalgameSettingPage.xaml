@@ -60,7 +60,12 @@
                                 <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="数据源" VerticalAlignment="Center" Margin="0 0 15 0"/>
-                            <TextBox Grid.Column="1" Text="{x:Bind ViewModel.Gal.RssType, Mode=OneWay}" HorizontalAlignment="Stretch" IsEnabled="False"/>
+                            <ComboBox 
+                                Grid.Column="1" 
+                                ItemsSource="{x:Bind ViewModel.RssTypes}"
+                                SelectedItem="{x:Bind ViewModel.Gal.RssType, Mode=TwoWay}" 
+                                HorizontalAlignment="Stretch">
+                            </ComboBox>
                         </Grid>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">

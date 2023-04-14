@@ -6,6 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 using GalgameManager.Services;
 
+using Newtonsoft.Json;
+
 namespace GalgameManager.Models;
 
 public partial class Galgame : ObservableObject
@@ -27,12 +29,28 @@ public partial class Galgame : ObservableObject
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
-    [ObservableProperty] private RssType _rssType = RssType.None;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(Id))] private RssType _rssType = RssType.None;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
-    [ObservableProperty] private string? _id;
     [ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
     private bool _isSaveInCloud;
+    // ReSharper disable once MemberCanBePrivate.Global
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    public string[] Ids = new string[5]; //magic number: 钦定了一个最大Phraser数目
+
+    [JsonIgnore] public string Id
+    {
+        get => Ids[(int)RssType];
+
+        set
+        {
+            if (Ids[(int)RssType] != value)
+            {
+               Ids[(int)RssType] = value;
+               OnPropertyChanged(); 
+            }
+        }
+    }
 
     private bool IsSaveInCloud
     {

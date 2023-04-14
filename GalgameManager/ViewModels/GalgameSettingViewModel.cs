@@ -15,6 +15,7 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
     {
         get; set;
     }
+    public List<RssType> RssTypes = new();
 
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
@@ -25,6 +26,8 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
         Gal = new Galgame();
         _galService = (GalgameCollectionService)galCollectionService;
         _navigationService = navigationService;
+        RssTypes.Add(RssType.Bangumi);
+        RssTypes.Add(RssType.Vndb);
     }
 
     public async void OnNavigatedFrom()

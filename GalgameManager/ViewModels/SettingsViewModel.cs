@@ -17,7 +17,7 @@ using GalgameManager.Services;
 namespace GalgameManager.ViewModels;
 
 [SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
-public class SettingsViewModel : ObservableRecipient
+public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly ILocalSettingsService _localSettingsService;
     private ElementTheme _elementTheme;
@@ -122,7 +122,6 @@ public class SettingsViewModel : ObservableRecipient
         }
     }
 
-    public ICommand OnFinishBgmTokenInputCommand => new RelayCommand(OnFinishBgmTokenInput);
 
     public string BangumiToken
     {
@@ -130,7 +129,7 @@ public class SettingsViewModel : ObservableRecipient
         set
         {
             SetProperty(ref _bangumiToken, value);
-            OnFinishBgmTokenInputCommand.Execute(null);
+            OnFinishBgmTokenInput();
         }
     }
     
