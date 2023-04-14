@@ -10,9 +10,6 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-
 namespace GalgameManager.ViewModels;
 
 [SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
@@ -23,10 +20,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly JumpListService _jumpListService;
     private Galgame? _item;
-    public XamlRoot? XamlRoot
-    {
-        get; set;
-    }
     [ObservableProperty] private bool _isPhrasing;
 
     public Galgame? Item
@@ -71,46 +64,21 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         if (Item == null) return;
         if (Item.ExePath == null)
-        {
-            var exes = Item.GetExes();
-            if (exes.Count == 0)
-            {
-                var dialog = new ContentDialog
-                {
-                    Title = "错误",
-                    Content = "未找到可执行文件",
-                    PrimaryButtonText = "确定"
-                };
-                await dialog.ShowAsync();
-            }
-            else if (exes.Count == 1)
-            {
-                Item.ExePath = exes[0];
-            }
-            else
-            {
-                var dialog = new FilePickerDialog(XamlRoot!, "选择可执行文件", exes);
-                await dialog.ShowAsync();
-                if (dialog.SelectedFile != null)
-                    Item.ExePath = dialog.SelectedFile;
-            }
-        }
+            await _galgameService.GetGalgameExeAsync(Item);
+        if (Item.ExePath == null) return;
 
-        if (Item.ExePath != null)
+        Item.LastPlay = DateTime.Now.ToShortDateString();
+        var process = new Process
         {
-            Item.LastPlay = DateTime.Now.ToShortDateString();
-            var process = new Process
+            StartInfo = new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = Item.ExePath,
-                    WorkingDirectory = Item.Path,
-                    UseShellExecute = false
-                }
-            };
-            process.Start();
-            await _jumpListService.AddToJumpListAsync(Item);
-        }
+                FileName = Item.ExePath,
+                WorkingDirectory = Item.Path,
+                UseShellExecute = false
+            }
+        };
+        process.Start();
+        await _jumpListService.AddToJumpListAsync(Item);
     }
 
     [RelayCommand]
@@ -126,53 +94,5 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         if (Item == null) return;
         _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, Item);
-    }
-}
-
-
-public class FilePickerDialog : ContentDialog
-{
-    public string? SelectedFile
-    {
-        get; private set;
-    }
-    private StackPanel StackPanel { get; set; } = null!;
-
-    public FilePickerDialog(XamlRoot xamlRoot, string title, List<string> files)
-    {
-        XamlRoot = xamlRoot;
-        Title = title;
-        Content = CreateContent(files);
-        PrimaryButtonText = "确定";
-        SecondaryButtonText = "取消";
-
-        IsPrimaryButtonEnabled = false;
-
-        PrimaryButtonClick += (_, _) => { };
-        SecondaryButtonClick += (_, _) => { SelectedFile = null; };
-    }
-
-    private UIElement CreateContent(List<string> files)
-    {
-        StackPanel = new StackPanel();
-        foreach (var file in files)
-        {
-            var radioButton = new RadioButton
-            {
-                Content = file,
-                GroupName = "ExeFiles"
-            };
-
-            radioButton.Checked += RadioButton_Checked;
-            StackPanel.Children.Add(radioButton);
-        }
-        return StackPanel;
-    }
-
-    private void RadioButton_Checked(object sender, RoutedEventArgs e)
-    {
-        var radioButton = (RadioButton)sender;
-        SelectedFile = radioButton.Content.ToString()!;
-        IsPrimaryButtonEnabled = true;
     }
 }

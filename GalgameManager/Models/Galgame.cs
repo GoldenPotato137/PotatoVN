@@ -116,9 +116,23 @@ public partial class Galgame : ObservableObject
         throw new NotSupportedException("Unsupported operating system.");
     }
     
+    /// <summary>
+    /// 获取游戏文件夹下的所有exe文件
+    /// </summary>
+    /// <returns>所有exe文件地址</returns>
     public List<string> GetExes()
     {
         var result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
+        return result;
+    }
+    
+    /// <summary>
+    /// 获取游戏文件夹下的所有子文件夹
+    /// </summary>
+    /// <returns>子文件夹地址</returns>
+    public List<string> GetSubFolders()
+    {
+        var result = Directory.GetDirectories(Path).ToList();
         return result;
     }
 }

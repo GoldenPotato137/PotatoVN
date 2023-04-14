@@ -17,7 +17,6 @@ public sealed partial class HomeDetailPage : Page
     {
         ViewModel = App.GetService<GalgameViewModel>();
         InitializeComponent();
-        ViewModel.XamlRoot = App.MainWindow.Content.XamlRoot;
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)

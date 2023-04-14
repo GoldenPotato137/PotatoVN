@@ -9,6 +9,9 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+
 
 namespace GalgameManager.Services;
 
@@ -187,5 +190,93 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task SaveGalgamesAsync()
     {
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
+    }
+
+    public async Task<string?> GetGalgameSaveAsync(Galgame galgame)
+    {
+        return null;
+    }
+    
+    /// <summary>
+    /// 获取并设置galgame的可执行文件
+    /// </summary>
+    /// <param name="galgame">galgame</param>
+    /// <returns>可执行文件地址，如果用户取消或找不到可执行文件则返回null</returns>
+    public async Task<string?> GetGalgameExeAsync(Galgame galgame)
+    {
+        var exes = galgame.GetExes();
+        switch (exes.Count)
+        {
+            case 0:
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "错误",
+                    Content = "未找到可执行文件",
+                    PrimaryButtonText = "确定"
+                };
+                await dialog.ShowAsync();
+                return null;
+            }
+            case 1:
+                galgame.ExePath = exes[0];
+                break;
+            default:
+            {
+                var dialog = new FilePickerDialog(App.MainWindow.Content.XamlRoot, "选择可执行文件", exes);
+                await dialog.ShowAsync();
+                if (dialog.SelectedFile == null) return null;
+                galgame.ExePath = dialog.SelectedFile;
+                break;
+            }
+        }
+        return galgame.ExePath;
+    }
+}
+
+public class FilePickerDialog : ContentDialog
+{
+    public string? SelectedFile
+    {
+        get; private set;
+    }
+    private StackPanel StackPanel { get; set; } = null!;
+
+    public FilePickerDialog(XamlRoot xamlRoot, string title, List<string> files)
+    {
+        XamlRoot = xamlRoot;
+        Title = title;
+        Content = CreateContent(files);
+        PrimaryButtonText = "确定";
+        SecondaryButtonText = "取消";
+
+        IsPrimaryButtonEnabled = false;
+
+        PrimaryButtonClick += (_, _) => { };
+        SecondaryButtonClick += (_, _) => { SelectedFile = null; };
+    }
+
+    private UIElement CreateContent(List<string> files)
+    {
+        StackPanel = new StackPanel();
+        foreach (var file in files)
+        {
+            var radioButton = new RadioButton
+            {
+                Content = file,
+                GroupName = "ExeFiles"
+            };
+
+            radioButton.Checked += RadioButton_Checked;
+            StackPanel.Children.Add(radioButton);
+        }
+        return StackPanel;
+    }
+
+    private void RadioButton_Checked(object sender, RoutedEventArgs e)
+    {
+        var radioButton = (RadioButton)sender;
+        SelectedFile = radioButton.Content.ToString()!;
+        IsPrimaryButtonEnabled = true;
     }
 }
