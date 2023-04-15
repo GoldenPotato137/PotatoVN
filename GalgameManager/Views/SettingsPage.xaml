@@ -12,6 +12,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
@@ -68,10 +69,11 @@
                             <RadioButton
                                 Content="Bangumi"
                                 GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssSelectBangumi, Mode=TwoWay}">
+                                Command="{x:Bind ViewModel.RssSelectBangumiCommand}"
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Bangumi }">
                             </RadioButton>
                             <TextBox
-                                Visibility="{x:Bind ViewModel.RssSelectBangumi, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.IsSelectBangumi, Mode=OneWay}"
                                 Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
                                 PlaceholderText="输入你的个人令牌，在这里获得:https://next.bgm.tv/demo/access-token/create"
                                 Margin="0 5 0 5">
@@ -79,13 +81,14 @@
                             <RadioButton
                                 Content="VNDB"
                                 GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssSelectVndb, Mode=TwoWay}">
+                                Command="{x:Bind ViewModel.RssSelectVndbCommand}"
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Vndb }">
                             </RadioButton>
                             <RadioButton
                                 IsEnabled="False"
                                 Content="Moegirl"
                                 GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssSelectMoegirl, Mode=TwoWay}">
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Moegirl }">
                             </RadioButton>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>

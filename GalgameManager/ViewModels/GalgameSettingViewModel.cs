@@ -15,7 +15,8 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
     {
         get; set;
     }
-    public List<RssType> RssTypes = new();
+    // ReSharper disable once CollectionNeverQueried.Global
+    public readonly List<RssType> RssTypes = new();
 
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
