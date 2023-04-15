@@ -39,7 +39,7 @@ public partial class SettingsViewModel : ObservableRecipient
     {
         get;
     }
-    
+
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService)
     {
         var themeSelectorService1 = themeSelectorService;
@@ -55,17 +55,16 @@ public partial class SettingsViewModel : ObservableRecipient
                     await themeSelectorService1.SetThemeAsync(param);
                 }
             });
-        
+
         _localSettingsService = localSettingsService;
-        
+
         //RSS
-        var currentRss = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
-        _infoSettingSelected[(int)currentRss] = true;
-        _bangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
+        RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
+        BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
-        _overrideLocalLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
+        _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
     }
-    
+
     private static string GetVersionDescription()
     {
         Version version;
@@ -86,72 +85,24 @@ public partial class SettingsViewModel : ObservableRecipient
 
     #region RSS
 
-    private readonly bool[] _infoSettingSelected = new bool[3]; //信息源：表示第几个选项有没有被选中 
-    private string _bangumiToken;
-
-    public bool RssSelectBangumi
-    {
-        get => _infoSettingSelected[(int)RssType.Bangumi];
-        set
-        {
-            SetProperty(ref _infoSettingSelected[(int)RssType.Bangumi], value);
-            if (value)
-                _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Bangumi);
-        }
+    [ObservableProperty] private string _bangumiToken = string.Empty;
+    [ObservableProperty] private RssType _rssType;
+    [ObservableProperty] private Visibility _isSelectBangumi;
+    [RelayCommand] private void RssSelectBangumi() => RssType = RssType.Bangumi;
+    [RelayCommand] private void RssSelectVndb() => RssType = RssType.Vndb;
+    partial void OnRssTypeChanged(RssType value)
+    { 
+        _localSettingsService.SaveSettingAsync(KeyValues.RssType, value);
+        IsSelectBangumi = value == RssType.Bangumi ? Visibility.Visible : Visibility.Collapsed;
     }
-
-    public bool RssSelectVndb
-    {
-        get => _infoSettingSelected[(int)RssType.Vndb];
-        set
-        {
-            SetProperty(ref _infoSettingSelected[(int)RssType.Vndb], value);
-            if (value)
-                _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Vndb);
-        }
-    }
-
-    public bool RssSelectMoegirl
-    {
-        get => _infoSettingSelected[(int)RssType.Moegirl];
-        set
-        {
-            SetProperty(ref _infoSettingSelected[(int)RssType.Moegirl], value);
-            if (value)
-                _localSettingsService.SaveSettingAsync(KeyValues.RssType, RssType.Moegirl);
-        }
-    }
-
-
-    public string BangumiToken
-    {
-        get => _bangumiToken;
-        set
-        {
-            SetProperty(ref _bangumiToken, value);
-            OnFinishBgmTokenInput();
-        }
-    }
+    partial void OnBangumiTokenChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, value);
     
-    private async void OnFinishBgmTokenInput()
-    {
-        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, _bangumiToken);
-    }
     #endregion
 
     #region DOWNLOAD_BEHAVIOR
 
-    private bool _overrideLocalLocalName;
-
-    public bool OverrideLocalName
-    {
-        get => _overrideLocalLocalName;
-        set
-        {
-            SetProperty(ref _overrideLocalLocalName, value);
-            _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
-        }
-    }
+    [ObservableProperty] private bool _overrideLocalName;
+    partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
 
     #endregion
 }
