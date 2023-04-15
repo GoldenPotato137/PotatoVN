@@ -63,6 +63,8 @@ public partial class SettingsViewModel : ObservableRecipient
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
+        //CLOUD
+        RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
     }
 
     private static string GetVersionDescription()
@@ -103,6 +105,21 @@ public partial class SettingsViewModel : ObservableRecipient
 
     [ObservableProperty] private bool _overrideLocalName;
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
+
+    #endregion
+
+    #region CLOUD
+
+    [ObservableProperty] private string? _remoteFolder;
+    partial void OnRemoteFolderChanged(string? value)
+    {
+        _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
+    }
+    [RelayCommand]
+    private async void SelectRemoteFolder()
+    {
+        RemoteFolder = await _localSettingsService.GetRemoteFolder(true);
+    }
 
     #endregion
 }

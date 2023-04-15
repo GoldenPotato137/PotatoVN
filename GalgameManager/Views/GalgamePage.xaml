@@ -56,13 +56,13 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Modifiers="Control" Key="I" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                </CommandBar.SecondaryCommands>
+                <AppBarButton
+                    Label="转换存档位置"
+                    Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
             </CommandBar>
 
             <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">

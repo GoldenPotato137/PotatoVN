@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 using Windows.Storage;
+using Windows.Storage.Pickers;
 
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
@@ -192,9 +194,16 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
     }
 
-    public async Task<string?> GetGalgameSaveAsync(Galgame galgame)
+    /// <summary>
+    /// 获取galgame的存档文件夹
+    /// </summary>
+    /// <param name="galgame">galgame</param>
+    /// <returns>存档文件夹地址，若用户取消返回null</returns>
+    private async Task<string?> GetGalgameSaveAsync(Galgame galgame)
     {
-        return null;
+        var subFolders = galgame.GetSubFolders();
+        var dialog = new FolderPickerDialog(App.MainWindow.Content.XamlRoot, "选择存档文件夹", subFolders);
+        return await dialog.ShowAndAwaitResultAsync();
     }
     
     /// <summary>
@@ -232,6 +241,53 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         }
         return galgame.ExePath;
     }
+
+    public async Task ChangeGalgameSavePosition(Galgame galgame)
+    {
+        if (galgame.CheckSavePosition()) //目前在云端
+        {
+            await Task.Run(() =>
+            {
+                FolderOperations.ConvertSymbolicLinksToActual(galgame.Path);
+            });
+        }
+        else //目前在本地
+        {
+            var localSavePath = await GetGalgameSaveAsync(galgame);
+            if (localSavePath == null) return;
+            var tmp = localSavePath[..localSavePath.LastIndexOf('\\')];
+            var target = tmp[tmp.LastIndexOf('\\')..] + localSavePath[localSavePath.LastIndexOf('\\')..];
+            var remoteRoot = await LocalSettingsService.GetRemoteFolder();
+            if (remoteRoot==null) return;
+            remoteRoot += target;
+
+            if (new DirectoryInfo(remoteRoot).Exists) //云端已存在同名文件夹
+            {
+                var dialog = new ContentDialog
+                {
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    Title = "选择操作",
+                    Content = "检测到云端已有该游戏存档，请选择： \n若希望将本地存档覆盖云端存档，请选择本地 \n若希望使用云端存档，丢弃本地存档，请选择云端",
+                    PrimaryButtonText = "本地",
+                    SecondaryButtonText = "云端",
+                    CloseButtonText = "取消"
+                };
+                dialog.PrimaryButtonClick += (_, _) =>
+                {
+                    new DirectoryInfo(remoteRoot).Delete(true); //删除云端文件夹
+                    FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                };
+                dialog.SecondaryButtonClick += (_, _) =>
+                {
+                    new DirectoryInfo(localSavePath).Delete(true); //删除本地文件夹
+                    Process.Start("cmd.exe", $"/c mklink /d \"{localSavePath}\" \"{remoteRoot}\"");
+                };
+                await dialog.ShowAsync();
+            }
+            else
+                FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+        }
+    }
 }
 
 public class FilePickerDialog : ContentDialog
@@ -240,7 +296,6 @@ public class FilePickerDialog : ContentDialog
     {
         get; private set;
     }
-    private StackPanel StackPanel { get; set; } = null!;
 
     public FilePickerDialog(XamlRoot xamlRoot, string title, List<string> files)
     {
@@ -258,7 +313,7 @@ public class FilePickerDialog : ContentDialog
 
     private UIElement CreateContent(List<string> files)
     {
-        StackPanel = new StackPanel();
+        var stackPanel = new StackPanel();
         foreach (var file in files)
         {
             var radioButton = new RadioButton
@@ -266,11 +321,10 @@ public class FilePickerDialog : ContentDialog
                 Content = file,
                 GroupName = "ExeFiles"
             };
-
             radioButton.Checked += RadioButton_Checked;
-            StackPanel.Children.Add(radioButton);
+            stackPanel.Children.Add(radioButton);
         }
-        return StackPanel;
+        return stackPanel;
     }
 
     private void RadioButton_Checked(object sender, RoutedEventArgs e)
@@ -278,5 +332,63 @@ public class FilePickerDialog : ContentDialog
         var radioButton = (RadioButton)sender;
         SelectedFile = radioButton.Content.ToString()!;
         IsPrimaryButtonEnabled = true;
+    }
+}
+
+public class FolderPickerDialog : ContentDialog
+{
+    private string? _selectedFolder;
+    private readonly TaskCompletionSource<string?> _folderSelectedTcs = new TaskCompletionSource<string?>();
+    public FolderPickerDialog(XamlRoot xamlRoot, string title, List<string> files)
+    {
+        XamlRoot = xamlRoot;
+        Title = title;
+        Content = CreateContent(files);
+        PrimaryButtonText = "确定";
+        SecondaryButtonText = "选择其他文件夹";
+        CloseButtonText = "取消";
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(_selectedFolder); };
+        SecondaryButtonClick += async (_, _) =>
+        {
+            var folderPicker = new FolderPicker();
+            folderPicker.FileTypeFilter.Add("*");
+            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
+            var folder = await folderPicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                _selectedFolder = folder.Path;
+                _folderSelectedTcs.TrySetResult(folder.Path);
+            }
+            else
+                _folderSelectedTcs.TrySetResult(null);
+        };
+        CloseButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(null); };
+    }
+    private UIElement CreateContent(List<string> files)
+    {
+        var stackPanel = new StackPanel();
+        foreach (var file in files)
+        {
+            var radioButton = new RadioButton
+            {
+                Content = file,
+                GroupName = "ExeFiles"
+            };
+            radioButton.Checked += RadioButton_Checked;
+            stackPanel.Children.Add(radioButton);
+        }
+        return stackPanel;
+    }
+    private void RadioButton_Checked(object sender, RoutedEventArgs e)
+    {
+        var radioButton = (RadioButton)sender;
+        _selectedFolder = radioButton.Content.ToString()!;
+        IsPrimaryButtonEnabled = true;
+    }
+    public async Task<string?> ShowAndAwaitResultAsync()
+    {
+        await ShowAsync();
+        return await _folderSelectedTcs.Task;
     }
 }

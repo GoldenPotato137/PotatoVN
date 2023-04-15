@@ -95,4 +95,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if (Item == null) return;
         _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, Item);
     }
+
+    [RelayCommand]
+    private async void ChangeSavePosition()
+    {
+        if(Item == null) return;
+        await _galgameService.ChangeGalgameSavePosition(Item);
+        await Task.Delay(1000); //等待1000ms建立软连接后再刷新
+        Item.CheckSavePosition();
+    }
 }

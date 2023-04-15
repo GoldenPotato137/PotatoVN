@@ -81,16 +81,18 @@ public partial class Galgame : ObservableObject
 
     /// <summary>
     /// 更新游戏存档位置（云端/本地）信息
+    /// <returns>如果存档在云端返回true，本地返回false</returns>
     /// </summary>
-    public void CheckSavePosition()
+    public bool CheckSavePosition()
     {
         var directoryInfo = new DirectoryInfo(Path);
         if (directoryInfo.GetDirectories().Any(IsSymlink))
         {
             IsSaveInCloud = true;
-            return;
+            return true;
         }
         IsSaveInCloud = false;
+        return false;
     }
 
     /// <summary>

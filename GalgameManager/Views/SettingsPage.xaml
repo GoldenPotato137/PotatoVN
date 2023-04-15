@@ -13,11 +13,10 @@
     <Page.Resources>
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter"/>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
 
-    <Grid>
+    <Grid Margin="0 0 0 40">
         <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden">
             <StackPanel Margin="0 10 0 0">
 
@@ -112,6 +111,30 @@
                             <!--     IsOn="True"> -->
                             <!-- </local:SettingToggleSwitch> -->
                         </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+                
+                <control:SettingExpander
+                    SettingTitle="云同步"
+                    SettingDescription="与游戏存档相关的设置"
+                    SettingIcon="&#xE753;">
+                    <control:SettingExpander.SettingContent>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="云存档根目录" Margin="0 0 25 0" VerticalAlignment="Center"/>
+                            <TextBlock 
+                                Grid.Column="1" 
+                                Text="{x:Bind ViewModel.RemoteFolder, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Margin="0 0 25 0">
+                            </TextBlock>
+                            <Button Grid.Column="2" Content="更改" Command="{x:Bind ViewModel.SelectRemoteFolderCommand}"/>
+                        </Grid>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
