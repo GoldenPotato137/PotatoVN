@@ -14,6 +14,7 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace GalgameManager.ViewModels;
 
@@ -27,6 +28,29 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _isPhrasing;
+
+    #region UI
+
+    private static readonly ResourceLoader ResourceLoader= new();
+    public readonly string UiEdit = ResourceLoader.GetString("HomePage_Edit");
+    public readonly string UiDownLoad = ResourceLoader.GetString("HomePage_Download");
+    public readonly string UiDelete = ResourceLoader.GetString("HomePage_Delete");
+    public readonly string UiRemove = ResourceLoader.GetString("HomePage_Remove");
+    public readonly string UiAddNewGame = ResourceLoader.GetString("HomePage_AddNewGame");
+    public readonly string UiSort = ResourceLoader.GetString("HomePage_Sort");
+    public readonly string UiFilter = ResourceLoader.GetString("HomePage_Filter");
+    
+    private readonly string _uiAddGameSuccess = ResourceLoader.GetString("HomePage_AddGameSuccess");
+    private readonly string _uiAlreadyInLibrary = ResourceLoader.GetString("HomePage_AlreadyInLibrary");
+    private readonly string _uiNoInfo = ResourceLoader.GetString("HomePage_NoInfo");
+    private readonly string _uiRemoveTitle = ResourceLoader.GetString("HomePage_Remove_Title");
+    private readonly string _uiRemoveMessage = ResourceLoader.GetString("HomePage_Remove_Message");
+    private readonly string _uiDeleteTitle = ResourceLoader.GetString("HomePage_Delete_Title");
+    private readonly string _uiDeleteMessage = ResourceLoader.GetString("HomePage_Delete_Message");
+    private readonly string _uiYes = ResourceLoader.GetString("Yes");
+    private readonly string _uiCancel = ResourceLoader.GetString("Cancel");
+
+    #endregion
 
     public ICommand ItemClickCommand
     {
@@ -90,19 +114,19 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
                 if (result == GalgameCollectionService.AddGalgameResult.Success)
                 {
                     IsInfoBarOpen = true;
-                    InfoBarMessage = "已成功添加游戏";
+                    InfoBarMessage = _uiAddGameSuccess;
                     InfoBarSeverity = InfoBarSeverity.Success;
                     await Task.Delay(3000);
                     IsInfoBarOpen = false;
                 }
                 else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
                 {
-                    throw new Exception("库里已经有这个游戏了");
+                    throw new Exception(_uiAlreadyInLibrary);
                 }
                 else //NotFoundInRss
                 {
                     IsInfoBarOpen = true;
-                    InfoBarMessage = "成功添加游戏，但没有从信息源中找到这个游戏的信息";
+                    InfoBarMessage = _uiNoInfo;
                     InfoBarSeverity = InfoBarSeverity.Warning;
                     await Task.Delay(3000);
                     IsInfoBarOpen = false;
@@ -127,10 +151,10 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         var dialog = new ContentDialog
         {
             XamlRoot = App.MainWindow.Content.XamlRoot,
-            Title = "取消托管",
-            Content = "确定要取消托管这个游戏吗",
-            PrimaryButtonText = "确定",
-            SecondaryButtonText = "取消"
+            Title = _uiRemoveTitle,
+            Content = _uiRemoveMessage,
+            PrimaryButtonText = _uiYes,
+            SecondaryButtonText = _uiCancel
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {
@@ -154,10 +178,10 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         var dialog = new ContentDialog
         {
             XamlRoot = App.MainWindow.Content.XamlRoot,
-            Title = "删除游戏",
-            Content = "确定要从硬盘上移除这个游戏吗，这个操作不可逆哦",
-            PrimaryButtonText = "确定",
-            SecondaryButtonText = "取消"
+            Title = _uiDeleteTitle,
+            Content = _uiDeleteMessage,
+            PrimaryButtonText = _uiYes,
+            SecondaryButtonText = _uiCancel
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {

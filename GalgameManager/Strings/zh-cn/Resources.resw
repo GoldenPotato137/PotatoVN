@@ -157,12 +157,60 @@
     <value>Privacy Statement</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
-    <value>https://YourPrivacyUrlGoesHere/</value>
+    <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
   </data>
   <data name="Shell_Library.Content" xml:space="preserve">
     <value>Library</value>
   </data>
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
     <value>GalgameSetting</value>
+  </data>
+  <data name="HomePage_Edit" xml:space="preserve">
+    <value>修改游戏信息</value>
+  </data>
+  <data name="HomePage_Download" xml:space="preserve">
+    <value>下载游戏信息</value>
+  </data>
+  <data name="HomePage_Remove" xml:space="preserve">
+    <value>从库中移除游戏</value>
+  </data>
+  <data name="HomePage_Delete" xml:space="preserve">
+    <value>彻底删除游戏</value>
+  </data>
+  <data name="HomePage_AddNewGame" xml:space="preserve">
+    <value>添加游戏</value>
+  </data>
+  <data name="HomePage_Sort" xml:space="preserve">
+    <value>排序</value>
+  </data>
+  <data name="HomePage_Filter" xml:space="preserve">
+    <value>过滤</value>
+  </data>
+  <data name="HomePage_AddGameSuccess" xml:space="preserve">
+    <value>已成功添加游戏</value>
+  </data>
+  <data name="HomePage_AlreadyInLibrary" xml:space="preserve">
+    <value>库里已经有这个游戏了</value>
+  </data>
+  <data name="HomePage_NoInfo" xml:space="preserve">
+    <value>成功添加游戏，但没有从信息源中找到这个游戏的信息</value>
+  </data>
+  <data name="HomePage_Remove_Title" xml:space="preserve">
+    <value>取消托管</value>
+  </data>
+  <data name="HomePage_Remove_Message" xml:space="preserve">
+    <value>确定要取消托管这个游戏吗</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="HomePage_Delete_Title" xml:space="preserve">
+    <value>删除游戏</value>
+  </data>
+  <data name="HomePage_Delete_Message" xml:space="preserve">
+    <value>确定要从硬盘上移除这个游戏吗，这个操作不可逆哦</value>
   </data>
 </root>

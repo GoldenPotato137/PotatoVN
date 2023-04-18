@@ -13,10 +13,10 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"></converters:InverseBooleanConverter>
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
-            <AppBarButton Icon="Edit" ToolTipService.ToolTip="修改游戏信息" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
-            <AppBarButton Icon="Download" ToolTipService.ToolTip="下载游戏信息" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
-            <AppBarButton Icon="Delete" ToolTipService.ToolTip="从库中移除游戏" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
-            <AppBarButton Icon="Cancel" ToolTipService.ToolTip="彻底删除游戏" Command="{x:Bind ViewModel.GalFlyOutDeleteFromDiskCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiRemove}" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
+            <AppBarButton Icon="Cancel" ToolTipService.ToolTip="{x:Bind ViewModel.UiDelete}" Command="{x:Bind ViewModel.GalFlyOutDeleteFromDiskCommand}" CommandParameter="{Binding}"/>
         </CommandBarFlyout>
     </Page.Resources>
 
@@ -32,15 +32,15 @@
                         Margin="0 -67 0 0">
                 <AppBarButton
                     Icon="Add"
-                    Label="添加游戏"
+                    Label="{x:Bind ViewModel.UiAddNewGame}"
                     Command="{x:Bind ViewModel.AddGalgameCommand}"
                     IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="排序" IsEnabled="False">
+                <AppBarButton Label="{x:Bind ViewModel.UiSort}" IsEnabled="False">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="过滤" IsEnabled="False">
+                <AppBarButton Label="{x:Bind ViewModel.UiFilter}" IsEnabled="False">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>

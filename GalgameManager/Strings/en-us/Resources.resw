@@ -157,12 +157,15 @@
     <value>Privacy Statement</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
-    <value>https://YourPrivacyUrlGoesHere/</value>
+    <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
   </data>
   <data name="Shell_Library.Content" xml:space="preserve">
     <value>Library</value>
   </data>
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
     <value>GalgameSetting</value>
+  </data>
+  <data name="HomePage_Edit" xml:space="preserve">
+    <value>edit game info</value>
   </data>
 </root>
