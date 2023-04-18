@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Web;
 
@@ -131,6 +132,10 @@ public class BgmPhraser : IGalInfoPhraser
         var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
         result.Developer = (developerInfoBox==null?null:developerInfoBox["value"]!.ToObject<string>()!) ?? Galgame.DefaultString;
+        // tags
+        var tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
+        result.Tags.Value = new ObservableCollection<string>();
+        tags.ForEach(tag => result.Tags.Value.Add(tag["name"]!.ToObject<string>()!));
         return result;
     }
 

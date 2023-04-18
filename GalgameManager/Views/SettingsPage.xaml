@@ -147,7 +147,8 @@
                     <TextBlock
                         x:Uid="Settings_AboutDescription"
                         Margin="{StaticResource XSmallTopMargin}"
-                        Style="{ThemeResource BodyTextBlockStyle}" />
+                        Style="{ThemeResource BodyTextBlockStyle}" 
+                        TextWrapping="Wrap"/>
                     <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink"
                                      Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
                 </StackPanel>

@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
+    xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -134,10 +135,33 @@
                     <TextBlock
                         Margin="{StaticResource SmallTopBottomMargin}"
                         Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="简介" />
+                        Text="简介" 
+                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}"/>
                     <TextBlock
                         Style="{ThemeResource BodyTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}" />
+                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}" 
+                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}"/>
+                    
+                    <TextBlock
+                        Margin="{StaticResource SmallTopBottomMargin}"
+                        Style="{ThemeResource SubtitleTextBlockStyle}"
+                        Text="Tags"
+                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
+                    </TextBlock>
+                    <ItemsRepeater
+                        ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10" Margin="5 7 5 7">
+                                    <TextBlock Padding="5" Text="{x:Bind}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                        <ItemsRepeater.Layout>
+                             <controls1:WrapLayout  Orientation="Horizontal" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
                 </StackPanel>
             </ScrollViewer>
         </Grid>

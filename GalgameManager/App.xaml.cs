@@ -11,6 +11,7 @@ using GalgameManager.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager;
 
@@ -92,10 +93,19 @@ public partial class App : Application
         UnhandledException += App_UnhandledException;
     }
 
-    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
-        // TODO: Log and handle exceptions as appropriate.
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
+        var dialog = new ContentDialog
+        {
+            XamlRoot = MainWindow.Content.XamlRoot,
+            Title = "Unhandled exception",
+            Content = e.Exception,
+            CloseButtonText = "Close"
+        };
+        dialog.CloseButtonClick += (_, _) => { Exit();};
+        e.Handled = true;
+        await dialog.ShowAsync();
     }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)

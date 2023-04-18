@@ -10,6 +10,8 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
+using Microsoft.UI.Xaml;
+
 namespace GalgameManager.ViewModels;
 
 [SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
@@ -21,6 +23,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly JumpListService _jumpListService;
     private Galgame? _item;
     [ObservableProperty] private bool _isPhrasing;
+    [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
+    [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
 
     public Galgame? Item
     {
@@ -47,6 +51,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             {
                 Item = data.First(i => i.Path == path);
                 Item.CheckSavePosition();
+                UpdateVisibility();
             }
             catch (Exception) //找不到这个游戏，回到主界面
             {
@@ -57,6 +62,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 
     public void OnNavigatedFrom()
     {
+    }
+    
+    private void UpdateVisibility()
+    {
+        IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
     }
 
     [RelayCommand]
@@ -87,6 +98,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if (Item == null) return;
         IsPhrasing = true;
         await _galgameService.PhraseGalInfoAsync(Item);
+        UpdateVisibility();
     }
 
     [RelayCommand]

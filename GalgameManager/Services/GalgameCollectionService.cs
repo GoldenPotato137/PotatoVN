@@ -146,6 +146,8 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.ImageUrl = tmp.ImageUrl;
         if (!galgame.Rating.IsLock)
             galgame.Rating.Value = tmp.Rating.Value;
+        if (!galgame.Tags.IsLock)
+            galgame.Tags.Value = tmp.Tags.Value;
         if (!galgame.ImagePath.IsLock)
             galgame.ImagePath.Value = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.CheckSavePosition();
@@ -242,6 +244,10 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         return galgame.ExePath;
     }
 
+    /// <summary>
+    /// 转换存档位置
+    /// </summary>
+    /// <param name="galgame">galgame</param>
     public async Task ChangeGalgameSavePosition(Galgame galgame)
     {
         if (galgame.CheckSavePosition()) //目前在云端

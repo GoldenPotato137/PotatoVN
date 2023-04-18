@@ -11,16 +11,16 @@
   IgnorableNamespaces="uap rescap genTemplate">
 
   <Identity
-    Name="fb0221aa-df85-4c87-9aa6-75ed072bf73e"
-    Publisher="CN=Golde"
-    Version="1.0.0.0" />
+    Name="37126GoldenPotato137.PotatoVN"
+    Publisher="CN=AB6A9A1A-DC58-4454-A578-33528FD22B56"
+    Version="1.0.1.0" />
     
-  <mp:PhoneIdentity PhoneProductId="fb0221aa-df85-4c87-9aa6-75ed072bf73e" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="6893b4b6-75f6-415d-b586-a822d8077fba" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
     
   <Properties>
-    <DisplayName>GalgameManager</DisplayName>
-    <PublisherDisplayName>Golde</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <DisplayName>PotatoVN</DisplayName>
+    <PublisherDisplayName>GoldenPotato137</PublisherDisplayName>
+    <Logo>Assets\Potato.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -40,10 +40,16 @@
         DisplayName="ms-resource:AppDisplayName"
         Description="ms-resource:AppDescription"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square150x150Logo="Assets\Potato.png"
         Square44x44Logo="Assets\Potato.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:DefaultTile  Square71x71Logo="Assets\Potato.png" Square310x310Logo="Assets\Potato.png" Wide310x150Logo="Assets\Potato.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo"/>
+            <uap:ShowOn Tile="square310x310Logo"/>
+            <uap:ShowOn Tile="wide310x150Logo"/>
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile >
+        <uap:SplashScreen Image="Assets\Potato.png" />
       </uap:VisualElements>
       <Extensions>
           <desktop:Extension Category="windows.toastNotificationActivation">

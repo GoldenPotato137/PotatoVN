@@ -102,40 +102,44 @@ public class GalgameFolder
     /// <returns>解压后游戏目录（无法解压则为null)</returns>
     public async Task<string?> UnpackGame(StorageFile pack, string? passwd)
     {
-        await using var archiveStream = await pack.OpenStreamForReadAsync();
-        using var archive = ArchiveFactory.Open(archiveStream, new ReaderOptions { Password = passwd });
-        // 解压文件到指定目录
-        var outputDirectory = Path;
-        // 检查压缩包中的内容，以确定是否需要创建一个新的文件夹
-        var shouldCreateNewFolder = archive.Entries.All(entry => !entry.IsDirectory);
-        if (shouldCreateNewFolder)
-        {
-            outputDirectory = Path + "\\" + pack.Name[..pack.Name.LastIndexOf('.')];
-            Directory.CreateDirectory(outputDirectory);
-        }
-        var deleteDirectory = outputDirectory;
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        string? result = null;
-        await Task.Run(async () =>
+        var deleteDirectory = string.Empty;
+        try
         {
-            await dispatcherQueue.EnqueueAsync(() =>
+            await using var archiveStream = await pack.OpenStreamForReadAsync();
+            using var archive = ArchiveFactory.Open(archiveStream, new ReaderOptions { Password = passwd });
+            // 解压文件到指定目录
+            var outputDirectory = Path;
+            // 检查压缩包中的内容，以确定是否需要创建一个新的文件夹
+            var shouldCreateNewFolder = archive.Entries.All(entry => !entry.IsDirectory);
+            if (shouldCreateNewFolder)
             {
-                IsUnpacking = true;
-                ProgressMax = archive.Entries.Count();
-                ProgressValue = 1;
-                ProgressChangedEvent?.Invoke();
-            });
+                outputDirectory = Path + "\\" + pack.Name[..pack.Name.LastIndexOf('.')];
+                Directory.CreateDirectory(outputDirectory);
+            }
 
-            foreach (var entry in archive.Entries)
+            deleteDirectory = outputDirectory;
+            string? result = null;
+            await Task.Run(async () =>
             {
-                if (entry.IsDirectory)
+                await dispatcherQueue.EnqueueAsync(() =>
                 {
-                    if (!shouldCreateNewFolder && deleteDirectory == outputDirectory)
-                        deleteDirectory += "\\" + entry.Key;
-                    continue;
-                }
-                try
+                    IsUnpacking = true;
+                    ProgressMax = archive.Entries.Count();
+                    ProgressValue = 1;
+                    ProgressChangedEvent?.Invoke();
+                });
+
+                foreach (var entry in archive.Entries)
                 {
+                    if (entry.IsDirectory)
+                    {
+                        if (!shouldCreateNewFolder && deleteDirectory == outputDirectory)
+                            deleteDirectory += "\\" + entry.Key;
+
+                        continue;
+                    }
+
                     // 更新解压进度
                     await dispatcherQueue.EnqueueAsync(() =>
                     {
@@ -143,33 +147,37 @@ public class GalgameFolder
                         ProgressValue = int.Min(ProgressValue + 1, ProgressMax);
                         ProgressChangedEvent?.Invoke();
                     });
+
                     entry.WriteToDirectory(outputDirectory, new ExtractionOptions
                     {
                         ExtractFullPath = true,
                         Overwrite = true
                     });
                 }
-                catch (CryptographicException) //密码错误
+
+                result = deleteDirectory;
+                await dispatcherQueue.EnqueueAsync(() =>
                 {
-                    await dispatcherQueue.EnqueueAsync(() =>
-                    {
-                        IsUnpacking = false;
-                        ProgressChangedEvent?.Invoke();
-                        DeleteDirectory(deleteDirectory); // 删除解压失败的文件夹
-                    });
-                    return;
-                }
-            }
-            result = deleteDirectory;
+                    IsUnpacking = false;
+                    ProgressChangedEvent?.Invoke();
+                });
+            });
+
+            if (result != null && (result[^1] == '\\' || result[^1] == '/')) // 删除最后的反斜杠
+                result = result[..^1];
+            return result;
+        }
+        catch (Exception) //密码错误或压缩包损坏
+        {
             await dispatcherQueue.EnqueueAsync(() =>
             {
                 IsUnpacking = false;
                 ProgressChangedEvent?.Invoke();
+                if (deleteDirectory != string.Empty)
+                    DeleteDirectory(deleteDirectory); // 删除解压失败的文件夹
             });
-        });
-        if(result != null && (result[^1]=='\\' || result[^1]=='/')) // 删除最后的反斜杠
-            result = result[..^1];
-        return result;
+            return null;
+        }
     }
 
     private static void DeleteDirectory(string directoryPath)

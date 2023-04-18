@@ -1,5 +1,6 @@
 ﻿// ReSharper disable EnforceIfStatementBraces
 
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -33,12 +34,13 @@ public partial class Galgame : ObservableObject
     [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
+    [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     private bool _isSaveInCloud;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public string[] Ids = new string[5]; //magic number: 钦定了一个最大Phraser数目
+    public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
 
-    [JsonIgnore] public string Id
+    [JsonIgnore] public string? Id
     {
         get => Ids[(int)RssType];
 
@@ -63,11 +65,13 @@ public partial class Galgame : ObservableObject
 
     public Galgame()
     {
+        _tags.Value = new ObservableCollection<string>();
     }
 
     public Galgame(string path)
     {
         Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
+        _tags.Value = new ObservableCollection<string>();
         Path = path;
     }
     
