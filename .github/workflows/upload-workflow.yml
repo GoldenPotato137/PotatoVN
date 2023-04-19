@@ -2,7 +2,7 @@
 
 on:
   push:
-    paths: ['/GalgameManager/Strings/**']
+    paths: ['./GalgameManager/Strings/**']
     branches: [ main ]
 
 jobs:
