@@ -11,10 +11,14 @@ Potato是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠
 * 从压缩包中自动解压游戏
 
 ### 预览
-
+[见应用商店](https://www.microsoft.com/store/apps/9P9CBKD5HR3W)
 
 ## 安装
-本程序打包格式为MSIX，可以在
+本程序打包格式为MSIX，可以在[微软应用商店](https://www.microsoft.com/store/apps/9P9CBKD5HR3W)下载
+
+**对于windows10用户:**
+
+windows10用户需要额外安装[Segoe MDL2字体](https://aka.ms/segoemdl2)
 
 
 ## 开发者相关
