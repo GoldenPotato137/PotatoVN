@@ -127,7 +127,7 @@
     <value>Home</value>
   </data>
   <data name="GalgamePage_Description" xml:space="preserve">
-    <value>Description</value>
+    <value>简介</value>
   </data>
   <data name="Settings_Main.Text" xml:space="preserve">
     <value>Main</value>
@@ -148,13 +148,13 @@
     <value>Default</value>
   </data>
   <data name="Settings_About.Text" xml:space="preserve">
-    <value>About this application</value>
+    <value>关于</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
     <value>DEV VERSION \n .A software to help you manage your visual novels. \n This is an open source software : https://github.com/GoldenPotato137/GalgameManager</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
-    <value>Privacy Statement</value>
+    <value>隐私声明</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
     <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
