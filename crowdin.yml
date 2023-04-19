@@ -21,7 +21,7 @@ files: [
   # Source files filter
   # e.g. "/resources/en/*.json"
   #
-  "source" : "./GalgameManager/Strings/zh-CN/Resources.resw",
+  "source" : "GalgameManager/Strings/zh-CN/Resources.resw",
 
   #
   # Where translations will be placed
