@@ -59,46 +59,46 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -121,7 +121,7 @@
     <value>PotatoVN</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>A software to help you manage your visual novels.</value>
+    <value>PotatoVN is a tool to manage visual novels and is designed to provide a convenient game management platform for players.</value>
   </data>
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>Home</value>
@@ -151,13 +151,13 @@
     <value>About this application</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>DEV VERSION \n .A software to help you manage your visual novels. \n This is an open source software : https://github.com/GoldenPotato137/GalgameManager</value>
+    <value>DEV VERSION \n This is an open source software: https://github.com/GoldenPoto137/GalgameManager</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
-    <value>Privacy Statement</value>
+    <value>Privacy Policy</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
-    <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
+    <value>https://github.com/GoldenPoto137/GalgameManager/blob/main/PrivacyPolicy.md</value>
   </data>
   <data name="Shell_Library.Content" xml:space="preserve">
     <value>Library</value>
@@ -166,6 +166,51 @@
     <value>GalgameSetting</value>
   </data>
   <data name="HomePage_Edit" xml:space="preserve">
-    <value>edit game info</value>
+    <value>Edit Game Info</value>
+  </data>
+  <data name="HomePage_Download" xml:space="preserve">
+    <value>Download Game Info</value>
+  </data>
+  <data name="HomePage_Remove" xml:space="preserve">
+    <value>Remove Game from Library</value>
+  </data>
+  <data name="HomePage_Delete" xml:space="preserve">
+    <value>Delete Game</value>
+  </data>
+  <data name="HomePage_AddNewGame" xml:space="preserve">
+    <value>Add Game</value>
+  </data>
+  <data name="HomePage_Sort" xml:space="preserve">
+    <value>Sort by…</value>
+  </data>
+  <data name="HomePage_Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="HomePage_AddGameSuccess" xml:space="preserve">
+    <value>Game added successfully</value>
+  </data>
+  <data name="HomePage_AlreadyInLibrary" xml:space="preserve">
+    <value>This game already exists in the library</value>
+  </data>
+  <data name="HomePage_NoInfo" xml:space="preserve">
+    <value>Game was successfully added, but no information was found on this game from the source</value>
+  </data>
+  <data name="HomePage_Remove_Title" xml:space="preserve">
+    <value>Unhosted</value>
+  </data>
+  <data name="HomePage_Remove_Message" xml:space="preserve">
+    <value>Are you sure you want to unhost this game?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="HomePage_Delete_Title" xml:space="preserve">
+    <value>Delete Game</value>
+  </data>
+  <data name="HomePage_Delete_Message" xml:space="preserve">
+    <value>Are you sure you want to remove this game from the hard drive, this operation is irreversible.</value>
   </data>
 </root>
