@@ -121,7 +121,7 @@
     <value>PotatoVN</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>A software to help you manage your visual novels.</value>
+    <value>PotatoVN是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。</value>
   </data>
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>Home</value>
@@ -151,7 +151,7 @@
     <value>关于</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>DEV VERSION \n .A software to help you manage your visual novels. \n This is an open source software : https://github.com/GoldenPotato137/GalgameManager</value>
+    <value>DEV VERSION \n This is an open source software : https://github.com/GoldenPotato137/GalgameManager</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
     <value>隐私声明</value>
