@@ -1,0 +1,23 @@
+﻿name: Crowdin Push Action
+
+on:
+  push:
+    paths: ['/GalgameManager/Strings/**']
+    branches: [ main ]
+
+jobs:
+  crowdin-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Crowdin push
+        uses: crowdin/github-action@v1
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: false
+        env:
+          CROWDIN_PROJECT_ID: 581621
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
