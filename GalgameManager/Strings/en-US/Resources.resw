@@ -147,11 +147,14 @@
   <data name="Settings_About.Text" xml:space="preserve">
     <value>About this application</value>
   </data>
+  <data name="Settings_AboutDescription" xml:space="preserve">
+    <value>DEV VERSION\nThis is an open source software : https://github.com/GoldenPotato137/GalgameManager</value>
+  </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
     <value>Privacy Policy</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
-    <value>https://github.com/GoldenPoto137/GalgameManager/blob/main/PrivacyPolicy.md</value>
+    <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
   </data>
   <data name="Shell_Library.Content" xml:space="preserve">
     <value>Library</value>
@@ -206,5 +209,100 @@
   </data>
   <data name="HomePage_Delete_Message" xml:space="preserve">
     <value>Are you sure you want to remove this game from the hard drive, this operation is irreversible.</value>
+  </data>
+  <data name="SettingsPage_ThemeTitle" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="SettingsPage_ThemeDescription" xml:space="preserve">
+    <value>Toggle dark or light mode</value>
+  </data>
+  <data name="SettingsPage_RssTitle" xml:space="preserve">
+    <value>Feeds</value>
+  </data>
+  <data name="SettingsPage_RssDescription" xml:space="preserve">
+    <value>Select the default feed for visual novels.</value>
+  </data>
+  <data name="SettingsPage_Rss_BgmPlaceholder" xml:space="preserve">
+    <value>Enter your personal token, get it here: https://next.bgm.tv/demo/access-token/create. Otherwise some NSFW games wouldn't be able to fetch info.</value>
+  </data>
+  <data name="SettingsPage_DownloadTitle" xml:space="preserve">
+    <value>Download behavior</value>
+  </data>
+  <data name="SettingsPage_DownloadDescription" xml:space="preserve">
+    <value>Retrieving information related settings from sources</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameTitle" xml:space="preserve">
+    <value>Overwrite Local Name</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameDescription" xml:space="preserve">
+    <value>Whether to overwrite the local name of visual novel's name from the source</value>
+  </data>
+  <data name="SettingsPage_CloudSyncTitle" xml:space="preserve">
+    <value>Cloud Sync</value>
+  </data>
+  <data name="SettingsPage_CloudSyncDescription" xml:space="preserve">
+    <value>Settings related to the game saves</value>
+  </data>
+  <data name="SettingsPage_CloudSync_Root" xml:space="preserve">
+    <value>Cloud Saves Root</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="GalgameCollectionService_CloudRootNotSet" xml:space="preserve">
+    <value>No cloud saves root folder, please set it in settings</value>
+  </data>
+  <data name="GalgameCollectionService_SelectOperateTitle" xml:space="preserve">
+    <value>Select action</value>
+  </data>
+  <data name="GalgameCollectionService_SelectOperateMsg" xml:space="preserve">
+    <value>Detected save in cloud. Please choose one of the following operations:
+If you would like to upload local saves to cloud, pls chose Local.
+If you would like to use cloud saves, dropping local saves, pls chose Cloud.</value>
+  </data>
+  <data name="GalgameCollectionService_Local" xml:space="preserve">
+    <value>Local</value>
+  </data>
+  <data name="GalgameCollectionService_Cloud" xml:space="preserve">
+    <value>Cloud</value>
+  </data>
+  <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
+    <value>Select another folder</value>
+  </data>
+  <data name="GalgamePage_Play" xml:space="preserve">
+    <value>Play</value>
+  </data>
+  <data name="GalgamePage_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="GalgamePage_ChangeSavePosition" xml:space="preserve">
+    <value>Convert game save location</value>
+  </data>
+  <data name="GalgamePage_Developers" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="GalgamePage_ExpectedPlayTime" xml:space="preserve">
+    <value>Estimated game duration</value>
+  </data>
+  <data name="GalgamePage_SavePosition" xml:space="preserve">
+    <value>Save location</value>
+  </data>
+  <data name="GalgamePage_LastPlayTime" xml:space="preserve">
+    <value>Latest Played</value>
+  </data>
+  <data name="GalgamePage_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="GalgameCollectionService_SelectSavePosition" xml:space="preserve">
+    <value>Select game save folder</value>
+  </data>
+  <data name="GalgameCollectionService_NotExeFounded" xml:space="preserve">
+    <value>No executable found</value>
+  </data>
+  <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
+    <value>Choose an executable</value>
   </data>
 </root>
