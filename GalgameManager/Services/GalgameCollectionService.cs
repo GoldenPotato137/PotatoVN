@@ -203,7 +203,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private async Task<string?> GetGalgameSaveAsync(Galgame galgame)
     {
         var subFolders = galgame.GetSubFolders();
-        var dialog = new FolderPickerDialog(App.MainWindow.Content.XamlRoot, "选择存档文件夹", subFolders);
+        var dialog = new FolderPickerDialog(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectSavePosition".GetLocalized(), subFolders);
         return await dialog.ShowAndAwaitResultAsync();
     }
     
@@ -221,9 +221,9 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             {
                 var dialog = new ContentDialog
                 {
-                    Title = "错误",
-                    Content = "未找到可执行文件",
-                    PrimaryButtonText = "确定"
+                    Title = "Error".GetLocalized(),
+                    Content = "GalgameCollectionService_NotExeFounded".GetLocalized(),
+                    PrimaryButtonText = "Yes".GetLocalized()
                 };
                 await dialog.ShowAsync();
                 return null;
@@ -233,7 +233,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
                 break;
             default:
             {
-                var dialog = new FilePickerDialog(App.MainWindow.Content.XamlRoot, "选择可执行文件", exes);
+                var dialog = new FilePickerDialog(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
                 await dialog.ShowAsync();
                 if (dialog.SelectedFile == null) return null;
                 galgame.ExePath = dialog.SelectedFile;

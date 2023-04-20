@@ -126,9 +126,6 @@
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>Home</value>
   </data>
-  <data name="GalgamePage_Description" xml:space="preserve">
-    <value>Description</value>
-  </data>
   <data name="Settings_Main.Text" xml:space="preserve">
     <value>Main</value>
   </data>

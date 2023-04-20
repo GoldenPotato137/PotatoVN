@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
@@ -26,6 +27,19 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
 
+    #region UI_STRINGS
+
+    public readonly string UiPlay ="GalgamePage_Play".GetLocalized();
+    public readonly string UiEdit = "GalgamePage_Edit".GetLocalized();
+    public readonly string UiChangeSavePosition = "GalgamePage_ChangeSavePosition".GetLocalized();
+    public readonly string UiDevelopers = "GalgamePage_Developers".GetLocalized();
+    public readonly string UiExpectedPlayTime = "GalgamePage_ExpectedPlayTime".GetLocalized();
+    public readonly string UiSavePosition = "GalgamePage_SavePosition".GetLocalized();
+    public readonly string UiLastPlayTime = "GalgamePage_LastPlayTime".GetLocalized();
+    public readonly string UiDescription = "GalgamePage_Description".GetLocalized();
+    
+    #endregion
+    
     public Galgame? Item
     {
         get => _item;

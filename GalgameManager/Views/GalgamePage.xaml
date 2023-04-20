@@ -43,12 +43,12 @@
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                <AppBarButton Label="开始游戏" Command="{x:Bind ViewModel.PlayCommand}">
+                <AppBarButton Label="{x:Bind ViewModel.UiPlay}" Command="{x:Bind ViewModel.PlayCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Icon="Edit" Label="编辑" Command="{x:Bind ViewModel.SettingCommand}" />
+                <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
                 <!-- <AppBarButton -->
                 <!--     Label="下载数据" -->
                 <!--     Command="{x:Bind ViewModel.GetInfoFromRssCommand}" -->
@@ -58,7 +58,7 @@
                 <!--     </AppBarButton.Icon> -->
                 <!-- </AppBarButton> -->
                 <AppBarButton
-                    Label="转换存档位置"
+                    Label="{x:Bind ViewModel.UiChangeSavePosition}"
                     Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
@@ -96,13 +96,13 @@
 
                         <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="开发" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiDevelopers}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="预计游戏时长" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiExpectedPlayTime}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
@@ -110,13 +110,13 @@
 
                         <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="存档位置" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiSavePosition}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.SavePosition, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="上次游玩" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiLastPlayTime}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
@@ -134,7 +134,7 @@
                     <TextBlock
                         Margin="{StaticResource SmallTopBottomMargin}"
                         Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="简介" 
+                        Text="{x:Bind ViewModel.UiDescription}" 
                         Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}"/>
                     <TextBlock
                         Style="{ThemeResource BodyTextBlockStyle}"

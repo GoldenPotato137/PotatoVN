@@ -126,9 +126,6 @@
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>Home</value>
   </data>
-  <data name="GalgamePage_Description" xml:space="preserve">
-    <value>简介</value>
-  </data>
   <data name="Settings_Main.Text" xml:space="preserve">
     <value>Main</value>
   </data>
@@ -274,5 +271,38 @@
   </data>
   <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
     <value>选择其他文件夹</value>
+  </data>
+  <data name="GalgamePage_Play" xml:space="preserve">
+    <value>开始游戏</value>
+  </data>
+  <data name="GalgamePage_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="GalgamePage_ChangeSavePosition" xml:space="preserve">
+    <value>转换存档位置</value>
+  </data>
+  <data name="GalgamePage_Developers" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="GalgamePage_ExpectedPlayTime" xml:space="preserve">
+    <value>预计游戏时长</value>
+  </data>
+  <data name="GalgamePage_SavePosition" xml:space="preserve">
+    <value>存档位置</value>
+  </data>
+  <data name="GalgamePage_LastPlayTime" xml:space="preserve">
+    <value>上次游玩</value>
+  </data>
+  <data name="GalgamePage_Description" xml:space="preserve">
+    <value>简介</value>
+  </data>
+  <data name="GalgameCollectionService_SelectSavePosition" xml:space="preserve">
+    <value>选择存档文件夹</value>
+  </data>
+  <data name="GalgameCollectionService_NotExeFounded" xml:space="preserve">
+    <value>未找到可执行文件</value>
+  </data>
+  <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
+    <value>选择可执行文件</value>
   </data>
 </root>
