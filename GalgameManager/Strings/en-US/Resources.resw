@@ -150,9 +150,6 @@
   <data name="Settings_About.Text" xml:space="preserve">
     <value>About this application</value>
   </data>
-  <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>DEV VERSION \n This is an open source software: https://github.com/GoldenPoto137/GalgameManager</value>
-  </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
     <value>Privacy Policy</value>
   </data>
