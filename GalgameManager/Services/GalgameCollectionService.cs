@@ -282,11 +282,11 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
                 var dialog = new ContentDialog
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,
-                    Title = "选择操作",
-                    Content = "检测到云端已有该游戏存档，请选择： \n若希望将本地存档覆盖云端存档，请选择本地 \n若希望使用云端存档，丢弃本地存档，请选择云端",
-                    PrimaryButtonText = "本地",
-                    SecondaryButtonText = "云端",
-                    CloseButtonText = "取消"
+                    Title = "GalgameCollectionService_SelectOperateTitle".GetLocalized(),
+                    Content = "GalgameCollectionService_SelectOperateMsg".GetLocalized(),
+                    PrimaryButtonText = "GalgameCollectionService_Local".GetLocalized(),
+                    SecondaryButtonText = "GalgameCollectionService_Cloud".GetLocalized(),
+                    CloseButtonText = "Cancel".GetLocalized()
                 };
                 dialog.PrimaryButtonClick += (_, _) =>
                 {
@@ -318,8 +318,8 @@ public class FilePickerDialog : ContentDialog
         XamlRoot = xamlRoot;
         Title = title;
         Content = CreateContent(files);
-        PrimaryButtonText = "确定";
-        SecondaryButtonText = "取消";
+        PrimaryButtonText = "Yes".GetLocalized();
+        SecondaryButtonText = "Cancel".GetLocalized();
 
         IsPrimaryButtonEnabled = false;
 
@@ -360,9 +360,9 @@ public class FolderPickerDialog : ContentDialog
         XamlRoot = xamlRoot;
         Title = title;
         Content = CreateContent(files);
-        PrimaryButtonText = "确定";
-        SecondaryButtonText = "选择其他文件夹";
-        CloseButtonText = "取消";
+        PrimaryButtonText = "Yes".GetLocalized();
+        SecondaryButtonText = "GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder".GetLocalized();
+        CloseButtonText = "Cancel".GetLocalized();
         IsPrimaryButtonEnabled = false;
         PrimaryButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(_selectedFolder); };
         SecondaryButtonClick += async (_, _) =>

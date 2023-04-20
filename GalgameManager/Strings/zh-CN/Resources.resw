@@ -258,4 +258,21 @@
   <data name="GalgameCollectionService_CloudRootNotSet" xml:space="preserve">
     <value>未设置云端存档根文件夹,请在设置中设置</value>
   </data>
+  <data name="GalgameCollectionService_SelectOperateTitle" xml:space="preserve">
+    <value>选择操作</value>
+  </data>
+  <data name="GalgameCollectionService_SelectOperateMsg" xml:space="preserve">
+    <value>检测到云端已有该游戏存档，请选择： 
+若希望将本地存档覆盖云端存档，请选择本地 
+若希望使用云端存档，丢弃本地存档，请选择云端</value>
+  </data>
+  <data name="GalgameCollectionService_Local" xml:space="preserve">
+    <value>本地</value>
+  </data>
+  <data name="GalgameCollectionService_Cloud" xml:space="preserve">
+    <value>云端</value>
+  </data>
+  <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
+    <value>选择其他文件夹</value>
+  </data>
 </root>
