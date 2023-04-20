@@ -2,18 +2,17 @@
 using System.Reflection;
 using System.Windows.Input;
 
+using Windows.ApplicationModel;
+using Windows.Storage.Pickers;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using GalgameManager.Contracts.Services;
 using GalgameManager.Helpers;
-
-using Microsoft.UI.Xaml;
-
-using Windows.ApplicationModel;
-
 using GalgameManager.Services;
 
+using Microsoft.UI.Xaml;
 using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace GalgameManager.ViewModels;
@@ -136,10 +135,14 @@ public partial class SettingsViewModel : ObservableRecipient
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
     }
-    [RelayCommand]
-    private async void SelectRemoteFolder()
+    [RelayCommand] private async void SelectRemoteFolder()
     {
-        RemoteFolder = await _localSettingsService.GetRemoteFolder(true);
+        var openPicker = new FolderPicker();
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
+        openPicker.FileTypeFilter.Add("*");
+        var folder = await openPicker.PickSingleFolderAsync();
+        RemoteFolder = folder?.Path;
     }
 
     #endregion

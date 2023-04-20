@@ -1,11 +1,11 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using Windows.Storage;
+
+using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 
 using Microsoft.Extensions.Options;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 
 using Newtonsoft.Json;
 
@@ -99,22 +99,7 @@ public class LocalSettingsService : ILocalSettingsService
             await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
         }
     }
-
-    public async Task<string?> GetRemoteFolder(bool reset = false)
-    {
-        if (!reset && await ReadSettingAsync<string?>(KeyValues.RemoteFolder) is { } result)
-        {
-            return result;
-        }
-
-        var openPicker = new FolderPicker();
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
-        openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
-        openPicker.FileTypeFilter.Add("*");
-        var folder = await openPicker.PickSingleFolderAsync();
-        return folder != null ? folder.Path : null;
-    }
-
+    
     public async Task RemoveSettingAsync(string key)
     {
         if (RuntimeHelper.IsMSIX)

@@ -14,7 +14,6 @@ using GalgameManager.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-
 namespace GalgameManager.Services;
 
 // ReSharper disable EnforceForeachStatementBraces
@@ -259,12 +258,23 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         }
         else //目前在本地
         {
+            var remoteRoot = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder);
+            if (string.IsNullOrEmpty(remoteRoot))
+            {
+                var dialog = new ContentDialog
+                {
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    Title = "Error".GetLocalized(),
+                    Content = "GalgameCollectionService_CloudRootNotSet".GetLocalized(),
+                    PrimaryButtonText = "Yes".GetLocalized()
+                };
+                await dialog.ShowAsync();
+                return;
+            }
             var localSavePath = await GetGalgameSaveAsync(galgame);
             if (localSavePath == null) return;
             var tmp = localSavePath[..localSavePath.LastIndexOf('\\')];
             var target = tmp[tmp.LastIndexOf('\\')..] + localSavePath[localSavePath.LastIndexOf('\\')..];
-            var remoteRoot = await LocalSettingsService.GetRemoteFolder();
-            if (remoteRoot==null) return;
             remoteRoot += target;
 
             if (new DirectoryInfo(remoteRoot).Exists) //云端已存在同名文件夹

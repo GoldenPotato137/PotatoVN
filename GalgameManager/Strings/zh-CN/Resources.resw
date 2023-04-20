@@ -252,4 +252,10 @@
   <data name="Select" xml:space="preserve">
     <value>更改</value>
   </data>
+  <data name="Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="GalgameCollectionService_CloudRootNotSet" xml:space="preserve">
+    <value>未设置云端存档根文件夹,请在设置中设置</value>
+  </data>
 </root>

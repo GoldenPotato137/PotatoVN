@@ -9,8 +9,8 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"></converters:InverseBooleanConverter>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
@@ -38,8 +38,8 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
@@ -49,14 +49,14 @@
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarButton Icon="Edit" Label="编辑" Command="{x:Bind ViewModel.SettingCommand}" />
-                <AppBarButton
-                    Label="下载数据"
-                    Command="{x:Bind ViewModel.GetInfoFromRssCommand}"
-                    IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
+                <!-- <AppBarButton -->
+                <!--     Label="下载数据" -->
+                <!--     Command="{x:Bind ViewModel.GetInfoFromRssCommand}" -->
+                <!--     IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"> -->
+                <!--     <AppBarButton.Icon> -->
+                <!--         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;" /> -->
+                <!--     </AppBarButton.Icon> -->
+                <!-- </AppBarButton> -->
                 <AppBarButton
                     Label="转换存档位置"
                     Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
@@ -83,8 +83,7 @@
                                 VerticalAlignment="Center"
                                 MaxWidth="250"
                                 MaxHeight="250"
-                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}">
-                            </Image>
+                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" />
                         </Grid>
 
                         <TextBlock
@@ -146,8 +145,7 @@
                         Margin="{StaticResource SmallTopBottomMargin}"
                         Style="{ThemeResource SubtitleTextBlockStyle}"
                         Text="Tags"
-                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
-                    </TextBlock>
+                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
                     <ItemsRepeater
                         ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
                         Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
@@ -174,8 +172,7 @@
                 Width="100"
                 Height="100"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-            </ProgressRing>
+                VerticalAlignment="Center" />
         </Grid>
     </Grid>
 
