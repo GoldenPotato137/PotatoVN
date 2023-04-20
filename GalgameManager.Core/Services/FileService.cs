@@ -35,10 +35,32 @@ public class FileService : IFileService
         var fileContent = JsonConvert.SerializeObject(content);
         var filePath = Path.Combine(folderPath, fileName);
 
-        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
-        await using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
-        await streamWriter.WriteAsync(fileContent);
+        const int maxRetries = 3;
+        const int delayOnRetry = 1000;
+
+        for (var i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite, 4096, true);
+                await using var streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
+                await streamWriter.WriteAsync(fileContent);
+                break;
+            }
+            catch (IOException)
+            {
+                if (i < maxRetries - 1)
+                {
+                    await Task.Delay(delayOnRetry);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
     }
+
 
     public void Delete(string folderPath, string fileName)
     {
