@@ -2,7 +2,6 @@
 using System.Diagnostics;
 
 using Windows.Storage;
-using Windows.Storage.Pickers;
 
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
@@ -362,24 +361,25 @@ public class FolderPickerDialog : ContentDialog
         Title = title;
         Content = CreateContent(files);
         PrimaryButtonText = "Yes".GetLocalized();
-        SecondaryButtonText = "GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder".GetLocalized();
+        //todo: 自定义文件夹需要保存存档位置，暂时关闭这个功能
+        // SecondaryButtonText = "GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
         IsPrimaryButtonEnabled = false;
         PrimaryButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(_selectedFolder); };
-        SecondaryButtonClick += async (_, _) =>
-        {
-            var folderPicker = new FolderPicker();
-            folderPicker.FileTypeFilter.Add("*");
-            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
-            var folder = await folderPicker.PickSingleFolderAsync();
-            if (folder != null)
-            {
-                _selectedFolder = folder.Path;
-                _folderSelectedTcs.TrySetResult(folder.Path);
-            }
-            else
-                _folderSelectedTcs.TrySetResult(null);
-        };
+        // SecondaryButtonClick += async (_, _) =>
+        // {
+        //     var folderPicker = new FolderPicker();
+        //     folderPicker.FileTypeFilter.Add("*");
+        //     WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
+        //     var folder = await folderPicker.PickSingleFolderAsync();
+        //     if (folder != null)
+        //     {
+        //         _selectedFolder = folder.Path;
+        //         _folderSelectedTcs.TrySetResult(folder.Path);
+        //     }
+        //     else
+        //         _folderSelectedTcs.TrySetResult(null);
+        // };
         CloseButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(null); };
     }
     private UIElement CreateContent(List<string> files)
