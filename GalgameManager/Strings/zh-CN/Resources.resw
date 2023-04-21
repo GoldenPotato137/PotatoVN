@@ -305,4 +305,7 @@
   <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
     <value>选择可执行文件</value>
   </data>
+  <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
+    <value>重置exe路径？</value>
+  </data>
 </root>

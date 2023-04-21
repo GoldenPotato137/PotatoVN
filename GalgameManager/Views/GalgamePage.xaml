@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
+    xmlns:local = "using:GalgameManager.Helpers"
     xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
@@ -47,6 +48,17 @@
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;" />
                     </AppBarButton.Icon>
+                    <AppBarButton.ContextFlyout>
+                        <Flyout Placement="Bottom">
+                            <StackPanel>
+                                <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="{x:Bind ViewModel.UiPlayFlyOutTitle}"/>
+                                <Button Command="{x:Bind ViewModel.ResetExePathCommand}"
+                                        local:FlyoutHelper.CloseFlyoutOnClick="True"
+                                        Content="{x:Bind ViewModel.UiYes}" 
+                                        Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Flyout>
+                    </AppBarButton.ContextFlyout>
                 </AppBarButton>
                 <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
                 <!-- <AppBarButton -->

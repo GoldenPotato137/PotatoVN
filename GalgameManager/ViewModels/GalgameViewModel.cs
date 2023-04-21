@@ -37,6 +37,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     public readonly string UiSavePosition = "GalgamePage_SavePosition".GetLocalized();
     public readonly string UiLastPlayTime = "GalgamePage_LastPlayTime".GetLocalized();
     public readonly string UiDescription = "GalgamePage_Description".GetLocalized();
+    public readonly string UiPlayFlyOutTitle = "GalgamePage_UiPlayFlyOutTitle".GetLocalized();
+    public readonly string UiYes = "Yes".GetLocalized();
     
     #endregion
     
@@ -129,5 +131,11 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await _galgameService.ChangeGalgameSavePosition(Item);
         await Task.Delay(1000); //等待1000ms建立软连接后再刷新
         Item.CheckSavePosition();
+    }
+    
+    [RelayCommand]
+    private void ResetExePath(object obj)
+    {
+        Item!.ExePath = null;
     }
 }
