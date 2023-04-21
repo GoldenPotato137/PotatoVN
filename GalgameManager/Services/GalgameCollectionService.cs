@@ -221,6 +221,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             {
                 var dialog = new ContentDialog
                 {
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
                     Title = "Error".GetLocalized(),
                     Content = "GalgameCollectionService_NotExeFounded".GetLocalized(),
                     PrimaryButtonText = "Yes".GetLocalized()
