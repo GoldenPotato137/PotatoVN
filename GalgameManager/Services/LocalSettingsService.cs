@@ -127,6 +127,7 @@ public static class KeyValues
     public const string LibToCheck = "libToCheck";
     public const string OverrideLocalName = "overrideLocalName";
     public const string RemoteFolder = "remoteFolder";
+    public const string QuitStart = "quitStart";
 }
 
 public enum RssType

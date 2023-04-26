@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,6 +12,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
 namespace GalgameManager.ViewModels;
@@ -21,6 +23,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly INavigationService _navigationService;
+    private readonly ILocalSettingsService _localSettingsService;
     private readonly JumpListService _jumpListService;
     private Galgame? _item;
     [ObservableProperty] private bool _isPhrasing;
@@ -48,31 +51,40 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         private set => SetProperty(ref _item, value);
     }
 
-    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, IJumpListService jumpListService)
+    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, IJumpListService jumpListService, ILocalSettingsService localSettingsService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
         _jumpListService = (JumpListService)jumpListService;
+        _localSettingsService = localSettingsService;
         Item = new Galgame();
     }
 
     public async void OnNavigatedTo(object parameter)
     {
-        if (parameter is not string path) return;
+        var path = parameter as string ?? null;
+        var startGame = false;
+        Tuple<string, bool>? para = parameter as Tuple<string, bool> ?? null;
+        if (para != null)
         {
-            var data = await _dataCollectionService.GetContentGridDataAsync();
-            try
-            {
-                Item = data.First(i => i.Path == path);
-                Item.CheckSavePosition();
-                UpdateVisibility();
-            }
-            catch (Exception) //找不到这个游戏，回到主界面
-            {
-                _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
-            }
+            path = para.Item1;
+            startGame = para.Item2;
+        }
+
+        ObservableCollection<Galgame>? data = await _dataCollectionService.GetContentGridDataAsync();
+        try
+        {
+            Item = data.First(i => i.Path == path);
+            Item.CheckSavePosition();
+            UpdateVisibility();
+            if (startGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
+                await Play();
+        }
+        catch (Exception) //找不到这个游戏，回到主界面
+        {
+            _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         }
     }
 
@@ -87,7 +99,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void Play()
+    private async Task Play()
     {
         if (Item == null) return;
         if (Item.ExePath == null)
@@ -95,7 +107,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if (Item.ExePath == null) return;
 
         Item.LastPlay = DateTime.Now.ToShortDateString();
-        var process = new Process
+        Process process = new()
         {
             StartInfo = new ProcessStartInfo
             {
@@ -105,7 +117,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             }
         };
         process.Start();
+        await Task.Delay(2000); //等待2000ms，让游戏进程启动后再最小化
+        ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
         await _jumpListService.AddToJumpListAsync(Item);
+
+        await process.WaitForExitAsync();
+        ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
     }
 
     [RelayCommand]

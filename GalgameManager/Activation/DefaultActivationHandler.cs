@@ -26,7 +26,7 @@ public class DefaultActivationHandler : ActivationHandler<List<string>>
         }
         else //jump list 
         {
-            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, args[1]);
+            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, new Tuple<string, bool>(args[1], true));
         }
         await Task.CompletedTask;
     }

@@ -308,4 +308,16 @@
   <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
     <value>重置exe路径？</value>
   </data>
+  <data name="SettingsPage_QuickStartTitle" xml:space="preserve">
+    <value>快速启动</value>
+  </data>
+  <data name="SettingsPage_QuickStartDescription" xml:space="preserve">
+    <value>与任务栏快捷启动相关的设置</value>
+  </data>
+  <data name="SettingsPage_QuickStart_AutoStartGameTitle" xml:space="preserve">
+    <value>启动游戏</value>
+  </data>
+  <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
+    <value>在任务栏右键图标选中游戏时是否直接启动游戏</value>
+  </data>
 </root>

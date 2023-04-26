@@ -11,7 +11,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-        <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter"/>
+        <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter" />
     </Page.Resources>
 
 
@@ -19,9 +19,10 @@
         <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden">
             <StackPanel Margin="0 10 0 0">
 
+                <!-- 主题 -->
                 <control:SettingExpander SettingTitle="{x:Bind ViewModel.UiThemeTitle}"
-                                       SettingDescription="{x:Bind ViewModel.UiThemeDescription}"
-                                       SettingIcon="&#xE790;">
+                                         SettingDescription="{x:Bind ViewModel.UiThemeDescription}"
+                                         SettingIcon="&#xE790;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel>
                             <RadioButton
@@ -58,6 +59,7 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
+                <!-- 信息源 -->
                 <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiRssTitle}"
                     SettingDescription="{x:Bind ViewModel.UiRssDescription}"
@@ -68,31 +70,28 @@
                                 Content="Bangumi"
                                 GroupName="Info"
                                 Command="{x:Bind ViewModel.RssSelectBangumiCommand}"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Bangumi }">
-                            </RadioButton>
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Bangumi }" />
                             <TextBox
                                 Visibility="{x:Bind ViewModel.IsSelectBangumi, Mode=OneWay}"
                                 Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
                                 PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                Margin="0 5 0 5">
-                            </TextBox>
+                                Margin="0 5 0 5" />
                             <RadioButton
                                 Content="VNDB"
                                 GroupName="Info"
                                 Command="{x:Bind ViewModel.RssSelectVndbCommand}"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Vndb }">
-                            </RadioButton>
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Vndb }" />
                             <RadioButton
                                 IsEnabled="False"
                                 Content="Moegirl"
                                 GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Moegirl }">
-                            </RadioButton>
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Moegirl }" />
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
-                
-                <control:SettingExpander 
+
+                <!-- 下载行为 -->
+                <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiDownloadTitle}"
                     SettingDescription="{x:Bind ViewModel.UiDownloadDescription}"
                     SettingIcon="&#xE896;">
@@ -101,9 +100,8 @@
                             <local:SettingToggleSwitch
                                 Title="{x:Bind ViewModel.UiDownLoadOverrideNameTitle}"
                                 Description="{x:Bind ViewModel.UiDownLoadOverrideNameDescription}"
-                                IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}">
-                            </local:SettingToggleSwitch>
-                            
+                                IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
+
                             <!-- <local:SettingToggleSwitch -->
                             <!--     Title="覆盖名字" -->
                             <!--     Description="是否将信息源获取到的galgame名字覆盖本地名字" -->
@@ -112,7 +110,8 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
-                
+
+                <!-- 云同步 -->
                 <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiCloudSyncTitle}"
                     SettingDescription="{x:Bind ViewModel.UiCloudSyncDescription}"
@@ -120,25 +119,41 @@
                     <control:SettingExpander.SettingContent>
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.UiCloudSyncRoot}" Margin="0 0 25 0" VerticalAlignment="Center"/>
-                            <TextBlock 
-                                Grid.Column="1" 
+                            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.UiCloudSyncRoot}" Margin="0 0 25 0"
+                                       VerticalAlignment="Center" />
+                            <TextBlock
+                                Grid.Column="1"
                                 Text="{x:Bind ViewModel.RemoteFolder, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
-                                Margin="0 0 25 0">
-                            </TextBlock>
-                            <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}" Command="{x:Bind ViewModel.SelectRemoteFolderCommand}"/>
+                                Margin="0 0 25 0" />
+                            <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}"
+                                    Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
                         </Grid>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
-                <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <!-- 快速启动 -->
+                <control:SettingExpander
+                    SettingTitle="{x:Bind ViewModel.UiQuickStartTitle}"
+                    SettingDescription="{x:Bind ViewModel.UiQuickStartDescription}"
+                    SettingIcon="&#xE768;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Orientation="Vertical" Spacing="13">
+                            <local:SettingToggleSwitch
+                                Title="{x:Bind ViewModel.UiQuickStartAutoStartGameTitle}"
+                                Description="{x:Bind ViewModel.UiQuickStartAutoStartGameDescription}"
+                                IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
 
+                <!-- 关于 -->
+                <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
                 <StackPanel Margin="{StaticResource XSmallTopMargin}">
                     <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}"
                                Style="{ThemeResource BodyTextBlockStyle}" />

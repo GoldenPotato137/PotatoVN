@@ -1,8 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows.Input;
 
 using Windows.ApplicationModel;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,7 +17,6 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace GalgameManager.ViewModels;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly ILocalSettingsService _localSettingsService;
@@ -40,6 +39,10 @@ public partial class SettingsViewModel : ObservableRecipient
     public readonly string UiCloudSyncRoot = ResourceLoader.GetString("SettingsPage_CloudSync_Root");
     public readonly string UiSelect = ResourceLoader.GetString("Select");
     public readonly string UiAbout = ResourceLoader.GetString("Settings_AboutDescription").Replace("\\n", "\n");
+    public readonly string UiQuickStartTitle = "SettingsPage_QuickStartTitle".GetLocalized();
+    public readonly string UiQuickStartDescription = "SettingsPage_QuickStartDescription".GetLocalized();
+    public readonly string UiQuickStartAutoStartGameTitle = "SettingsPage_QuickStart_AutoStartGameTitle".GetLocalized();
+    public readonly string UiQuickStartAutoStartGameDescription = "SettingsPage_QuickStart_AutoStartGameDescription".GetLocalized();
     #endregion
 
     public ElementTheme ElementTheme
@@ -65,15 +68,15 @@ public partial class SettingsViewModel : ObservableRecipient
         _elementTheme = themeSelectorService1.Theme;
         _versionDescription = GetVersionDescription();
 
-        SwitchThemeCommand = new RelayCommand<ElementTheme>(
-            async (param) =>
+        async void Execute(ElementTheme param)
+        {
+            if (ElementTheme != param)
             {
-                if (ElementTheme != param)
-                {
-                    ElementTheme = param;
-                    await themeSelectorService1.SetThemeAsync(param);
-                }
-            });
+                ElementTheme = param;
+                await themeSelectorService1.SetThemeAsync(param);
+            }
+        }
+        SwitchThemeCommand = new RelayCommand<ElementTheme>(Execute);
 
         _localSettingsService = localSettingsService;
 
@@ -85,6 +88,8 @@ public partial class SettingsViewModel : ObservableRecipient
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
         //CLOUD
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
+        //QUICK_START
+        QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
     }
 
     private static string GetVersionDescription()
@@ -137,13 +142,20 @@ public partial class SettingsViewModel : ObservableRecipient
     }
     [RelayCommand] private async void SelectRemoteFolder()
     {
-        var openPicker = new FolderPicker();
+        FolderPicker openPicker = new();
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
         openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
         openPicker.FileTypeFilter.Add("*");
-        var folder = await openPicker.PickSingleFolderAsync();
+        StorageFolder? folder = await openPicker.PickSingleFolderAsync();
         RemoteFolder = folder?.Path;
     }
+
+    #endregion
+
+    #region QUIT_START
+
+    [ObservableProperty] private bool _quitStart;
+    partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
 
     #endregion
 }
