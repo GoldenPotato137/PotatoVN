@@ -79,6 +79,10 @@ public class LocalSettingsService : ILocalSettingsService
                 var result = Environment.GetEnvironmentVariable("OneDrive");
                 result = result==null ? null : result + "\\GameSaves";
                 return (T?)(object?)result;
+            case KeyValues.SortKey1:
+                return (T?)(object?)SortKeys.LastPlay;
+            case KeyValues.SortKey2:
+                return (T?)(object?)SortKeys.Developer;
             default:
                 return default;
         }
@@ -128,6 +132,8 @@ public static class KeyValues
     public const string OverrideLocalName = "overrideLocalName";
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
+    public const string SortKey1 = "sortKey1";
+    public const string SortKey2 = "sortKey2";
 }
 
 public enum RssType

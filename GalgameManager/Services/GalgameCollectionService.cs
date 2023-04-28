@@ -19,7 +19,8 @@ namespace GalgameManager.Services;
 // ReSharper disable EnforceIfStatementBraces
 public class GalgameCollectionService : IDataCollectionService<Galgame>
 {
-    private ObservableCollection<Galgame> _galgames = new();
+    private List<Galgame> _galgames = new();
+    private readonly ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
     public delegate void GalgameAddedEventHandler(Galgame galgame);
@@ -49,12 +50,37 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
     private async Task GetGalgames()
     {
-        _galgames = await LocalSettingsService.ReadSettingAsync<ObservableCollection<Galgame>>(KeyValues.Galgames, true) ?? new ObservableCollection<Galgame>();
-        var toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
-        foreach (var galgame in toRemove)
+        _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
+        List<Galgame> toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
+        foreach (Galgame galgame in toRemove)
             _galgames.Remove(galgame);
         _isInit = true;
+        UpdateDisplayGalgames();
         GalgameLoadedEvent?.Invoke();
+    }
+
+    /// <summary>
+    /// 更新显示的galgame列表
+    /// </summary>
+    private void UpdateDisplayGalgames()
+    {
+        _displayGalgames.Clear();
+        foreach(Galgame gal in _galgames)
+            _displayGalgames.Add(gal);
+    }
+
+    /// <summary>
+    /// 重新按照排序规则排序游戏列表，并更新显示的列表
+    /// </summary>
+    public void Sort()
+    {
+        SortKeys key1 = LocalSettingsService.ReadSettingAsync<SortKeys>(KeyValues.SortKey1).Result;
+        SortKeys key2 = LocalSettingsService.ReadSettingAsync<SortKeys>(KeyValues.SortKey2).Result;
+        Galgame.SortKeysList.Clear();
+        Galgame.SortKeysList.Add(key1);
+        Galgame.SortKeysList.Add(key2);
+        _galgames.Sort();
+        UpdateDisplayGalgames();
     }
 
     public enum AddGalgameResult
@@ -72,6 +98,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
+        UpdateDisplayGalgames();
         if (removeFromDisk)
             galgame.Delete();
         await SaveGalgamesAsync();
@@ -87,7 +114,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         if (_galgames.Any(gal => gal.Path == path))
             return AddGalgameResult.AlreadyExists;
 
-        var galgame = new Galgame(path);
+        Galgame galgame = new(path);
         galgame = await PhraseGalInfoAsync(galgame);
         if (!isForce && galgame.RssType == RssType.None)
             return AddGalgameResult.NotFoundInRss;
@@ -95,14 +122,14 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
         //为了防止在Home添加游戏的时候galgameFolderService还没有初始化，把要加的库暂存起来
-        var libToCheck = await LocalSettingsService.ReadSettingAsync<List<string>>(KeyValues.LibToCheck) ?? new List<string>();
+        List<string> libToCheck = await LocalSettingsService.ReadSettingAsync<List<string>>(KeyValues.LibToCheck) ?? new List<string>();
         var libPath = galgame.Path[..galgame.Path.LastIndexOf('\\')];
         if (!libToCheck.Contains(libPath))
         {
             libToCheck.Add(libPath);
             await LocalSettingsService.SaveSettingAsync(KeyValues.LibToCheck, libToCheck, true);
         }
-
+        UpdateDisplayGalgames();
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
@@ -116,10 +143,10 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None)
     {
         IsPhrasing = true;
-        var selectedRss = rssType;
+        RssType selectedRss = rssType;
         if(selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
-        var result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
+        Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
@@ -128,7 +155,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)
     {
-        var tmp = await phraser.GetGalgameInfo(galgame);
+        Galgame? tmp = await phraser.GetGalgameInfo(galgame);
         if (tmp == null) return galgame;
 
         galgame.RssType = phraser.GetPhraseType();
@@ -155,19 +182,19 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl)
     {
         if (imageUrl == null) return null;
-        var httpClient = new HttpClient();
-        var response = await httpClient.GetAsync(imageUrl);
+        HttpClient httpClient = new();
+        HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
         response.EnsureSuccessStatusCode();
 
         var imageBytes = await response.Content.ReadAsByteArrayAsync();
 
-        var localFolder = ApplicationData.Current.LocalFolder;
+        StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
         var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
-        var storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+        StorageFile? storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
 
-        await using (var fileStream = await storageFile.OpenStreamForWriteAsync())
+        await using (Stream? fileStream = await storageFile.OpenStreamForWriteAsync())
         {
-            using var memoryStream = new MemoryStream(imageBytes);
+            using MemoryStream memoryStream = new(imageBytes);
             memoryStream.Position = 0;
             await memoryStream.CopyToAsync(fileStream);
         }
@@ -181,9 +208,9 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         if (!_isInit)
         {
             await GetGalgames();
-            await _jumpListService.CheckJumpListAsync(_galgames.ToList());
+            await _jumpListService.CheckJumpListAsync(_galgames);
         }
-        return _galgames;
+        return _displayGalgames;
     }
 
     /// <summary>
@@ -201,8 +228,8 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>存档文件夹地址，若用户取消返回null</returns>
     private async Task<string?> GetGalgameSaveAsync(Galgame galgame)
     {
-        var subFolders = galgame.GetSubFolders();
-        var dialog = new FolderPickerDialog(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectSavePosition".GetLocalized(), subFolders);
+        List<string> subFolders = galgame.GetSubFolders();
+        FolderPickerDialog dialog = new(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectSavePosition".GetLocalized(), subFolders);
         return await dialog.ShowAndAwaitResultAsync();
     }
     
@@ -213,12 +240,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>可执行文件地址，如果用户取消或找不到可执行文件则返回null</returns>
     public async Task<string?> GetGalgameExeAsync(Galgame galgame)
     {
-        var exes = galgame.GetExes();
+        List<string> exes = galgame.GetExes();
         switch (exes.Count)
         {
             case 0:
             {
-                var dialog = new ContentDialog
+                ContentDialog dialog = new()
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,
                     Title = "Error".GetLocalized(),
@@ -233,7 +260,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
                 break;
             default:
             {
-                var dialog = new FilePickerDialog(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
+                FilePickerDialog dialog = new(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
                 await dialog.ShowAsync();
                 if (dialog.SelectedFile == null) return null;
                 galgame.ExePath = dialog.SelectedFile;
@@ -261,7 +288,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             var remoteRoot = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder);
             if (string.IsNullOrEmpty(remoteRoot))
             {
-                var dialog = new ContentDialog
+                ContentDialog dialog = new()
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,
                     Title = "Error".GetLocalized(),
@@ -279,7 +306,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
             if (new DirectoryInfo(remoteRoot).Exists) //云端已存在同名文件夹
             {
-                var dialog = new ContentDialog
+                ContentDialog dialog = new()
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,
                     Title = "GalgameCollectionService_SelectOperateTitle".GetLocalized(),
@@ -303,6 +330,63 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             else
                 FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
         }
+    }
+
+    /// <summary>
+    /// 获取并设置galgame排序的关键字
+    /// </summary>
+    public async Task SetSortKeysAsync()
+    {
+        SortKeys key1 = await LocalSettingsService.ReadSettingAsync<SortKeys>(KeyValues.SortKey1);
+        SortKeys key2 = await LocalSettingsService.ReadSettingAsync<SortKeys>(KeyValues.SortKey2);
+        List<SortKeys> sortKeysList = new()
+        {
+            SortKeys.Name,
+            SortKeys.Developer,
+            SortKeys.Rating,
+            SortKeys.LastPlay
+        };
+        ContentDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "排序",
+            PrimaryButtonText = "Yes".GetLocalized(),
+            SecondaryButtonText = "Cancel".GetLocalized(),
+        };
+        ComboBox box1 = new()
+        {
+            Header = "第一关键字",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            ItemsSource = sortKeysList,
+            Margin = new Thickness(0, 0, 5, 0),
+            SelectedItem = key1
+        };
+        Grid.SetColumn(box1, 0 );
+        ComboBox box2 = new()
+        {
+            Header = "第二关键字",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            ItemsSource = sortKeysList,
+            Margin = new Thickness(5, 0, 0, 0),
+            SelectedItem = key2
+        };
+        Grid.SetColumn(box2, 1);
+
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            key1 = (SortKeys)box1.SelectedItem;
+            key2 = (SortKeys)box2.SelectedItem;
+            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKey1, key1);
+            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKey2, key2);
+            Sort();
+        };
+        Grid content = new();
+        content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
+        content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
+        content.Children.Add(box1);
+        content.Children.Add(box2);
+        dialog.Content = content;
+        await dialog.ShowAsync();
     }
 }
 
@@ -329,10 +413,10 @@ public class FilePickerDialog : ContentDialog
 
     private UIElement CreateContent(List<string> files)
     {
-        var stackPanel = new StackPanel();
+        StackPanel stackPanel = new();
         foreach (var file in files)
         {
-            var radioButton = new RadioButton
+            RadioButton radioButton = new()
             {
                 Content = file,
                 GroupName = "ExeFiles"
@@ -345,7 +429,7 @@ public class FilePickerDialog : ContentDialog
 
     private void RadioButton_Checked(object sender, RoutedEventArgs e)
     {
-        var radioButton = (RadioButton)sender;
+        RadioButton radioButton = (RadioButton)sender;
         SelectedFile = radioButton.Content.ToString()!;
         IsPrimaryButtonEnabled = true;
     }
@@ -384,10 +468,10 @@ public class FolderPickerDialog : ContentDialog
     }
     private UIElement CreateContent(List<string> files)
     {
-        var stackPanel = new StackPanel();
+        StackPanel stackPanel = new();
         foreach (var file in files)
         {
-            var radioButton = new RadioButton
+            RadioButton radioButton = new()
             {
                 Content = file,
                 GroupName = "ExeFiles"
@@ -399,7 +483,7 @@ public class FolderPickerDialog : ContentDialog
     }
     private void RadioButton_Checked(object sender, RoutedEventArgs e)
     {
-        var radioButton = (RadioButton)sender;
+        RadioButton radioButton = (RadioButton)sender;
         _selectedFolder = radioButton.Content.ToString()!;
         IsPrimaryButtonEnabled = true;
     }

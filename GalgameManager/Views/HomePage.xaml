@@ -10,8 +10,8 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
-        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"></converters:InverseBooleanConverter>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -23,9 +23,9 @@
     <Grid>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
@@ -35,7 +35,7 @@
                     Label="{x:Bind ViewModel.UiAddNewGame}"
                     Command="{x:Bind ViewModel.AddGalgameCommand}"
                     IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="{x:Bind ViewModel.UiSort}" IsEnabled="False">
+                <AppBarButton Label="{x:Bind ViewModel.UiSort}" Command="{x:Bind ViewModel.SortCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;" />
                     </AppBarButton.Icon>
@@ -73,8 +73,7 @@
                                 <Image
                                     Source="{x:Bind ImagePath.Value}"
                                     Height="230"
-                                    Width="150">
-                                </Image>
+                                    Width="150" />
                                 <TextBlock
                                     Margin="{StaticResource XXSmallTopMargin}"
                                     HorizontalAlignment="Center"
@@ -91,8 +90,7 @@
                 IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
                 Margin="0 0 0 20"
                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-                Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}">
-            </InfoBar>
+                Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
         </Grid>
 
         <Grid
@@ -104,8 +102,7 @@
                 Width="100"
                 Height="100"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-            </ProgressRing>
+                VerticalAlignment="Center" />
         </Grid>
     </Grid>
 </Page>

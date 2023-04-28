@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 
+using Windows.Storage;
 using Windows.Storage.Pickers;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -101,16 +102,16 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         try
         {
-            var openPicker = new FileOpenPicker();
+            FileOpenPicker openPicker = new();
             WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".exe");
-            var file = await openPicker.PickSingleFileAsync();
+            StorageFile? file = await openPicker.PickSingleFileAsync();
             if (file != null)
             {
                 var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
                 IsPhrasing = true;
-                var result = await _galgameService.TryAddGalgameAsync(folder, true);
+                GalgameCollectionService.AddGalgameResult result = await _galgameService.TryAddGalgameAsync(folder, true);
                 if (result == GalgameCollectionService.AddGalgameResult.Success)
                 {
                     IsInfoBarOpen = true;
@@ -143,12 +144,18 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             IsInfoBarOpen = false;
         }
     }
+    
+    [RelayCommand]
+    private async void Sort()
+    {
+        await _galgameService.SetSortKeysAsync();
+    }
 
     [RelayCommand]
     private async void GalFlyOutDelete(Galgame? galgame)
     {
         if(galgame == null) return;
-        var dialog = new ContentDialog
+        ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow.Content.XamlRoot,
             Title = _uiRemoveTitle,
@@ -175,7 +182,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private async void GalFlyOutDeleteFromDisk(Galgame? galgame)
     {
         if(galgame == null) return;
-        var dialog = new ContentDialog
+        ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow.Content.XamlRoot,
             Title = _uiDeleteTitle,

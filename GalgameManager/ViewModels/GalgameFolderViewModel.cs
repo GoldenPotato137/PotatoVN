@@ -186,7 +186,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         };
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
         openPicker.FileTypeFilter.Add(".zip");
-        openPicker.FileTypeFilter.Add(".7zip");
+        openPicker.FileTypeFilter.Add(".7z");
         openPicker.FileTypeFilter.Add(".rar");
         openPicker.FileTypeFilter.Add(".tar");
         var file = await openPicker.PickSingleFileAsync();

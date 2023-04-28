@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject
+public partial class Galgame : ObservableObject, IComparable<Galgame>
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -39,6 +39,8 @@ public partial class Galgame : ObservableObject
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+
+    public static readonly List<SortKeys> SortKeysList = new ();
 
     [JsonIgnore] public string? Id
     {
@@ -89,7 +91,7 @@ public partial class Galgame : ObservableObject
     /// </summary>
     public bool CheckSavePosition()
     {
-        var directoryInfo = new DirectoryInfo(Path);
+        DirectoryInfo directoryInfo = new(Path);
         if (directoryInfo.GetDirectories().Any(IsSymlink))
         {
             IsSaveInCloud = true;
@@ -105,6 +107,41 @@ public partial class Galgame : ObservableObject
     public void Delete()
     {
         new DirectoryInfo(Path).Delete(true);
+    }
+
+    public int CompareTo(Galgame? other)
+    {
+        if (other is null) return 1;
+        foreach (SortKeys keyValue in SortKeysList)
+        {
+            var result = 0;
+            switch (keyValue)
+            {
+                case SortKeys.Developer:
+                    result = string.Compare(_developer.Value!, other._developer.Value, StringComparison.Ordinal);
+                    break;
+                case SortKeys.Name:
+                    result = string.Compare(_name.Value!, other._name.Value, StringComparison.Ordinal);
+                    break;
+                case SortKeys.Rating:
+                    result = _rating.Value.CompareTo(other._rating.Value);
+                    break;
+                case SortKeys.LastPlay:
+                    result = GetTime(_lastPlay.Value!).CompareTo(GetTime(other._lastPlay.Value!));
+                    break;
+            }
+            if (result != 0)
+                return -result; //降序
+        }
+        return 0;
+    }
+
+    private long GetTime(string time)
+    {
+        if (time == DefaultString)
+            return 0;
+        var tmp = time.Split('/');
+        return Convert.ToInt64(tmp[2])+Convert.ToInt64(tmp[1])*31+Convert.ToInt64(tmp[0])*30*12;
     }
 
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
@@ -128,7 +165,7 @@ public partial class Galgame : ObservableObject
     /// <returns>所有exe文件地址</returns>
     public List<string> GetExes()
     {
-        var result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
+        List<string> result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
         return result;
     }
     
@@ -138,7 +175,16 @@ public partial class Galgame : ObservableObject
     /// <returns>子文件夹地址</returns>
     public List<string> GetSubFolders()
     {
-        var result = Directory.GetDirectories(Path).ToList();
+        List<string> result = Directory.GetDirectories(Path).ToList();
         return result;
     }
+}
+
+
+public enum SortKeys
+{
+    Name,
+    LastPlay,
+    Developer,
+    Rating
 }

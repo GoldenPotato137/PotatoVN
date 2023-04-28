@@ -117,7 +117,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             }
         };
         process.Start();
-        await Task.Delay(2000); //等待2000ms，让游戏进程启动后再最小化
+        _galgameService.Sort();
+        await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
         ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
         await _jumpListService.AddToJumpListAsync(Item);
 
