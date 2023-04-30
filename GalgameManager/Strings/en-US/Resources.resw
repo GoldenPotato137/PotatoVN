@@ -305,4 +305,68 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
     <value>Choose an executable</value>
   </data>
+  <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
+    <value>Reset EXE path?</value>
+  </data>
+  <data name="SettingsPage_QuickStartTitle" xml:space="preserve">
+    <value>Quick launch</value>
+  </data>
+  <data name="SettingsPage_QuickStartDescription" xml:space="preserve">
+    <value>Settings related to Quick Start in Taskbar</value>
+  </data>
+  <data name="SettingsPage_QuickStart_AutoStartGameTitle" xml:space="preserve">
+    <value>Launch Game</value>
+  </data>
+  <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
+    <value>Whether to start the game directly when right-clicking icon in the taskbar</value>
+  </data>
+  <data name="SettingsPage_LibraryTitle" xml:space="preserve">
+    <value>Library</value>
+  </data>
+  <data name="SettingsPage_LibraryDescription" xml:space="preserve">
+    <value>Settings related to the game libraries</value>
+  </data>
+  <data name="SettingsPage_Library_SearchSubPath" xml:space="preserve">
+    <value>Search subdirectories recursively</value>
+  </data>
+  <data name="SettingsPage_Library_SearchSubPathDescription" xml:space="preserve">
+    <value>Whether to search for subdirectories recursively. Only subfolders at the root of the game library if not checked</value>
+  </data>
+  <data name="SettingsPage_Library_NameDescription" xml:space="preserve">
+    <value>This software matches the name of the game folder with a regular expression and takes the selected match substring into the game.
+Users who do not know the regular expression can understand：The name of the game folder will be used as the name of the game.</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegex" xml:space="preserve">
+    <value>Regular expression</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexDescription" xml:space="preserve">
+    <value>Match the regular expression used, keep the default value if you don't know it (.+)</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRule" xml:space="preserve">
+    <value>Match rules</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRuleDescription" xml:space="preserve">
+    <value>Only folders that meet all the following rules will be recognized as game folders</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRuleMustContain" xml:space="preserve">
+    <value>Must contain</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRuleShouldContain" xml:space="preserve">
+    <value>Must contain at least one</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexIndex" xml:space="preserve">
+    <value>The index of regular substring</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexIndexDescription" xml:space="preserve">
+    <value>The index of substring to select, start from 0, leave the default value (0) if you don't know it</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexRemoveBorder" xml:space="preserve">
+    <value>Remove regular substring's boundary</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexRemoveBorderDescription" xml:space="preserve">
+    <value>Whether to remove the character on both sides of the earned regular string. e.g. [xxx]will be changed to xxx</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexTryItOut" xml:space="preserve">
+    <value>You can enter string here to test the matching results</value>
+  </data>
 </root>
