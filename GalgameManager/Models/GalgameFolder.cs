@@ -84,7 +84,7 @@ public class GalgameFolder
                 GalgameCollectionService.AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath);
                 if (result == GalgameCollectionService.AddGalgameResult.Success) cnt++;
             }
-            if (!searchSubFolder) continue;
+            if (!searchSubFolder && currentPath != Path) continue;
             foreach (var subPath in Directory.GetDirectories(currentPath))
                 pathToCheck.Enqueue(subPath);
         }
