@@ -111,6 +111,71 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
+                <!-- 游戏库 -->
+                <control:SettingExpander
+                    SettingTitle="{x:Bind ViewModel.UiLibraryTitle}"
+                    SettingDescription="{x:Bind ViewModel.UiLibraryDescription}"
+                    SettingIcon="&#xE8B7;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Orientation="Vertical" Spacing="13">
+                            <!-- 递归搜索子目录 -->
+                            <local:SettingToggleSwitch
+                                Title="{x:Bind ViewModel.UiLibrarySearchSubPath}"
+                                Description="{x:Bind ViewModel.UiLibrarySearchSubPathDescription}"
+                                IsOn="{x:Bind ViewModel.SearchSubFolder, Mode=TwoWay}" />
+                            <!-- 正则表达式 -->
+                            <TextBlock Text="{x:Bind ViewModel.UiLibraryNameDescription}" FontSize="12" Opacity="0.6"
+                                       Margin="0 0 0 -3" />
+                            <RelativePanel HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegex}"
+                                               Style="{ThemeResource BodyTextBlockStyle}" />
+                                    <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegexDescription}"
+                                               FontSize="12"
+                                               Opacity="0.6" />
+                                </StackPanel>
+                                <TextBox Text="{x:Bind ViewModel.Regex, Mode=TwoWay}"
+                                         Margin="0,0,95,0"
+                                         RelativePanel.AlignRightWithPanel="True" />
+                            </RelativePanel>
+                            <RelativePanel HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegexIndex}"
+                                               Style="{ThemeResource BodyTextBlockStyle}" />
+                                    <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegexIndexDescription}"
+                                               FontSize="12"
+                                               Opacity="0.6" />
+                                </StackPanel>
+                                <TextBox Text="{x:Bind ViewModel.RegexIndex, Mode=TwoWay}"
+                                         Margin="0,0,95,0"
+                                         RelativePanel.AlignRightWithPanel="True" />
+                            </RelativePanel>
+                            <local:SettingToggleSwitch Title="{x:Bind ViewModel.UiLibrarySearchRegexRemoveBorder}"
+                                                       Description="{x:Bind ViewModel.UiLibrarySearchRegexRemoveBorderDescription}"
+                                                       IsOn="{x:Bind ViewModel.RegexRemoveBorder, Mode=TwoWay}" />
+                            <RelativePanel HorizontalAlignment="Stretch">
+                                <TextBox Text="{x:Bind ViewModel.RegexTryItOut, Mode=TwoWay}" 
+                                         PlaceholderText="{x:Bind ViewModel.UiLibrarySearchRegexTryItOut}"/>
+                                <Button Content="Go" Command="{x:Bind ViewModel.RegexTryItOutCommand}"
+                                        Margin="0,0,95,0"
+                                        RelativePanel.AlignRightWithPanel="True" />
+                            </RelativePanel>
+                            <!-- 游戏匹配规则 -->
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="{x:Bind ViewModel.UiLibraryGameSearchRule}" />
+                                <TextBlock Text="{x:Bind ViewModel.UiLibraryGameSearchRuleDescription}"
+                                           FontSize="12" Opacity="0.6" Margin="0 -8 0 0" />
+                                <TextBox Header="{x:Bind ViewModel.UiLibraryGameSearchRuleMustContain}"
+                                         Text="{x:Bind ViewModel.GameFolderMustContain,Mode=TwoWay}"
+                                         TextWrapping="Wrap" Margin="0,0,95,0" />
+                                <TextBox Header="{x:Bind ViewModel.UiLibraryGameSearchRuleShouldContain}"
+                                         Text="{x:Bind ViewModel.GameFolderShouldContain,Mode=TwoWay}"
+                                         TextWrapping="Wrap" Margin="0,0,95,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+
                 <!-- 云同步 -->
                 <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiCloudSyncTitle}"

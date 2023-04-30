@@ -3,6 +3,7 @@
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
+
 // ReSharper disable EnforceIfStatementBraces
 
 // ReSharper disable EnforceForeachStatementBraces
@@ -69,11 +70,13 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
             throw new Exception($"这个galgame库{path}已经添加过了");
         }
 
-        var galgameFolder = new GalgameFolder(path, _galgameService);
+        GalgameFolder galgameFolder = new(path, _galgameService);
         _galgameFolders.Add(galgameFolder);
         await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
-        if(tryGetGalgame)
-            await galgameFolder.GetGalgameInFolder();
+        if (tryGetGalgame)
+        {
+            await galgameFolder.GetGalgameInFolder(LocalSettingsService);
+        }
     }
 }
 

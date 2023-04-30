@@ -7,6 +7,7 @@ using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
@@ -22,6 +23,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
 {
     private readonly IDataCollectionService<GalgameFolder> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
+    private readonly ILocalSettingsService _localSettingsService;
     private GalgameFolder? _item;
     public ObservableCollection<Galgame> Galgames = new();
 
@@ -50,11 +52,12 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         }
     }
 
-    public GalgameFolderViewModel(IDataCollectionService<GalgameFolder> dataCollectionService, IDataCollectionService<Galgame> galgameService)
+    public GalgameFolderViewModel(IDataCollectionService<GalgameFolder> dataCollectionService, IDataCollectionService<Galgame> galgameService, ILocalSettingsService localSettingsService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)galgameService;
         _galgameService.GalgameAddedEvent += ReloadGalgameList;
+        _localSettingsService = localSettingsService;
     }
 
     private void ReloadGalgameList(Galgame galgame)
@@ -173,7 +176,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private async void GetGalInFolder()
     {
         if (_item == null) return;
-        await _item.GetGalgameInFolder();
+        await _item.GetGalgameInFolder(_localSettingsService);
     }
     
     [RelayCommand]

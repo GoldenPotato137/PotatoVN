@@ -115,6 +115,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             return AddGalgameResult.AlreadyExists;
 
         Galgame galgame = new(path);
+        var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
+        var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
+        var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
+        galgame.Name.Value = NameRegex.GetName(galgame.Name!, pattern, removeBorder, regexIndex);
+        if (string.IsNullOrEmpty(galgame.Name)) return AddGalgameResult.NotFoundInRss;
+        
         galgame = await PhraseGalInfoAsync(galgame);
         if (!isForce && galgame.RssType == RssType.None)
             return AddGalgameResult.NotFoundInRss;

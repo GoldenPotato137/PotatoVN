@@ -83,6 +83,14 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object?)SortKeys.LastPlay;
             case KeyValues.SortKey2:
                 return (T?)(object?)SortKeys.Developer;
+            case KeyValues.SearchChildFolder:
+                return (T?)(object?)false;
+            case KeyValues.RegexPattern:
+                return (T?)(object?)@".+";
+            case KeyValues.GameFolderMustContain:
+                return (T?)(object)".exe";
+            case KeyValues.GameFolderShouldContain:
+                return (T?)(object)".xp3\n.arc\n.dat\n.ini\n.dll\n.txt";
             default:
                 return default;
         }
@@ -134,6 +142,12 @@ public static class KeyValues
     public const string QuitStart = "quitStart";
     public const string SortKey1 = "sortKey1";
     public const string SortKey2 = "sortKey2";
+    public const string SearchChildFolder = "searchChildFolder";
+    public const string RegexPattern = "regexPattern";
+    public const string RegexIndex = "regexIndex";
+    public const string RegexRemoveBorder = "regexRemoveBorder";
+    public const string GameFolderMustContain = "gameFolderMustContain";
+    public const string GameFolderShouldContain = "gameFolderShouldContain";
 }
 
 public enum RssType

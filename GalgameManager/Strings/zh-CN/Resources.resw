@@ -320,4 +320,53 @@
   <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
     <value>在任务栏右键图标选中游戏时是否直接启动游戏</value>
   </data>
+  <data name="SettingsPage_LibraryTitle" xml:space="preserve">
+    <value>游戏库</value>
+  </data>
+  <data name="SettingsPage_LibraryDescription" xml:space="preserve">
+    <value>与游戏库相关的设置</value>
+  </data>
+  <data name="SettingsPage_Library_SearchSubPath" xml:space="preserve">
+    <value>递归搜索子目录</value>
+  </data>
+  <data name="SettingsPage_Library_SearchSubPathDescription" xml:space="preserve">
+    <value>是否要递归搜索子目录，如果不选中则只搜索游戏库根目录的子文件夹</value>
+  </data>
+  <data name="SettingsPage_Library_NameDescription" xml:space="preserve">
+    <value>本软件会用正则表达式匹配游戏文件夹名字，并取选定的匹配子串作游戏名。
+不了解正则表达式的用户可以理解为：本软件会把游戏文件夹名字当做游戏名字。</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegex" xml:space="preserve">
+    <value>正则表达式</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexDescription" xml:space="preserve">
+    <value>匹配用的正则表达式，如果你不了解它则请保持默认值(.+)</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRule" xml:space="preserve">
+    <value>游戏匹配规则</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRuleDescription" xml:space="preserve">
+    <value>只有满足以下所有规则的文件夹才会被识别为游戏文件夹</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRuleMustContain" xml:space="preserve">
+    <value>必须包含：</value>
+  </data>
+  <data name="SettingsPage_Library_GameSearchRuleShouldContain" xml:space="preserve">
+    <value>且含有以下其中一个：</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexIndex" xml:space="preserve">
+    <value>正则匹配子串下标</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexIndexDescription" xml:space="preserve">
+    <value>如果有多个正则子串应该选用的下标，从0开始，如果你不了解它请保持默认值(0)</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexRemoveBorder" xml:space="preserve">
+    <value>移除正则子串边界</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexRemoveBorderDescription" xml:space="preserve">
+    <value>是否要移除所得正则子串的两侧的字符，比如说[xxx]会被改成xxx</value>
+  </data>
+  <data name="SettingsPage_Library_SearchRegexTryItOut" xml:space="preserve">
+    <value>可以在这里输入待匹配串来测试匹配结果</value>
+  </data>
 </root>

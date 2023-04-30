@@ -5,6 +5,7 @@ using Windows.Storage;
 
 using CommunityToolkit.WinUI;
 
+using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
@@ -51,28 +52,69 @@ public class GalgameFolder
 
     /// <summary>
     /// 扫描文件夹下的所有游戏并添加到库
+    /// <param name="localSettingsService">设置服务</param>
     /// </summary>
-    public async Task GetGalgameInFolder()
+    public async Task GetGalgameInFolder(ILocalSettingsService? localSettingsService=null)
     {
         if (!Directory.Exists(Path) || IsRunning) return;
-        IsRunning = true;
-        ProgressMax = Directory.GetDirectories(Path).Length;
-        ProgressValue = 0;
-        var cnt = 0;
-        foreach (var subPath in Directory.GetDirectories(Path))
+        var searchSubFolder = false;
+        List<string> fileMustContain = new();
+        List<string> fileShouldContain = new();
+        if (localSettingsService != null)
         {
-            ProgressValue++;
-            ProgressText = $"正在扫描路径:{subPath} , {ProgressValue}/{ProgressMax}";
-            ProgressChangedEvent?.Invoke();
-            var result = await GalgameService.TryAddGalgameAsync(subPath);
-            if (result == GalgameCollectionService.AddGalgameResult.Success) cnt++;
+            searchSubFolder = await localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder);
+            var tmp = await localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderMustContain);
+            if (!string.IsNullOrEmpty(tmp))
+                fileMustContain = tmp.Split('\r', '\n').ToList();
+            tmp = await localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain);
+            if (!string.IsNullOrEmpty(tmp))
+                fileShouldContain = tmp.Split('\r', '\n').ToList();
         }
-
+        IsRunning = true;
+        var cnt = 0;
+        Queue<string> pathToCheck = new();
+        pathToCheck.Enqueue(Path);
+        while (pathToCheck.Count>0)
+        {
+            var currentPath = pathToCheck.Dequeue();
+            ProgressText = $"正在扫描路径:{currentPath}";
+            ProgressChangedEvent?.Invoke();
+            if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
+            {
+                GalgameCollectionService.AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath);
+                if (result == GalgameCollectionService.AddGalgameResult.Success) cnt++;
+            }
+            if (!searchSubFolder) continue;
+            foreach (var subPath in Directory.GetDirectories(currentPath))
+                pathToCheck.Enqueue(subPath);
+        }
         ProgressText = $"扫描完成, 共添加了{cnt}个游戏";
         ProgressChangedEvent?.Invoke();
         await Task.Delay(3000);
         IsRunning = false;
         ProgressChangedEvent?.Invoke();
+    }
+
+    /// <summary>
+    /// 判断文件夹是否是游戏文件夹
+    /// </summary>
+    /// <param name="path">文件夹路径</param>
+    /// <param name="fileMustContain">必须包含的文件后缀</param>
+    /// <param name="fileShouldContain">至少包含一个的文件后缀</param>
+    /// <returns></returns>
+    private static bool IsGameFolder(string path, List<string> fileMustContain, List<string> fileShouldContain)
+    {
+        foreach(var file in fileMustContain)
+            if (!Directory.GetFiles(path).Any(f => f.ToLower().EndsWith(file)))
+                return false;
+        var shouldContain = false;
+        foreach(var file in fileShouldContain)
+            if (Directory.GetFiles(path).Any(f => f.ToLower().EndsWith(file)))
+            {
+                shouldContain = true;
+                break;
+            }
+        return shouldContain;
     }
 
     /// <summary>

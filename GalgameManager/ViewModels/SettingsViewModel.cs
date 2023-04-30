@@ -24,7 +24,8 @@ public partial class SettingsViewModel : ObservableRecipient
     private string _versionDescription;
 
     #region UI_STRINGS
-    private static readonly ResourceLoader ResourceLoader= new();
+
+    private static readonly ResourceLoader ResourceLoader = new();
     public readonly string UiThemeTitle = ResourceLoader.GetString("SettingsPage_ThemeTitle");
     public readonly string UiThemeDescription = ResourceLoader.GetString("SettingsPage_ThemeDescription");
     public readonly string UiRssTitle = ResourceLoader.GetString("SettingsPage_RssTitle");
@@ -43,6 +44,23 @@ public partial class SettingsViewModel : ObservableRecipient
     public readonly string UiQuickStartDescription = "SettingsPage_QuickStartDescription".GetLocalized();
     public readonly string UiQuickStartAutoStartGameTitle = "SettingsPage_QuickStart_AutoStartGameTitle".GetLocalized();
     public readonly string UiQuickStartAutoStartGameDescription = "SettingsPage_QuickStart_AutoStartGameDescription".GetLocalized();
+    public readonly string UiLibraryTitle = "SettingsPage_LibraryTitle".GetLocalized();
+    public readonly string UiLibraryDescription = "SettingsPage_LibraryDescription".GetLocalized();
+    public readonly string UiLibrarySearchSubPath = "SettingsPage_Library_SearchSubPath".GetLocalized();
+    public readonly string UiLibrarySearchSubPathDescription = "SettingsPage_Library_SearchSubPathDescription".GetLocalized();
+    public readonly string UiLibraryNameDescription = "SettingsPage_Library_NameDescription".GetLocalized();
+    public readonly string UiLibrarySearchRegex = "SettingsPage_Library_SearchRegex".GetLocalized();
+    public readonly string UiLibrarySearchRegexDescription = "SettingsPage_Library_SearchRegexDescription".GetLocalized();
+    public readonly string UiLibrarySearchRegexIndex = "SettingsPage_Library_SearchRegexIndex".GetLocalized();
+    public readonly string UiLibrarySearchRegexIndexDescription = "SettingsPage_Library_SearchRegexIndexDescription".GetLocalized();
+    public readonly string UiLibrarySearchRegexRemoveBorder = "SettingsPage_Library_SearchRegexRemoveBorder".GetLocalized();
+    public readonly string UiLibrarySearchRegexRemoveBorderDescription = "SettingsPage_Library_SearchRegexRemoveBorderDescription".GetLocalized();
+    public readonly string UiLibrarySearchRegexTryItOut = "SettingsPage_Library_SearchRegexTryItOut".GetLocalized();
+    public readonly string UiLibraryGameSearchRule = "SettingsPage_Library_GameSearchRule".GetLocalized();
+    public readonly string UiLibraryGameSearchRuleDescription = "SettingsPage_Library_GameSearchRuleDescription".GetLocalized();
+    public readonly string UiLibraryGameSearchRuleMustContain = "SettingsPage_Library_GameSearchRuleMustContain".GetLocalized();
+    public readonly string UiLibraryGameSearchRuleShouldContain = "SettingsPage_Library_GameSearchRuleShouldContain".GetLocalized();
+
     #endregion
 
     public ElementTheme ElementTheme
@@ -76,16 +94,24 @@ public partial class SettingsViewModel : ObservableRecipient
                 await themeSelectorService1.SetThemeAsync(param);
             }
         }
+
         SwitchThemeCommand = new RelayCommand<ElementTheme>(Execute);
 
         _localSettingsService = localSettingsService;
 
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
-        IsSelectBangumi = RssType==RssType.Bangumi?Visibility.Visible:Visibility.Collapsed;
+        IsSelectBangumi = RssType == RssType.Bangumi ? Visibility.Visible : Visibility.Collapsed;
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
+        //LIBRARY
+        _searchSubFolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
+        _regex = _localSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern).Result ?? ".+";
+        _regexIndex = _localSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex).Result;
+        _regexRemoveBorder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder).Result;
+        _gameFolderMustContain = _localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderMustContain).Result ?? "";
+        _gameFolderShouldContain = _localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain).Result ?? "";
         //CLOUD
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
         //QUICK_START
@@ -115,21 +141,52 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty] private string _bangumiToken = string.Empty;
     [ObservableProperty] private RssType _rssType;
     [ObservableProperty] private Visibility _isSelectBangumi;
-    [RelayCommand] private void RssSelectBangumi() => RssType = RssType.Bangumi;
-    [RelayCommand] private void RssSelectVndb() => RssType = RssType.Vndb;
+    [RelayCommand]
+    private void RssSelectBangumi() => RssType = RssType.Bangumi;
+    [RelayCommand]
+    private void RssSelectVndb() => RssType = RssType.Vndb;
     partial void OnRssTypeChanged(RssType value)
-    { 
+    {
         _localSettingsService.SaveSettingAsync(KeyValues.RssType, value);
         IsSelectBangumi = value == RssType.Bangumi ? Visibility.Visible : Visibility.Collapsed;
     }
+
     partial void OnBangumiTokenChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, value);
-    
+
     #endregion
 
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
+
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
+
+    #endregion
+
+    #region LIBRARY
+
+    [ObservableProperty] private bool _searchSubFolder;
+    [ObservableProperty] private string _regex;
+    [ObservableProperty] private int _regexIndex;
+    [ObservableProperty] private bool _regexRemoveBorder;
+    [ObservableProperty] private string _gameFolderMustContain;
+    [ObservableProperty] private string _gameFolderShouldContain;
+    [ObservableProperty] private string _regexTryItOut = "";
+
+    partial void OnSearchSubFolderChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SearchChildFolder, value);
+
+    partial void OnRegexChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.RegexPattern, value);
+
+    partial void OnRegexIndexChanged(int value) => _localSettingsService.SaveSettingAsync(KeyValues.RegexIndex, value);
+
+    partial void OnRegexRemoveBorderChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RegexRemoveBorder, value);
+
+    partial void OnGameFolderShouldContainChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.GameFolderShouldContain, value);
+
+    partial void OnGameFolderMustContainChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.GameFolderMustContain, value);
+
+    [RelayCommand]
+    private void OnRegexTryItOut() => RegexTryItOut = NameRegex.GetName(_regexTryItOut, _regex, _regexRemoveBorder, _regexIndex);
 
     #endregion
 
@@ -140,7 +197,8 @@ public partial class SettingsViewModel : ObservableRecipient
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
     }
-    [RelayCommand] private async void SelectRemoteFolder()
+    [RelayCommand]
+    private async void SelectRemoteFolder()
     {
         FolderPicker openPicker = new();
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
@@ -155,6 +213,7 @@ public partial class SettingsViewModel : ObservableRecipient
     #region QUIT_START
 
     [ObservableProperty] private bool _quitStart;
+
     partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
 
     #endregion
