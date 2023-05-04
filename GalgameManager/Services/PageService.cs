@@ -1,9 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
-
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
@@ -20,6 +18,7 @@ public class PageService : IPageService
         Configure<LibraryViewModel, LibraryPage>();
         Configure<GalgameFolderViewModel, GalgameFolderPage>();
         Configure<GalgameSettingViewModel, GalgameSettingPage>();
+        Configure<HelpViewModel, HelpPage>();
     }
 
     public Type GetPageType(string key)

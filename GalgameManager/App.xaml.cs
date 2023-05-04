@@ -2,12 +2,10 @@
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
-using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -70,6 +68,8 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<HelpViewModel>();
+            services.AddTransient<HelpPage>();
             services.AddTransient<GalgameSettingViewModel>();
             services.AddTransient<GalgameSettingPage>();
             services.AddTransient<LibraryViewModel>();

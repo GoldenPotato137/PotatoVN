@@ -369,4 +369,7 @@ Users who do not know the regular expression can understand：The name of the ga
   <data name="SettingsPage_Library_SearchRegexTryItOut" xml:space="preserve">
     <value>You can enter string here to test the matching results</value>
   </data>
+  <data name="Shell_Help.Content" xml:space="preserve">
+    <value>Help</value>
+  </data>
 </root>

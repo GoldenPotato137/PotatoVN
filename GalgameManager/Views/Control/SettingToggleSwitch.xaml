@@ -19,9 +19,8 @@
         </StackPanel>
 
         <ToggleSwitch IsOn="{x:Bind IsOn, Mode=TwoWay}"
-                      Margin="12,0,0,0"
-                      RelativePanel.AlignRightWithPanel="True">
-        </ToggleSwitch>
+                      Margin="0,0,-80,0"
+                      RelativePanel.AlignRightWithPanel="True" />
     </RelativePanel>
     
 </UserControl>

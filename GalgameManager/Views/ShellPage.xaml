@@ -2,8 +2,6 @@
     x:Class="GalgameManager.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:GalgameManager.Helpers"
     xmlns:behaviors="using:GalgameManager.Behaviors"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
@@ -54,6 +52,15 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
+            
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Uid="Shell_Help" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.HelpViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE897;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+            
             <NavigationView.HeaderTemplate>
                 <DataTemplate>
                     <Grid>

@@ -101,4 +101,8 @@
   <ItemGroup>
     <PRIResource Remove="Strings\zh-CN\Resources.resw" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Remove="Themes\Generic.xaml" />
+  </ItemGroup>
 </Project>

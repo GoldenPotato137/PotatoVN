@@ -369,4 +369,7 @@
   <data name="SettingsPage_Library_SearchRegexTryItOut" xml:space="preserve">
     <value>可以在这里输入待匹配串来测试匹配结果</value>
   </data>
+  <data name="Shell_Help.Content" xml:space="preserve">
+    <value>帮助</value>
+  </data>
 </root>

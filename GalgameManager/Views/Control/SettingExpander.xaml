@@ -27,7 +27,7 @@
                 </Grid>
             </Expander.Header>
             <Expander.Content>
-                <ContentPresenter Content="{x:Bind SettingContent}"  Padding="25 0 0 0" />
+                <ContentPresenter Content="{x:Bind SettingContent}"  Padding="15 0 15 0" />
             </Expander.Content>
         </Expander>
     </Grid>
