@@ -1,0 +1,13 @@
+﻿{
+  "FAQ": 
+  [
+    {
+      "title": "This is a question",
+      "content": "Answer goes here \n Line2 \n Line3" 
+    },
+    {
+      "title": "This is a another question",
+      "content": "Another answer goes here \n Line2 \n Line3"
+    }
+  ]
+}
