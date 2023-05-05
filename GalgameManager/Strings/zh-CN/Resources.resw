@@ -372,4 +372,25 @@
   <data name="Shell_Help.Content" xml:space="preserve">
     <value>帮助</value>
   </data>
+  <data name="SettingsPage_RepositoryLink.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/GalgameManager</value>
+  </data>
+  <data name="SettingsPage_RepositoryLink.Content" xml:space="preserve">
+    <value>仓库地址</value>
+  </data>
+  <data name="SettingsPage_RateLink.Content" xml:space="preserve">
+    <value>评价本应用</value>
+  </data>
+  <data name="App_UnhandledException_Oops" xml:space="preserve">
+    <value>Oops! 出现了一个错误</value>
+  </data>
+  <data name="App_UnhandledException_BackToHome" xml:space="preserve">
+    <value>回到主页</value>
+  </data>
+  <data name="App_UnhandledException_Exit" xml:space="preserve">
+    <value>退出应用</value>
+  </data>
+  <data name="App_UnhandledException_Hyperlink" xml:space="preserve">
+    <value>点此复制错误信息并报告这个问题</value>
+  </data>
 </root>

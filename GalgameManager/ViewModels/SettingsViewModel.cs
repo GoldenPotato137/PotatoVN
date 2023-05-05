@@ -1,17 +1,14 @@
 ﻿using System.Reflection;
 using System.Windows.Input;
-
 using Windows.ApplicationModel;
+using Windows.Services.Store;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
-
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.ApplicationModel.Resources;
 
@@ -215,6 +212,18 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty] private bool _quitStart;
 
     partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
+
+    #endregion
+
+    #region ABOUT
+
+    [RelayCommand]
+    private async void Rate()
+    {
+        StoreContext context = StoreContext.GetDefault();
+        WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());
+        await context.RequestRateAndReviewAppAsync();
+    }
 
     #endregion
 }

@@ -1,7 +1,9 @@
-﻿using GalgameManager.Activation;
+﻿using Windows.ApplicationModel.DataTransfer;
+using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
@@ -96,12 +98,36 @@ public partial class App : Application
     private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
-        var dialog = new ContentDialog
+        ContentDialog dialog = new()
         {
             XamlRoot = MainWindow.Content.XamlRoot,
-            Title = "Unhandled exception",
-            Content = e.Exception,
-            CloseButtonText = "Close"
+            Title = "App_UnhandledException_Oops".GetLocalized(),
+            PrimaryButtonText = "App_UnhandledException_BackToHome".GetLocalized(),
+            CloseButtonText = "App_UnhandledException_Exit".GetLocalized(),
+            DefaultButton = ContentDialogButton.Primary
+        };
+        StackPanel stackPanel = new();
+        stackPanel.Children.Add(new TextBlock()
+        {
+            Text = e.Exception.ToString(),
+            TextWrapping = TextWrapping.WrapWholeWords
+        });
+        HyperlinkButton button = new()
+        {
+            Content = "App_UnhandledException_Hyperlink".GetLocalized(),
+            NavigateUri = new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new"),
+        };
+        button.Click += (_, _) =>
+        {
+            DataPackage package = new();
+            package.SetText(e.Exception.ToString());
+            Clipboard.SetContent(package);
+        };
+        stackPanel.Children.Add(button);
+        dialog.Content = stackPanel;
+        dialog.PrimaryButtonClick += (_, _) =>
+        {
+            GetService<INavigationService>().NavigateTo(typeof(HomeViewModel).FullName!);
         };
         dialog.CloseButtonClick += (_, _) => { Exit();};
         e.Handled = true;

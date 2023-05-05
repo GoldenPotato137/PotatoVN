@@ -372,4 +372,10 @@ Users who do not know the regular expression can understand：The name of the ga
   <data name="Shell_Help.Content" xml:space="preserve">
     <value>Help</value>
   </data>
+  <data name="SettingsPage_RepositoryLink.Content" xml:space="preserve">
+    <value>仓库地址</value>
+  </data>
+  <data name="SettingsPage_RepositoryLink.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/GalgameManager</value>
+  </data>
 </root>
