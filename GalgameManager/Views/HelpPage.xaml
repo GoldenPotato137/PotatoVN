@@ -4,7 +4,45 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:GalgameManager.Models"
     mc:Ignorable="d">
 
-    <Grid x:Name="ContentArea" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+            <AppBarButton Icon="Repair" x:Uid="HelpPage_NewFeature" Command="{x:Bind ViewModel.IssuesCommand}"/>
+            <AppBarButton Icon="Help" x:Uid="HelpPage_Help" Command="{x:Bind ViewModel.IssuesCommand}"/>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Download" x:Uid="HelpPage_Download" Command="{x:Bind ViewModel.DownloadFaqsCommand}"/>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Faqs, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Orientation="Vertical" Spacing="8" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:Key="HorizontalBarTemplate" x:DataType="model:Faq">
+                        <Expander Header="{x:Bind Title}"
+                                  HorizontalAlignment="Stretch" 
+                                  HorizontalContentAlignment="Left">
+                            <Expander.Content>
+                                <TextBlock Text="{x:Bind Content}" Padding="{StaticResource XSmallLeftMargin}"
+                                           TextWrapping="Wrap"/>
+                            </Expander.Content>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+        <InfoBar Grid.Row="2" IsOpen="{x:Bind ViewModel.InfoBarVisibility, Mode=OneWay}" 
+                 Severity="Success" x:Uid="HelpPage_InfoBar" Margin="0 0 0 20" />
+    </Grid>
 </Page>

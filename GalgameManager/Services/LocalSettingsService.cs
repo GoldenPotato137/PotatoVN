@@ -1,12 +1,9 @@
 ﻿using Windows.Storage;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
-
 using Microsoft.Extensions.Options;
-
 using Newtonsoft.Json;
 
 namespace GalgameManager.Services;
@@ -148,6 +145,7 @@ public static class KeyValues
     public const string RegexRemoveBorder = "regexRemoveBorder";
     public const string GameFolderMustContain = "gameFolderMustContain";
     public const string GameFolderShouldContain = "gameFolderShouldContain";
+    public const string FaqLastUpdate = "faqLastUpdate";
 }
 
 public enum RssType

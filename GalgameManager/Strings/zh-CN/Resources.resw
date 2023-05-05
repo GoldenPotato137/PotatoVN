@@ -393,4 +393,16 @@
   <data name="App_UnhandledException_Hyperlink" xml:space="preserve">
     <value>点此复制错误信息并报告这个问题</value>
   </data>
+  <data name="HelpPage_InfoBar.Message" xml:space="preserve">
+    <value>正在从网络上获取最新FAQ中</value>
+  </data>
+  <data name="HelpPage_NewFeature.Label" xml:space="preserve">
+    <value>新功能建议</value>
+  </data>
+  <data name="HelpPage_Help.Label" xml:space="preserve">
+    <value>提出新问题</value>
+  </data>
+  <data name="HelpPage_Download.Label" xml:space="preserve">
+    <value>立刻下载最新FAQ</value>
+  </data>
 </root>

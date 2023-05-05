@@ -67,6 +67,7 @@ public partial class App : Application
             // Core Services
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
             services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
+            services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
@@ -115,7 +116,7 @@ public partial class App : Application
         HyperlinkButton button = new()
         {
             Content = "App_UnhandledException_Hyperlink".GetLocalized(),
-            NavigateUri = new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new"),
+            NavigateUri = new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new/choose"),
         };
         button.Click += (_, _) =>
         {
