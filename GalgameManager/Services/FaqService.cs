@@ -57,16 +57,23 @@ public class FaqService : IFaqService
         if (jsonUrl == null) return;
         HttpClient httpClient = new();
         HttpResponseMessage response = await httpClient.GetAsync(jsonUrl);
-        response.EnsureSuccessStatusCode();
-
-        var data = await response.Content.ReadAsByteArrayAsync();
-        StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
-        StorageFile? storageFile = await localFolder.CreateFileAsync(JsonName, CreationCollisionOption.ReplaceExisting);
-        Stream? fileStream = await storageFile.OpenStreamForWriteAsync();
-        MemoryStream memoryStream = new(data);
-        memoryStream.Position = 0;
-        await memoryStream.CopyToAsync(fileStream);
-        fileStream.Close();
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            var data = await response.Content.ReadAsByteArrayAsync();
+            StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
+            StorageFile? storageFile =
+                await localFolder.CreateFileAsync(JsonName, CreationCollisionOption.ReplaceExisting);
+            Stream? fileStream = await storageFile.OpenStreamForWriteAsync();
+            MemoryStream memoryStream = new(data);
+            memoryStream.Position = 0;
+            await memoryStream.CopyToAsync(fileStream);
+            fileStream.Close();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
     }
 
     private async Task LoadFaqs()
