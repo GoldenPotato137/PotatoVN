@@ -3,7 +3,6 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -35,7 +34,15 @@ public sealed partial class LockableSetting : INotifyPropertyChanged
 
     public static readonly DependencyProperty ValueProperty =
         DependencyProperty.Register(nameof(Value), typeof(string), typeof(LockableSetting), new PropertyMetadata(string.Empty));
+    
+    public bool Readonly
+    {
+        get => (bool)GetValue(ReadonlyProperty);
+        set => SetValue(ReadonlyProperty, value);
+    }
 
+    public static readonly DependencyProperty ReadonlyProperty =
+        DependencyProperty.Register(nameof(Readonly), typeof(bool), typeof(LockableSetting), new PropertyMetadata(false));
 
     public bool IsLock
     {
@@ -51,7 +58,7 @@ public sealed partial class LockableSetting : INotifyPropertyChanged
     public static readonly DependencyProperty IsLockProperty =
         DependencyProperty.Register(nameof(IsLock), typeof(bool), typeof(LockableSetting), new PropertyMetadata(false));
 
-    public bool IsEditable => !IsLock;
+    public bool IsEditable => !IsLock & !Readonly;
         
         
     public event PropertyChangedEventHandler? PropertyChanged;

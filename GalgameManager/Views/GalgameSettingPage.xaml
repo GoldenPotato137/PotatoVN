@@ -9,16 +9,16 @@
     mc:Ignorable="d">
     
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
     
     <Grid Margin="0 0 0 40">
         <ScrollViewer VerticalScrollBarVisibility="Hidden">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <CommandBar  Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
@@ -38,15 +38,14 @@
                     <control:LockableSetting
                         Title="游戏名"
                         Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}">
-                    </control:LockableSetting>
+                        IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}" />
 
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Orientation="Horizontal" Grid.Column="0">
@@ -56,16 +55,15 @@
 
                         <Grid Grid.Column="1" Margin="50 0 0 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="数据源" VerticalAlignment="Center" Margin="0 0 15 0"/>
                             <ComboBox 
                                 Grid.Column="1" 
                                 ItemsSource="{x:Bind ViewModel.RssTypes}"
                                 SelectedItem="{x:Bind ViewModel.Gal.RssType, Mode=TwoWay}" 
-                                HorizontalAlignment="Stretch">
-                            </ComboBox>
+                                HorizontalAlignment="Stretch" />
                         </Grid>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">
@@ -78,39 +76,35 @@
                             Title="评分"
                             Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
-                            Margin="50 0 0 0">
-                        </control:LockableSetting>
+                            Margin="50 0 0 0" />
                     </Grid>
 
                     <control:LockableSetting 
                         Title="开发商"
                         Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}">
-                    </control:LockableSetting>
+                        IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" />
 
                     <control:LockableSetting 
                         Title="预计游戏时长"
                         Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}">
-                    </control:LockableSetting>
+                        IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" />
 
                     <control:LockableSetting
                         Title="游戏简介"
                         Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}">
-                    </control:LockableSetting>
+                        IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}" />
 
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <control:LockableSetting 
                             Grid.Column="0"
                             Title="封面图"
                             Value="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=TwoWay}"
-                            IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}">
-                        </control:LockableSetting>
+                            IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}"
+                            Readonly="True" />
                         <Button Grid.Column="1" Content="选择图片" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
                     </Grid>
                 </StackPanel>
@@ -126,8 +120,7 @@
                 Width="100" 
                 Height="100" 
                 HorizontalAlignment="Center" 
-                VerticalAlignment="Center">
-            </ProgressRing>
+                VerticalAlignment="Center" />
         </Grid>
     </Grid>
 </Page>
