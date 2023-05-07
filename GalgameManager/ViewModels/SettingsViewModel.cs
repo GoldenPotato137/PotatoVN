@@ -45,6 +45,8 @@ public partial class SettingsViewModel : ObservableRecipient
     public readonly string UiLibraryDescription = "SettingsPage_LibraryDescription".GetLocalized();
     public readonly string UiLibrarySearchSubPath = "SettingsPage_Library_SearchSubPath".GetLocalized();
     public readonly string UiLibrarySearchSubPathDescription = "SettingsPage_Library_SearchSubPathDescription".GetLocalized();
+    public readonly string UiLibrarySearchSubPathDepth = "SettingsPage_Library_SearchSubPathDepth".GetLocalized();
+    public readonly string UiLibrarySearchSubPathDepthDescription = "SettingsPage_Library_SearchSubPathDepthDescription".GetLocalized();
     public readonly string UiLibraryNameDescription = "SettingsPage_Library_NameDescription".GetLocalized();
     public readonly string UiLibrarySearchRegex = "SettingsPage_Library_SearchRegex".GetLocalized();
     public readonly string UiLibrarySearchRegexDescription = "SettingsPage_Library_SearchRegexDescription".GetLocalized();
@@ -104,6 +106,7 @@ public partial class SettingsViewModel : ObservableRecipient
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
         //LIBRARY
         _searchSubFolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
+        _searchSubFolderDepth = _localSettingsService.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth).Result;
         _regex = _localSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern).Result ?? ".+";
         _regexIndex = _localSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex).Result;
         _regexRemoveBorder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder).Result;
@@ -163,6 +166,7 @@ public partial class SettingsViewModel : ObservableRecipient
     #region LIBRARY
 
     [ObservableProperty] private bool _searchSubFolder;
+    [ObservableProperty] private int _searchSubFolderDepth;
     [ObservableProperty] private string _regex;
     [ObservableProperty] private int _regexIndex;
     [ObservableProperty] private bool _regexRemoveBorder;
@@ -171,6 +175,8 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty] private string _regexTryItOut = "";
 
     partial void OnSearchSubFolderChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SearchChildFolder, value);
+
+    partial void OnSearchSubFolderDepthChanged(int value) => _localSettingsService.SaveSettingAsync(KeyValues.SearchChildFolderDepth, value);
 
     partial void OnRegexChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.RegexPattern, value);
 

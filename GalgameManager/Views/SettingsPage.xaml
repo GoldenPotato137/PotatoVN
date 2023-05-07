@@ -10,6 +10,7 @@
     xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d">
     <Page.Resources>
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter" />
     </Page.Resources>
@@ -120,10 +121,24 @@
                         <StackPanel Orientation="Vertical" Spacing="13">
                             <!-- 递归搜索子目录 -->
                             <control:Panel>
-                                <local:SettingToggleSwitch
+                                <StackPanel>
+                                    <local:SettingToggleSwitch
                                     Title="{x:Bind ViewModel.UiLibrarySearchSubPath}"
                                     Description="{x:Bind ViewModel.UiLibrarySearchSubPathDescription}"
                                     IsOn="{x:Bind ViewModel.SearchSubFolder, Mode=TwoWay}" />
+                                    <RelativePanel Margin="{StaticResource XSmallTopMargin}" HorizontalAlignment="Stretch" 
+                                                   Visibility="{x:Bind ViewModel.SearchSubFolder, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepth}"
+                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                            <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepthDescription}"
+                                                   FontSize="12"
+                                                   Opacity="0.6" />
+                                        </StackPanel>
+                                        <TextBox Text="{x:Bind ViewModel.SearchSubFolderDepth, Mode=TwoWay}"
+                                                 RelativePanel.AlignRightWithPanel="True" />
+                                    </RelativePanel>
+                                </StackPanel>
                             </control:Panel>
                             <!-- 正则表达式 -->
                             <control:Panel>
