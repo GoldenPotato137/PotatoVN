@@ -58,11 +58,13 @@ public class GalgameFolder
     {
         if (!Directory.Exists(Path) || IsRunning) return;
         var searchSubFolder = false;
+        var maxDepth = 1;
         List<string> fileMustContain = new();
         List<string> fileShouldContain = new();
         if (localSettingsService != null)
         {
             searchSubFolder = await localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder);
+            maxDepth = searchSubFolder ? await localSettingsService.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth) : 1;
             var tmp = await localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderMustContain);
             if (!string.IsNullOrEmpty(tmp))
                 fileMustContain = tmp.Split('\r', '\n').ToList();
@@ -72,11 +74,11 @@ public class GalgameFolder
         }
         IsRunning = true;
         var cnt = 0;
-        Queue<string> pathToCheck = new();
-        pathToCheck.Enqueue(Path);
+        Queue<(string Path, int Depth)> pathToCheck = new();
+        pathToCheck.Enqueue((Path, 0));
         while (pathToCheck.Count>0)
         {
-            var currentPath = pathToCheck.Dequeue();
+            (string currentPath, int currentDepth) = pathToCheck.Dequeue();
             ProgressText = $"正在扫描路径:{currentPath}";
             ProgressChangedEvent?.Invoke();
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
@@ -84,9 +86,9 @@ public class GalgameFolder
                 GalgameCollectionService.AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath);
                 if (result == GalgameCollectionService.AddGalgameResult.Success) cnt++;
             }
-            if (!searchSubFolder && currentPath != Path) continue;
+            if (currentDepth == maxDepth) continue;
             foreach (var subPath in Directory.GetDirectories(currentPath))
-                pathToCheck.Enqueue(subPath);
+                pathToCheck.Enqueue((subPath, currentDepth + 1));
         }
         ProgressText = $"扫描完成, 共添加了{cnt}个游戏";
         ProgressChangedEvent?.Invoke();

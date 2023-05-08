@@ -82,6 +82,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object?)SortKeys.Developer;
             case KeyValues.SearchChildFolder:
                 return (T?)(object?)false;
+            case KeyValues.SearchChildFolderDepth:
+                return (T?)(object?)1;
             case KeyValues.RegexPattern:
                 return (T?)(object?)@".+";
             case KeyValues.GameFolderMustContain:
@@ -108,7 +110,7 @@ public class LocalSettingsService : ILocalSettingsService
             await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
         }
     }
-    
+
     public async Task RemoveSettingAsync(string key)
     {
         if (RuntimeHelper.IsMSIX)
@@ -140,6 +142,7 @@ public static class KeyValues
     public const string SortKey1 = "sortKey1";
     public const string SortKey2 = "sortKey2";
     public const string SearchChildFolder = "searchChildFolder";
+    public const string SearchChildFolderDepth = "searchChildFolderDepth";
     public const string RegexPattern = "regexPattern";
     public const string RegexIndex = "regexIndex";
     public const string RegexRemoveBorder = "regexRemoveBorder";

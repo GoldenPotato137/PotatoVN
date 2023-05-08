@@ -332,6 +332,12 @@
   <data name="SettingsPage_Library_SearchSubPathDescription" xml:space="preserve">
     <value>是否要递归搜索子目录，如果不选中则只搜索游戏库根目录的子文件夹</value>
   </data>
+  <data name="SettingsPage_Library_SearchSubPathDepth" xml:space="preserve">
+    <value>递归搜索深度</value>
+  </data>
+  <data name="SettingsPage_Library_SearchSubPathDepthDescription" xml:space="preserve">
+    <value>限制递归搜索子目录的深度</value>
+  </data>
   <data name="SettingsPage_Library_NameDescription" xml:space="preserve">
     <value>本软件会用正则表达式匹配游戏文件夹名字，并取选定的匹配子串作游戏名。
 不了解正则表达式的用户可以理解为：本软件会把游戏文件夹名字当做游戏名字。</value>
