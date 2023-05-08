@@ -411,4 +411,8 @@
   <data name="HelpPage_Download.Label" xml:space="preserve">
     <value>立刻下载最新FAQ</value>
   </data>
+  <data name="GalgameCollectionService_CreateSymbolicLinkFailed" xml:space="preserve">
+    <value>存档云端化失败啦！但是别担心，你的存档是安全的。
+以下为失败原因：</value>
+  </data>
 </root>

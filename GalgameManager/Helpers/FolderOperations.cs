@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace GalgameManager.Helpers;
+﻿namespace GalgameManager.Helpers;
 
 public static class FolderOperations
 {
@@ -69,6 +67,21 @@ public static class FolderOperations
         // 删除原始文件夹
         Directory.Delete(sourceFolderPath, true);
         // 创建符号链接
-        Process.Start("cmd.exe", $"/c mklink /d \"{sourceFolderPath}\" \"{targetFolderPath}\"");
+        Directory.CreateSymbolicLink(sourceFolderPath, targetFolderPath);
+    }
+
+    /// <summary>
+    /// 复制文件夹
+    /// </summary>
+    /// <param name="sourcePath">源</param>
+    /// <param name="targetPath">目的地</param>
+    public static void Copy(string sourcePath, string targetPath)
+    {
+        if(!Directory.Exists(targetPath))
+            Directory.CreateDirectory(targetPath);
+        foreach(var file in Directory.GetFiles(sourcePath))
+        {
+            File.Copy(file, Path.Combine(targetPath, Path.GetFileName(file)), true);
+        }
     }
 }

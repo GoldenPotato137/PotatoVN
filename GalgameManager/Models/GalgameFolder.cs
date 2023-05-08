@@ -1,19 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-
 using Windows.Storage;
-
 using CommunityToolkit.WinUI;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
-
 using Microsoft.UI.Dispatching;
-
 using Newtonsoft.Json;
-
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -57,13 +51,12 @@ public class GalgameFolder
     public async Task GetGalgameInFolder(ILocalSettingsService? localSettingsService=null)
     {
         if (!Directory.Exists(Path) || IsRunning) return;
-        var searchSubFolder = false;
         var maxDepth = 1;
         List<string> fileMustContain = new();
         List<string> fileShouldContain = new();
         if (localSettingsService != null)
         {
-            searchSubFolder = await localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder);
+            var searchSubFolder = await localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder);
             maxDepth = searchSubFolder ? await localSettingsService.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth) : 1;
             var tmp = await localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderMustContain);
             if (!string.IsNullOrEmpty(tmp))
@@ -78,7 +71,7 @@ public class GalgameFolder
         pathToCheck.Enqueue((Path, 0));
         while (pathToCheck.Count>0)
         {
-            (string currentPath, int currentDepth) = pathToCheck.Dequeue();
+            var (currentPath, currentDepth) = pathToCheck.Dequeue();
             ProgressText = $"正在扫描路径:{currentPath}";
             ProgressChangedEvent?.Invoke();
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))

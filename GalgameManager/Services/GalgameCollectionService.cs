@@ -1,15 +1,11 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-
 using Windows.Storage;
-
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -310,31 +306,55 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             var target = tmp[tmp.LastIndexOf('\\')..] + localSavePath[localSavePath.LastIndexOf('\\')..];
             remoteRoot += target;
 
-            if (new DirectoryInfo(remoteRoot).Exists) //云端已存在同名文件夹
+            try
             {
+                if (new DirectoryInfo(remoteRoot).Exists) //云端已存在同名文件夹
+                {
+                    var choose = 0;
+                    ContentDialog dialog = new()
+                    {
+                        XamlRoot = App.MainWindow.Content.XamlRoot,
+                        Title = "GalgameCollectionService_SelectOperateTitle".GetLocalized(),
+                        Content = "GalgameCollectionService_SelectOperateMsg".GetLocalized(),
+                        PrimaryButtonText = "GalgameCollectionService_Local".GetLocalized(),
+                        SecondaryButtonText = "GalgameCollectionService_Cloud".GetLocalized(),
+                        CloseButtonText = "Cancel".GetLocalized()
+                    };
+                    dialog.PrimaryButtonClick += (_, _) => choose = 1;
+                    dialog.SecondaryButtonClick += (_, _) => choose = 2;
+                    await dialog.ShowAsync();
+                    if (choose == 1)
+                    {
+                        new DirectoryInfo(remoteRoot).Delete(true); //删除云端文件夹
+                        FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                    }
+                    else if (choose == 2)
+                    {
+                        new DirectoryInfo(localSavePath).Delete(true); //删除本地文件夹
+                        Directory.CreateSymbolicLink(localSavePath, remoteRoot);
+                    }
+                }
+                else
+                    FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+            }
+            catch (Exception e) //创建符号链接失败，把存档复制回去
+            {
+                if(Directory.Exists(localSavePath))
+                    Directory.Delete(localSavePath, true);
+                FolderOperations.Copy(remoteRoot, localSavePath);
+                //弹出提示框
+                StackPanel stackPanel = new();
+                stackPanel.Children.Add(new TextBlock {Text = "GalgameCollectionService_CreateSymbolicLinkFailed".GetLocalized()});
+                stackPanel.Children.Add(new TextBlock {Text = e.Message});
                 ContentDialog dialog = new()
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,
-                    Title = "GalgameCollectionService_SelectOperateTitle".GetLocalized(),
-                    Content = "GalgameCollectionService_SelectOperateMsg".GetLocalized(),
-                    PrimaryButtonText = "GalgameCollectionService_Local".GetLocalized(),
-                    SecondaryButtonText = "GalgameCollectionService_Cloud".GetLocalized(),
-                    CloseButtonText = "Cancel".GetLocalized()
-                };
-                dialog.PrimaryButtonClick += (_, _) =>
-                {
-                    new DirectoryInfo(remoteRoot).Delete(true); //删除云端文件夹
-                    FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
-                };
-                dialog.SecondaryButtonClick += (_, _) =>
-                {
-                    new DirectoryInfo(localSavePath).Delete(true); //删除本地文件夹
-                    Process.Start("cmd.exe", $"/c mklink /d \"{localSavePath}\" \"{remoteRoot}\"");
+                    Title = "Error".GetLocalized(),
+                    Content = stackPanel,
+                    PrimaryButtonText = "Yes".GetLocalized()
                 };
                 await dialog.ShowAsync();
             }
-            else
-                FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
         }
     }
 
