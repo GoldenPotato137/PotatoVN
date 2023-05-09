@@ -5,13 +5,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
-    xmlns:local = "using:GalgameManager.Helpers"
+    xmlns:local="using:GalgameManager.Helpers"
     xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
     </Page.Resources>
 
     <Grid>
@@ -51,11 +52,12 @@
                     <AppBarButton.ContextFlyout>
                         <Flyout Placement="Bottom">
                             <StackPanel>
-                                <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="{x:Bind ViewModel.UiPlayFlyOutTitle}"/>
+                                <TextBlock Style="{ThemeResource BaseTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiPlayFlyOutTitle}" />
                                 <Button Command="{x:Bind ViewModel.ResetExePathCommand}"
                                         local:FlyoutHelper.CloseFlyoutOnClick="True"
-                                        Content="{x:Bind ViewModel.UiYes}" 
-                                        Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center"/>
+                                        Content="{x:Bind ViewModel.UiYes}"
+                                        Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Flyout>
                     </AppBarButton.ContextFlyout>
@@ -108,29 +110,41 @@
 
                         <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiDevelopers}" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiDevelopers}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiExpectedPlayTime}" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiLastPlayTime}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
+                                           Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           x:Uid="GalgamePage_TotalPlayTime" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.TotalPlayTime, Mode=OneWay, 
+                                           FallbackValue={}, Converter={StaticResource TimeToDisplayTimeConverter}}" />
                             </StackPanel>
                         </StackPanel>
 
                         <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiSavePosition}" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiSavePosition}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.SavePosition, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
-                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.UiLastPlayTime}" />
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiExpectedPlayTime}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
+                                           Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
                         </StackPanel>
 
@@ -146,13 +160,13 @@
                     <TextBlock
                         Margin="{StaticResource SmallTopBottomMargin}"
                         Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.UiDescription}" 
-                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}"/>
+                        Text="{x:Bind ViewModel.UiDescription}"
+                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
                     <TextBlock
                         Style="{ThemeResource BodyTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}" 
-                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}"/>
-                    
+                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}"
+                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
+
                     <TextBlock
                         Margin="{StaticResource SmallTopBottomMargin}"
                         Style="{ThemeResource SubtitleTextBlockStyle}"
@@ -163,13 +177,14 @@
                         Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
-                                <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10" Margin="5 7 5 7">
-                                    <TextBlock Padding="5" Text="{x:Bind}"/>
+                                <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10"
+                                      Margin="5 7 5 7">
+                                    <TextBlock Padding="5" Text="{x:Bind}" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                         <ItemsRepeater.Layout>
-                             <controls1:WrapLayout  Orientation="Horizontal" />
+                            <controls1:WrapLayout Orientation="Horizontal" />
                         </ItemsRepeater.Layout>
                     </ItemsRepeater>
                 </StackPanel>

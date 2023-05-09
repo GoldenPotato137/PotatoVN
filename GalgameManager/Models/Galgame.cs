@@ -1,12 +1,8 @@
-﻿// ReSharper disable EnforceIfStatementBraces
-
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-
 using CommunityToolkit.Mvvm.ComponentModel;
-
 using GalgameManager.Services;
-
 using Newtonsoft.Json;
 
 namespace GalgameManager.Models;
@@ -35,6 +31,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
+    [ObservableProperty] private int _totalPlayTime; //单位：分钟
     private bool _isSaveInCloud;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
@@ -177,6 +174,22 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         List<string> result = Directory.GetDirectories(Path).ToList();
         return result;
+    }
+
+    /// <summary>
+    /// 记录游戏的游玩时间
+    /// </summary>
+    /// <param name="process">游戏进程</param>
+    public async void RecordPlayTime(Process process)
+    {
+        await Task.Run(() =>
+        {
+            while (!process.HasExited)
+            {
+                Thread.Sleep(1000 * 60);
+                _totalPlayTime += process.HasExited ? 0 : 1; //不能bool转int，只能这么写了
+            }
+        });
     }
 }
 

@@ -1,17 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
-
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
@@ -119,10 +116,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         process.Start();
         _galgameService.Sort();
         await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
+        Item.RecordPlayTime(process);
         ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
         await _jumpListService.AddToJumpListAsync(Item);
 
         await process.WaitForExitAsync();
+        Item.TotalPlayTime--;
+        Item.TotalPlayTime++; //手动刷新一下时间显示
         ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
     }
 

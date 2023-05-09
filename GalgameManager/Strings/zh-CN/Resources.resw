@@ -415,4 +415,10 @@
     <value>存档云端化失败啦！但是别担心，你的存档是安全的。
 以下为失败原因：</value>
   </data>
+  <data name="GalgamePage_TotalPlayTime.Text" xml:space="preserve">
+    <value>游玩时间</value>
+  </data>
+  <data name="Minute" xml:space="preserve">
+    <value>分钟</value>
+  </data>
 </root>
