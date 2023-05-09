@@ -1,7 +1,8 @@
 ﻿using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Models;
 using GalgameManager.Views;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -12,13 +13,20 @@ public class ActivationService : IActivationService
     private readonly ActivationHandler<List<string>> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly IDataCollectionService<GalgameFolder> _galgameFolderCollectionService;
+    private readonly IDataCollectionService<Galgame> _galgameCollectionService;
     private UIElement? _shell = null;
 
-    public ActivationService(ActivationHandler<List<string>> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService)
+    public ActivationService(ActivationHandler<List<string>> defaultHandler,
+        IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
+        IDataCollectionService<GalgameFolder> galgameFolderCollectionService,
+        IDataCollectionService<Galgame> galgameCollectionService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
+        _galgameFolderCollectionService = galgameFolderCollectionService;
+        _galgameCollectionService = galgameCollectionService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -61,6 +69,8 @@ public class ActivationService : IActivationService
     private async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
+        await _galgameCollectionService.InitAsync();
+        await _galgameFolderCollectionService.InitAsync();
         await Task.CompletedTask;
     }
 

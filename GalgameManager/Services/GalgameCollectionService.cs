@@ -11,8 +11,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
-// ReSharper disable EnforceForeachStatementBraces
-// ReSharper disable EnforceIfStatementBraces
 public class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private List<Galgame> _galgames = new();
@@ -24,7 +22,6 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
     public bool IsPhrasing;
-    private bool _isInit;
 
     private IGalInfoPhraser[] PhraserList
     {
@@ -43,6 +40,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
             await SaveGalgamesAsync();
         };
     }
+    
+    public async Task InitAsync()
+    {
+        await GetGalgames();
+        await _jumpListService.CheckJumpListAsync(_galgames);
+    }
 
     private async Task GetGalgames()
     {
@@ -50,7 +53,6 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         List<Galgame> toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
         foreach (Galgame galgame in toRemove)
             _galgames.Remove(galgame);
-        _isInit = true;
         UpdateDisplayGalgames();
         GalgameLoadedEvent?.Invoke();
     }
@@ -123,14 +125,6 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
-        //为了防止在Home添加游戏的时候galgameFolderService还没有初始化，把要加的库暂存起来
-        List<string> libToCheck = await LocalSettingsService.ReadSettingAsync<List<string>>(KeyValues.LibToCheck) ?? new List<string>();
-        var libPath = galgame.Path[..galgame.Path.LastIndexOf('\\')];
-        if (!libToCheck.Contains(libPath))
-        {
-            libToCheck.Add(libPath);
-            await LocalSettingsService.SaveSettingAsync(KeyValues.LibToCheck, libToCheck, true);
-        }
         UpdateDisplayGalgames();
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
@@ -207,11 +201,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
 
     public async Task<ObservableCollection<Galgame>> GetContentGridDataAsync()
     {
-        if (!_isInit)
-        {
-            await GetGalgames();
-            await _jumpListService.CheckJumpListAsync(_galgames);
-        }
+        await Task.CompletedTask;
         return _displayGalgames;
     }
 

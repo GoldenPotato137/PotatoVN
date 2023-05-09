@@ -1,18 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-
 using Windows.Storage;
 using Windows.Storage.Pickers;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -110,9 +106,11 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         if (file != null)
         {
             var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
-            if (folder.StartsWith(_item!.Path) == false)
-                throw new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）");
-
+            if (_item!.IsInFolder(folder) == false)
+            {
+                await ShowGameExistedInfoBar(new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）"));
+                return;
+            }
             await TryAddGalgame(folder);
         }
     }

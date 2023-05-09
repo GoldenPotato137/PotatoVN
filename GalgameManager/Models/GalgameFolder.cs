@@ -24,6 +24,7 @@ public class GalgameFolder
     [JsonIgnore] public int ProgressValue;
     [JsonIgnore] public int ProgressMax;
     [JsonIgnore] public string ProgressText = string.Empty;
+    private readonly List<Galgame> _galgames = new();
     public event VoidDelegate? ProgressChangedEvent;
 
     public string Path
@@ -40,8 +41,37 @@ public class GalgameFolder
 
     public async Task<ObservableCollection<Galgame>> GetGalgameList()
     {
-        var games = await GalgameService.GetContentGridDataAsync();
-        return new ObservableCollection<Galgame>(games.Where(g => g.Path.StartsWith(Path)).ToList());
+        await Task.CompletedTask;
+        return new ObservableCollection<Galgame>(_galgames);
+    }
+
+    /// <summary>
+    /// 向库中新增一个游戏
+    /// </summary>
+    /// <param name="galgame">游戏</param>
+    public void AddGalgame(Galgame galgame)
+    {
+        _galgames.Add(galgame);
+    }
+
+    /// <summary>
+    /// 检查该游戏是否应该在这个库中
+    /// </summary>
+    /// <param name="galgame">游戏</param>
+    /// <returns></returns>
+    public bool IsInFolder(Galgame galgame)
+    {
+        return IsInFolder(galgame.Path);
+    }
+
+    /// <summary>
+    /// 检查这个路径的游戏是否应该这个库中
+    /// </summary>
+    /// <param name="path">路径</param>
+    /// <returns></returns>
+    public bool IsInFolder(string path)
+    {
+        return path[..path.LastIndexOf('\\')] == Path ;
     }
 
     /// <summary>

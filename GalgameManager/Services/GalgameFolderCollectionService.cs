@@ -1,48 +1,44 @@
 ﻿using System.Collections.ObjectModel;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
-
-// ReSharper disable EnforceIfStatementBraces
-
-// ReSharper disable EnforceForeachStatementBraces
+using SharpCompress;
 
 namespace GalgameManager.Services;
 
 public class GalgameFolderCollectionService : IDataCollectionService<GalgameFolder>
 {
-    private readonly ObservableCollection<GalgameFolder> _galgameFolders;
+    private ObservableCollection<GalgameFolder> _galgameFolders = new();
     private readonly GalgameCollectionService _galgameService;
-
-    private ILocalSettingsService LocalSettingsService
-    {
-        get;
-    }
+    private readonly ILocalSettingsService _localSettingsService;
 
     public GalgameFolderCollectionService(ILocalSettingsService localSettingsService, IDataCollectionService<Galgame> galgameService)
     {
-        LocalSettingsService = localSettingsService;
+        _localSettingsService = localSettingsService;
         _galgameService = ((GalgameCollectionService?)galgameService)!;
         _galgameService.GalgameAddedEvent += OnGalgameAdded;
-
-        _galgameFolders = localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders, true).Result
-                          ?? new ObservableCollection<GalgameFolder>();
-
-        foreach (var folder in _galgameFolders)
-            folder.GalgameService = _galgameService;
-        
-        // 检查启动前是否有新的游戏添加
-        var list = LocalSettingsService.ReadSettingAsync<List<string>>(KeyValues.LibToCheck, true).Result ?? new List<string>();
-        foreach(var path in list)
-            _ = AddGalgameFolderAsync(path, false);
-        LocalSettingsService.SaveSettingAsync(KeyValues.LibToCheck, new List<string>(), true);
     }
 
     public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()
     {
         await Task.CompletedTask;
         return _galgameFolders;
+    }
+
+    public async Task InitAsync()
+    {
+        _galgameFolders = await _localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders, true)
+                          ?? new ObservableCollection<GalgameFolder>();
+        ObservableCollection<Galgame> galgames = await _galgameService.GetContentGridDataAsync();
+
+        await Task.Run(() =>
+        {
+            foreach (GalgameFolder galgameFolder in _galgameFolders)
+            {
+                galgameFolder.GalgameService = _galgameService;
+                galgames.Where(galgame => galgameFolder.IsInFolder(galgame)).ForEach(galgameFolder.AddGalgame);
+            }
+        });
     }
 
     private async void OnGalgameAdded(Galgame galgame)
@@ -72,10 +68,10 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
         GalgameFolder galgameFolder = new(path, _galgameService);
         _galgameFolders.Add(galgameFolder);
-        await LocalSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
+        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
         if (tryGetGalgame)
         {
-            await galgameFolder.GetGalgameInFolder(LocalSettingsService);
+            await galgameFolder.GetGalgameInFolder(_localSettingsService);
         }
     }
 }

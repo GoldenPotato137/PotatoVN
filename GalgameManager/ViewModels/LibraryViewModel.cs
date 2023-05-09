@@ -1,17 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-
 using Windows.Storage.Pickers;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
-
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
@@ -54,7 +50,6 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     {
         if (clickedItem != null)
         {
-            _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
             _navigationService.NavigateTo(typeof(GalgameFolderViewModel).FullName!, clickedItem.Path);
         }
     }
