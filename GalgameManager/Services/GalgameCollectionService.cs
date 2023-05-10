@@ -62,9 +62,13 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </summary>
     private void UpdateDisplayGalgames()
     {
-        _displayGalgames.Clear();
-        foreach(Galgame gal in _galgames)
+        foreach (Galgame gal in _galgames) {
+            if (_displayGalgames.Contains(gal))
+            {
+                continue;
+            }
             _displayGalgames.Add(gal);
+        }
     }
 
     /// <summary>
