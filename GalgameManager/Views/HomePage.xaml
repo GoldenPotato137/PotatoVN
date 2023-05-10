@@ -7,11 +7,13 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Name="Page">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:InverseVisibilityConverter x:Key="InverseVisibilityConverter" />
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -70,12 +72,21 @@
                             Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
                             ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
-                                <Rectangle                                     Height="230"
-                                    Width="150" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- 裁剪水平图片版 -->
+                                <Rectangle Height="209" Width="150"
+                                           Visibility="{Binding ElementName=Page, Path=ViewModel.FixHorizontalPicture}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Rectangle.Fill>
-                                        <ImageBrush ImageSource="{x:Bind ImagePath.Value}" Stretch="UniformToFill"/>
+                                        <ImageBrush ImageSource="{x:Bind ImagePath.Value}" Stretch="UniformToFill" />
                                     </Rectangle.Fill>
                                 </Rectangle>
+                                <!-- 不裁剪水平图片 -->
+                                <Image
+                                    Source="{x:Bind ImagePath.Value}"
+                                    Visibility="{Binding ElementName=Page, Path=ViewModel.FixHorizontalPicture, 
+                                    Converter={StaticResource InverseVisibilityConverter}}"
+                                    Height="230"
+                                    Width="150" />
                                 <TextBlock
                                     Margin="{StaticResource XXSmallTopMargin}"
                                     HorizontalAlignment="Center"

@@ -135,7 +135,6 @@ public static class KeyValues
     public const string RssType = "rssType";
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
-    public const string LibToCheck = "libToCheck";
     public const string OverrideLocalName = "overrideLocalName";
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
@@ -149,6 +148,7 @@ public static class KeyValues
     public const string GameFolderMustContain = "gameFolderMustContain";
     public const string GameFolderShouldContain = "gameFolderShouldContain";
     public const string FaqLastUpdate = "faqLastUpdate";
+    public const string FixHorizontalPicture = "fixHorizontalPictrue";
 }
 
 public enum RssType

@@ -1,19 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
-
 using Windows.Storage;
 using Windows.Storage.Pickers;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
-
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 
@@ -29,6 +26,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _isPhrasing;
+    [ObservableProperty] private Visibility _fixHorizontalPicture;
 
     #region UI
 
@@ -60,7 +58,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
-    public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService)
+    public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
+        ILocalSettingsService localSettingsService)
     {
         _navigationService = navigationService;
         _dataCollectionService = dataCollectionService;
@@ -69,6 +68,9 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
         // IsPhrasing = _galgameService.IsPhrasing;
+
+        _fixHorizontalPicture = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result 
+                                == false ? Visibility.Collapsed : Visibility.Visible;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }

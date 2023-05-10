@@ -97,7 +97,8 @@ public partial class SettingsViewModel : ObservableRecipient
         SwitchThemeCommand = new RelayCommand<ElementTheme>(Execute);
 
         _localSettingsService = localSettingsService;
-
+        //THEME
+        _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         IsSelectBangumi = RssType == RssType.Bangumi ? Visibility.Visible : Visibility.Collapsed;
@@ -135,6 +136,13 @@ public partial class SettingsViewModel : ObservableRecipient
 
         return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
+
+    #region THEME
+
+    [ObservableProperty] private bool _fixHorizontalPicture;
+    partial void OnFixHorizontalPictureChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.FixHorizontalPicture, value);
+
+    #endregion
 
     #region RSS
 

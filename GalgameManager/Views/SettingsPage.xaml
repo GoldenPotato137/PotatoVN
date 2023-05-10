@@ -13,6 +13,10 @@
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter" />
+        <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
+            <Setter Property="Spacing" Value="13" />
+            <Setter Property="Orientation" Value="Vertical" />
+        </Style>
     </Page.Resources>
 
 
@@ -25,37 +29,47 @@
                                          SettingDescription="{x:Bind ViewModel.UiThemeDescription}"
                                          SettingIcon="&#xE790;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel>
-                            <RadioButton
-                                x:Uid="Settings_Theme_Light"
-                                Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
-                                FontSize="15"
-                                GroupName="AppTheme">
-                                <RadioButton.CommandParameter>
-                                    <xaml:ElementTheme>Light</xaml:ElementTheme>
-                                </RadioButton.CommandParameter>
-                            </RadioButton>
-                            <RadioButton
-                                x:Uid="Settings_Theme_Dark"
-                                Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
-                                FontSize="15"
-                                GroupName="AppTheme">
-                                <RadioButton.CommandParameter>
-                                    <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                                </RadioButton.CommandParameter>
-                            </RadioButton>
-                            <RadioButton
-                                x:Uid="Settings_Theme_Default"
-                                Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
-                                FontSize="15"
-                                GroupName="AppTheme">
-                                <RadioButton.CommandParameter>
-                                    <xaml:ElementTheme>Default</xaml:ElementTheme>
-                                </RadioButton.CommandParameter>
-                            </RadioButton>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 主题颜色 -->
+                            <control:Panel>
+                                <StackPanel>
+                                    <RadioButton
+                                        x:Uid="Settings_Theme_Light"
+                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
+                                        FontSize="15"
+                                        GroupName="AppTheme">
+                                        <RadioButton.CommandParameter>
+                                            <xaml:ElementTheme>Light</xaml:ElementTheme>
+                                        </RadioButton.CommandParameter>
+                                    </RadioButton>
+                                    <RadioButton
+                                        x:Uid="Settings_Theme_Dark"
+                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
+                                        FontSize="15"
+                                        GroupName="AppTheme">
+                                        <RadioButton.CommandParameter>
+                                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
+                                        </RadioButton.CommandParameter>
+                                    </RadioButton>
+                                    <RadioButton
+                                        x:Uid="Settings_Theme_Default"
+                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
+                                        FontSize="15"
+                                        GroupName="AppTheme">
+                                        <RadioButton.CommandParameter>
+                                            <xaml:ElementTheme>Default</xaml:ElementTheme>
+                                        </RadioButton.CommandParameter>
+                                    </RadioButton>
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- 修复横向图片 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Theme_FixHorizontalPicture"
+                                                           IsOn="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}" />
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -118,22 +132,23 @@
                     SettingDescription="{x:Bind ViewModel.UiLibraryDescription}"
                     SettingIcon="&#xE8B7;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel Orientation="Vertical" Spacing="13">
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <!-- 递归搜索子目录 -->
                             <control:Panel>
                                 <StackPanel>
                                     <local:SettingToggleSwitch
-                                    Title="{x:Bind ViewModel.UiLibrarySearchSubPath}"
-                                    Description="{x:Bind ViewModel.UiLibrarySearchSubPathDescription}"
-                                    IsOn="{x:Bind ViewModel.SearchSubFolder, Mode=TwoWay}" />
-                                    <RelativePanel Margin="{StaticResource XSmallTopMargin}" HorizontalAlignment="Stretch" 
+                                        Title="{x:Bind ViewModel.UiLibrarySearchSubPath}"
+                                        Description="{x:Bind ViewModel.UiLibrarySearchSubPathDescription}"
+                                        IsOn="{x:Bind ViewModel.SearchSubFolder, Mode=TwoWay}" />
+                                    <RelativePanel Margin="{StaticResource XSmallTopMargin}"
+                                                   HorizontalAlignment="Stretch"
                                                    Visibility="{x:Bind ViewModel.SearchSubFolder, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepth}"
-                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                                       Style="{ThemeResource BodyTextBlockStyle}" />
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepthDescription}"
-                                                   FontSize="12"
-                                                   Opacity="0.6" />
+                                                       FontSize="12"
+                                                       Opacity="0.6" />
                                         </StackPanel>
                                         <TextBox Text="{x:Bind ViewModel.SearchSubFolderDepth, Mode=TwoWay}"
                                                  RelativePanel.AlignRightWithPanel="True" />

@@ -214,7 +214,7 @@
     <value>外观</value>
   </data>
   <data name="SettingsPage_ThemeDescription" xml:space="preserve">
-    <value>切换深色或浅色模式</value>
+    <value>与显示有关的设置</value>
   </data>
   <data name="SettingsPage_RssTitle" xml:space="preserve">
     <value>信息源</value>
@@ -420,5 +420,11 @@
   </data>
   <data name="Minute" xml:space="preserve">
     <value>分钟</value>
+  </data>
+  <data name="SettingsPage_Theme_FixHorizontalPicture.Title" xml:space="preserve">
+    <value>修复主页水平图片</value>
+  </data>
+  <data name="SettingsPage_Theme_FixHorizontalPicture.Description" xml:space="preserve">
+    <value>是否将横向显示的封面图裁剪为竖直的</value>
   </data>
 </root>

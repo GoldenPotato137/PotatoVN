@@ -62,13 +62,16 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </summary>
     private void UpdateDisplayGalgames()
     {
-        foreach (Galgame gal in _galgames) {
-            if (_displayGalgames.Contains(gal))
-            {
-                continue;
-            }
-            _displayGalgames.Add(gal);
-        }
+        //未来会加入筛选功能，目前先用这个暴力写法
+        _displayGalgames.Clear();
+        _galgames.ForEach(gal => _displayGalgames.Add(gal));
+        // foreach (Galgame gal in _galgames) {
+        //     if (_displayGalgames.Contains(gal))
+        //     {
+        //         continue;
+        //     }
+        //     _displayGalgames.Add(gal);
+        // }
     }
 
     /// <summary>
