@@ -1,5 +1,4 @@
 ﻿using GalgameManager.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Views;

@@ -51,6 +51,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         {
             // ignored
         }
+        _galgameFolders.First(folder => folder.IsInFolder(galgame)).AddGalgame(galgame);
     }
 
     /// <summary>

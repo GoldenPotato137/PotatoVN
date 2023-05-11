@@ -75,6 +75,8 @@ public partial class App : Application
             services.AddTransient<HelpPage>();
             services.AddTransient<GalgameSettingViewModel>();
             services.AddTransient<GalgameSettingPage>();
+            services.AddTransient<PlayedTimePage>();
+            services.AddTransient<PlayedTimeViewModel>();
             services.AddTransient<LibraryViewModel>();
             services.AddTransient<LibraryPage>();
             services.AddTransient<GalgameFolderViewModel>();

@@ -20,7 +20,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
     public string? ImageUrl;
-    
+    public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
@@ -187,7 +187,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             while (!process.HasExited)
             {
                 Thread.Sleep(1000 * 60);
-                _totalPlayTime += process.HasExited ? 0 : 1; //不能bool转int，只能这么写了
+                if (!process.HasExited)
+                {
+                    _totalPlayTime++;
+                    var now = DateTime.Now.ToShortDateString();
+                    if (PlayedTime.ContainsKey(now))
+                        PlayedTime[now]++;
+                    else
+                        PlayedTime.Add(now, 1);
+                }
             }
         });
     }

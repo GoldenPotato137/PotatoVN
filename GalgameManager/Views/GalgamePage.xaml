@@ -122,13 +122,14 @@
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
-
+                            <!-- 游戏总时长 -->
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
                                            x:Uid="GalgamePage_TotalPlayTime" />
-                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.Item.TotalPlayTime, Mode=OneWay, 
-                                           FallbackValue={}, Converter={StaticResource TimeToDisplayTimeConverter}}" />
+                                <HyperlinkButton
+                                    Content="{x:Bind ViewModel.Item.TotalPlayTime, Mode=OneWay, 
+                                           FallbackValue={}, Converter={StaticResource TimeToDisplayTimeConverter}}"
+                                    Padding="0 0 0 0" Command="{x:Bind ViewModel.JumpToPlayedTimePageCommand}"/>
                             </StackPanel>
                         </StackPanel>
 

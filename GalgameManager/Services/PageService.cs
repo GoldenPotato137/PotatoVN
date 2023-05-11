@@ -19,6 +19,7 @@ public class PageService : IPageService
         Configure<GalgameFolderViewModel, GalgameFolderPage>();
         Configure<GalgameSettingViewModel, GalgameSettingPage>();
         Configure<HelpViewModel, HelpPage>();
+        Configure<PlayedTimeViewModel, PlayedTimePage>();
     }
 
     public Type GetPageType(string key)

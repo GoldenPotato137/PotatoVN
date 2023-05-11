@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
@@ -14,7 +13,6 @@ using Microsoft.UI.Xaml;
 
 namespace GalgameManager.ViewModels;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 {
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
@@ -155,5 +153,11 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private void ResetExePath(object obj)
     {
         Item!.ExePath = null;
+    }
+
+    [RelayCommand]
+    private void JumpToPlayedTimePage()
+    {
+        _navigationService.NavigateTo(typeof(PlayedTimeViewModel).FullName!, Item);
     }
 }

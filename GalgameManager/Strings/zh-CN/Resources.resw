@@ -427,4 +427,7 @@
   <data name="SettingsPage_Theme_FixHorizontalPicture.Description" xml:space="preserve">
     <value>是否将横向显示的封面图裁剪为竖直的</value>
   </data>
+  <data name="Back.Label" xml:space="preserve">
+    <value>回到上个界面</value>
+  </data>
 </root>
