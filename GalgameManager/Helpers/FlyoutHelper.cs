@@ -1,8 +1,5 @@
-﻿using CommunityToolkit.WinUI.UI;
-
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace GalgameManager.Helpers;
 
@@ -35,13 +32,7 @@ public class FlyoutHelper
 
     private static void Button_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && VisualTreeHelper.GetParent(button) is { } parent)
-        {
-            var flyoutPresenter = parent.FindAscendant<FlyoutPresenter>();
-            if (flyoutPresenter is not null)
-            {
-                flyoutPresenter.Visibility = Visibility.Collapsed;
-            }
-        }
+        if (sender is Button button)
+            button.Flyout.Hide();
     }
 }

@@ -50,14 +50,15 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;" />
                     </AppBarButton.Icon>
                     <AppBarButton.ContextFlyout>
-                        <Flyout Placement="Bottom">
+                        <Flyout Placement="Bottom" x:Name="ClearExeFlyout">
                             <StackPanel>
                                 <TextBlock Style="{ThemeResource BaseTextBlockStyle}"
                                            Text="{x:Bind ViewModel.UiPlayFlyOutTitle}" />
                                 <Button Command="{x:Bind ViewModel.ResetExePathCommand}"
                                         local:FlyoutHelper.CloseFlyoutOnClick="True"
                                         Content="{x:Bind ViewModel.UiYes}"
-                                        Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center" />
+                                        Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center" 
+                                        Flyout="{x:Bind ClearExeFlyout}"/>
                             </StackPanel>
                         </Flyout>
                     </AppBarButton.ContextFlyout>

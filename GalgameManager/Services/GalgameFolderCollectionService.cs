@@ -1,7 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
+using Microsoft.UI.Xaml.Controls;
 using SharpCompress;
 
 namespace GalgameManager.Services;
@@ -74,6 +77,31 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         {
             await galgameFolder.GetGalgameInFolder(_localSettingsService);
         }
+    }
+
+    /// <summary>
+    /// 删除一个galgame库，其包含弹窗警告，若用户取消则什么都不做
+    /// </summary>
+    /// <param name="galgameFolder"></param>
+    public async Task DeleteGalgameFolderAsync(GalgameFolder galgameFolder)
+    {
+        var delete = false;
+        ContentDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "GalgameFolderCollectionService_DeleteGalgameFolderAsync_Title".GetLocalized(),
+            Content = "GalgameFolderCollectionService_DeleteGalgameFolderAsync_Content".GetLocalized(),
+            PrimaryButtonText = "Yes".GetLocalized(),
+            SecondaryButtonText = "Cancel".GetLocalized(),
+            PrimaryButtonCommand = new RelayCommand(() => delete = true),
+            DefaultButton = ContentDialogButton.Secondary
+        };
+        await dialog.ShowAsync();
+        
+        if (delete == false || !_galgameFolders.Contains(galgameFolder)) return;
+        foreach (Galgame galgame in await galgameFolder.GetGalgameList())
+            await _galgameService.RemoveGalgame(galgame);
+        _galgameFolders.Remove(galgameFolder);
     }
 }
 

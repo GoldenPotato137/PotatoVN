@@ -7,12 +7,19 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
     mc:Ignorable="d">
+    
+    <Page.Resources>
+        <CommandBarFlyout Placement="Right" x:Key="Flyout">
+            <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiDeleteFolder}" 
+                          Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
+        </CommandBarFlyout>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
         <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
@@ -45,7 +52,8 @@
                 <DataTemplate x:DataType="models:GalgameFolder">
                     <Grid
                         x:Name="itemThumbnail"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
+                        ContextFlyout="{StaticResource Flyout}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <FontIcon
                                 Glyph="&#xE8B7;"

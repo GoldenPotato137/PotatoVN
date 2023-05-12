@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml.Controls;
@@ -29,6 +30,12 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
  
     [ObservableProperty]
     private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    
+    #region UI
+
+    public readonly string UiDeleteFolder = "LibraryPage_DeleteFolder".GetLocalized();
+
+    #endregion
 
     public LibraryViewModel(INavigationService navigationService, IDataCollectionService<GalgameFolder> galFolderService)
     {
@@ -77,5 +84,12 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
             await Task.Delay(3000);
             IsInfoBarOpen = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task DeleteFolder(GalgameFolder? galgameFolder)
+    {
+        if (galgameFolder == null) return;
+        await _galFolderService.DeleteGalgameFolderAsync(galgameFolder);
     }
 }

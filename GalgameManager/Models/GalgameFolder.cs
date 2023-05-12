@@ -240,7 +240,7 @@ public class GalgameFolder
             {
                 IsUnpacking = false;
                 ProgressChangedEvent?.Invoke();
-                if (deleteDirectory != string.Empty)
+                if (deleteDirectory != string.Empty && deleteDirectory!=Path)
                     DeleteDirectory(deleteDirectory); // 删除解压失败的文件夹
             });
             return null;
