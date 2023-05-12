@@ -18,7 +18,6 @@
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiRemove}" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
-            <AppBarButton Icon="Cancel" ToolTipService.ToolTip="{x:Bind ViewModel.UiDelete}" Command="{x:Bind ViewModel.GalFlyOutDeleteFromDiskCommand}" CommandParameter="{Binding}"/>
         </CommandBarFlyout>
     </Page.Resources>
 

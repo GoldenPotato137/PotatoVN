@@ -171,7 +171,7 @@
   <data name="HomePage_Remove" xml:space="preserve">
     <value>Remove Game from Library</value>
   </data>
-  <data name="HomePage_Delete" xml:space="preserve">
+  <data name="GalgamePage_Delete.Label" xml:space="preserve">
     <value>Delete Game</value>
   </data>
   <data name="HomePage_AddNewGame" xml:space="preserve">

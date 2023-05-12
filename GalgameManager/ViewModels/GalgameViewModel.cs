@@ -10,6 +10,7 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
@@ -153,6 +154,26 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private void ResetExePath(object obj)
     {
         Item!.ExePath = null;
+    }
+    
+    [RelayCommand]
+    private async void DeleteFromDisk()
+    {
+        if(Item == null) return;
+        ContentDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "HomePage_Delete_Title".GetLocalized(),
+            Content = "HomePage_Delete_Message".GetLocalized(),
+            PrimaryButtonText = "Yes".GetLocalized(),
+            SecondaryButtonText = "Cancel".GetLocalized(),
+            DefaultButton = ContentDialogButton.Secondary
+        };
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            await _galgameService.RemoveGalgame(Item, true);
+        };
+        await dialog.ShowAsync();
     }
 
     [RelayCommand]

@@ -33,7 +33,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private static readonly ResourceLoader ResourceLoader= new();
     public readonly string UiEdit = ResourceLoader.GetString("HomePage_Edit");
     public readonly string UiDownLoad = ResourceLoader.GetString("HomePage_Download");
-    public readonly string UiDelete = ResourceLoader.GetString("HomePage_Delete");
     public readonly string UiRemove = ResourceLoader.GetString("HomePage_Remove");
     public readonly string UiAddNewGame = ResourceLoader.GetString("HomePage_AddNewGame");
     public readonly string UiSort = ResourceLoader.GetString("HomePage_Sort");
@@ -44,8 +43,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly string _uiNoInfo = ResourceLoader.GetString("HomePage_NoInfo");
     private readonly string _uiRemoveTitle = ResourceLoader.GetString("HomePage_Remove_Title");
     private readonly string _uiRemoveMessage = ResourceLoader.GetString("HomePage_Remove_Message");
-    private readonly string _uiDeleteTitle = ResourceLoader.GetString("HomePage_Delete_Title");
-    private readonly string _uiDeleteMessage = ResourceLoader.GetString("HomePage_Delete_Message");
     private readonly string _uiYes = ResourceLoader.GetString("Yes");
     private readonly string _uiCancel = ResourceLoader.GetString("Cancel");
 
@@ -178,26 +175,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         if(galgame == null) return;
         _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, galgame);
-    }
-    
-    [RelayCommand]
-    private async void GalFlyOutDeleteFromDisk(Galgame? galgame)
-    {
-        if(galgame == null) return;
-        ContentDialog dialog = new()
-        {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
-            Title = _uiDeleteTitle,
-            Content = _uiDeleteMessage,
-            PrimaryButtonText = _uiYes,
-            SecondaryButtonText = _uiCancel
-        };
-        dialog.PrimaryButtonClick += async (_, _) =>
-        {
-            await _galgameService.RemoveGalgame(galgame, true);
-        };
-        
-        await dialog.ShowAsync();
     }
 
     [RelayCommand]

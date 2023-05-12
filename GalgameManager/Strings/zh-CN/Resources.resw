@@ -171,7 +171,7 @@
   <data name="HomePage_Remove" xml:space="preserve">
     <value>从库中移除游戏</value>
   </data>
-  <data name="HomePage_Delete" xml:space="preserve">
+  <data name="GalgamePage_Delete.Label" xml:space="preserve">
     <value>彻底删除游戏</value>
   </data>
   <data name="HomePage_AddNewGame" xml:space="preserve">

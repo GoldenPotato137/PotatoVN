@@ -64,14 +64,6 @@
                     </AppBarButton.ContextFlyout>
                 </AppBarButton>
                 <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
-                <!-- <AppBarButton -->
-                <!--     Label="下载数据" -->
-                <!--     Command="{x:Bind ViewModel.GetInfoFromRssCommand}" -->
-                <!--     IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"> -->
-                <!--     <AppBarButton.Icon> -->
-                <!--         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;" /> -->
-                <!--     </AppBarButton.Icon> -->
-                <!-- </AppBarButton> -->
                 <AppBarButton
                     Label="{x:Bind ViewModel.UiChangeSavePosition}"
                     Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
@@ -79,6 +71,9 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"/>
+                </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
