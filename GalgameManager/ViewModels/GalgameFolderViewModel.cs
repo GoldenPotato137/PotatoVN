@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml;
@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
 {
     private readonly IDataCollectionService<GalgameFolder> _dataCollectionService;
@@ -22,6 +21,8 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private readonly ILocalSettingsService _localSettingsService;
     private GalgameFolder? _item;
     public ObservableCollection<Galgame> Galgames = new();
+    private readonly List<Galgame> _selectedGalgames = new();
+    public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb };
 
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
@@ -35,6 +36,12 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     [NotifyCanExecuteChangedFor(nameof(GetInfoFromRssCommand))]
     [NotifyCanExecuteChangedFor(nameof(GetGalInFolderCommand))]
     private bool _canExecute; //是否正在运行命令
+
+    #region UI_STRING
+
+    [ObservableProperty] private string _uiDownloadInfo = "GalgameFolderPage_DownloadInfo".GetLocalized();
+
+    #endregion
 
     public GalgameFolder? Item
     {
@@ -167,7 +174,10 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private async void GetInfoFromRss()
     {
         if (Item == null) return;
-        await Item.GetInfoFromRss();
+        if (_selectedGalgames.Count == 0)
+            await Item.GetInfoFromRss();
+        else
+            await Item.GetInfoFromRss(_selectedGalgames);
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
@@ -211,6 +221,19 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         ProgressMsg = "正在从信息源中获取游戏信息...";
         await TryAddGalgame(result);
         IsUnpacking = false;
+    }
+
+    [RelayCommand]
+    private void OnSelectionChanged(object et)
+    {
+        SelectionChangedEventArgs e = (SelectionChangedEventArgs) et;
+        foreach(Galgame galgame in e.AddedItems)
+            _selectedGalgames.Add(galgame);
+        foreach (Galgame galgame in e.RemovedItems)
+            _selectedGalgames.Remove(galgame);
+        UiDownloadInfo = _selectedGalgames.Count == 0
+            ? "GalgameFolderPage_DownloadInfo".GetLocalized()
+            : "GalgameFolderPage_DownloadSelectedInfo".GetLocalized();
     }
 }
 

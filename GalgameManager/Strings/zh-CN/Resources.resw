@@ -439,4 +439,10 @@
   <data name="LibraryPage_DeleteFolder" xml:space="preserve">
     <value>删除游戏库</value>
   </data>
+  <data name="GalgameFolderPage_DownloadInfo" xml:space="preserve">
+    <value>下载游戏数据</value>
+  </data>
+  <data name="GalgameFolderPage_DownloadSelectedInfo" xml:space="preserve">
+    <value>下载选定游戏数据</value>
+  </data>
 </root>

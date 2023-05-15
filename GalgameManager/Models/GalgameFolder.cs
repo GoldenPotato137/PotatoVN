@@ -144,15 +144,16 @@ public class GalgameFolder
 
     /// <summary>
     /// 从信息源更新库的所有游戏的信息
+    /// <param name="toUpdate">要更新的游戏列表，null则为全部更新</param>
     /// </summary>
-    public async Task GetInfoFromRss()
+    public async Task GetInfoFromRss(List<Galgame>? toUpdate = null)
     {
-        var galgames = await GetGalgameList();
+        List<Galgame> galgames = toUpdate ?? (await GetGalgameList()).ToList();
         IsRunning = true;
         for (var i = 0;i<galgames.Count;i++)
         {
-            var galgame = galgames[i];
-            ProgressText = $"正在获取 {galgame.Name} 的信息, {i}/{galgames.Count}";
+            Galgame galgame = galgames[i];
+            ProgressText = $"正在获取 {galgame.Name.Value} 的信息, {i}/{galgames.Count}";
             ProgressChangedEvent?.Invoke();
             await GalgameService.PhraseGalInfoAsync(galgame);
         }
