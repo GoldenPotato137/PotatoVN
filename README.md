@@ -33,8 +33,6 @@ windows10用户需要额外安装[Segoe Fluent 图标字体](https://aka.ms/Sego
 always a lot
 
 - [ ] **BUG**: 游戏匹配规则不能正确响应换行键
-- [ ] **FEAT**: 记录游戏时长
-- [ ] **FEAT** : 删除库
 - [ ] **UI** : 黑色主题下标题颜色&三大金刚键颜色
 - [ ] **UI** : 设置界面加入滚动条显示
 - [ ] **FEAT**: 允许在Library界面直接更改游戏ID
@@ -46,3 +44,5 @@ always a lot
 - [x] ~~**BUG**: 编辑游戏界面删掉图片地址后抛异常~~
 - [x] ~~**BUG**: 部分情况软链接生成失败~~
 - [x] ~~**FEAT**: 限制递归搜索子目录的深度~~ [Thanks to Murlors](https://github.com/GoldenPotato137/GalgameManager/pull/26)
+- [x] ~~**FEAT**: 记录游戏时长~~
+- [x] ~~**FEAT** : 删除库~~
