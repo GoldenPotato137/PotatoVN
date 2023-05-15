@@ -127,13 +127,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         foreach (SortKeys keyValue in SortKeysList)
         {
             var result = 0;
+            var take = -1; //默认降序
             switch (keyValue)
             {
                 case SortKeys.Developer:
                     result = string.Compare(_developer.Value!, other._developer.Value, StringComparison.Ordinal);
                     break;
                 case SortKeys.Name:
-                    result = string.Compare(_name.Value!, other._name.Value, StringComparison.Ordinal);
+                    result = string.Compare(_name.Value!, other._name.Value, StringComparison.CurrentCultureIgnoreCase);
+                    take = 1;
                     break;
                 case SortKeys.Rating:
                     result = _rating.Value.CompareTo(other._rating.Value);
@@ -143,7 +145,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                     break;
             }
             if (result != 0)
-                return -result; //降序
+                return take * result; 
         }
         return 0;
     }
