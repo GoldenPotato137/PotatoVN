@@ -20,19 +20,20 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
     public string? ImageUrl;
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(Id))] private RssType _rssType = RssType.None;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     private bool _isSaveInCloud;
+    private RssType _rssType;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
@@ -49,6 +50,20 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             {
                Ids[(int)RssType] = value;
                OnPropertyChanged(); 
+            }
+        }
+    }
+    
+    public RssType RssType
+    {
+        get => _rssType;
+        set
+        {
+            if (_rssType != value)
+            {
+                _rssType = value;
+                // OnPropertyChanged(); //信息源是通过Combobox选择的，不需要通知
+                OnPropertyChanged(nameof(Id));
             }
         }
     }
