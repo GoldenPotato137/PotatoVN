@@ -55,6 +55,15 @@ public class GalgameFolder
     }
 
     /// <summary>
+    /// 从库中删除一个游戏
+    /// </summary>
+    /// <param name="galgame">游戏</param>
+    public void DeleteGalgame(Galgame galgame)
+    {
+        _galgames.Remove(galgame);
+    }
+
+    /// <summary>
     /// 检查该游戏是否应该在这个库中
     /// </summary>
     /// <param name="galgame">游戏</param>

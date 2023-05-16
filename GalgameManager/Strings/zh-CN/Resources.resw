@@ -445,4 +445,13 @@
   <data name="GalgameFolderPage_DownloadSelectedInfo" xml:space="preserve">
     <value>下载选定游戏数据</value>
   </data>
+  <data name="HomePage_Search.Label" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="SettingsPage_Library_MetaBackup" xml:space="preserve">
+    <value>元数据备份</value>
+  </data>
+  <data name="SettingsPage_Library_MetaBackupDescription" xml:space="preserve">
+    <value>是否要在每个游戏文件夹下备份游戏信息数据，如不选中则数据只保存在应用数据文件夹中</value>
+  </data>
 </root>

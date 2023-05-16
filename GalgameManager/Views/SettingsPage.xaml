@@ -133,6 +133,15 @@
                     SettingIcon="&#xE8B7;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 数据备份 -->
+                            <control:Panel>
+                                <StackPanel>
+                                    <local:SettingToggleSwitch 
+                                        Title="{x:Bind ViewModel.UiLibraryMetaBackup}"
+                                        Description="{x:Bind ViewModel.UiLibraryMetaBackupDescription}"
+                                        IsOn="{x:Bind ViewModel.MetaBackup, Mode=TwoWay}"/>
+                                </StackPanel>
+                            </control:Panel>
                             <!-- 递归搜索子目录 -->
                             <control:Panel>
                                 <StackPanel>
@@ -147,27 +156,29 @@
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepth}"
                                                        Style="{ThemeResource BodyTextBlockStyle}" />
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepthDescription}"
-                                                       FontSize="12"
-                                                       Opacity="0.6" />
+                                                       Style="{StaticResource DescriptionTextStyle}"/>
                                         </StackPanel>
                                         <TextBox Text="{x:Bind ViewModel.SearchSubFolderDepth, Mode=TwoWay}"
                                                  RelativePanel.AlignRightWithPanel="True" />
+                                        <RelativePanel.Transitions>
+                                            <TransitionCollection>
+                                                <RepositionThemeTransition/>
+                                            </TransitionCollection>
+                                        </RelativePanel.Transitions>
                                     </RelativePanel>
                                 </StackPanel>
                             </control:Panel>
                             <!-- 正则表达式 -->
                             <control:Panel>
                                 <StackPanel Spacing="13">
-                                    <TextBlock Text="{x:Bind ViewModel.UiLibraryNameDescription}" FontSize="12"
-                                               Opacity="0.6"
-                                               Margin="0 0 0 -3" />
+                                    <TextBlock Text="{x:Bind ViewModel.UiLibraryNameDescription}" Margin="0 0 0 -3" 
+                                               Style="{ThemeResource DescriptionTextStyle}"/>
                                     <RelativePanel HorizontalAlignment="Stretch">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegex}"
                                                        Style="{ThemeResource BodyTextBlockStyle}" />
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegexDescription}"
-                                                       FontSize="12"
-                                                       Opacity="0.6" />
+                                                       Style="{ThemeResource DescriptionTextStyle}"/>
                                         </StackPanel>
                                         <TextBox Text="{x:Bind ViewModel.Regex, Mode=TwoWay}"
                                                  RelativePanel.AlignRightWithPanel="True" />
@@ -177,8 +188,7 @@
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegexIndex}"
                                                        Style="{ThemeResource BodyTextBlockStyle}" />
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchRegexIndexDescription}"
-                                                       FontSize="12"
-                                                       Opacity="0.6" />
+                                                       Style="{ThemeResource DescriptionTextStyle}"/>
                                         </StackPanel>
                                         <TextBox Text="{x:Bind ViewModel.RegexIndex, Mode=TwoWay}"
                                                  RelativePanel.AlignRightWithPanel="True" />

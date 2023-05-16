@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Windows.Storage.Pickers;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
-using Windows.Storage.Pickers;
 
 namespace GalgameManager.ViewModels;
 
@@ -33,7 +33,7 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
 
     public async void OnNavigatedFrom()
     {
-        await _galService.SaveGalgamesAsync();
+        await _galService.SaveGalgamesAsync(Gal);
     }
 
     public void OnNavigatedTo(object parameter)

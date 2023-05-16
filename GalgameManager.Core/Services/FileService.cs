@@ -1,26 +1,25 @@
 ﻿using System.Text;
-
 using GalgameManager.Core.Contracts.Services;
-
 using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace GalgameManager.Core.Services;
 
 public class FileService : IFileService
 {
-    public T Read<T>(string folderPath, string fileName)
+    public T Read<T>(string folderPath, string fileName, bool useJsonSerializer = false)
     {
         var path = Path.Combine(folderPath, fileName);
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<T>(json);
+            return useJsonSerializer ? JsonSerializer.Deserialize<T>(json) : JsonConvert.DeserializeObject<T>(json);
         }
 
         return default;
     }
 
-    public async Task Save<T>(string folderPath, string fileName, T content)
+    public async Task Save<T>(string folderPath, string fileName, T content, bool useJsonSerializer = false)
     {
         if (folderPath == null)
         {
@@ -32,7 +31,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonConvert.SerializeObject(content);
+        var fileContent = useJsonSerializer ? JsonSerializer.Serialize(content) : JsonConvert.SerializeObject(content);
         var filePath = Path.Combine(folderPath, fileName);
 
         const int maxRetries = 3;

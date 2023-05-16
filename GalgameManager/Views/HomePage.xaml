@@ -7,6 +7,8 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
     x:Name="Page">
 
@@ -31,6 +33,19 @@
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
                         Margin="0 -67 0 0">
+                <AppBarButton Icon="Find" x:Uid="HomePage_Search" AllowFocusOnInteraction="True">
+                    <AppBarButton.Flyout>
+                        <Flyout Placement="Bottom">
+                            <TextBox Width="200">
+                                <interactivity:Interaction.Behaviors>
+                                    <core:EventTriggerBehavior EventName="KeyDown">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchCommand}"/>
+                                    </core:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </TextBox>
+                        </Flyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
                 <AppBarButton
                     Icon="Add"
                     Label="{x:Bind ViewModel.UiAddNewGame}"
@@ -46,13 +61,6 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Modifiers="Control" Key="I" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <controls:AdaptiveGridView

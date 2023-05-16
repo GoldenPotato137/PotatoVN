@@ -17,8 +17,10 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private readonly ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
-    public delegate void GalgameAddedEventHandler(Galgame galgame);
-    public event GalgameAddedEventHandler? GalgameAddedEvent; //当有galgame添加时触发
+    private readonly IFileService _fileService;
+    public delegate void GalgameChangeEventHandler(Galgame galgame);
+    public event GalgameChangeEventHandler? GalgameAddedEvent; //当有galgame添加时触发
+    public event GalgameChangeEventHandler? GalgameDeletedEvent; //当有galgame删除时触发
     public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
     public bool IsPhrasing;
@@ -28,10 +30,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         get;
     } = new IGalInfoPhraser[5];
 
-    public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService)
+    public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
+        IFileService fileService)
     {
         LocalSettingsService = localSettingsService;
         _jumpListService = jumpListService;
+        _fileService = fileService;
         PhraserList[(int)RssType.Bangumi] = new BgmPhraser(localSettingsService);
         PhraserList[(int)RssType.Vndb] = new VndbPhraser();
 
@@ -106,6 +110,7 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         UpdateDisplayGalgames();
         if (removeFromDisk)
             galgame.Delete();
+        GalgameDeletedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
     }
 
@@ -119,19 +124,31 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         if (_galgames.Any(gal => gal.Path == path))
             return AddGalgameResult.AlreadyExists;
 
-        Galgame galgame = new(path);
-        var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
-        var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
-        var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
-        galgame.Name.Value = NameRegex.GetName(galgame.Name!, pattern, removeBorder, regexIndex);
-        if (string.IsNullOrEmpty(galgame.Name)) return AddGalgameResult.NotFoundInRss;
+        Galgame galgame;
+        var metaFolder = Path.Combine(path, Galgame.MetaPath);
+        if (Path.Exists(Path.Combine(metaFolder, "meta.json"))) // 有元数据备份
+        {
+            galgame =  _fileService.Read<Galgame>(metaFolder, "meta.json", true);
+            Galgame.ResolveMeta(galgame, metaFolder);
+            PhrasedEvent?.Invoke();
+        }
+        else
+        {
+            galgame = new(path);
+            var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
+            var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
+            var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
+            galgame.Name.Value = NameRegex.GetName(galgame.Name!, pattern, removeBorder, regexIndex);
+            if (string.IsNullOrEmpty(galgame.Name)) return AddGalgameResult.NotFoundInRss;
+
+            galgame = await PhraseGalInfoAsync(galgame);
+            if (!isForce && galgame.RssType == RssType.None)
+                return AddGalgameResult.NotFoundInRss;
+        }
         
-        galgame = await PhraseGalInfoAsync(galgame);
-        if (!isForce && galgame.RssType == RssType.None)
-            return AddGalgameResult.NotFoundInRss;
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
-        await SaveGalgamesAsync();
+        await SaveGalgamesAsync(galgame);
         UpdateDisplayGalgames();
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
@@ -215,10 +232,31 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <summary>
     /// 保存galgame列表（以及其内部的galgame）
     /// </summary>
-    public async Task SaveGalgamesAsync()
+    /// <param name="galgame">
+    /// 要指定保存的galgame，若为null则不做文件夹保存，只做缓存保存 <br/>
+    /// 如果设置中没有打开保存备份则不会保存到游戏文件夹
+    /// </param>
+    public async Task SaveGalgamesAsync(Galgame? galgame = null)
     {
+        if (galgame != null && await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
+            await SaveMetaAsync(galgame);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
     }
+    
+    /// <summary>
+    /// 保存galgame的信息备份（包括meta.json和封面图）
+    /// </summary>
+    /// <param name="galgame"></param>
+    private async Task SaveMetaAsync(Galgame galgame)
+    {
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
+        await _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy(), true);
+        var imagePath = Path.Combine(galgame.Path, Galgame.MetaPath);
+        imagePath = Path.Combine(imagePath, Path.GetFileName(galgame.ImagePath));
+        if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(imagePath))
+            File.Copy(galgame.ImagePath.Value!, imagePath);
+    }
+    
 
     /// <summary>
     /// 获取galgame的存档文件夹

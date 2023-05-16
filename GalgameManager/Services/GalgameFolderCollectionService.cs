@@ -20,6 +20,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         _localSettingsService = localSettingsService;
         _galgameService = ((GalgameCollectionService?)galgameService)!;
         _galgameService.GalgameAddedEvent += OnGalgameAdded;
+        _galgameService.GalgameDeletedEvent += OnGalgameDeleted;
     }
 
     public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()
@@ -55,6 +56,11 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
             // ignored
         }
         _galgameFolders.First(folder => folder.IsInFolder(galgame)).AddGalgame(galgame);
+    }
+
+    private void OnGalgameDeleted(Galgame galgame)
+    {
+        _galgameFolders.First(folder => folder.IsInFolder(galgame)).DeleteGalgame(galgame);
     }
 
     /// <summary>

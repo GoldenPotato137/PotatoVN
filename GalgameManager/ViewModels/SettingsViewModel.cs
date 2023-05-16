@@ -43,6 +43,8 @@ public partial class SettingsViewModel : ObservableRecipient
     public readonly string UiQuickStartAutoStartGameDescription = "SettingsPage_QuickStart_AutoStartGameDescription".GetLocalized();
     public readonly string UiLibraryTitle = "SettingsPage_LibraryTitle".GetLocalized();
     public readonly string UiLibraryDescription = "SettingsPage_LibraryDescription".GetLocalized();
+    public readonly string UiLibraryMetaBackup = "SettingsPage_Library_MetaBackup".GetLocalized();
+    public readonly string UiLibraryMetaBackupDescription = "SettingsPage_Library_MetaBackupDescription".GetLocalized();
     public readonly string UiLibrarySearchSubPath = "SettingsPage_Library_SearchSubPath".GetLocalized();
     public readonly string UiLibrarySearchSubPathDescription = "SettingsPage_Library_SearchSubPathDescription".GetLocalized();
     public readonly string UiLibrarySearchSubPathDepth = "SettingsPage_Library_SearchSubPathDepth".GetLocalized();
@@ -106,6 +108,7 @@ public partial class SettingsViewModel : ObservableRecipient
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
         //LIBRARY
+        _metaBackup = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata).Result;
         _searchSubFolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
         _searchSubFolderDepth = _localSettingsService.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth).Result;
         _regex = _localSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern).Result ?? ".+";
@@ -173,6 +176,7 @@ public partial class SettingsViewModel : ObservableRecipient
 
     #region LIBRARY
 
+    [ObservableProperty] private bool _metaBackup;
     [ObservableProperty] private bool _searchSubFolder;
     [ObservableProperty] private int _searchSubFolderDepth;
     [ObservableProperty] private string _regex;
@@ -181,6 +185,8 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty] private string _gameFolderMustContain;
     [ObservableProperty] private string _gameFolderShouldContain;
     [ObservableProperty] private string _regexTryItOut = "";
+    
+    partial void OnMetaBackupChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SaveBackupMetadata, value);
 
     partial void OnSearchSubFolderChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SearchChildFolder, value);
 

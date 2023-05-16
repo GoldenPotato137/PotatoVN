@@ -1,9 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Services;
-using Newtonsoft.Json;
+using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
@@ -11,6 +12,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
+    public const string MetaPath = ".PotatoVN";
+    
     public string Path
     {
         get;
@@ -21,26 +24,26 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
 
     public string? ImageUrl;
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
+    [JsonInclude] public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
-    [ObservableProperty] private string _savePosition = "本地";
+    [JsonIgnore][ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     private bool _isSaveInCloud;
-    private RssType _rssType;
+    private RssType _rssType = RssType.None;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
 
     public static readonly List<SortKeys> SortKeysList = new ();
 
-    [JsonIgnore] public string? Id
+    [Newtonsoft.Json.JsonIgnore] public string? Id
     {
         get => Ids[(int)RssType];
 
@@ -215,6 +218,50 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                 }
             }
         });
+    }
+
+    /// <summary>
+    /// 获取该游戏信息文件夹地址
+    /// </summary>
+    /// <returns></returns>
+    public string GetMetaPath()
+    {
+        return System.IO.Path.Combine(Path, MetaPath);
+    }
+
+    /// <summary>
+    /// 获取用来保存meta信息的galgame，用于序列化
+    /// </summary>
+    /// <returns></returns>
+    public Galgame GetMetaCopy()
+    {
+        Galgame result = (Galgame)MemberwiseClone();
+        if(ExePath != null)
+            result.ExePath = "..\\" + System.IO.Path.GetFileName(ExePath);
+        result.Path = "..\\";
+        result._imagePath = new LockableProperty<string>();
+        if (ImagePath.Value == DefaultImagePath)
+            result.ImagePath.Value = DefaultImagePath;
+        else
+            result.ImagePath.Value = ".\\" + System.IO.Path.GetFileName(ImagePath);
+        return result;
+    }
+
+    /// <summary>
+    /// 从meta信息中恢复游戏信息
+    /// </summary>
+    /// <param name="meta">待恢复的数据</param>
+    /// <param name="metaFolderPath">meta文件夹路径</param>
+    /// <returns>恢复过后的信息</returns>
+    public static Galgame ResolveMeta(Galgame meta,string metaFolderPath)
+    {
+        meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
+        if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
+        if (meta.ImagePath.Value != DefaultImagePath)
+            meta.ImagePath.Value = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ImagePath.Value!));
+        if (meta.ExePath != null)
+            meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
+        return meta;
     }
 }
 

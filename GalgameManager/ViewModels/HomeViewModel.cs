@@ -151,6 +151,12 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
+    private async void Search(object et)
+    {
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
     private async void GalFlyOutDelete(Galgame? galgame)
     {
         if(galgame == null) return;

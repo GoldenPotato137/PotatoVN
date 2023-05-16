@@ -90,6 +90,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)".exe";
             case KeyValues.GameFolderShouldContain:
                 return (T?)(object)".xp3\n.arc\n.dat\n.ini\n.dll\n.txt";
+            case KeyValues.SaveBackupMetadata:
+                return (T?)(object)true;
             default:
                 return default;
         }
@@ -149,6 +151,7 @@ public static class KeyValues
     public const string GameFolderShouldContain = "gameFolderShouldContain";
     public const string FaqLastUpdate = "faqLastUpdate";
     public const string FixHorizontalPicture = "fixHorizontalPictrue";
+    public const string SaveBackupMetadata = "saveBackupMetadata";
 }
 
 public enum RssType
