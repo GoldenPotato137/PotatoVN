@@ -63,11 +63,12 @@ public partial class App : Application
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
-
-            // Core Services
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
             services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
             services.AddSingleton<IFaqService, FaqService>();
+            services.AddSingleton<IFilterService, FilterService>();
+
+            // Core Services
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels

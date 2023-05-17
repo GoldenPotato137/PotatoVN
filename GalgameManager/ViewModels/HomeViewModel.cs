@@ -27,6 +27,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _fixHorizontalPicture;
+    [ObservableProperty] private string _searchKey = string.Empty;
 
     #region UI
 
@@ -74,13 +75,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        // var newItems = await _dataCollectionService.GetContentGridDataAsync();
-        // Source.Clear();
-        // foreach (var item in newItems)
-        // {
-        //     Source.Add(item);
-        // }
         Source = await _dataCollectionService.GetContentGridDataAsync();
+        SearchKey = _galgameService.GetSearchKey();
     }
 
     public void OnNavigatedFrom()
@@ -151,9 +147,9 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void Search(object et)
+    private void Search(object et)
     {
-        await Task.CompletedTask;
+        _galgameService.Search(SearchKey);
     }
 
     [RelayCommand]

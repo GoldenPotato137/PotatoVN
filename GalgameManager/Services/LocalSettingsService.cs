@@ -152,6 +152,7 @@ public static class KeyValues
     public const string FaqLastUpdate = "faqLastUpdate";
     public const string FixHorizontalPicture = "fixHorizontalPictrue";
     public const string SaveBackupMetadata = "saveBackupMetadata";
+    public const string Filters = "filters";
 }
 
 public enum RssType

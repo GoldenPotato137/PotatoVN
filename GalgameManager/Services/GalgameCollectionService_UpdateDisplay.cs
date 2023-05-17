@@ -1,0 +1,103 @@
+﻿using GalgameManager.Models;
+
+namespace GalgameManager.Services;
+
+public partial class GalgameCollectionService
+{
+    private enum UpdateType
+    {
+        Add,
+        Remove,
+        Play,
+        ApplyFilter,
+        ApplySearch
+    }
+    
+    /// <summary>
+    /// 更新显示列表
+    /// </summary>
+    /// <param name="type">操作类型</param>
+    /// <param name="galgame">如果这个操作是与某个游戏有关的，填入游戏</param>
+    private void UpdateDisplay(UpdateType type, Galgame? galgame = null)
+    {
+        switch (type)
+        {
+            case UpdateType.Add:
+                TryAddToDisplay(galgame!);
+                break;
+            case UpdateType.Remove:
+                TryRemoveFromDisplay(galgame!);
+                break;
+            case UpdateType.Play:
+                TryRemoveFromDisplay(galgame!);
+                TryAddToDisplay(galgame!);
+                break;
+            case UpdateType.ApplyFilter:
+                _displayGalgames.Clear();
+                foreach(Galgame tmp in _galgames)
+                    TryAddToDisplay(tmp);
+                break;
+            case UpdateType.ApplySearch:
+                foreach (Galgame tmp in _galgames)
+                {
+                    if(CheckDisplay(tmp) == false && _searchKey!=string.Empty)
+                        TryRemoveFromDisplay(tmp);
+                    else
+                        TryAddToDisplay(tmp);
+                }
+                break;
+        }
+    }
+    
+    /// <summary>
+    /// 尝试往显示列表中添加一个Galgame<br/>
+    /// 若Galgame已经在显示列表中或不应该显示在列表中则不添加
+    /// </summary>
+    private void TryAddToDisplay(Galgame galgame)
+    {
+        if (_displayGalgames.Contains(galgame)) return;
+        if (CheckDisplay(galgame) == false) return;
+        // 根据当前排序方式插入
+        UpdateSortKeys();
+        for(var i = 0;i < _displayGalgames.Count;i++) //这里可以用二分查找优化, 暂时不做
+            if (galgame.CompareTo(_displayGalgames[i]) <= 0)
+            {
+                _displayGalgames.Insert(i, galgame);
+                return;
+            }
+        _displayGalgames.Add(galgame);
+    }
+    
+    /// <summary>
+    /// 尝试从显示列表中移除一个Galgame<br/>
+    /// 若Galgame不在显示列表中则什么都不做
+    /// </summary>
+    private void TryRemoveFromDisplay(Galgame galgame)
+    {
+        if (_displayGalgames.Contains(galgame) == false) return;
+        _displayGalgames.Remove(galgame);
+    }
+
+    /// <summary>
+    /// 检查一个Galgame是否应该显示在列表中<p/>
+    /// 具体规则如下：
+    /// (若有搜索关键字) 该Galgame是否满足搜索关键字<br/>
+    /// (若没有搜索关键字) 该Galgame是否满足Filters条件<br/>
+    /// </summary>
+    /// <param name="galgame"></param>
+    /// <returns></returns>
+    private bool CheckDisplay(Galgame galgame)
+    {
+        if (_searchKey == string.Empty)
+            return _filterService.ApplyFilters(galgame);
+        return ApplySearchKey(galgame);
+    }
+
+    private bool ApplySearchKey(Galgame galgame)
+    {
+        if (galgame.Name.Value!.Contains(_searchKey)) return true;
+        if (galgame.Developer.Value!.Contains(_searchKey)) return true;
+        if (galgame.Tags.Value!.Any(str => str.Contains(_searchKey))) return true;
+        return false;
+    }
+}

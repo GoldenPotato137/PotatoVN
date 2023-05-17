@@ -11,13 +11,15 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
-public class GalgameCollectionService : IDataCollectionService<Galgame>
+public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private List<Galgame> _galgames = new();
     private readonly ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
     private readonly IFileService _fileService;
+    private readonly IFilterService _filterService;
+    private string _searchKey = string.Empty;
     public delegate void GalgameDelegate(Galgame galgame);
     public event GalgameDelegate? GalgameAddedEvent; //当有galgame添加时触发
     public event GalgameDelegate? GalgameDeletedEvent; //当有galgame删除时触发
@@ -32,11 +34,12 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     } = new IGalInfoPhraser[5];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
-        IFileService fileService)
+        IFileService fileService, IFilterService filterService)
     {
         LocalSettingsService = localSettingsService;
         _jumpListService = jumpListService;
         _fileService = fileService;
+        _filterService = filterService;
         PhraserList[(int)RssType.Bangumi] = new BgmPhraser(localSettingsService);
         PhraserList[(int)RssType.Vndb] = new VndbPhraser();
 
@@ -79,16 +82,22 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         // }
     }
 
-    /// <summary>
-    /// 重新按照排序规则排序游戏列表，并更新显示的列表
-    /// </summary>
-    public void Sort()
+    /// <summary>为Galgame类更新新的排序规则</summary>
+    private void UpdateSortKeys()
     {
         SortKeys key1 = LocalSettingsService.ReadSettingAsync<SortKeys>(KeyValues.SortKey1).Result;
         SortKeys key2 = LocalSettingsService.ReadSettingAsync<SortKeys>(KeyValues.SortKey2).Result;
         Galgame.SortKeysList.Clear();
         Galgame.SortKeysList.Add(key1);
         Galgame.SortKeysList.Add(key2);
+    }
+
+    /// <summary>
+    /// 重新按照排序规则排序游戏列表，并更新显示的列表
+    /// </summary>
+    public void Sort()
+    {
+        UpdateSortKeys();
         _galgames.Sort();
         UpdateDisplayGalgames();
     }
@@ -228,6 +237,24 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await Task.CompletedTask;
         return _displayGalgames;
+    }
+    
+    /// <summary>
+    /// 搜索galgame并更新显示列表
+    /// </summary>
+    /// <param name="searchKey">搜索关键字</param>
+    public void Search(string searchKey)
+    {
+        _searchKey = searchKey;
+        UpdateDisplay(UpdateType.ApplySearch);
+    }
+
+    /// <summary>
+    /// 获取搜索关键字(的clone)
+    /// </summary>
+    public string GetSearchKey()
+    {
+        return (string)_searchKey.Clone();
     }
 
     /// <summary>

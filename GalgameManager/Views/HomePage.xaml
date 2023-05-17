@@ -36,9 +36,9 @@
                 <AppBarButton Icon="Find" x:Uid="HomePage_Search" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <TextBox Width="200">
+                            <TextBox Width="200" Text="{Binding SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <interactivity:Interaction.Behaviors>
-                                    <core:EventTriggerBehavior EventName="KeyDown">
+                                    <core:EventTriggerBehavior EventName="TextChanged">
                                         <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchCommand}"/>
                                     </core:EventTriggerBehavior>
                                 </interactivity:Interaction.Behaviors>
