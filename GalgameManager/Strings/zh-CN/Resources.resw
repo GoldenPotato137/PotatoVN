@@ -454,4 +454,13 @@
   <data name="SettingsPage_Library_MetaBackupDescription" xml:space="preserve">
     <value>是否要在每个游戏文件夹下备份游戏信息数据，如不选中则数据只保存在应用数据文件夹中</value>
   </data>
+  <data name="SettingsPage_Library_BackupNow.Title" xml:space="preserve">
+    <value>备份所有游戏信息</value>
+  </data>
+  <data name="SettingsPage_Library_BackupNow.Description" xml:space="preserve">
+    <value>开启备份后旧有游戏需要点击按钮手动备份一次，之后所有修改会自动备份</value>
+  </data>
+  <data name="SettingsPage_Library_MetaBackupProgress" xml:space="preserve">
+    <value>正在保存：</value>
+  </data>
 </root>

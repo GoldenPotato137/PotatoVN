@@ -18,9 +18,10 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
     private readonly IFileService _fileService;
-    public delegate void GalgameChangeEventHandler(Galgame galgame);
-    public event GalgameChangeEventHandler? GalgameAddedEvent; //当有galgame添加时触发
-    public event GalgameChangeEventHandler? GalgameDeletedEvent; //当有galgame删除时触发
+    public delegate void GalgameDelegate(Galgame galgame);
+    public event GalgameDelegate? GalgameAddedEvent; //当有galgame添加时触发
+    public event GalgameDelegate? GalgameDeletedEvent; //当有galgame删除时触发
+    public event GalgameDelegate? MetaSavedEvent; //当有galgame元数据保存时触发
     public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
     public bool IsPhrasing;
@@ -256,7 +257,18 @@ public class GalgameCollectionService : IDataCollectionService<Galgame>
         if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(imagePath))
             File.Copy(galgame.ImagePath.Value!, imagePath);
     }
-    
+
+    /// <summary>
+    /// 保存所有galgame的信息备份（包括meta.json和封面图）
+    /// </summary>
+    public async Task SaveAllMetaAsync()
+    {
+        foreach (Galgame galgame in _galgames)
+        {
+            MetaSavedEvent?.Invoke(galgame);
+            await SaveMetaAsync(galgame);
+        }
+    }
 
     /// <summary>
     /// 获取galgame的存档文件夹

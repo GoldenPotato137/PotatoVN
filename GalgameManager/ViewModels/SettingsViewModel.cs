@@ -7,7 +7,9 @@ using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
+using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -17,6 +19,7 @@ namespace GalgameManager.ViewModels;
 public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly GalgameCollectionService _galgameCollectionService;
     private ElementTheme _elementTheme;
     private string _versionDescription;
 
@@ -81,7 +84,8 @@ public partial class SettingsViewModel : ObservableRecipient
         get;
     }
 
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService)
+    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
+        IDataCollectionService<Galgame> galgameService)
     {
         var themeSelectorService1 = themeSelectorService;
         _elementTheme = themeSelectorService1.Theme;
@@ -108,6 +112,8 @@ public partial class SettingsViewModel : ObservableRecipient
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
         //LIBRARY
+        _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
+        _galgameCollectionService.MetaSavedEvent += SetSaveMetaPopUp;
         _metaBackup = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata).Result;
         _searchSubFolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
         _searchSubFolderDepth = _localSettingsService.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth).Result;
@@ -177,6 +183,7 @@ public partial class SettingsViewModel : ObservableRecipient
     #region LIBRARY
 
     [ObservableProperty] private bool _metaBackup;
+    [ObservableProperty] private string _metaBackupProgress = "";
     [ObservableProperty] private bool _searchSubFolder;
     [ObservableProperty] private int _searchSubFolderDepth;
     [ObservableProperty] private string _regex;
@@ -185,7 +192,7 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty] private string _gameFolderMustContain;
     [ObservableProperty] private string _gameFolderShouldContain;
     [ObservableProperty] private string _regexTryItOut = "";
-    
+
     partial void OnMetaBackupChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SaveBackupMetadata, value);
 
     partial void OnSearchSubFolderChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SearchChildFolder, value);
@@ -204,6 +211,18 @@ public partial class SettingsViewModel : ObservableRecipient
 
     [RelayCommand]
     private void OnRegexTryItOut() => RegexTryItOut = NameRegex.GetName(_regexTryItOut, _regex, _regexRemoveBorder, _regexIndex);
+
+    private void SetSaveMetaPopUp(Galgame galgame)
+    {
+        MetaBackupProgress = "SettingsPage_Library_MetaBackupProgress".GetLocalized() + galgame.Name.Value;
+    }
+
+    [RelayCommand]
+    private async Task SaveMetaBackUp()
+    {
+        await _galgameCollectionService.SaveAllMetaAsync();
+        MetaBackupProgress = "Done!";
+    }
 
     #endregion
 

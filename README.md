@@ -32,13 +32,14 @@ windows10用户需要额外安装[Segoe Fluent 图标字体](https://aka.ms/Sego
 ### TODO
 always a lot
 
+- [ ] **FEAT**： 搜索功能
+- [ ] **FEAT**： 扫描库时允许识别不出游戏也添加入库
+- [ ] **FEAT** : 游戏分组功能/打TAG功能
+- [ ] **FEAT**: 笔记功能
 - [ ] **BUG**: 游戏匹配规则不能正确响应换行键
 - [ ] **UI** : 黑色主题下标题颜色&三大金刚键颜色
 - [ ] **UI** : 设置界面加入滚动条显示
-- [ ] **FEAT**: 允许在Library界面直接更改游戏ID
 - [ ] **BUG**: 扫描游戏时扫到没有权限的目录会抛异常
-- [ ] **FEAT** : 游戏分组功能/打TAG功能
-- [ ] **FEAT**: 笔记功能
 - [ ] **BUG**: 同时扫描多个库的时候图片显示不正确
 - [ ] **FEAT**: 导出游戏元数据的功能
 - [x] ~~**BUG**: 编辑游戏界面删掉图片地址后抛异常~~
@@ -46,3 +47,5 @@ always a lot
 - [x] ~~**FEAT**: 限制递归搜索子目录的深度~~ [Thanks to Murlors](https://github.com/GoldenPotato137/GalgameManager/pull/26)
 - [x] ~~**FEAT**: 记录游戏时长~~
 - [x] ~~**FEAT** : 删除库~~
+- [x] ~~**FEAT**: 允许在Library界面直接更改游戏ID~~
+- [x] ~~**FEAT**: 在游戏文件夹下备份元数据以便移动游戏/重装后快速扫描~~

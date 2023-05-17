@@ -17,6 +17,7 @@
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
         </Style>
+        <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
     </Page.Resources>
 
 
@@ -135,11 +136,22 @@
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <!-- 数据备份 -->
                             <control:Panel>
-                                <StackPanel>
-                                    <local:SettingToggleSwitch 
-                                        Title="{x:Bind ViewModel.UiLibraryMetaBackup}"
-                                        Description="{x:Bind ViewModel.UiLibraryMetaBackupDescription}"
-                                        IsOn="{x:Bind ViewModel.MetaBackup, Mode=TwoWay}"/>
+                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
+                                    <StackPanel>
+                                        <local:SettingToggleSwitch
+                                            Title="{x:Bind ViewModel.UiLibraryMetaBackup}"
+                                            Description="{x:Bind ViewModel.UiLibraryMetaBackupDescription}"
+                                            IsOn="{x:Bind ViewModel.MetaBackup, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <control:Setting x:Uid="SettingsPage_Library_BackupNow">
+                                        <Button Content="Go" Width="75" Command="{x:Bind ViewModel.SaveMetaBackUpCommand}">
+                                            <Button.Flyout>
+                                                <Flyout Placement="Bottom">
+                                                    <TextBlock Text="{x:Bind ViewModel.MetaBackupProgress, Mode=OneWay}"/>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </control:Setting>
                                 </StackPanel>
                             </control:Panel>
                             <!-- 递归搜索子目录 -->
@@ -170,7 +182,7 @@
                             </control:Panel>
                             <!-- 正则表达式 -->
                             <control:Panel>
-                                <StackPanel Spacing="13">
+                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
                                     <TextBlock Text="{x:Bind ViewModel.UiLibraryNameDescription}" Margin="0 0 0 -3" 
                                                Style="{ThemeResource DescriptionTextStyle}"/>
                                     <RelativePanel HorizontalAlignment="Stretch">
