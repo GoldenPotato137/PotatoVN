@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml;
@@ -19,15 +20,18 @@ namespace GalgameManager.ViewModels;
 [SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public partial class HomeViewModel : ObservableRecipient, INavigationAware
 {
+    private const int SearchDelay = 500;
     private readonly INavigationService _navigationService;
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
+    private DateTime _lastSearchTime = DateTime.Now;
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _fixHorizontalPicture;
     [ObservableProperty] private string _searchKey = string.Empty;
+    [ObservableProperty] private string _searchTitle = string.Empty;
 
     #region UI
 
@@ -38,7 +42,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     public readonly string UiAddNewGame = ResourceLoader.GetString("HomePage_AddNewGame");
     public readonly string UiSort = ResourceLoader.GetString("HomePage_Sort");
     public readonly string UiFilter = ResourceLoader.GetString("HomePage_Filter");
-    
+    private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
+
     private readonly string _uiAddGameSuccess = ResourceLoader.GetString("HomePage_AddGameSuccess");
     private readonly string _uiAlreadyInLibrary = ResourceLoader.GetString("HomePage_AlreadyInLibrary");
     private readonly string _uiNoInfo = ResourceLoader.GetString("HomePage_NoInfo");
@@ -77,6 +82,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         Source = await _dataCollectionService.GetContentGridDataAsync();
         SearchKey = _galgameService.GetSearchKey();
+        UpdateSearchTitle();
     }
 
     public void OnNavigatedFrom()
@@ -147,9 +153,21 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private void Search(object et)
+    private async Task Search(object et)
     {
-        _galgameService.Search(SearchKey);
+        _lastSearchTime = DateTime.Now;
+        DateTime tmp = _lastSearchTime;
+        await Task.Delay(SearchDelay);
+        if (tmp == _lastSearchTime) //如果在延迟时间内没有再次输入，则开始搜索
+        {
+            _galgameService.Search(SearchKey);
+            UpdateSearchTitle();
+        }
+    }
+
+    private void UpdateSearchTitle()
+    {
+        SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
     }
 
     [RelayCommand]

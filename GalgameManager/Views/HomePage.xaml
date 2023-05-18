@@ -33,7 +33,7 @@
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
                         Margin="0 -67 0 0">
-                <AppBarButton Icon="Find" x:Uid="HomePage_Search" AllowFocusOnInteraction="True">
+                <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
                             <TextBox Width="200" Text="{Binding SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">

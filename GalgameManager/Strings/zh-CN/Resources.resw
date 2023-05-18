@@ -445,7 +445,7 @@
   <data name="GalgameFolderPage_DownloadSelectedInfo" xml:space="preserve">
     <value>下载选定游戏数据</value>
   </data>
-  <data name="HomePage_Search.Label" xml:space="preserve">
+  <data name="HomePage_Search_Label" xml:space="preserve">
     <value>搜索</value>
   </data>
   <data name="SettingsPage_Library_MetaBackup" xml:space="preserve">
