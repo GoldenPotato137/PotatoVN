@@ -10,7 +10,9 @@ public partial class GalgameCollectionService
         Remove,
         Play,
         ApplyFilter,
-        ApplySearch
+        ApplySearch,
+        Sort,
+        Init
     }
     
     /// <summary>
@@ -32,6 +34,8 @@ public partial class GalgameCollectionService
                 TryRemoveFromDisplay(galgame!);
                 TryAddToDisplay(galgame!);
                 break;
+            case UpdateType.Init:
+            case UpdateType.Sort:
             case UpdateType.ApplyFilter:
                 _displayGalgames.Clear();
                 foreach(Galgame tmp in _galgames)
@@ -50,6 +54,7 @@ public partial class GalgameCollectionService
     }
     
     /// <summary>
+    /// <b>不要手动调用这个函数</b><p/>
     /// 尝试往显示列表中添加一个Galgame<br/>
     /// 若Galgame已经在显示列表中或不应该显示在列表中则不添加
     /// </summary>
@@ -69,6 +74,7 @@ public partial class GalgameCollectionService
     }
     
     /// <summary>
+    /// <b>不要手动调用这个函数</b><p/>
     /// 尝试从显示列表中移除一个Galgame<br/>
     /// 若Galgame不在显示列表中则什么都不做
     /// </summary>
@@ -79,12 +85,12 @@ public partial class GalgameCollectionService
     }
 
     /// <summary>
+    /// <b>不要手动调用这个函数</b><p/>
     /// 检查一个Galgame是否应该显示在列表中<p/>
     /// 具体规则如下：
     /// (若有搜索关键字) 该Galgame是否满足搜索关键字<br/>
     /// (若没有搜索关键字) 该Galgame是否满足Filters条件<br/>
     /// </summary>
-    /// <param name="galgame"></param>
     /// <returns></returns>
     private bool CheckDisplay(Galgame galgame)
     {

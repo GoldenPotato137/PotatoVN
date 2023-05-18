@@ -61,25 +61,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         List<Galgame> toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
         foreach (Galgame galgame in toRemove)
             _galgames.Remove(galgame);
-        UpdateDisplayGalgames();
         GalgameLoadedEvent?.Invoke();
-    }
-
-    /// <summary>
-    /// 更新显示的galgame列表
-    /// </summary>
-    private void UpdateDisplayGalgames()
-    {
-        //未来会加入筛选功能，目前先用这个暴力写法
-        _displayGalgames.Clear();
-        _galgames.ForEach(gal => _displayGalgames.Add(gal));
-        // foreach (Galgame gal in _galgames) {
-        //     if (_displayGalgames.Contains(gal))
-        //     {
-        //         continue;
-        //     }
-        //     _displayGalgames.Add(gal);
-        // }
+        UpdateDisplay(UpdateType.Init);
     }
 
     /// <summary>为Galgame类更新新的排序规则</summary>
@@ -99,7 +82,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         UpdateSortKeys();
         _galgames.Sort();
-        UpdateDisplayGalgames();
+        UpdateDisplay(UpdateType.Sort);
     }
 
     public enum AddGalgameResult
@@ -117,7 +100,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
-        UpdateDisplayGalgames();
+        UpdateDisplay(UpdateType.Remove, galgame);
         if (removeFromDisk)
             galgame.Delete();
         GalgameDeletedEvent?.Invoke(galgame);
@@ -159,7 +142,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
-        UpdateDisplayGalgames();
+        UpdateDisplay(UpdateType.Add, galgame);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
