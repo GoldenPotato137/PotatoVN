@@ -146,6 +146,7 @@ public static class KeyValues
     public const string SortKey2 = "sortKey2";
     public const string SearchChildFolder = "searchChildFolder";
     public const string SearchChildFolderDepth = "searchChildFolderDepth";
+    public const string IgnoreFetchResult = "ignoreFetchResult";
     public const string RegexPattern = "regexPattern";
     public const string RegexIndex = "regexIndex";
     public const string RegexRemoveBorder = "regexRemoveBorder";

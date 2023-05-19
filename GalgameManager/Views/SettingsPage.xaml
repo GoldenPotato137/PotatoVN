@@ -180,6 +180,11 @@
                                     </RelativePanel>
                                 </StackPanel>
                             </control:Panel>
+                            <!-- 忽略游戏查询结果 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Library_IgnoreFetchResult"
+                                                           IsOn="{x:Bind ViewModel.IgnoreFetchResult, Mode=TwoWay}"/>
+                            </control:Panel>
                             <!-- 正则表达式 -->
                             <control:Panel>
                                 <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
@@ -217,7 +222,6 @@
                                     </RelativePanel>
                                 </StackPanel>
                             </control:Panel>
-
                             <!-- 游戏匹配规则 -->
                             <control:Panel>
                                 <StackPanel Spacing="8">

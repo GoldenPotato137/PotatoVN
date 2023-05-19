@@ -466,4 +466,10 @@
   <data name="GalgamePage_OpenInExplorer.Label" xml:space="preserve">
     <value>在文件管理器中打开</value>
   </data>
+  <data name="SettingsPage_Library_IgnoreFetchResult.Title" xml:space="preserve">
+    <value>忽略游戏查询结果</value>
+  </data>
+  <data name="SettingsPage_Library_IgnoreFetchResult.Description" xml:space="preserve">
+    <value>扫描库时是否需要在信息源中查询到对应的游戏才添加入库</value>
+  </data>
 </root>

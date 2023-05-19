@@ -117,6 +117,7 @@ public partial class SettingsViewModel : ObservableRecipient
         _metaBackup = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata).Result;
         _searchSubFolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
         _searchSubFolderDepth = _localSettingsService.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth).Result;
+        _ignoreFetchResult = _localSettingsService.ReadSettingAsync<bool>(KeyValues.IgnoreFetchResult).Result;
         _regex = _localSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern).Result ?? ".+";
         _regexIndex = _localSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex).Result;
         _regexRemoveBorder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder).Result;
@@ -186,6 +187,7 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty] private string _metaBackupProgress = "";
     [ObservableProperty] private bool _searchSubFolder;
     [ObservableProperty] private int _searchSubFolderDepth;
+    [ObservableProperty] private bool _ignoreFetchResult;
     [ObservableProperty] private string _regex;
     [ObservableProperty] private int _regexIndex;
     [ObservableProperty] private bool _regexRemoveBorder;
@@ -199,6 +201,8 @@ public partial class SettingsViewModel : ObservableRecipient
 
     partial void OnSearchSubFolderDepthChanged(int value) => _localSettingsService.SaveSettingAsync(KeyValues.SearchChildFolderDepth, value);
 
+    partial void OnIgnoreFetchResultChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.IgnoreFetchResult, value);
+    
     partial void OnRegexChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.RegexPattern, value);
 
     partial void OnRegexIndexChanged(int value) => _localSettingsService.SaveSettingAsync(KeyValues.RegexIndex, value);

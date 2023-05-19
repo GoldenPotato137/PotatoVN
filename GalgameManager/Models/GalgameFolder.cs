@@ -91,6 +91,7 @@ public class GalgameFolder
     {
         if (!Directory.Exists(Path) || IsRunning) return;
         var maxDepth = 1;
+        var ignoreFetchResult = false;
         List<string> fileMustContain = new();
         List<string> fileShouldContain = new();
         if (localSettingsService != null)
@@ -103,6 +104,7 @@ public class GalgameFolder
             tmp = await localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain);
             if (!string.IsNullOrEmpty(tmp))
                 fileShouldContain = tmp.Split('\r', '\n').ToList();
+            ignoreFetchResult = await localSettingsService.ReadSettingAsync<bool>(KeyValues.IgnoreFetchResult);
         }
         IsRunning = true;
         var cnt = 0;
@@ -115,8 +117,10 @@ public class GalgameFolder
             ProgressChangedEvent?.Invoke();
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
             {
-                GalgameCollectionService.AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath);
-                if (result == GalgameCollectionService.AddGalgameResult.Success) cnt++;
+                GalgameCollectionService.AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
+                if (result == GalgameCollectionService.AddGalgameResult.Success || 
+                    (ignoreFetchResult && result == GalgameCollectionService.AddGalgameResult.NotFoundInRss)) 
+                    cnt++;
             }
             if (currentDepth == maxDepth) continue;
             foreach (var subPath in Directory.GetDirectories(currentPath))
