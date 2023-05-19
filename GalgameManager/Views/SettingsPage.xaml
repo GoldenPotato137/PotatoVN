@@ -226,10 +226,10 @@
                                                FontSize="12" Opacity="0.6" Margin="0 -8 0 0" />
                                     <TextBox Header="{x:Bind ViewModel.UiLibraryGameSearchRuleMustContain}"
                                              Text="{x:Bind ViewModel.GameFolderMustContain,Mode=TwoWay}"
-                                             TextWrapping="Wrap" />
+                                             TextWrapping="Wrap" AcceptsReturn="True"/>
                                     <TextBox Header="{x:Bind ViewModel.UiLibraryGameSearchRuleShouldContain}"
                                              Text="{x:Bind ViewModel.GameFolderShouldContain,Mode=TwoWay}"
-                                             TextWrapping="Wrap" />
+                                             TextWrapping="Wrap" AcceptsReturn="True"/>
                                 </StackPanel>
                             </control:Panel>
                         </StackPanel>
