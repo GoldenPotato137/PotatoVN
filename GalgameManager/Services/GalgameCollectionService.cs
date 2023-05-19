@@ -299,7 +299,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>可执行文件地址，如果用户取消或找不到可执行文件则返回null</returns>
     public async Task<string?> GetGalgameExeAsync(Galgame galgame)
     {
-        List<string> exes = galgame.GetExes();
+        List<string> exes = galgame.GetExesAndBats();
         switch (exes.Count)
         {
             case 0:

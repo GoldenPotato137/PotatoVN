@@ -177,12 +177,13 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     }
     
     /// <summary>
-    /// 获取游戏文件夹下的所有exe文件
+    /// 获取游戏文件夹下的所有exe以及bat文件
     /// </summary>
-    /// <returns>所有exe文件地址</returns>
-    public List<string> GetExes()
+    /// <returns>所有exe以及bat文件地址</returns>
+    public List<string> GetExesAndBats()
     {
         List<string> result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
+        result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".bat")));
         return result;
     }
     
