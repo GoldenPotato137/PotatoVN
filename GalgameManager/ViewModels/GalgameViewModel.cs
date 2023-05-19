@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Windows.System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
@@ -174,6 +175,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             await _galgameService.RemoveGalgame(Item, true);
         };
         await dialog.ShowAsync();
+    }
+    
+    [RelayCommand]
+    private async void OpenInExplorer()
+    {
+        if(Item == null) return;
+        await Launcher.LaunchUriAsync(new Uri(Item.Path));
     }
 
     [RelayCommand]

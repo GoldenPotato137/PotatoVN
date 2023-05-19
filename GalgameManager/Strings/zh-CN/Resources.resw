@@ -463,4 +463,7 @@
   <data name="SettingsPage_Library_MetaBackupProgress" xml:space="preserve">
     <value>正在保存：</value>
   </data>
+  <data name="GalgamePage_OpenInExplorer.Label" xml:space="preserve">
+    <value>在文件管理器中打开</value>
+  </data>
 </root>
