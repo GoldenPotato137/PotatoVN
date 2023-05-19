@@ -11,8 +11,8 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace GalgameManager.ViewModels;
@@ -29,7 +29,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _isPhrasing;
-    [ObservableProperty] private Visibility _fixHorizontalPicture;
+    [ObservableProperty] private Stretch _stretch;
     [ObservableProperty] private string _searchKey = string.Empty;
     [ObservableProperty] private string _searchTitle = string.Empty;
 
@@ -72,8 +72,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
         // IsPhrasing = _galgameService.IsPhrasing;
 
-        _fixHorizontalPicture = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result 
-                                == false ? Visibility.Collapsed : Visibility.Visible;
+        _stretch = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result
+            ? Stretch.UniformToFill : Stretch.Uniform;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
