@@ -20,7 +20,10 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
 
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
+    private readonly string[] _searchUrlList = new string[5];
+    [ObservableProperty] private string _searchUri = "";
     [ObservableProperty] private bool _isPhrasing;
+    [ObservableProperty] private RssType _selectedRss = RssType.None;
 
     public GalgameSettingViewModel(IDataCollectionService<Galgame> galCollectionService, INavigationService navigationService)
     {
@@ -29,6 +32,8 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
         _navigationService = navigationService;
         RssTypes.Add(RssType.Bangumi);
         RssTypes.Add(RssType.Vndb);
+        _searchUrlList[(int)RssType.Bangumi] = "https://bgm.tv/subject_search/";
+        _searchUrlList[(int)RssType.Vndb] = "https://vndb.org/v/all?sq=";
     }
 
     public async void OnNavigatedFrom()
@@ -44,7 +49,14 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
         }
 
         Gal = galgame;
+        SelectedRss = Gal.RssType;
         _galService.PhrasedEvent += UpdateIsPhrasing;
+    }
+
+    partial void OnSelectedRssChanged(RssType value)
+    {
+        Gal.RssType = value;
+        SearchUri = _searchUrlList[(int)value] + Gal.Name.Value;
     }
 
     [RelayCommand]

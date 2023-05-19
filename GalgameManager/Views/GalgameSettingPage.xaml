@@ -57,13 +57,19 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="数据源" VerticalAlignment="Center" Margin="0 0 15 0"/>
                             <ComboBox 
                                 Grid.Column="1" 
                                 ItemsSource="{x:Bind ViewModel.RssTypes}"
-                                SelectedItem="{x:Bind ViewModel.Gal.RssType, Mode=TwoWay}" 
-                                HorizontalAlignment="Stretch" />
+                                SelectedItem="{x:Bind ViewModel.SelectedRss, Mode=TwoWay}" 
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"/>
+                            <HyperlinkButton Grid.Column="2" VerticalAlignment="Center" 
+                                             NavigateUri="{x:Bind ViewModel.SearchUri, Mode=OneWay}">
+                                <SymbolIcon Symbol="Find"/>
+                            </HyperlinkButton>
                         </Grid>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">
