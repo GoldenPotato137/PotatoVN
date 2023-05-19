@@ -1,15 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Models;
 using GalgameManager.Services;
-
 using Newtonsoft.Json.Linq;
-
 using SharpCompress;
-
 using VndbSharp;
 using VndbSharp.Models;
 using VndbSharp.Models.Errors;
@@ -48,7 +44,21 @@ public class VndbPhraser : IGalInfoPhraser
         var result = new Galgame();
         try
         {
-            var visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
+            VndbResponse<VisualNovel> visualNovels;
+            try
+            {
+                if(galgame.RssType != RssType.Vndb) throw new Exception();
+                var idString = galgame.Id;
+                if(!string.IsNullOrEmpty(idString) && idString[0]=='v')
+                    idString = idString[1..];
+                var id = Convert.ToUInt32(idString);
+                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Id.Equals(id), VndbFlags.FullVisualNovel);
+            }
+            catch (Exception)
+            {
+                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
+            }
+            
             if (visualNovels == null || visualNovels.Count == 0)
             {
                 var error = _vndb.GetLastError();
