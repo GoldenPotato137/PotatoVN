@@ -34,6 +34,7 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
         RssTypes.Add(RssType.Vndb);
         _searchUrlList[(int)RssType.Bangumi] = "https://bgm.tv/subject_search/";
         _searchUrlList[(int)RssType.Vndb] = "https://vndb.org/v/all?sq=";
+        SearchUri = _searchUrlList[(int)RssType.Vndb]; // default
     }
 
     public async void OnNavigatedFrom()
