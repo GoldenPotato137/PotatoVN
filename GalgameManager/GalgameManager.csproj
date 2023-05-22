@@ -68,7 +68,7 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="SharpCompress" Version="0.33.0" />
     <PackageReference Include="VndbSharp" Version="1.1.1" />
-    <PackageReference Include="WinUIEx" Version="2.1.0" />
+    <PackageReference Include="WinUIEx" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
