@@ -472,4 +472,10 @@
   <data name="SettingsPage_Library_IgnoreFetchResult.Description" xml:space="preserve">
     <value>扫描库时是否需要在信息源中查询到对应的游戏才添加入库</value>
   </data>
+  <data name="UpdateContentPage_Title.Text" xml:space="preserve">
+    <value>最近更新的内容</value>
+  </data>
+  <data name="UpdateContentPage_Refresh.Label" xml:space="preserve">
+    <value>刷新</value>
+  </data>
 </root>

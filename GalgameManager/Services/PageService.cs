@@ -20,6 +20,7 @@ public class PageService : IPageService
         Configure<GalgameSettingViewModel, GalgameSettingPage>();
         Configure<HelpViewModel, HelpPage>();
         Configure<PlayedTimeViewModel, PlayedTimePage>();
+        Configure<UpdateContentViewModel, UpdateContentPage>();
     }
 
     public Type GetPageType(string key)
