@@ -1,4 +1,5 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using Windows.Storage;
+using GalgameManager.Contracts.Services;
 using GalgameManager.Helpers;
 
 namespace GalgameManager.Services;
@@ -7,6 +8,12 @@ public class UpdateService : IUpdateService
 {
     private readonly bool _firstUpdate;
     private readonly ILocalSettingsService _localSettingsService;
+    private const string FileName = "update.md";
+    private readonly string _localFolder = ApplicationData.Current.LocalFolder.Path;
+    public event VoidDelegate? DownloadEvent;
+    public event VoidDelegate? DownloadCompletedEvent;
+    public event GenericDelegate<string>? DownloadFailedEvent;
+    private string FilePath => Path.Combine(_localFolder, FileName);
 
     public UpdateService(ILocalSettingsService localSettingsService)
     {
@@ -19,9 +26,31 @@ public class UpdateService : IUpdateService
 
     public async Task<string> GetUpdateContentAsync()
     {
-        await Task.CompletedTask;
-        //todo: 调试完成后取消注释
-        // await _localSettingsService.SaveSettingAsync(KeyValues.DisplayedUpdateVersion, RuntimeHelper.GetVersion());
-        return "#1.5.3\n这里应该填入更新内容\n#1.4\n这里应该填入更新内容";
+        if (_firstUpdate || File.Exists(FilePath) == false)
+            await DownloadUpdateContentAsync();
+        await _localSettingsService.SaveSettingAsync(KeyValues.DisplayedUpdateVersion, RuntimeHelper.GetVersion());
+        var result = string.Empty;
+        if (File.Exists(FilePath))
+            result = await File.ReadAllTextAsync(FilePath);
+        return result;
+    }
+
+    private async Task DownloadUpdateContentAsync()
+    {
+        DownloadEvent?.Invoke();
+        try
+        {
+            HttpClient client = new();
+            var local = ResourceExtensions.GetLocal();
+            HttpResponseMessage response = await client.GetAsync(
+                $"https://raw.gitmirror.com/GoldenPotato137/GalgameManager/main/docs/UpdateContent/{local}.md");
+            var content = await response.Content.ReadAsStringAsync();
+            await File.WriteAllTextAsync(FilePath, content);
+        }
+        catch (Exception e)
+        {
+            DownloadFailedEvent?.Invoke(e.Message);
+        }
+        DownloadCompletedEvent?.Invoke();
     }
 }

@@ -478,4 +478,10 @@
   <data name="UpdateContentPage_Refresh.Label" xml:space="preserve">
     <value>刷新</value>
   </data>
+  <data name="UpdateContentPage_CurrentVersion" xml:space="preserve">
+    <value>当前版本：</value>
+  </data>
+  <data name="UpdateContentPage_MainTitle.Text" xml:space="preserve">
+    <value>欢迎</value>
+  </data>
 </root>

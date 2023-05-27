@@ -1,4 +1,6 @@
-﻿namespace GalgameManager.Contracts.Services;
+﻿using GalgameManager.Helpers;
+
+namespace GalgameManager.Contracts.Services;
 
 public interface IUpdateService
 {
@@ -6,10 +8,14 @@ public interface IUpdateService
     /// 是否应该显示更新内容(每个版本只显示一次)
     /// </summary>
     public bool ShouldDisplayUpdateContent();
-    
+
     /// <summary>
     /// 获取更新内容
     /// </summary>
     /// <returns>更新内容</returns>
     public Task<string> GetUpdateContentAsync();
+
+    public event VoidDelegate? DownloadEvent;
+    public event VoidDelegate? DownloadCompletedEvent;
+    public event GenericDelegate<string>? DownloadFailedEvent;
 }

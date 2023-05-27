@@ -24,9 +24,10 @@ public class DefaultActivationHandler : ActivationHandler<List<string>>
     {
         if (args.Count == 1)
         {
-            _navigationService.NavigateTo(_updateService.ShouldDisplayUpdateContent()
-                ? typeof(UpdateContentViewModel).FullName!
-                : typeof(HomeViewModel).FullName!);
+            if (_updateService.ShouldDisplayUpdateContent())
+                _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!, true);
+            else
+                _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         }
         else //jump list 
         {
