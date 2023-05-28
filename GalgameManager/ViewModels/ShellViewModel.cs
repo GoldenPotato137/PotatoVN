@@ -45,11 +45,11 @@ public class ShellViewModel : ObservableRecipient
     {
         IsBackEnabled = NavigationService.CanGoBack;
 
-        if (e.SourcePageType == typeof(SettingsPage))
-        {
-            Selected = NavigationViewService.SettingsItem;
-            return;
-        }
+        // if (e.SourcePageType == typeof(SettingsPage))
+        // {
+        //     Selected = NavigationViewService.SettingsItem;
+        //     return;
+        // }
 
         var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)

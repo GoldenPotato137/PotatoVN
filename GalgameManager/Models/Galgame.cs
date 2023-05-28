@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using GalgameManager.Services;
+using GalgameManager.Enums;
 using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using GalgameManager.Contracts.Phrase;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using Newtonsoft.Json.Linq;

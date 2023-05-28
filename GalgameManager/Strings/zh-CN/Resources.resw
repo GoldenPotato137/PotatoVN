@@ -484,4 +484,7 @@
   <data name="UpdateContentPage_MainTitle.Text" xml:space="preserve">
     <value>欢迎</value>
   </data>
+  <data name="Shell_Settings.Content" xml:space="preserve">
+    <value>设置</value>
+  </data>
 </root>

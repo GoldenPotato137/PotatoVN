@@ -14,6 +14,12 @@ public interface IUpdateService
     /// </summary>
     /// <returns>更新内容</returns>
     public Task<string> GetUpdateContentAsync();
+    
+    /// <summary>
+    /// 检查更新
+    /// </summary>
+    /// <returns>是否有更新</returns>
+    public Task<bool> CheckUpdateAsync();
 
     public event VoidDelegate? DownloadEvent;
     public event VoidDelegate? DownloadCompletedEvent;

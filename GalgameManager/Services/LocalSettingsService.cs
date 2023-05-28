@@ -158,11 +158,3 @@ public static class KeyValues
     public const string Filters = "filters";
     public const string DisplayedUpdateVersion = "displayedUpdateVersion";
 }
-
-public enum RssType
-{
-    Vndb,
-    Bangumi,
-    Moegirl,
-    None
-}

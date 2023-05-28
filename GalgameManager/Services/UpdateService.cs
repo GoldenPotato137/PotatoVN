@@ -1,4 +1,5 @@
-﻿using Windows.Storage;
+﻿using Windows.ApplicationModel;
+using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Helpers;
 
@@ -20,6 +21,20 @@ public class UpdateService : IUpdateService
         _localSettingsService = localSettingsService;
         var last = localSettingsService.ReadSettingAsync<string>(KeyValues.DisplayedUpdateVersion).Result ?? "";
         _firstUpdate = last != RuntimeHelper.GetVersion();
+    }
+
+    public async Task<bool> CheckUpdateAsync()
+    {
+        if (RuntimeHelper.IsMSIX == false) return false;
+        try
+        {
+            PackageUpdateAvailabilityResult result = await Package.Current.CheckUpdateAvailabilityAsync();
+            return result.Availability is PackageUpdateAvailability.Available or PackageUpdateAvailability.Required;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     public bool ShouldDisplayUpdateContent() => _firstUpdate;
@@ -51,6 +66,7 @@ public class UpdateService : IUpdateService
         {
             DownloadFailedEvent?.Invoke(e.Message);
         }
+
         DownloadCompletedEvent?.Invoke();
     }
 }
