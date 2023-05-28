@@ -4,6 +4,7 @@ using Windows.Storage;
 using CommunityToolkit.WinUI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
 using Microsoft.UI.Dispatching;

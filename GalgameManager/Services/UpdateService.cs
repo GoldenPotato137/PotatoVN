@@ -1,6 +1,7 @@
 ﻿using Windows.ApplicationModel;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 
 namespace GalgameManager.Services;

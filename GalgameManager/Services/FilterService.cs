@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Contracts;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 
 namespace GalgameManager.Services;
