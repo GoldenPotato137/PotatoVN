@@ -95,6 +95,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)true;
             case KeyValues.FixHorizontalPicture:
                 return (T?)(object)true;
+            case KeyValues.LastNoticeUpdateVersion:
+                return (T?)(object)"";
             default:
                 return default;
         }

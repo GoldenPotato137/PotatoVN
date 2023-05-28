@@ -20,8 +20,14 @@ public interface IUpdateService
     /// </summary>
     /// <returns>是否有更新</returns>
     public Task<bool> CheckUpdateAsync();
+    
+    /// <summary>
+    /// 更新更行提醒的小蓝点
+    /// </summary>
+    public Task UpdateSettingsBadgeAsync();
 
     public event VoidDelegate? DownloadEvent;
     public event VoidDelegate? DownloadCompletedEvent;
     public event GenericDelegate<string>? DownloadFailedEvent;
+    public event GenericDelegate<bool>? SettingBadgeEvent; 
 }

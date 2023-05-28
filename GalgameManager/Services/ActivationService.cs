@@ -13,6 +13,7 @@ public class ActivationService : IActivationService
     private readonly ActivationHandler<List<string>> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly IUpdateService _updateService;
     private readonly IDataCollectionService<GalgameFolder> _galgameFolderCollectionService;
     private readonly IDataCollectionService<Galgame> _galgameCollectionService;
     private UIElement? _shell = null;
@@ -20,13 +21,15 @@ public class ActivationService : IActivationService
     public ActivationService(ActivationHandler<List<string>> defaultHandler,
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
         IDataCollectionService<GalgameFolder> galgameFolderCollectionService,
-        IDataCollectionService<Galgame> galgameCollectionService)
+        IDataCollectionService<Galgame> galgameCollectionService,
+        IUpdateService updateService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _galgameFolderCollectionService = galgameFolderCollectionService;
         _galgameCollectionService = galgameCollectionService;
+        _updateService = updateService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -77,6 +80,7 @@ public class ActivationService : IActivationService
     private async Task StartupAsync()
     {
         await _themeSelectorService.SetRequestedThemeAsync();
+        await _updateService.UpdateSettingsBadgeAsync();
         await Task.CompletedTask;
     }
 }

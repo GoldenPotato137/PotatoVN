@@ -65,7 +65,7 @@
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.InfoBadge>
                         <!-- 这里的1并没有什么实际含义，只是这样做好看一点 -->
-                        <InfoBadge Value="1"/>
+                        <InfoBadge Value="1" Visibility="{x:Bind ViewModel.UpdateBadgeVisibility, Mode=OneWay}"/>
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
             </NavigationView.FooterMenuItems>

@@ -1,16 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-
 using GalgameManager.Contracts.Services;
-using GalgameManager.Views;
-
 using Microsoft.UI.Xaml.Navigation;
 
 namespace GalgameManager.ViewModels;
 
-public class ShellViewModel : ObservableRecipient
+public partial class ShellViewModel : ObservableRecipient
 {
     private bool _isBackEnabled;
     private object? _selected;
+    [ObservableProperty] private bool _updateBadgeVisibility;
 
     public INavigationService NavigationService
     {
@@ -34,8 +32,10 @@ public class ShellViewModel : ObservableRecipient
         set => SetProperty(ref _selected, value);
     }
 
-    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
+    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService,
+        IUpdateService updateService)
     {
+        updateService.SettingBadgeEvent += result => UpdateBadgeVisibility = result;
         NavigationService = navigationService;
         NavigationService.Navigated += OnNavigated;
         NavigationViewService = navigationViewService;

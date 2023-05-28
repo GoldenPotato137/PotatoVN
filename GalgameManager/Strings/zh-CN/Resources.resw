@@ -487,4 +487,13 @@
   <data name="Shell_Settings.Content" xml:space="preserve">
     <value>设置</value>
   </data>
+  <data name="SettingsPage_UpdateNotification_Title" xml:space="preserve">
+    <value>更新可用！</value>
+  </data>
+  <data name="SettingsPage_UpdateNotification_Msg" xml:space="preserve">
+    <value>检测到有新更新，可以在应用商店更新到最新版本哦~</value>
+  </data>
+  <data name="SettingsPage_SeeWhatsNew" xml:space="preserve">
+    <value>查看更新</value>
+  </data>
 </root>
