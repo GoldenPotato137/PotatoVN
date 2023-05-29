@@ -109,6 +109,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         foreach (Galgame galgame in await galgameFolder.GetGalgameList())
             await _galgameService.RemoveGalgame(galgame);
         _galgameFolders.Remove(galgameFolder);
+        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
     }
 }
 

@@ -114,6 +114,7 @@ public class GalgameFolder
         while (pathToCheck.Count>0)
         {
             var (currentPath, currentDepth) = pathToCheck.Dequeue();
+            if (!HasPermission(currentPath)) continue;
             ProgressText = $"正在扫描路径:{currentPath}";
             ProgressChangedEvent?.Invoke();
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
@@ -132,6 +133,22 @@ public class GalgameFolder
         await Task.Delay(3000);
         IsRunning = false;
         ProgressChangedEvent?.Invoke();
+    }
+
+    /// <summary>
+    /// 检查是否具有读取文件夹的权限
+    /// </summary>
+    private static bool HasPermission(string path)
+    {
+        try
+        {
+            Directory.GetFiles(path);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     /// <summary>
