@@ -496,4 +496,7 @@
   <data name="SettingsPage_SeeWhatsNew" xml:space="preserve">
     <value>查看更新</value>
   </data>
+  <data name="GalgamePage_RunAsAdmin.Label" xml:space="preserve">
+    <value>以管理员身份运行游戏</value>
+  </data>
 </root>

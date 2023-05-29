@@ -73,6 +73,8 @@
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"/>
+                    <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
+                                        IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" />
                     <AppBarSeparator/>
                     <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"/>
                 </CommandBar.SecondaryCommands>
