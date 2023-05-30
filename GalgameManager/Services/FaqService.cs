@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 

@@ -1,25 +1,28 @@
-﻿using System.Reflection;
-using System.Windows.Input;
-using Windows.ApplicationModel;
+﻿using System.Windows.Input;
 using Windows.Services.Store;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace GalgameManager.ViewModels;
 
-public partial class SettingsViewModel : ObservableRecipient
+public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly GalgameCollectionService _galgameCollectionService;
+    private readonly INavigationService _navigationService;
+    private readonly IUpdateService _updateService;
     private ElementTheme _elementTheme;
     private string _versionDescription;
 
@@ -84,9 +87,24 @@ public partial class SettingsViewModel : ObservableRecipient
         get;
     }
 
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
-        IDataCollectionService<Galgame> galgameService)
+    public async void OnNavigatedTo(object parameter)
     {
+        if (_shouldDisplayUpdateNotification)
+        {
+            await ShowUpdateNotification();
+            await _updateService.UpdateSettingsBadgeAsync();
+        }
+    }
+
+    public void OnNavigatedFrom() { }
+
+    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
+        IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService)
+    {
+        _navigationService = navigationService;
+        _updateService = updateService;
+        updateService.SettingBadgeEvent += result => _shouldDisplayUpdateNotification = result;
+        updateService.UpdateSettingsBadgeAsync(); //只是为了触发事件，原地TP，先这么写吧
         var themeSelectorService1 = themeSelectorService;
         _elementTheme = themeSelectorService1.Theme;
         _versionDescription = GetVersionDescription();
@@ -129,23 +147,28 @@ public partial class SettingsViewModel : ObservableRecipient
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
     }
 
-    private static string GetVersionDescription()
+    #region UPDATE
+    
+    private bool _shouldDisplayUpdateNotification;
+    
+    private async Task ShowUpdateNotification()
     {
-        Version version;
-
-        if (RuntimeHelper.IsMSIX)
+        ContentDialog updateDialog = new()
         {
-            var packageVersion = Package.Current.Id.Version;
-
-            version = new(packageVersion.Major, packageVersion.Minor, packageVersion.Build, packageVersion.Revision);
-        }
-        else
-        {
-            version = Assembly.GetExecutingAssembly().GetName().Version!;
-        }
-
-        return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "SettingsPage_UpdateNotification_Title".GetLocalized(),
+            Content = "SettingsPage_UpdateNotification_Msg".GetLocalized(),
+            PrimaryButtonText = "SettingsPage_SeeWhatsNew".GetLocalized(),
+            CloseButtonText = "OK",
+            DefaultButton = ContentDialogButton.Primary
+        };
+        updateDialog.PrimaryButtonClick += (_, _) =>
+            _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!);
+        await _localSettingsService.SaveSettingAsync(KeyValues.LastNoticeUpdateVersion, RuntimeHelper.GetVersion());
+        await updateDialog.ShowAsync();
     }
+    
+    #endregion
 
     #region THEME
 
@@ -266,6 +289,11 @@ public partial class SettingsViewModel : ObservableRecipient
         StoreContext context = StoreContext.GetDefault();
         WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());
         await context.RequestRateAndReviewAppAsync();
+    }
+    
+    private static string GetVersionDescription()
+    {
+        return $"{"AppDisplayName".GetLocalized()} - {RuntimeHelper.GetVersion()}";
     }
 
     #endregion

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using GalgameManager.Services;
+using GalgameManager.Enums;
 using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
@@ -35,6 +35,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
+    [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
     private bool _isSaveInCloud;
     private RssType _rssType = RssType.None;
     // ReSharper disable once MemberCanBePrivate.Global

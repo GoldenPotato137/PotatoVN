@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
 
 jobs:
   crowdin-push:

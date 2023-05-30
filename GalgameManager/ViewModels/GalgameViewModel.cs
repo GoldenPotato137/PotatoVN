@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
@@ -110,20 +111,29 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             {
                 FileName = Item.ExePath,
                 WorkingDirectory = Item.Path,
-                UseShellExecute = false
+                UseShellExecute = Item.RunAsAdmin,
+                Verb = Item.RunAsAdmin ? "runas" : null
             }
         };
-        process.Start();
-        _galgameService.Sort();
-        await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
-        Item.RecordPlayTime(process);
-        ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
-        await _jumpListService.AddToJumpListAsync(Item);
+        try
+        {
+            process.Start();
+            _galgameService.Sort();
+            await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
+            Item.RecordPlayTime(process);
+            ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
+            await _jumpListService.AddToJumpListAsync(Item);
 
-        await process.WaitForExitAsync();
-        Item.TotalPlayTime--;
-        Item.TotalPlayTime++; //手动刷新一下时间显示
-        ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
+            await process.WaitForExitAsync();
+            Item.TotalPlayTime--;
+            Item.TotalPlayTime++; //手动刷新一下时间显示
+            ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
+            await SaveAsync(); //保存游戏信息(更新时长)
+        }
+        catch
+        {
+            //ignore : 用户取消了UAC
+        }
     }
 
     [RelayCommand]
@@ -188,5 +198,11 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private void JumpToPlayedTimePage()
     {
         _navigationService.NavigateTo(typeof(PlayedTimeViewModel).FullName!, Item);
+    }
+
+    [RelayCommand]
+    private async Task SaveAsync()
+    {
+        await _galgameService.SaveGalgamesAsync(Item);
     }
 }

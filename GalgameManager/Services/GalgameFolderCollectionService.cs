@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using Microsoft.UI.Xaml.Controls;
@@ -108,6 +109,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         foreach (Galgame galgame in await galgameFolder.GetGalgameList())
             await _galgameService.RemoveGalgame(galgame);
         _galgameFolders.Remove(galgameFolder);
+        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
     }
 }
 

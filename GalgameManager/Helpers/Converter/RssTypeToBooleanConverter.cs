@@ -1,5 +1,4 @@
-﻿using GalgameManager.Services;
-
+﻿using GalgameManager.Enums;
 using Microsoft.UI.Xaml.Data;
 
 namespace GalgameManager.Helpers.Converter;

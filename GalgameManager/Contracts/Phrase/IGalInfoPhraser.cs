@@ -1,5 +1,5 @@
-﻿using GalgameManager.Models;
-using GalgameManager.Services;
+﻿using GalgameManager.Enums;
+using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Phrase;
 

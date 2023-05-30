@@ -472,4 +472,31 @@
   <data name="SettingsPage_Library_IgnoreFetchResult.Description" xml:space="preserve">
     <value>扫描库时是否需要在信息源中查询到对应的游戏才添加入库</value>
   </data>
+  <data name="UpdateContentPage_Title.Text" xml:space="preserve">
+    <value>最近更新的内容</value>
+  </data>
+  <data name="UpdateContentPage_Refresh.Label" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="UpdateContentPage_CurrentVersion" xml:space="preserve">
+    <value>当前版本：</value>
+  </data>
+  <data name="UpdateContentPage_MainTitle.Text" xml:space="preserve">
+    <value>欢迎</value>
+  </data>
+  <data name="Shell_Settings.Content" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="SettingsPage_UpdateNotification_Title" xml:space="preserve">
+    <value>更新可用！</value>
+  </data>
+  <data name="SettingsPage_UpdateNotification_Msg" xml:space="preserve">
+    <value>检测到有新更新，可以在应用商店更新到最新版本哦~</value>
+  </data>
+  <data name="SettingsPage_SeeWhatsNew" xml:space="preserve">
+    <value>查看更新</value>
+  </data>
+  <data name="GalgamePage_RunAsAdmin.Label" xml:space="preserve">
+    <value>以管理员身份运行游戏</value>
+  </data>
 </root>

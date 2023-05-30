@@ -5,6 +5,7 @@ using System.Web;
 
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Services;
 

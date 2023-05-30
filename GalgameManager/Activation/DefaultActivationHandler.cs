@@ -6,10 +6,12 @@ namespace GalgameManager.Activation;
 public class DefaultActivationHandler : ActivationHandler<List<string>>
 {
     private readonly INavigationService _navigationService;
+    private readonly IUpdateService _updateService;
 
-    public DefaultActivationHandler(INavigationService navigationService)
+    public DefaultActivationHandler(INavigationService navigationService, IUpdateService updateService)
     {
         _navigationService = navigationService;
+        _updateService = updateService;
     }
 
     protected override bool CanHandleInternal(List<string> args)
@@ -22,7 +24,10 @@ public class DefaultActivationHandler : ActivationHandler<List<string>>
     {
         if (args.Count == 1)
         {
-            _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+            if (_updateService.ShouldDisplayUpdateContent())
+                _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!, true);
+            else
+                _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         }
         else //jump list 
         {

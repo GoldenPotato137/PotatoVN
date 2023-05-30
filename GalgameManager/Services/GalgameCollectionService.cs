@@ -3,6 +3,7 @@ using Windows.Storage;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
