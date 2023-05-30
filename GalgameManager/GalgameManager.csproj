@@ -20,7 +20,7 @@
     <AppxBundle>Never</AppxBundle>
     <DefaultLanguage>zh-cn</DefaultLanguage>
     <AppxPackageDir>E:\.Net\GalgameManager\GalgameManager\bin\Release\</AppxPackageDir>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Potato.altform-lightunplated_targetsize-16.png" />
