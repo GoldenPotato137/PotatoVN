@@ -24,7 +24,8 @@
 
             <RelativePanel Grid.Row="0">
                 <TextBlock Text="{x:Bind ViewModel.Item.Path}"
-                           Style="{ThemeResource TitleTextBlockStyle}" />
+                           Style="{ThemeResource TitleTextBlockStyle}" 
+                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"/>
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
                             DefaultLabelPosition="Right">
                     <AppBarButton Icon="Add" Label="手动添加游戏" Command="{x:Bind ViewModel.AddGalgameCommand}">
@@ -41,7 +42,17 @@
                     <!-- 下载游戏数据 -->
                     <AppBarButton Icon="Download" Label="{x:Bind ViewModel.UiDownloadInfo, Mode=OneWay}" 
                                   Command="{x:Bind ViewModel.GetInfoFromRssCommand}" />
+                    <interactivity:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="SizeChanged">
+                            <core:InvokeCommandAction Command="{x:Bind ViewModel.CommandBarSizeChangedCommand}"/>
+                        </core:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
                 </CommandBar>
+                <interactivity:Interaction.Behaviors>
+                    <core:EventTriggerBehavior EventName="SizeChanged">
+                        <core:InvokeCommandAction Command="{x:Bind ViewModel.PageSizeChangedCommand}"/>
+                    </core:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
             </RelativePanel>
 
             <controls:DataGrid

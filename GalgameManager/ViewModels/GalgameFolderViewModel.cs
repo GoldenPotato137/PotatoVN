@@ -38,6 +38,10 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     [NotifyCanExecuteChangedFor(nameof(GetGalInFolderCommand))]
     private bool _canExecute; //是否正在运行命令
 
+    [ObservableProperty] private double _titleMaxWidth = 200;
+    private double _commandBarWidth;
+    private double _pageWidth;
+
     #region UI_STRING
 
     [ObservableProperty] private string _uiDownloadInfo = "GalgameFolderPage_DownloadInfo".GetLocalized();
@@ -235,6 +239,26 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         UiDownloadInfo = _selectedGalgames.Count == 0
             ? "GalgameFolderPage_DownloadInfo".GetLocalized()
             : "GalgameFolderPage_DownloadSelectedInfo".GetLocalized();
+    }
+
+    private void UpdateTitleMaxWidth()
+    {
+        if (_pageWidth == 0 || _commandBarWidth == 0) return;
+        TitleMaxWidth = Math.Max(_pageWidth - _commandBarWidth - 20, 0);
+    }
+    
+    [RelayCommand]
+    private void OnPageSizeChanged(SizeChangedEventArgs e)
+    {
+        _pageWidth = e.NewSize.Width;
+        UpdateTitleMaxWidth();
+    }
+
+    [RelayCommand]
+    private void OnCommandBarSizeChanged(SizeChangedEventArgs e)
+    {
+        _commandBarWidth = e.NewSize.Width;
+        UpdateTitleMaxWidth();
     }
 }
 
