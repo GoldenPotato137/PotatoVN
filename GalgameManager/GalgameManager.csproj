@@ -19,7 +19,8 @@
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Never</AppxBundle>
     <DefaultLanguage>zh-cn</DefaultLanguage>
-    <AppxPackageDir>E:\.Net\GalgameManager\GalgameManager\bin\Release\</AppxPackageDir>
+    <AppxPackageDir>E:\.Net\PotatoVN\GalgameManager\bin\</AppxPackageDir>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Potato.altform-lightunplated_targetsize-16.png" />
