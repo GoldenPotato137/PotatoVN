@@ -1,7 +1,9 @@
-﻿# PotatoVN
+# PotatoVN
 TODO: 这里应该放介绍图
 
 ## 介绍
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN?ref=badge_shield)
+
 PotatoVN是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。
 
 ### 功能
@@ -32,3 +34,7 @@ windows10用户需要额外安装[Segoe Fluent 图标字体](https://aka.ms/Sego
 ### TODO
 [always a lot](https://github.com/GoldenPotato137/GalgameManager/tree/main/GalgameManager)
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN?ref=badge_large)
