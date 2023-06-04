@@ -132,7 +132,13 @@ public class BgmPhraser : IGalInfoPhraser
         // developer
         var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
-        result.Developer = (developerInfoBox==null?null:developerInfoBox["value"]!.ToObject<string>()!) ?? Galgame.DefaultString;
+        developerInfoBox = developerInfoBox == null ? Galgame.DefaultString : (developerInfoBox["value"] ?? Galgame.DefaultString);
+        if(developerInfoBox.Type.ToString() == "Array") {
+            developerInfoBox = (JToken)developerInfoBox.SelectMany(dev => dev != null ? dev["v"].ToString() : "");
+            developerInfoBox = string.Join(",", developerInfoBox)
+                .ToString();
+        }
+        result.Developer = developerInfoBox.ToString();
         // tags
         var tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
         result.Tags.Value = new ObservableCollection<string>();
