@@ -29,6 +29,8 @@ public interface IGalInfoPhraser
     /// <returns>jaro-winkler距离: [0,1]</returns>
     public static double Similarity(string s1, string s2)
     {
+        s1 = s1.ToLower();
+        s2 = s2.ToLower();
         if(s1.Length > s2.Length)
             (s1, s2) = (s2, s1);
         int n = s1.Length, m = s2.Length, range = Math.Max(m / 2 - 1, 0);

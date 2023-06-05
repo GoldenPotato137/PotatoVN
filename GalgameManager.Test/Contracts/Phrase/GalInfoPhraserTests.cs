@@ -8,32 +8,17 @@ namespace GalgameManager.Test.Contracts.Phrase;
 public class GalInfoPhraserTests
 {
     [Test]
-    public void SimilarityTest1()
+    [TestCase("bacde", "abed", 0.672)]
+    [TestCase("FAREMVIEL", "FARMVILLE", 0.88425)]
+    [TestCase("AMBITIOUS MISSION", "ambitious mission", 1)]
+    public void SimilarityTest(string s1, string s2, double target)
     {
         // Arrange
-        var s1 = "bacde";
-        var s2 = "abed";
         // Act
         var result = IGalInfoPhraser.Similarity(s1, s2);
         // Console.WriteLine(result);
         // Assert
-        if(Math.Abs(result - 0.672) > 0.001)
-            Assert.Fail();
-        else
-            Assert.Pass();
-    }
-    
-    [Test]
-    public void SimilarityTest2()
-    {
-        // Arrange
-        var s1 = "FAREMVIEL";
-        var s2 = "FARMVILLE";
-        // Act
-        var result = IGalInfoPhraser.Similarity(s1, s2);
-        //Console.WriteLine(result);
-        // Assert
-        if(Math.Abs(result - 0.88425) > 0.001)
+        if (Math.Abs(result - target) > 0.001)
             Assert.Fail();
         else
             Assert.Pass();

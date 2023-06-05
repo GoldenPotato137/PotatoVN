@@ -44,10 +44,26 @@ public class BgmPhraser : IGalInfoPhraser
             var url = "https://api.bgm.tv/search/subject/" + HttpUtility.UrlEncode(name) + "?type=4";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null;
+            var tmp = await response.Content.ReadAsStringAsync();
             var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
             var games = jsonToken["list"]!.ToObject<List<JToken>>();
             if (games==null || games.Count == 0) return null;
-            return games[0]["id"]!.ToObject<int>();
+            
+            double maxSimilarity = 0;
+            var target = 0;
+            foreach (JToken game in games)
+                if (IGalInfoPhraser.Similarity(name, game["name_cn"]!.ToObject<string>()!) > maxSimilarity ||
+                    IGalInfoPhraser.Similarity(name, game["name"]!.ToObject<string>()!) > maxSimilarity)
+                {
+                    maxSimilarity = Math.Max
+                    (
+                        IGalInfoPhraser.Similarity(name, game["name_cn"]!.ToObject<string>()!),
+                        IGalInfoPhraser.Similarity(name, game["name"]!.ToObject<string>()!)
+                    );
+                    target = games.IndexOf(game);
+                }
+                
+            return games[target]["id"]!.ToObject<int>();
         }
         catch (Exception)
         {
@@ -127,15 +143,15 @@ public class BgmPhraser : IGalInfoPhraser
         // imageUrl
         result.ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!;
         // rating
-        result.Rating = jsonToken["rating"]!["score"]!.ToObject<float>()!;
+        result.Rating = jsonToken["rating"]!["score"]!.ToObject<float>();
         // developer
         var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
-        developerInfoBox = developerInfoBox == null ? Galgame.DefaultString : (developerInfoBox["value"] ?? Galgame.DefaultString);
-        if(developerInfoBox.Type.ToString() == "Array") {
-            developerInfoBox = (JToken)developerInfoBox.SelectMany(dev => dev != null ? dev["v"].ToString() : "");
-            developerInfoBox = string.Join(",", developerInfoBox)
-                .ToString();
+        developerInfoBox = developerInfoBox == null ? Galgame.DefaultString : developerInfoBox["value"] ?? Galgame.DefaultString;
+        if (developerInfoBox.Type.ToString() == "Array")
+        {
+            IEnumerable<char> tmp = developerInfoBox.SelectMany(dev => dev["v"]!.ToString());
+            developerInfoBox = string.Join(",", tmp);
         }
         result.Developer = developerInfoBox.ToString();
         // tags
