@@ -38,10 +38,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         IFileService fileService, IFilterService filterService)
     {
         LocalSettingsService = localSettingsService;
+        LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
         _jumpListService = jumpListService;
         _fileService = fileService;
         _filterService = filterService;
-        PhraserList[(int)RssType.Bangumi] = new BgmPhraser(localSettingsService);
+        PhraserList[(int)RssType.Bangumi] = new BgmPhraser(GetBgmData().Result);
         PhraserList[(int)RssType.Vndb] = new VndbPhraser();
 
         App.MainWindow.AppWindow.Closing += async (_, _) =>
@@ -471,6 +472,28 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         content.Children.Add(box2);
         dialog.Content = content;
         await dialog.ShowAsync();
+    }
+
+    /// <summary>
+    /// 从设置中读取bangumi的设置
+    /// </summary>
+    private async Task<BgmPhraserData> GetBgmData()
+    {
+        BgmPhraserData data = new()
+        {
+            Token = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken)
+        };
+        return data;
+    }
+
+    private async Task OnSettingChanged(string key)
+    {
+        switch (key)
+        {
+            case KeyValues.BangumiToken:
+                PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
+                break;
+        }
     }
 }
 

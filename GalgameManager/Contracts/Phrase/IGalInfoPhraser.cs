@@ -15,6 +15,15 @@ public interface IGalInfoPhraser
     public RssType GetPhraseType();
 
     /// <summary>
+    /// 更新数据
+    /// </summary>
+    /// <param name="data">数据包</param>
+    public void UpdateData(IGalInfoPhraserData data)
+    {
+        
+    }
+
+    /// <summary>
     /// 计算两个字符串的相似度
     /// </summary>
     /// <returns>jaro-winkler距离: [0,1]</returns>

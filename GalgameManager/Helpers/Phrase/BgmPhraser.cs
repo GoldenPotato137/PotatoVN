@@ -4,31 +4,31 @@ using System.Net.Http.Headers;
 using System.Web;
 
 using GalgameManager.Contracts.Phrase;
-using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models;
-using GalgameManager.Services;
-
 using Newtonsoft.Json.Linq;
-
-// ReSharper disable EnforceIfStatementBraces
 
 namespace GalgameManager.Helpers.Phrase;
 
 public class BgmPhraser : IGalInfoPhraser
 {
     private HttpClient _httpClient;
-    private readonly ILocalSettingsService _localSettingsService;
 
-    public BgmPhraser(ILocalSettingsService localSettingsService)
+    public BgmPhraser(BgmPhraserData data)
     {
-        _localSettingsService = localSettingsService;
         _httpClient = new HttpClient();
+        GetHttpClient(data);
+    }
+
+    public void UpdateData(IGalInfoPhraserData data)
+    {
+        if(data is BgmPhraserData bgmData)
+            GetHttpClient(bgmData);
     }
     
-    private void GetHttpClient()
+    private void GetHttpClient(BgmPhraserData data)
     {
-        var bgmToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result;
+        var bgmToken = data.Token;
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -96,7 +96,6 @@ public class BgmPhraser : IGalInfoPhraser
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
-        GetHttpClient(); // refresh token
         var name = galgame.Name;
         int? id;
         try
@@ -147,4 +146,16 @@ public class BgmPhraser : IGalInfoPhraser
     }
 
     public RssType GetPhraseType() => RssType.Bangumi;
+}
+
+public class BgmPhraserData : IGalInfoPhraserData
+{
+    public string? Token;
+
+    public BgmPhraserData() { }
+    
+    public BgmPhraserData(string? token)
+    {
+        Token = token;
+    }
 }

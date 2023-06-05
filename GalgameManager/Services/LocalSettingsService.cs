@@ -24,6 +24,8 @@ public class LocalSettingsService : ILocalSettingsService
     private IDictionary<string, object> _settings;
 
     private bool _isInitialized;
+    
+    public event ILocalSettingsService.Delegate? OnSettingChanged;
 
     public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
     {
@@ -116,8 +118,10 @@ public class LocalSettingsService : ILocalSettingsService
 
             await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
         }
+        if(value != null)
+            OnSettingChanged?.Invoke(key, value);
     }
-
+    
     public async Task RemoveSettingAsync(string key)
     {
         if (RuntimeHelper.IsMSIX)
