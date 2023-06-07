@@ -42,8 +42,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _jumpListService = jumpListService;
         _fileService = fileService;
         _filterService = filterService;
-        PhraserList[(int)RssType.Bangumi] = new BgmPhraser(GetBgmData().Result);
-        PhraserList[(int)RssType.Vndb] = new VndbPhraser();
+        BgmPhraser bgmPhraser = new(GetBgmData().Result);
+        VndbPhraser vndbPhraser = new();
+        PhraserList[(int)RssType.Bangumi] = bgmPhraser;
+        PhraserList[(int)RssType.Vndb] = vndbPhraser;
+        PhraserList[(int)RssType.Mixed] = new MixedPhraser(bgmPhraser, vndbPhraser);
 
         App.MainWindow.AppWindow.Closing += async (_, _) =>
         { 

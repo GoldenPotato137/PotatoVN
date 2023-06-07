@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Web;
 
 using GalgameManager.Contracts.Phrase;
@@ -12,7 +13,10 @@ namespace GalgameManager.Helpers.Phrase;
 
 public class BgmPhraser : IGalInfoPhraser
 {
+    private const string ProducerFile = @"Assets\Data\producers.json";
     private HttpClient _httpClient;
+    private bool _init;
+    private readonly List<string> _developerList = new();
 
     public BgmPhraser(BgmPhraserData data)
     {
@@ -37,6 +41,31 @@ public class BgmPhraser : IGalInfoPhraser
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
     }
     
+    private async Task InitAsync()
+    {
+        _init = true;
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, ProducerFile);
+        if (!File.Exists(file)) return;
+
+        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
+        List<JToken>? producers = json.ToObject<List<JToken>>();
+        producers!.ForEach(dev =>
+        {
+            if (IsNullOrEmpty(dev["name"]!.ToString()) == false)
+                _developerList.Add(dev["name"]!.ToString());
+            if (IsNullOrEmpty(dev["latin"]!.ToString()) == false)
+                _developerList.Add(dev["latin"]!.ToString());
+            if (IsNullOrEmpty(dev["alias"]!.ToString()) == false)
+            {
+                var tmp = dev["alias"]!.ToString();
+                _developerList.AddRange(tmp.Split("\n"));
+            }
+        });
+    }
+
+    private static bool IsNullOrEmpty(string str) => str is "null" or "";
+
     private async Task<int?> GetId(string name)
     {
         try
@@ -44,7 +73,6 @@ public class BgmPhraser : IGalInfoPhraser
             var url = "https://api.bgm.tv/search/subject/" + HttpUtility.UrlEncode(name) + "?type=4";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null;
-            var tmp = await response.Content.ReadAsStringAsync();
             var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
             var games = jsonToken["list"]!.ToObject<List<JToken>>();
             if (games==null || games.Count == 0) return null;
@@ -112,6 +140,9 @@ public class BgmPhraser : IGalInfoPhraser
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
+        if (_init == false)
+            await InitAsync();
+        
         var name = galgame.Name;
         int? id;
         try
@@ -144,6 +175,10 @@ public class BgmPhraser : IGalInfoPhraser
         result.ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!;
         // rating
         result.Rating = jsonToken["rating"]!["score"]!.ToObject<float>();
+        // tags
+        var tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
+        result.Tags.Value = new ObservableCollection<string>();
+        tags.ForEach(tag => result.Tags.Value.Add(tag["name"]!.ToObject<string>()!));
         // developer
         var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
@@ -154,10 +189,31 @@ public class BgmPhraser : IGalInfoPhraser
             developerInfoBox = string.Join(",", tmp);
         }
         result.Developer = developerInfoBox.ToString();
-        // tags
-        var tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
-        result.Tags.Value = new ObservableCollection<string>();
-        tags.ForEach(tag => result.Tags.Value.Add(tag["name"]!.ToObject<string>()!));
+        if (result.Developer == Galgame.DefaultString)
+        {
+            var tmp = GetDeveloperFromTags(result);
+            if (tmp != null)
+                result.Developer = tmp;
+        }
+        return result;
+    }
+
+    private string? GetDeveloperFromTags(Galgame galgame)
+    {
+        string? result = null;
+        foreach (var tag in galgame.Tags.Value!)
+        {
+            double maxSimilarity = 0;
+            foreach(var dev in _developerList)
+                if (IGalInfoPhraser.Similarity(dev, tag) > maxSimilarity)
+                {
+                    maxSimilarity = IGalInfoPhraser.Similarity(dev, tag);
+                    result = dev;
+                }
+
+            if (result != null && maxSimilarity > 0.75) // magic number: 一个tag和开发商的相似度大于0.75就认为是开发商
+                break;
+        }
         return result;
     }
 

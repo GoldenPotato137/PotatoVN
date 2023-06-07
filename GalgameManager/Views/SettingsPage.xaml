@@ -99,9 +99,9 @@
                                 IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Vndb }" />
                             <RadioButton
                                 IsEnabled="False"
-                                Content="Moegirl"
+                                Content="Mixed"
                                 GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Moegirl }" />
+                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Mixed }" />
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
