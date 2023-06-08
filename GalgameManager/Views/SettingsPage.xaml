@@ -12,7 +12,7 @@
     <Page.Resources>
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-        <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter" />
+        <converter:RssTypeToVisibilityConverter x:Key="RssTypeToVisibilityConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -81,27 +81,60 @@
                     SettingDescription="{x:Bind ViewModel.UiRssDescription}"
                     SettingIcon="&#xE701;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel>
-                            <RadioButton
-                                Content="Bangumi"
-                                GroupName="Info"
-                                Command="{x:Bind ViewModel.RssSelectBangumiCommand}"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Bangumi }" />
-                            <TextBox
-                                Visibility="{x:Bind ViewModel.IsSelectBangumi, Mode=OneWay}"
-                                Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
-                                PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                Margin="0 5 0 5" />
-                            <RadioButton
-                                Content="VNDB"
-                                GroupName="Info"
-                                Command="{x:Bind ViewModel.RssSelectVndbCommand}"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Vndb }" />
-                            <RadioButton
-                                IsEnabled="False"
-                                Content="Mixed"
-                                GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Mixed }" />
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <RelativePanel>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="{x:Bind ViewModel.UiRssTitle}"
+                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                        <TextBlock Text="{x:Bind ViewModel.UiRssDescription}"
+                                                   Style="{StaticResource DescriptionTextStyle}" />
+                                    </StackPanel>
+                                    <ComboBox ItemsSource="{x:Bind ViewModel.RssTypes}"
+                                              SelectedItem="{x:Bind ViewModel.RssType, Mode=TwoWay}"
+                                              RelativePanel.AlignRightWithPanel="True"/>
+                                </RelativePanel>
+                            </control:Panel>
+                            <!-- bangumi -->
+                            <control:Panel Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Bangumi}"
+                                           Margin="0 0 0 -26"> <!--这里的margin是显示bug的workaround-->
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_Bangumi" Padding="0"/>
+                                    <TextBlock x:Uid="SettingsPage_Rss_Bangumi_Description" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                    <TextBox
+                                        Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
+                                        PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
+                                        Margin="0 5 0 5" /> 
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- VNDB -->
+                            <control:Panel
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Vndb}"
+                                Margin="0 -13 0 -13">
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_VNDB" Padding="0" />
+                                    <TextBlock x:Uid="SettingsPage_Rss_VNDB_Description" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- Mixed -->
+                            <control:Panel
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Mixed}"
+                                Margin="0 -26 0 0">
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_Mixed" Padding="0"/>
+                                    <TextBlock x:Uid="SettingsPage_Rss_Mixed_Description" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                    <TextBox
+                                        Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
+                                        PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
+                                        Margin="0 5 0 5" /> 
+                                </StackPanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>

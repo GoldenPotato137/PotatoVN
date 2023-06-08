@@ -75,6 +75,8 @@ public class LocalSettingsService : ILocalSettingsService
     {
         switch (key)
         {
+            case KeyValues.RssType:
+                return (T?)(object?)RssType.Mixed;
             case KeyValues.RemoteFolder:
                 var result = Environment.GetEnvironmentVariable("OneDrive");
                 result = result==null ? null : result + "\\GameSaves";

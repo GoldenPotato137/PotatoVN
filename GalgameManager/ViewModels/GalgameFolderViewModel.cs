@@ -23,7 +23,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private GalgameFolder? _item;
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
-    public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb };
+    public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
 
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;

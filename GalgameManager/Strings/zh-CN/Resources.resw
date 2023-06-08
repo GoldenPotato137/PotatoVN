@@ -499,4 +499,32 @@
   <data name="GalgamePage_RunAsAdmin.Label" xml:space="preserve">
     <value>以管理员身份运行游戏</value>
   </data>
+  <data name="SettingsPage_Rss_Bangumi.Content" xml:space="preserve">
+    <value>Bangumi 番组计划</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#bangumi-%E7%95%AA%E7%BB%84%E8%AE%A1%E5%88%92</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB.Content" xml:space="preserve">
+    <value>VNDB</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#vndb</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#mixed</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed.Content" xml:space="preserve">
+    <value>混合信息源</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi_Description.Text" xml:space="preserve">
+    <value>Bangumi 番组计划是一个中文ACGN互联网分享与交流项目，基于CC BY-SA协议，保存由用户提供的各类ACG相关事物和人物、电影、电视剧等的相关资料，可以让用户查阅，并提供BBS论坛和留言版供交流探讨。</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB_Description.Text" xml:space="preserve">
+    <value>视觉小说数据库（英语：Visual Novel Database，简称VNDB）是一个面向视觉小说的网络数据库、wiki和网络英语论坛。截至2021年5月，视觉小说数据库一共收录了约29,000部视觉小说，其论坛部分也有约19万名注册用户。</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Description.Text" xml:space="preserve">
+    <value>Mixed为一个混合搜刮器，结合多个数据源的数据并取用最优值。目前结合了VNDB和Bangumi的数据。
+因为本搜刮器混合了多个数据源的数据，因此你需要为每个源配置相关的设置。</value>
+  </data>
 </root>

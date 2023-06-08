@@ -124,8 +124,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //THEME
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //RSS
+        RssTypes.Add(RssType.Bangumi);
+        RssTypes.Add(RssType.Vndb);
+        RssTypes.Add(RssType.Mixed);
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
-        IsSelectBangumi = RssType == RssType.Bangumi ? Visibility.Visible : Visibility.Collapsed;
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
@@ -181,15 +183,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty] private string _bangumiToken = string.Empty;
     [ObservableProperty] private RssType _rssType;
-    [ObservableProperty] private Visibility _isSelectBangumi;
-    [RelayCommand]
-    private void RssSelectBangumi() => RssType = RssType.Bangumi;
-    [RelayCommand]
-    private void RssSelectVndb() => RssType = RssType.Vndb;
+    // ReSharper disable once CollectionNeverQueried.Global
+    public readonly List<RssType> RssTypes = new();
+    
     partial void OnRssTypeChanged(RssType value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RssType, value);
-        IsSelectBangumi = value == RssType.Bangumi ? Visibility.Visible : Visibility.Collapsed;
     }
 
     partial void OnBangumiTokenChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, value);
