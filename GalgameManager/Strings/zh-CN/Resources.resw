@@ -527,4 +527,10 @@
     <value>Mixed为一个混合搜刮器，结合多个数据源的数据并取用最优值。目前结合了VNDB和Bangumi的数据。
 因为本搜刮器混合了多个数据源的数据，因此你需要为每个源配置相关的设置。</value>
   </data>
+  <data name="SettingsPage_Theme_Color.Text" xml:space="preserve">
+    <value>应用主题</value>
+  </data>
+  <data name="SettingsPage_Theme_Color_Description.Text" xml:space="preserve">
+    <value>选择你喜欢的应用主题吧</value>
+  </data>
 </root>

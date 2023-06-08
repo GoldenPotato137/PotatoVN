@@ -23,7 +23,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly GalgameCollectionService _galgameCollectionService;
     private readonly INavigationService _navigationService;
     private readonly IUpdateService _updateService;
-    private ElementTheme _elementTheme;
+    private readonly IThemeSelectorService _themeSelectorService;
     private string _versionDescription;
 
     #region UI_STRINGS
@@ -70,23 +70,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    public ElementTheme ElementTheme
-    {
-        get => _elementTheme;
-        set => SetProperty(ref _elementTheme, value);
-    }
-
     public string VersionDescription
     {
         get => _versionDescription;
         set => SetProperty(ref _versionDescription, value);
     }
-
-    public ICommand SwitchThemeCommand
-    {
-        get;
-    }
-
+    
     public async void OnNavigatedTo(object parameter)
     {
         if (_shouldDisplayUpdateNotification)
@@ -101,32 +90,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService)
     {
+        _themeSelectorService = themeSelectorService;
         _navigationService = navigationService;
         _updateService = updateService;
         updateService.SettingBadgeEvent += result => _shouldDisplayUpdateNotification = result;
         updateService.UpdateSettingsBadgeAsync(); //只是为了触发事件，原地TP，先这么写吧
-        var themeSelectorService1 = themeSelectorService;
-        _elementTheme = themeSelectorService1.Theme;
         _versionDescription = GetVersionDescription();
-
-        async void Execute(ElementTheme param)
-        {
-            if (ElementTheme != param)
-            {
-                ElementTheme = param;
-                await themeSelectorService1.SetThemeAsync(param);
-            }
-        }
-
-        SwitchThemeCommand = new RelayCommand<ElementTheme>(Execute);
-
         _localSettingsService = localSettingsService;
+        
         //THEME
+        _elementTheme = themeSelectorService.Theme;
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //RSS
-        RssTypes.Add(RssType.Bangumi);
-        RssTypes.Add(RssType.Vndb);
-        RssTypes.Add(RssType.Mixed);
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
@@ -173,6 +148,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #endregion
 
     #region THEME
+    public readonly ElementTheme[] Themes = { ElementTheme.Default, ElementTheme.Light, ElementTheme.Dark };
+    [ObservableProperty ]private ElementTheme _elementTheme;
+    
+    partial void OnElementThemeChanged(ElementTheme value)
+    {
+        _themeSelectorService.SetThemeAsync(value);
+    }
 
     [ObservableProperty] private bool _fixHorizontalPicture;
     partial void OnFixHorizontalPictureChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.FixHorizontalPicture, value);
@@ -184,7 +166,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _bangumiToken = string.Empty;
     [ObservableProperty] private RssType _rssType;
     // ReSharper disable once CollectionNeverQueried.Global
-    public readonly List<RssType> RssTypes = new();
+    public readonly RssType[] RssTypes = { RssType.Mixed , RssType.Bangumi, RssType.Vndb};
     
     partial void OnRssTypeChanged(RssType value)
     {

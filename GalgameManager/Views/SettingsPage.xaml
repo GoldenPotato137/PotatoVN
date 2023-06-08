@@ -11,8 +11,8 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converter:RssTypeToVisibilityConverter x:Key="RssTypeToVisibilityConverter"/>
+        <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -33,38 +33,23 @@
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <!-- 主题颜色 -->
                             <control:Panel>
-                                <StackPanel>
-                                    <RadioButton
-                                        x:Uid="Settings_Theme_Light"
-                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
-                                        FontSize="15"
-                                        GroupName="AppTheme">
-                                        <RadioButton.CommandParameter>
-                                            <xaml:ElementTheme>Light</xaml:ElementTheme>
-                                        </RadioButton.CommandParameter>
-                                    </RadioButton>
-                                    <RadioButton
-                                        x:Uid="Settings_Theme_Dark"
-                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
-                                        FontSize="15"
-                                        GroupName="AppTheme">
-                                        <RadioButton.CommandParameter>
-                                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                                        </RadioButton.CommandParameter>
-                                    </RadioButton>
-                                    <RadioButton
-                                        x:Uid="Settings_Theme_Default"
-                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
-                                        FontSize="15"
-                                        GroupName="AppTheme">
-                                        <RadioButton.CommandParameter>
-                                            <xaml:ElementTheme>Default</xaml:ElementTheme>
-                                        </RadioButton.CommandParameter>
-                                    </RadioButton>
-                                </StackPanel>
+                                <RelativePanel>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock x:Uid="SettingsPage_Theme_Color"
+                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                        <TextBlock x:Uid="SettingsPage_Theme_Color_Description"
+                                                   Style="{StaticResource DescriptionTextStyle}" />
+                                    </StackPanel>
+                                    <ComboBox ItemsSource="{x:Bind ViewModel.Themes}"
+                                              SelectedItem="{x:Bind ViewModel.ElementTheme, Mode=TwoWay}"
+                                              RelativePanel.AlignRightWithPanel="True">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="ElementTheme">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource ElementThemeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </RelativePanel> 
                             </control:Panel>
                             <!-- 修复横向图片 -->
                             <control:Panel>
