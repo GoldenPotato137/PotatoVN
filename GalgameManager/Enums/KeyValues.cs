@@ -27,4 +27,5 @@ public static class KeyValues
     public const string LastUpdateCheckDate = "lastUpdateCheckDate"; // DateTime,上次检查更新的时间
     public const string LastUpdateCheckResult = "lastUpdateCheckResult"; // bool,上次检查更新的结果
     public const string LastNoticeUpdateVersion = "lastNoticeUpdateVersion"; // string,上次通知更新的版本
+    public const string UploadData = "uploadData"; // bool,是否将匿名数据上传到AppCenter
 }

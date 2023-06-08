@@ -533,4 +533,22 @@
   <data name="SettingsPage_Theme_Color_Description.Text" xml:space="preserve">
     <value>选择你喜欢的应用主题吧</value>
   </data>
+  <data name="SettingsPage_Upload.SettingTitle" xml:space="preserve">
+    <value>上传设置</value>
+  </data>
+  <data name="SettingsPage_Upload.SettingDescription" xml:space="preserve">
+    <value>与上传数据有关的设置</value>
+  </data>
+  <data name="SettingsPage_Upload_AppCenter.Title" xml:space="preserve">
+    <value>上传匿名事件日志</value>
+  </data>
+  <data name="SettingsPage_Upload_AppCenter.Description" xml:space="preserve">
+    <value>上传的内容不包含任何个人数据，且仅用于统计各功能使用情况以及报错跟踪</value>
+  </data>
+  <data name="SettingsPage_UpdateContent.Content" xml:space="preserve">
+    <value>更新记录</value>
+  </data>
+  <data name="UpdateContentPage_AppCenterSuccess" xml:space="preserve">
+    <value>已成功开启匿名日志上传功能，感谢您的贡献！</value>
+  </data>
 </root>

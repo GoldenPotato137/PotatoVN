@@ -122,6 +122,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
         //QUICK_START
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
+        //UPLOAD
+        UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
     }
 
     #region UPDATE
@@ -261,6 +263,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
 
     #endregion
+    
+    #region UPLOAD
+
+    [ObservableProperty] private bool _uploadToAppCenter;
+    
+    partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
+
+    #endregion
 
     #region ABOUT
 
@@ -270,6 +280,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         StoreContext context = StoreContext.GetDefault();
         WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());
         await context.RequestRateAndReviewAppAsync();
+    }
+
+    [RelayCommand]
+    private void UpdateContent()
+    {
+        _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!);
     }
     
     private static string GetVersionDescription()

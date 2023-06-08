@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:GalgameManager.Views"
-    xmlns:xaml="using:Microsoft.UI.Xaml"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d">
@@ -298,6 +297,15 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
+                
+                <control:SettingExpander x:Uid="SettingsPage_Upload" SettingIcon="&#xE898;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel>
+                            <local:SettingToggleSwitch x:Uid="SettingsPage_Upload_AppCenter"
+                                                       IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
 
                 <!-- 关于 -->
                 <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
@@ -312,6 +320,7 @@
                         <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink"
                                          Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
                         <HyperlinkButton x:Uid="SettingsPage_RepositoryLink" />
+                        <HyperlinkButton x:Uid="SettingsPage_UpdateContent" Command="{x:Bind ViewModel.UpdateContentCommand}"/>
                         <HyperlinkButton x:Uid="SettingsPage_RateLink" Command="{x:Bind ViewModel.RateCommand}" />
                     </StackPanel>
                 </StackPanel>

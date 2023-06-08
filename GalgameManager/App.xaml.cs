@@ -70,6 +70,7 @@ public partial class App : Application
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IAppCenterService, AppCenterService>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();

@@ -1,0 +1,9 @@
+﻿namespace GalgameManager.Contracts.Services;
+
+public interface IAppCenterService
+{
+    /// <summary>
+    /// 试图启动 AppCenter 服务，如果已经启动则不会重复启动，如果设置中禁止上传信息则不会启动
+    /// </summary>
+    public Task StartAsync();
+}
