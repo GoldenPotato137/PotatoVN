@@ -1,10 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
-using GalgameManager.Services;
 using Newtonsoft.Json.Linq;
 using SharpCompress;
 using VndbSharp;
@@ -14,7 +12,6 @@ using VndbSharp.Models.VisualNovel;
 
 namespace GalgameManager.Helpers.Phrase;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public class VndbPhraser : IGalInfoPhraser
 {
     private readonly Vndb _vndb;
@@ -38,6 +35,19 @@ public class VndbPhraser : IGalInfoPhraser
         var tags = json.ToObject<List<JToken>>();
         tags!.ForEach(tag => _tagDb.Add(int.Parse(tag["id"]!.ToString()), tag));
     }
+
+    private async Task TryGetId(Galgame galgame)
+    {
+        RssType old = galgame.RssType;
+        galgame.RssType = GetPhraseType();
+        if (string.IsNullOrEmpty(galgame.Id))
+        {
+            var id = await PhraseHelper.TryGetVndbIdAsync(galgame.Name!);
+            if (id is not null)
+                galgame.Id = id.ToString();
+        }
+        galgame.RssType = old;
+    }
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
@@ -45,6 +55,9 @@ public class VndbPhraser : IGalInfoPhraser
         var result = new Galgame();
         try
         {
+            // 试图离线获取ID
+            await TryGetId(galgame);
+
             VndbResponse<VisualNovel> visualNovels;
             try
             {

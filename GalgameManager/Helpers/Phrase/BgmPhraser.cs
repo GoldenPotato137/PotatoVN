@@ -68,6 +68,10 @@ public class BgmPhraser : IGalInfoPhraser
 
     private async Task<int?> GetId(string name)
     {
+        // 先试图从本地数据库获取
+        var id = await PhraseHelper.TryGetBgmIdAsync(name);
+        if (id is not null) return id;
+        // 本地数据库没有则从网络获取
         try
         {
             var url = "https://api.bgm.tv/search/subject/" + HttpUtility.UrlEncode(name) + "?type=4";

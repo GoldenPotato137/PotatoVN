@@ -36,6 +36,9 @@
     <Content Update="Assets\Data\vndb-tags-2023-04-15.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\Data\vn_mapper.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Potato.scale-100.png" />
@@ -70,6 +73,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230502000" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="SharpCompress" Version="0.33.0" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="VndbSharp" Version="1.1.1" />
     <PackageReference Include="WinUIEx" Version="2.2.0" />
   </ItemGroup>
