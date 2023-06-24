@@ -69,6 +69,7 @@ public partial class App : Application
             services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
+            services.AddSingleton<ICategoryService, CategoryService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IAppCenterService, AppCenterService>();
 

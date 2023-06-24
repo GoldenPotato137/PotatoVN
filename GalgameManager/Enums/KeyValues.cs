@@ -28,4 +28,7 @@ public static class KeyValues
     public const string LastUpdateCheckResult = "lastUpdateCheckResult"; // bool,上次检查更新的结果
     public const string LastNoticeUpdateVersion = "lastNoticeUpdateVersion"; // string,上次通知更新的版本
     public const string UploadData = "uploadData"; // bool,是否将匿名数据上传到AppCenter
+    public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
+    public const string Categories = "categories"; // List<ICategory>,分类
+    public const string AutoCategory = "autoCategory"; // bool,是否自动分类
 }

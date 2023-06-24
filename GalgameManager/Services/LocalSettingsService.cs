@@ -101,6 +101,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)true;
             case KeyValues.LastNoticeUpdateVersion:
                 return (T?)(object)"";
+            case KeyValues.AutoCategory:
+                return (T?)(object)true;
             default:
                 return default;
         }

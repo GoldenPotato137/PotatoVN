@@ -27,6 +27,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public event GalgameDelegate? MetaSavedEvent; //当有galgame元数据保存时触发
     public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
+    public event GenericDelegate<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
     public bool IsPhrasing;
 
     private IGalInfoPhraser[] PhraserList
@@ -168,6 +169,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
+        PhrasedEvent2?.Invoke(galgame);
         return result;
     }
 

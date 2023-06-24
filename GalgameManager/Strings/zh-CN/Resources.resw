@@ -551,4 +551,10 @@
   <data name="UpdateContentPage_AppCenterSuccess" xml:space="preserve">
     <value>已成功开启匿名日志上传功能，感谢您的贡献！</value>
   </data>
+  <data name="EditableCategory_Add_AlreadyExist" xml:space="preserve">
+    <value>该游戏已经存在于该分类中</value>
+  </data>
+  <data name="EditableCategory_Remove_NotExist" xml:space="preserve">
+    <value>该游戏不在该分类中</value>
+  </data>
 </root>

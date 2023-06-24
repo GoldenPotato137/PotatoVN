@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Contracts;
 using GalgameManager.Enums;
 using SystemPath = System.IO.Path;
 
@@ -41,6 +42,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    [JsonInclude] public ObservableCollection<ICategory> Categories = new();
 
     public static readonly List<SortKeys> SortKeysList = new ();
 
