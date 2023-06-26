@@ -1,0 +1,52 @@
+﻿<Page
+    x:Class="GalgameManager.Views.CategoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:models="using:GalgameManager.Models"
+    mc:Ignorable="d">
+    
+    <Page.Resources>
+        <CommandBarFlyout Placement="Right" x:Key="Flyout">
+            <!-- <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiDeleteFolder}"  -->
+            <!--               Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/> -->
+        </CommandBarFlyout>
+    </Page.Resources>
+
+    <Grid>
+        <controls:AdaptiveGridView
+            Grid.Row="0" 
+            DesiredWidth="180"
+            ItemHeight="160"
+            IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
+            ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
+            SelectionMode="None"
+            StretchContentForSingleRow="False">
+            <controls:AdaptiveGridView.ItemTemplate>
+                <DataTemplate x:DataType="models:Category">
+                    <Grid
+                        x:Name="itemThumbnail"
+                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
+                        ContextFlyout="{StaticResource Flyout}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <FontIcon
+                                Glyph="&#xE8B7;"
+                                FontFamily="Segoe Fluent Icons"
+                                FontSize="50"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock
+                                MaxHeight="85"
+                                Margin="{StaticResource XXSmallTopMargin}"
+                                HorizontalAlignment="Center"
+                                Style="{ThemeResource BodyTextStyle}"
+                                Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </controls:AdaptiveGridView.ItemTemplate>
+        </controls:AdaptiveGridView>
+    </Grid>
+</Page>

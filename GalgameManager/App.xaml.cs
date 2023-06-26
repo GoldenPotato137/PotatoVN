@@ -1,5 +1,4 @@
-﻿using Windows.ApplicationModel.DataTransfer;
-using GalgameManager.Activation;
+﻿using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
@@ -8,10 +7,13 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+
+using Windows.ApplicationModel.DataTransfer;
 
 namespace GalgameManager;
 
@@ -77,6 +79,8 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<CategoryViewModel>();
+            services.AddTransient<CategoryPage>();
             services.AddTransient<HelpViewModel>();
             services.AddTransient<HelpPage>();
             services.AddTransient<GalgameSettingViewModel>();

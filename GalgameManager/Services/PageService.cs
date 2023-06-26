@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+
 using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
+
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
@@ -21,6 +23,7 @@ public class PageService : IPageService
         Configure<HelpViewModel, HelpPage>();
         Configure<PlayedTimeViewModel, PlayedTimePage>();
         Configure<UpdateContentViewModel, UpdateContentPage>();
+        Configure<CategoryViewModel, CategoryPage>();
     }
 
     public Type GetPageType(string key)

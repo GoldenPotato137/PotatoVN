@@ -44,7 +44,10 @@ public class VndbPhraser : IGalInfoPhraser
         {
             var id = await PhraseHelper.TryGetVndbIdAsync(galgame.Name!);
             if (id is not null)
+            {
                 galgame.Id = id.ToString();
+                return;
+            }
         }
         galgame.RssType = old;
     }

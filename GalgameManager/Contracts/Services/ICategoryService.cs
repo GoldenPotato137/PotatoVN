@@ -2,5 +2,5 @@
 
 public interface ICategoryService
 {
-    
+    public Task Init();
 }

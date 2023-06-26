@@ -15,6 +15,7 @@ namespace GalgameManager.Services;
 public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private List<Galgame> _galgames = new();
+    private Dictionary<string, Galgame> _galgameMap = new(); // 路径->Galgame
     private readonly ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
@@ -43,6 +44,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _jumpListService = jumpListService;
         _fileService = fileService;
         _filterService = filterService;
+        _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new();
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
@@ -67,6 +69,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         List<Galgame> toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
         foreach (Galgame galgame in toRemove)
             _galgames.Remove(galgame);
+        _galgames.ForEach(g => _galgameMap.Add(g.Path, g));
         GalgameLoadedEvent?.Invoke();
         UpdateDisplay(UpdateType.Init);
     }
@@ -106,6 +109,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
+        _galgameMap.Remove(galgame.Path);
         UpdateDisplay(UpdateType.Remove, galgame);
         if (removeFromDisk)
             galgame.Delete();
@@ -146,6 +150,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         }
         
         _galgames.Add(galgame);
+        _galgameMap.Add(galgame.Path, galgame);
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
         UpdateDisplay(UpdateType.Add, galgame);
@@ -245,6 +250,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public string GetSearchKey()
     {
         return (string)_searchKey.Clone();
+    }
+
+    /// <summary>
+    /// 从路径获取galgame
+    /// </summary>
+    /// <param name="path">路径</param>
+    /// <returns>galgame,若找不到则返回null</returns>
+    public Galgame? GetGalgameFromPath(string path)
+    {
+        return _galgameMap.TryGetValue(path, out Galgame? result) ? result : null;
     }
 
     /// <summary>

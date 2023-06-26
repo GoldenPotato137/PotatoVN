@@ -5,6 +5,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Contracts;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
@@ -25,6 +26,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
+    private readonly IFilterService _filterService;
+    private IFilter? _filter; //进入界面时的使用的过滤器，退出界面后移除
     private DateTime _lastSearchTime = DateTime.Now;
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
@@ -63,11 +66,12 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
-        ILocalSettingsService localSettingsService)
+        ILocalSettingsService localSettingsService, IFilterService filterService)
     {
         _navigationService = navigationService;
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)_dataCollectionService;
+        _filterService = filterService;
         
         ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
@@ -81,13 +85,23 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        Source = await _dataCollectionService.GetContentGridDataAsync();
         SearchKey = _galgameService.GetSearchKey();
         UpdateSearchTitle();
+        if(parameter is IFilter filter)
+        {
+            _filter = filter;
+            _filterService.AddFilter(_filter);
+        }
+        Source = await _dataCollectionService.GetContentGridDataAsync();
     }
 
-    public void OnNavigatedFrom()
+    public async void OnNavigatedFrom()
     {
+        if (_filter is not null)
+        {
+            await Task.Delay(200); //等待动画结束
+            _filterService.RemoveFilter(_filter);
+        }
     }
 
     private void OnItemClick(Galgame? clickedItem)

@@ -124,7 +124,7 @@
     <value>PotatoVN是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。</value>
   </data>
   <data name="Shell_Home.Content" xml:space="preserve">
-    <value>Home</value>
+    <value>游戏</value>
   </data>
   <data name="Settings_Main.Text" xml:space="preserve">
     <value>Main</value>
@@ -157,7 +157,7 @@
     <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
   </data>
   <data name="Shell_Library.Content" xml:space="preserve">
-    <value>Library</value>
+    <value>游戏库</value>
   </data>
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
     <value>GalgameSetting</value>
@@ -556,5 +556,14 @@
   </data>
   <data name="EditableCategory_Remove_NotExist" xml:space="preserve">
     <value>该游戏不在该分类中</value>
+  </data>
+  <data name="CategoryService_Developer" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="CategoryService_Status" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="Shell_Category.Content" xml:space="preserve">
+    <value>分类</value>
   </data>
 </root>

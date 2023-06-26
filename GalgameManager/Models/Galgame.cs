@@ -42,7 +42,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
-    [JsonInclude] public ObservableCollection<ICategory> Categories = new();
+    [Newtonsoft.Json.JsonIgnore] public ObservableCollection<Category> Categories = new();
 
     public static readonly List<SortKeys> SortKeysList = new ();
 
