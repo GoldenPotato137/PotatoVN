@@ -23,12 +23,6 @@ public class CategoryService : ICategoryService
         App.MainWindow.AppWindow.Closing += async (_, _) => await SaveAsync();
     }
 
-    private static void SetBelong(Galgame galgame, Category category)
-    {
-        category.Add(galgame);
-        galgame.Categories.Add(category);
-    }
-
     public async Task Init()
     {
         if (_isInit) return;
@@ -63,7 +57,7 @@ public class CategoryService : ICategoryService
                     c.Galgames.ForEach(str =>
                     {
                         if (_galgameService.GetGalgameFromPath(str) is { } tmp)
-                            SetBelong(tmp, c);
+                            c.Add(tmp);
                     });
             }
         });
@@ -76,6 +70,30 @@ public class CategoryService : ICategoryService
         if (_isInit == false)
             await Init();
         return _categoryGroups;
+    }
+    
+    /// <summary>
+    /// 将源分类合并到目标分类，然后删除源分类 <br/>
+    /// 如果目标分类和源分类相同，则不进行任何操作
+    /// </summary>
+    /// <param name="target">目标分类</param>
+    /// <param name="source">源分类</param>
+    public void Merge(Category target, Category source)
+    {
+        if (target == source) return;
+        target.Add(source);
+        DeleteCategory(source);
+    }
+
+    /// <summary>
+    /// 删除分类
+    /// </summary>
+    /// <param name="category">分类</param>
+    public void DeleteCategory(Category category)
+    {
+        category.Delete();
+        foreach (CategoryGroup categoryGroup in _categoryGroups)
+            categoryGroup.Categories.Remove(category);
     }
 
     private async void UpdateCategory(Galgame galgame)
@@ -96,7 +114,7 @@ public class CategoryService : ICategoryService
                 developer = new Category(galgame.Developer.Value!);
                 _developerGroup!.Categories.Add(developer);
             }
-            SetBelong(galgame, developer);
+            developer.Add(galgame);
         }
     }
 

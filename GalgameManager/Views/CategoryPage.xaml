@@ -9,16 +9,19 @@
     mc:Ignorable="d">
     
     <Page.Resources>
-        <CommandBarFlyout Placement="Right" x:Key="Flyout">
-            <!-- <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiDeleteFolder}"  -->
-            <!--               Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/> -->
-        </CommandBarFlyout>
+        <MenuFlyout Placement="Right" x:Key="Flyout">
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Edit"/>
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Combine" Command="{x:Bind ViewModel.CombineCategoryCommand}"
+                            CommandParameter="{Binding}"/>
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Delete" Command="{x:Bind ViewModel.DeleteCategoryCommand}" 
+                            CommandParameter="{Binding}"/>
+        </MenuFlyout>
     </Page.Resources>
 
     <Grid>
         <controls:AdaptiveGridView
             Grid.Row="0" 
-            DesiredWidth="180"
+            DesiredWidth="160"
             ItemHeight="160"
             IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
@@ -31,19 +34,30 @@
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
                         ContextFlyout="{StaticResource Flyout}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <FontIcon
-                                Glyph="&#xE8B7;"
-                                FontFamily="Segoe Fluent Icons"
-                                FontSize="50"
-                                VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock
-                                MaxHeight="85"
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource BodyTextStyle}"
-                                Text="{x:Bind Name}" />
-                        </StackPanel>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Rectangle Fill="Transparent"/>
+                        <Rectangle Grid.Row="1" Fill="Transparent"/>
+                        <Rectangle Grid.Row="2" Fill="Transparent"/>
+                        
+                        <FontIcon
+                            Grid.Row="0" Glyph="&#xE8B7;"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="50"
+                            VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="1" MaxHeight="85"
+                            Margin="{StaticResource XXSmallTopMargin}"
+                            HorizontalAlignment="Center"
+                            Style="{ThemeResource BodyTextStyle}"
+                            Text="{x:Bind Name}" />
+                        <Grid Grid.Row="2" Background="{ThemeResource  ControlAltFillColorSecondaryBrush}"
+                              CornerRadius="10" HorizontalAlignment="Right">
+                            <TextBlock Padding="5" Text="{x:Bind DisplayCount()}" />
+                        </Grid>
                     </Grid>
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>

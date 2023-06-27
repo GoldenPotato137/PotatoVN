@@ -20,6 +20,11 @@ public class Category
         Name = name;
     }
 
+    public string DisplayCount()
+    {
+        return "×" + _galgames.Count;
+    }
+
     /// <summary>
     /// 更新序列化列表
     /// </summary>
@@ -34,11 +39,29 @@ public class Category
         if (_galgames.Contains(galgame))
             throw new ArgumentException("EditableCategory_Add_AlreadyExist".GetLocalized());
         _galgames.Add(galgame);
+        galgame.Categories.Add(this);
+    }
+
+    public void Add(Category category)
+    {
+        if (category == this) return;
+        category._galgames.ForEach(Add);
     }
     
     public void Remove(Galgame galgame)
     {
         if (!_galgames.Contains(galgame)) return;
         _galgames.Remove(galgame);
+        galgame.Categories.Remove(this);
+    }
+
+    public void Delete()
+    {
+        _galgames.ForEach(g => g.Categories.Remove(this));
+    }
+
+    public override string ToString()
+    {
+        return Name;
     }
 }
