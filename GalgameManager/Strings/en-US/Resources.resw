@@ -308,16 +308,10 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
     <value>Reset EXE path?</value>
   </data>
-  <data name="SettingsPage_QuickStartTitle" xml:space="preserve">
-    <value>Quick launch</value>
-  </data>
-  <data name="SettingsPage_QuickStartDescription" xml:space="preserve">
-    <value>Settings related to Quick Start in Taskbar</value>
-  </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameTitle" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
     <value>Launch Game</value>
   </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Description" xml:space="preserve">
     <value>Whether to start the game directly when right-clicking icon in the taskbar</value>
   </data>
   <data name="SettingsPage_LibraryTitle" xml:space="preserve">

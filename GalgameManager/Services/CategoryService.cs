@@ -96,6 +96,13 @@ public class CategoryService : ICategoryService
             categoryGroup.Categories.Remove(category);
     }
 
+    public async Task UpdateAllGames()
+    {
+        ObservableCollection<Galgame> games = await _galgameService.GetContentGridDataAsync();
+        foreach (Galgame game in games)
+            UpdateCategory(game);
+    }
+
     private async void UpdateCategory(Galgame galgame)
     {
         if (_isInit == false) await Init();

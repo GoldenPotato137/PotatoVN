@@ -7,11 +7,13 @@
     xmlns:local="using:GalgameManager.Views"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:enums="using:GalgameManager.Enums"
     mc:Ignorable="d">
     <Page.Resources>
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:RssTypeToVisibilityConverter x:Key="RssTypeToVisibilityConverter"/>
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
+        <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -129,17 +131,28 @@
                     SettingDescription="{x:Bind ViewModel.UiDownloadDescription}"
                     SettingIcon="&#xE896;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel Orientation="Vertical" Spacing="13">
-                            <local:SettingToggleSwitch
-                                Title="{x:Bind ViewModel.UiDownLoadOverrideNameTitle}"
-                                Description="{x:Bind ViewModel.UiDownLoadOverrideNameDescription}"
-                                IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
-
-                            <!-- <local:SettingToggleSwitch -->
-                            <!--     Title="覆盖名字" -->
-                            <!--     Description="是否将信息源获取到的galgame名字覆盖本地名字" -->
-                            <!--     IsOn="True"> -->
-                            <!-- </local:SettingToggleSwitch> -->
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <local:SettingToggleSwitch
+                                    Title="{x:Bind ViewModel.UiDownLoadOverrideNameTitle}"
+                                    Description="{x:Bind ViewModel.UiDownLoadOverrideNameDescription}"
+                                    IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
+                            </control:Panel>
+                            <control:Panel>
+                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
+                                  <local:SettingToggleSwitch x:Uid="SettingsPage_Download_AutoCategory"
+                                                               IsOn="{x:Bind ViewModel.AutoCategory, Mode=TwoWay}"/>
+                                  <control:Setting x:Uid="SettingsPage_Download_CategoryNow">
+                                      <Button Content="Go" Width="75" Command="{x:Bind ViewModel.CategoryNowCommand}">
+                                          <Button.Flyout>
+                                              <Flyout Placement="Bottom">
+                                                  <TextBlock Text="Done!"/>
+                                              </Flyout>
+                                          </Button.Flyout>
+                                      </Button>
+                                  </control:Setting>
+                                </StackPanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -283,21 +296,35 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
-                <!-- 快速启动 -->
+                <!-- 启动 -->
                 <control:SettingExpander
-                    SettingTitle="{x:Bind ViewModel.UiQuickStartTitle}"
-                    SettingDescription="{x:Bind ViewModel.UiQuickStartDescription}"
+                    x:Uid="SettingsPage_Start"
                     SettingIcon="&#xE768;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel Orientation="Vertical" Spacing="13">
-                            <local:SettingToggleSwitch
-                                Title="{x:Bind ViewModel.UiQuickStartAutoStartGameTitle}"
-                                Description="{x:Bind ViewModel.UiQuickStartAutoStartGameDescription}"
-                                IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <local:SettingToggleSwitch 
+                                    x:Uid="SettingsPage_Start_AutoStartGame"
+                                    IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />    
+                            </control:Panel>
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Start_Page">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.StartPages}"
+                                              SelectedItem="{x:Bind ViewModel.StartPage, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:PageEnum">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource PageToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
                 
+                <!-- 上传设置 -->
                 <control:SettingExpander x:Uid="SettingsPage_Upload" SettingIcon="&#xE898;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel>

@@ -36,9 +36,8 @@ public class Category
     
     public void Add(Galgame galgame)
     {
-        if (_galgames.Contains(galgame))
-            throw new ArgumentException("EditableCategory_Add_AlreadyExist".GetLocalized());
-        _galgames.Add(galgame);
+        if (_galgames.Contains(galgame)) return;
+            _galgames.Add(galgame);
         galgame.Categories.Add(this);
     }
 

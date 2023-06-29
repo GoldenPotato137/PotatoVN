@@ -49,11 +49,11 @@
                             FontSize="50"
                             VerticalAlignment="Center" HorizontalAlignment="Center" />
                         <TextBlock
-                            Grid.Row="1" MaxHeight="85"
+                            Grid.Row="1" MaxHeight="20"
                             Margin="{StaticResource XXSmallTopMargin}"
                             HorizontalAlignment="Center"
                             Style="{ThemeResource BodyTextStyle}"
-                            Text="{x:Bind Name}" />
+                            Text="{x:Bind Name}"/>
                         <Grid Grid.Row="2" Background="{ThemeResource  ControlAltFillColorSecondaryBrush}"
                               CornerRadius="10" HorizontalAlignment="Right">
                             <TextBlock Padding="5" Text="{x:Bind DisplayCount()}" />

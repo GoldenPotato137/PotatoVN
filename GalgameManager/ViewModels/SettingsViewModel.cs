@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+﻿using System.Collections.ObjectModel;
 using Windows.Services.Store;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -24,6 +24,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly IUpdateService _updateService;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly ICategoryService _categoryService;
     private string _versionDescription;
 
     #region UI_STRINGS
@@ -43,10 +44,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     public readonly string UiCloudSyncRoot = ResourceLoader.GetString("SettingsPage_CloudSync_Root");
     public readonly string UiSelect = ResourceLoader.GetString("Select");
     public readonly string UiAbout = ResourceLoader.GetString("Settings_AboutDescription").Replace("\\n", "\n");
-    public readonly string UiQuickStartTitle = "SettingsPage_QuickStartTitle".GetLocalized();
-    public readonly string UiQuickStartDescription = "SettingsPage_QuickStartDescription".GetLocalized();
-    public readonly string UiQuickStartAutoStartGameTitle = "SettingsPage_QuickStart_AutoStartGameTitle".GetLocalized();
-    public readonly string UiQuickStartAutoStartGameDescription = "SettingsPage_QuickStart_AutoStartGameDescription".GetLocalized();
     public readonly string UiLibraryTitle = "SettingsPage_LibraryTitle".GetLocalized();
     public readonly string UiLibraryDescription = "SettingsPage_LibraryDescription".GetLocalized();
     public readonly string UiLibraryMetaBackup = "SettingsPage_Library_MetaBackup".GetLocalized();
@@ -88,8 +85,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     public void OnNavigatedFrom() { }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
-        IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService)
+        IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
+        ICategoryService categoryService)
     {
+        _categoryService = categoryService;
         _themeSelectorService = themeSelectorService;
         _navigationService = navigationService;
         _updateService = updateService;
@@ -106,6 +105,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
+        _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
         _galgameCollectionService.MetaSavedEvent += SetSaveMetaPopUp;
@@ -121,6 +121,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //CLOUD
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
         //QUICK_START
+        _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
         //UPLOAD
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
@@ -182,8 +183,17 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
+    [ObservableProperty] private bool _autoCategory;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
+    
+    partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
+
+    [RelayCommand]
+    private async Task CategoryNow()
+    {
+        await _categoryService.UpdateAllGames();
+    }
 
     #endregion
 
@@ -259,8 +269,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region QUIT_START
 
     [ObservableProperty] private bool _quitStart;
+    public readonly PageEnum[] StartPages = { PageEnum.Home , PageEnum.Category};
+    [ObservableProperty] private PageEnum _startPage;
 
     partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
+    
+    partial void OnStartPageChanged(PageEnum value) => _localSettingsService.SaveSettingAsync(KeyValues.StartPage, value);
 
     #endregion
     

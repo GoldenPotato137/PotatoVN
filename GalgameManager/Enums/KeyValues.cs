@@ -31,4 +31,5 @@ public static class KeyValues
     public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
     public const string Categories = "categories"; // List<ICategory>,分类
     public const string AutoCategory = "autoCategory"; // bool,是否自动分类
+    public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
 }

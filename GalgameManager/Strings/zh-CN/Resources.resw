@@ -308,16 +308,10 @@
   <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
     <value>重置exe路径？</value>
   </data>
-  <data name="SettingsPage_QuickStartTitle" xml:space="preserve">
-    <value>快速启动</value>
-  </data>
-  <data name="SettingsPage_QuickStartDescription" xml:space="preserve">
-    <value>与任务栏快捷启动相关的设置</value>
-  </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameTitle" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
     <value>启动游戏</value>
   </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Description" xml:space="preserve">
     <value>在任务栏右键图标选中游戏时是否直接启动游戏</value>
   </data>
   <data name="SettingsPage_LibraryTitle" xml:space="preserve">
@@ -586,5 +580,35 @@
   </data>
   <data name="CategoryPage_CombineCategory_Msg" xml:space="preserve">
     <value>这个操作会将目前选定的分类合并到下面选中的分类中（本分类会被删除）</value>
+  </data>
+  <data name="SettingsPage_Download_AutoCategory.Title" xml:space="preserve">
+    <value>自动分类</value>
+  </data>
+  <data name="SettingsPage_Download_AutoCategory.Description" xml:space="preserve">
+    <value>是否自动将游戏分类按照开发商及游玩状态分类</value>
+  </data>
+  <data name="SettingsPage_Download_CategoryNow.Title" xml:space="preserve">
+    <value>分类所有游戏</value>
+  </data>
+  <data name="SettingsPage_Download_CategoryNow.Description" xml:space="preserve">
+    <value>开启分类后旧有游戏需要点击按钮手动分类一次，之后添加游戏会自动分类</value>
+  </data>
+  <data name="SettingsPage_Start.SettingTitle" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="SettingsPage_Start.SettingDescription" xml:space="preserve">
+    <value>与应用启动行为有关的设置</value>
+  </data>
+  <data name="SettingsPage_Start_Page.Description" xml:space="preserve">
+    <value>设置打开应用后显示的界面</value>
+  </data>
+  <data name="SettingsPage_Start_Page.Title" xml:space="preserve">
+    <value>启动页</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>分类</value>
   </data>
 </root>

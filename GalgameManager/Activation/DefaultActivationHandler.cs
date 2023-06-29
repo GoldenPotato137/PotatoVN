@@ -1,4 +1,5 @@
 ﻿using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.ViewModels;
 
 namespace GalgameManager.Activation;
@@ -6,12 +7,15 @@ namespace GalgameManager.Activation;
 public class DefaultActivationHandler : ActivationHandler<List<string>>
 {
     private readonly INavigationService _navigationService;
+    private readonly ILocalSettingsService _localSettingsService;
     private readonly IUpdateService _updateService;
 
-    public DefaultActivationHandler(INavigationService navigationService, IUpdateService updateService)
+    public DefaultActivationHandler(INavigationService navigationService, IUpdateService updateService,
+        ILocalSettingsService localSettingsService)
     {
         _navigationService = navigationService;
         _updateService = updateService;
+        _localSettingsService = localSettingsService;
     }
 
     protected override bool CanHandleInternal(List<string> args)
@@ -27,7 +31,18 @@ public class DefaultActivationHandler : ActivationHandler<List<string>>
             if (_updateService.ShouldDisplayUpdateContent())
                 _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!, true);
             else
-                _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+            {
+                PageEnum page = await _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage);
+                switch (page)
+                {
+                    case PageEnum.Category:
+                        _navigationService.NavigateTo(typeof(CategoryViewModel).FullName!);
+                        break;
+                    case PageEnum.Home:
+                        _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+                        break;
+                }
+            }
         }
         else //jump list 
         {
