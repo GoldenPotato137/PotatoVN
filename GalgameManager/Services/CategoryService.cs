@@ -1,8 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 
 namespace GalgameManager.Services;
@@ -14,13 +16,21 @@ public class CategoryService : ICategoryService
     private CategoryGroup? _developerGroup, _statusGroup;
     private bool _isInit;
     private readonly ILocalSettingsService _localSettings;
+    private readonly BlockingCollection<Category> _queue = new();
+    private readonly BgmPhraser _bgmPhraser;
 
     public CategoryService(ILocalSettingsService localSettings, IDataCollectionService<Galgame> galgameService)
     {
         _localSettings = localSettings;
         _galgameService = (galgameService as GalgameCollectionService)!;
         _galgameService.PhrasedEvent2 += UpdateCategory;
+        _bgmPhraser = (BgmPhraser)_galgameService.PhraserList[(int)RssType.Bangumi];
         App.MainWindow.AppWindow.Closing += async (_, _) => await SaveAsync();
+        Thread worker = new(Worker)
+        {
+            IsBackground = true
+        };
+        worker.Start();
     }
 
     public async Task Init()
@@ -96,6 +106,9 @@ public class CategoryService : ICategoryService
             categoryGroup.Categories.Remove(category);
     }
 
+    /// <summary>
+    /// 更新所有游戏的分类（开发商及游玩状态）
+    /// </summary>
     public async Task UpdateAllGames()
     {
         ObservableCollection<Galgame> games = await _galgameService.GetContentGridDataAsync();
@@ -119,9 +132,18 @@ public class CategoryService : ICategoryService
             catch
             {
                 developer = new Category(galgame.Developer.Value!);
+                _queue.Add(developer);
                 _developerGroup!.Categories.Add(developer);
             }
             developer.Add(galgame);
+        }
+    }
+
+    private void Worker()
+    {
+        foreach (Category category in _queue.GetConsumingEnumerable())
+        {
+            
         }
     }
 

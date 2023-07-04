@@ -1,12 +1,13 @@
-﻿using GalgameManager.Helpers;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace GalgameManager.Models;
 
-public class Category
+public partial class Category : ObservableObject
 {
     private readonly List<Galgame> _galgames = new();
     public string Name = string.Empty;
     public readonly List<string> Galgames = new(); // 用于序列化, Path
+    [ObservableProperty] private string _imagePath = string.Empty;
 
     public bool Belong(Galgame galgame) => _galgames.Contains(galgame);
 

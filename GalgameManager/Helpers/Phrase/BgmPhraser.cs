@@ -222,6 +222,12 @@ public class BgmPhraser : IGalInfoPhraser
     }
 
     public RssType GetPhraseType() => RssType.Bangumi;
+
+    private string? GetDeveloperImageUrl(string developer)
+    {
+        //todo
+        return null;
+    }
 }
 
 public class BgmPhraserData : IGalInfoPhraserData

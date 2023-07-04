@@ -31,7 +31,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public event GenericDelegate<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
     public bool IsPhrasing;
 
-    private IGalInfoPhraser[] PhraserList
+    public IGalInfoPhraser[] PhraserList
     {
         get;
     } = new IGalInfoPhraser[5];
