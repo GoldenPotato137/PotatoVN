@@ -7,6 +7,7 @@ using System.Web;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
+using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
@@ -223,10 +224,54 @@ public class BgmPhraser : IGalInfoPhraser
 
     public RssType GetPhraseType() => RssType.Bangumi;
 
-    private string? GetDeveloperImageUrl(string developer)
+    /// <summary>
+    /// 获取开发商的图片链接
+    /// </summary>
+    /// <param name="developer">开发商名</param>
+    /// <returns>图片链接，若找不到则返回null</returns>
+    public async Task<string?> GetDeveloperImageUrlAsync(string developer)
     {
-        //todo
-        return null;
+        string? result = null;
+        try
+        {
+            var searchUrl = $"https://bgm.tv/mono_search/{developer}?cat=prsn";
+            HttpResponseMessage response = await _httpClient.GetAsync(searchUrl);
+            if (!response.IsSuccessStatusCode) return null;
+            HtmlDocument doc = new();
+            doc.LoadHtml(await response.Content.ReadAsStringAsync());
+            HtmlNodeCollection? nodes = doc.DocumentNode.SelectNodes("//div[@class='light_odd clearit']");
+            if (nodes == null) return null;
+            var similarity = -1;
+            foreach (HtmlNode? node in nodes)
+            {
+                HtmlNode img = node.SelectSingleNode(".//img[@class='avatar ll']");
+                var dis = img.InnerText.Levenshtein(developer);
+                if (dis < 2 && 1000 - dis > similarity) //如果名字和开发商名字编辑距离小于2，就认为是这个开发商
+                {
+                    similarity = 1000 - dis;
+                    result = img.GetAttributeValue("src", null);
+                }
+
+                HtmlNode? rateNode = node.SelectSingleNode(".//small[@class='na']");
+                if (rateNode != null) //用评分最高者
+                {
+                    var rateStr = rateNode.InnerText;
+                    rateStr = rateStr.Substring(1, rateStr.Length - 2);
+                    var rate = Convert.ToInt32(rateStr);
+                    if (rate > similarity)
+                    {
+                        similarity = rate;
+                        result = img.GetAttributeValue("src", null);
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        return result;
     }
 }
 

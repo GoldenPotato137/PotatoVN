@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Windows.Storage;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -199,33 +198,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (!galgame.Tags.IsLock)
             galgame.Tags.Value = tmp.Tags.Value;
         if (!galgame.ImagePath.IsLock)
-            galgame.ImagePath.Value = await DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+            galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.CheckSavePosition();
         return galgame;
-    }
-
-    private static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl)
-    {
-        if (imageUrl == null) return null;
-        HttpClient httpClient = new();
-        HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
-        response.EnsureSuccessStatusCode();
-
-        var imageBytes = await response.Content.ReadAsByteArrayAsync();
-
-        StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
-        var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
-        StorageFile? storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
-
-        await using (Stream? fileStream = await storageFile.OpenStreamForWriteAsync())
-        {
-            using MemoryStream memoryStream = new(imageBytes);
-            memoryStream.Position = 0;
-            await memoryStream.CopyToAsync(fileStream);
-        }
-
-        // 返回本地文件的路径
-        return storageFile.Path;
     }
 
     public async Task<ObservableCollection<Galgame>> GetContentGridDataAsync()

@@ -107,6 +107,15 @@ public class CategoryService : ICategoryService
     }
 
     /// <summary>
+    /// 更新某个分类的信息（目前只有开发商的图片）
+    /// </summary>
+    /// <param name="category"></param>
+    public void UpdateCategory(Category category)
+    {
+        _queue.Add(category);
+    }
+
+    /// <summary>
     /// 更新所有游戏的分类（开发商及游玩状态）
     /// </summary>
     public async Task UpdateAllGames()
@@ -143,7 +152,11 @@ public class CategoryService : ICategoryService
     {
         foreach (Category category in _queue.GetConsumingEnumerable())
         {
-            
+            var imgUrl = _bgmPhraser.GetDeveloperImageUrlAsync(category.Name).Result;
+            if (imgUrl is null) continue;
+            var imagPath = DownloadHelper.DownloadAndSaveImageAsync(imgUrl).Result;
+            if(imagPath is not null)
+                category.ImagePath = imagPath;
         }
     }
 

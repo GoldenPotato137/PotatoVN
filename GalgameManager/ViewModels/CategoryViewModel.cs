@@ -111,4 +111,10 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
             DefaultButton = ContentDialogButton.Secondary;
         }
     }
+
+    [RelayCommand]
+    private void UpdateCategory(Category category)
+    {
+        _categoryService.UpdateCategory(category);
+    }
 }
