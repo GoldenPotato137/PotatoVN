@@ -228,8 +228,9 @@ public class BgmPhraser : IGalInfoPhraser
     /// 获取开发商的图片链接
     /// </summary>
     /// <param name="developer">开发商名</param>
+    /// <param name="retry">重试次数，不用手动设置它</param>
     /// <returns>图片链接，若找不到则返回null</returns>
-    public async Task<string?> GetDeveloperImageUrlAsync(string developer)
+    public async Task<string?> GetDeveloperImageUrlAsync(string developer,int retry = 0)
     {
         string? result = null;
         try
@@ -240,16 +241,23 @@ public class BgmPhraser : IGalInfoPhraser
             HtmlDocument doc = new();
             doc.LoadHtml(await response.Content.ReadAsStringAsync());
             HtmlNodeCollection? nodes = doc.DocumentNode.SelectNodes("//div[@class='light_odd clearit']");
-            if (nodes == null) return null;
+            if (nodes == null)
+            {
+                await Task.Delay(500);
+                if (retry < 3)
+                    return await GetDeveloperImageUrlAsync(developer, retry + 1);
+                return null;
+            }
             var similarity = -1;
+            HtmlNode? target = null;
             foreach (HtmlNode? node in nodes)
             {
-                HtmlNode img = node.SelectSingleNode(".//img[@class='avatar ll']");
-                var dis = img.InnerText.Levenshtein(developer);
+                HtmlNode name = node.SelectSingleNode(".//a[@class='l']");
+                var dis = name.InnerText.Levenshtein(developer);
                 if (dis < 2 && 1000 - dis > similarity) //如果名字和开发商名字编辑距离小于2，就认为是这个开发商
                 {
                     similarity = 1000 - dis;
-                    result = img.GetAttributeValue("src", null);
+                    target = node;
                 }
 
                 HtmlNode? rateNode = node.SelectSingleNode(".//small[@class='na']");
@@ -261,9 +269,16 @@ public class BgmPhraser : IGalInfoPhraser
                     if (rate > similarity)
                     {
                         similarity = rate;
-                        result = img.GetAttributeValue("src", null);
+                        target = node;
                     }
                 }
+            }
+
+            if (target is not null)
+            {
+                HtmlNode? id = target.SelectSingleNode(".//a[@class='l']");
+                var idStr = id.GetAttributeValue("href", "")[8..];
+                return await GetDeveloperImageUrlById(idStr);
             }
         }
         catch (Exception)
@@ -272,6 +287,25 @@ public class BgmPhraser : IGalInfoPhraser
         }
 
         return result;
+    }
+
+    private async Task<string?> GetDeveloperImageUrlById(string id, int retry = 0)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync($"https://api.bgm.tv/v0/persons/{id}");
+        if (!response.IsSuccessStatusCode) return null;
+
+        try
+        {
+            JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
+            return jsonToken["images"]!["large"]!.ToObject<string>()!;
+        }
+        catch
+        {
+            await Task.Delay(500);
+            if (retry < 3)
+                return await GetDeveloperImageUrlById(id, retry + 1);
+            return null;
+        }
     }
 }
 

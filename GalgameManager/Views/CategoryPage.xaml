@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
+    xmlns:converters="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -17,6 +18,7 @@
             <MenuFlyoutItem x:Uid="CategoryPage_Category_Delete" Command="{x:Bind ViewModel.DeleteCategoryCommand}" 
                             CommandParameter="{Binding}"/>
         </MenuFlyout>
+        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -44,11 +46,18 @@
                         <Rectangle Grid.Row="1" Fill="Transparent"/>
                         <Rectangle Grid.Row="2" Fill="Transparent"/>
                         
-                        <FontIcon
-                            Grid.Row="0" Glyph="&#xE8B7;"
-                            FontFamily="Segoe Fluent Icons"
-                            FontSize="50"
-                            VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        <!-- <FontIcon -->
+                        <!--     Grid.Row="0" Glyph="&#xE8B7;" -->
+                        <!--     FontFamily="Segoe Fluent Icons" -->
+                        <!--     FontSize="50" -->
+                        <!--     VerticalAlignment="Center" HorizontalAlignment="Center" /> -->
+                        <Rectangle Grid.Row="0" Height="200" Width="200"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Rectangle.Fill>
+                                <ImageBrush ImageSource="{x:Bind ImagePath , Mode=OneWay, Converter={StaticResource ImagePathConverter}}"
+                                            Stretch="UniformToFill" />
+                            </Rectangle.Fill>
+                        </Rectangle>
                         <TextBlock
                             Grid.Row="1" MaxHeight="20"
                             Margin="{StaticResource XXSmallTopMargin}"

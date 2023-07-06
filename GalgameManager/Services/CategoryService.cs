@@ -1,11 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using CommunityToolkit.WinUI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
+using Microsoft.UI.Dispatching;
 
 namespace GalgameManager.Services;
 
@@ -18,6 +20,7 @@ public class CategoryService : ICategoryService
     private readonly ILocalSettingsService _localSettings;
     private readonly BlockingCollection<Category> _queue = new();
     private readonly BgmPhraser _bgmPhraser;
+    private readonly DispatcherQueue? _dispatcher;
 
     public CategoryService(ILocalSettingsService localSettings, IDataCollectionService<Galgame> galgameService)
     {
@@ -26,6 +29,7 @@ public class CategoryService : ICategoryService
         _galgameService.PhrasedEvent2 += UpdateCategory;
         _bgmPhraser = (BgmPhraser)_galgameService.PhraserList[(int)RssType.Bangumi];
         App.MainWindow.AppWindow.Closing += async (_, _) => await SaveAsync();
+        _dispatcher = DispatcherQueue.GetForCurrentThread();
         Thread worker = new(Worker)
         {
             IsBackground = true
@@ -44,7 +48,7 @@ public class CategoryService : ICategoryService
         }
         catch
         {
-            _developerGroup = new CategoryGroup("CategoryService_Developer".GetLocalized(), CategoryGroupType.Developer);
+            _developerGroup = new CategoryGroup(StringExtensions.GetLocalized("CategoryService_Developer"), CategoryGroupType.Developer);
             _categoryGroups.Add(_developerGroup);
         }
 
@@ -54,7 +58,7 @@ public class CategoryService : ICategoryService
         }
         catch
         {
-            _statusGroup = new CategoryGroup("CategoryService_Status".GetLocalized(), CategoryGroupType.Status);
+            _statusGroup = new CategoryGroup(StringExtensions.GetLocalized("CategoryService_Status"), CategoryGroupType.Status);
             _categoryGroups.Add(_statusGroup);
         }
         
@@ -148,15 +152,18 @@ public class CategoryService : ICategoryService
         }
     }
 
-    private void Worker()
+    private async void Worker()
     {
         foreach (Category category in _queue.GetConsumingEnumerable())
         {
-            var imgUrl = _bgmPhraser.GetDeveloperImageUrlAsync(category.Name).Result;
+            var imgUrl = await _bgmPhraser.GetDeveloperImageUrlAsync(category.Name);
             if (imgUrl is null) continue;
-            var imagPath = DownloadHelper.DownloadAndSaveImageAsync(imgUrl).Result;
-            if(imagPath is not null)
-                category.ImagePath = imagPath;
+            var imagPath = await DownloadHelper.DownloadAndSaveImageAsync(imgUrl);
+            if(imagPath is not null && _dispatcher is not null)
+                await _dispatcher.EnqueueAsync(() =>
+                {
+                    category.ImagePath = imagPath;
+                });
         }
     }
 
