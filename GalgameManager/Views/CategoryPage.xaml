@@ -24,7 +24,7 @@
     <Grid>
         <controls:AdaptiveGridView
             Grid.Row="0" 
-            DesiredWidth="160"
+            DesiredWidth="220"
             ItemHeight="160"
             IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
@@ -51,16 +51,15 @@
                         <!--     FontFamily="Segoe Fluent Icons" -->
                         <!--     FontSize="50" -->
                         <!--     VerticalAlignment="Center" HorizontalAlignment="Center" /> -->
-                        <Rectangle Grid.Row="0" Height="200" Width="200"
+                        <Rectangle Grid.Row="0" Height="55" Width="220"
                                    HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Rectangle.Fill>
                                 <ImageBrush ImageSource="{x:Bind ImagePath , Mode=OneWay, Converter={StaticResource ImagePathConverter}}"
-                                            Stretch="UniformToFill" />
+                                            Stretch="Uniform" />
                             </Rectangle.Fill>
                         </Rectangle>
                         <TextBlock
                             Grid.Row="1" MaxHeight="20"
-                            Margin="{StaticResource XXSmallTopMargin}"
                             HorizontalAlignment="Center"
                             Style="{ThemeResource BodyTextStyle}"
                             Text="{x:Bind Name}"/>

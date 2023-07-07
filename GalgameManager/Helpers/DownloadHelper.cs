@@ -23,7 +23,16 @@ public static class DownloadHelper
             StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
             var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
             if (fileName == string.Empty) fileName = imageUrl;
-            StorageFile? storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+            StorageFile? storageFile;
+            try
+            {
+                storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+            }
+            catch (FileNotFoundException)
+            {
+                fileName = Path.GetRandomFileName(); //随机文件名
+                storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+            }
 
             await using (Stream? fileStream = await storageFile.OpenStreamForWriteAsync())
             {

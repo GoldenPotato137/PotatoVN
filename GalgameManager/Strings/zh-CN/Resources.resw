@@ -611,4 +611,19 @@
   <data name="Category" xml:space="preserve">
     <value>分类</value>
   </data>
+  <data name="PlayType_None" xml:space="preserve">
+    <value>未设置</value>
+  </data>
+  <data name="PlayType_Playing" xml:space="preserve">
+    <value>在玩</value>
+  </data>
+  <data name="PlayType_Played" xml:space="preserve">
+    <value>玩过</value>
+  </data>
+  <data name="PlayType_Shelved" xml:space="preserve">
+    <value>搁置</value>
+  </data>
+  <data name="PlayType_Abandoned" xml:space="preserve">
+    <value>抛弃</value>
+  </data>
 </root>

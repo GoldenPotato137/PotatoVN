@@ -51,16 +51,7 @@ public class CategoryService : ICategoryService
             _developerGroup = new CategoryGroup(StringExtensions.GetLocalized("CategoryService_Developer"), CategoryGroupType.Developer);
             _categoryGroups.Add(_developerGroup);
         }
-
-        try
-        {
-            _statusGroup = _categoryGroups.First(cg => cg.Type == CategoryGroupType.Status);
-        }
-        catch
-        {
-            _statusGroup = new CategoryGroup(StringExtensions.GetLocalized("CategoryService_Status"), CategoryGroupType.Status);
-            _categoryGroups.Add(_statusGroup);
-        }
+        InitStatusGroup();
         
         // 将分类里的Galgame从string还原
         await Task.Run(() =>
@@ -134,7 +125,8 @@ public class CategoryService : ICategoryService
         if (_isInit == false) await Init();
         // 更新开发商分类组
         if (await _localSettings.ReadSettingAsync<bool>(KeyValues.AutoCategory) 
-            && galgame.Developer.Value != Galgame.DefaultString && galgame.Developer.Value != string.Empty)
+            && galgame.Developer.Value != Galgame.DefaultString && galgame.Developer.Value != string.Empty
+            && HasDeveloperCategory(galgame) == false)
         {
             Category developer;
             try
@@ -170,8 +162,31 @@ public class CategoryService : ICategoryService
     private async Task SaveAsync()
     {
         if (_isInit == false) return;
+        if(_statusGroup != null)
+            _categoryGroups.Remove(_statusGroup); //状态分类组是即时构造的，不需要保存
         foreach (CategoryGroup categoryGroup in _categoryGroups)
             categoryGroup.Categories.ForEach(c => c.UpdateSerializeList());
         await _localSettings.SaveSettingAsync(KeyValues.CategoryGroups, _categoryGroups, true);
+    }
+
+    /// <summary>
+    /// 判断一个galgame是否已经有开发商分类了
+    /// </summary>
+    private bool HasDeveloperCategory(Galgame galgame)
+    {
+        return galgame.Categories.Any(category => _categoryGroups.Any(group =>
+            group.Type == CategoryGroupType.Developer && group.Categories.Contains(category)));
+    }
+
+    /// 状态分类组是即时构造的
+    private void InitStatusGroup()
+    {
+        _statusGroup = new CategoryGroup(ResourceExtensions.GetLocalized("CategoryService_Status"), CategoryGroupType.Status);
+        _categoryGroups.Add(_statusGroup);
+        _statusGroup.Categories.Add(new Category(PlayType.None.GetLocalized()));
+        _statusGroup.Categories.Add(new Category(PlayType.Played.GetLocalized()));
+        _statusGroup.Categories.Add(new Category(PlayType.Playing.GetLocalized()));
+        _statusGroup.Categories.Add(new Category(PlayType.Shelved.GetLocalized()));
+        _statusGroup.Categories.Add(new Category(PlayType.Abandoned.GetLocalized()));
     }
 }

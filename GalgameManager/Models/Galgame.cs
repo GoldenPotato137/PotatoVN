@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using GalgameManager.Contracts;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
@@ -59,7 +59,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             }
         }
     }
-    
+
+    public event GenericDelegate<Galgame>? GalPropertyChanged;
+
     public RssType RssType
     {
         get => _rssType;
@@ -86,6 +88,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public Galgame()
     {
         _tags.Value = new ObservableCollection<string>();
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke(this);
     }
 
     public Galgame(string path)
@@ -93,6 +96,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
         Path = path;
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke(this);
     }
     
     /// <summary>
@@ -266,6 +270,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         if (meta.ExePath != null)
             meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
         return meta;
+    }
+
+    private void InvokeDeveloperChangedEvent()
+    {
+        GalPropertyChanged?.Invoke(this);
     }
 }
 
