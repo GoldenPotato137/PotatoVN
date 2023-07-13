@@ -626,4 +626,10 @@
   <data name="PlayType_Abandoned" xml:space="preserve">
     <value>抛弃</value>
   </data>
+  <data name="GalgamePage_PlayStatus.Label" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="CategoryPage_CategoryGroup.Label" xml:space="preserve">
+    <value>分类组</value>
+  </data>
 </root>

@@ -38,7 +38,7 @@ public partial class Category : ObservableObject
     public void Add(Galgame galgame)
     {
         if (_galgames.Contains(galgame)) return;
-            _galgames.Add(galgame);
+        _galgames.Add(galgame);
         galgame.Categories.Add(this);
     }
 

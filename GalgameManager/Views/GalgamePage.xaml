@@ -64,17 +64,29 @@
                     </AppBarButton.ContextFlyout>
                 </AppBarButton>
                 <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
-                <AppBarButton
-                    Label="{x:Bind ViewModel.UiChangeSavePosition}"
-                    Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
+                <!-- 游玩状态 -->
+                <AppBarButton x:Uid="GalgamePage_PlayStatus">
+                    <AppBarButton.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem/>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
                     <AppBarButton.Icon>
-                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74C;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"/>
                     <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" />
+                    <AppBarSeparator/>
+                    <AppBarButton
+                        Label="{x:Bind ViewModel.UiChangeSavePosition}"
+                        Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarSeparator/>
                     <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"/>
                 </CommandBar.SecondaryCommands>

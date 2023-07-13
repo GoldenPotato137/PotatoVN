@@ -16,17 +16,25 @@ public class CategoryService : ICategoryService
     private ObservableCollection<CategoryGroup> _categoryGroups = new();
     private readonly GalgameCollectionService _galgameService;
     private CategoryGroup? _developerGroup, _statusGroup;
+    private readonly Category[] _statusCategory = new Category[5];
     private bool _isInit;
     private readonly ILocalSettingsService _localSettings;
     private readonly BlockingCollection<Category> _queue = new();
     private readonly BgmPhraser _bgmPhraser;
     private readonly DispatcherQueue? _dispatcher;
 
+    public CategoryGroup StatusGroup => _statusGroup!;
+
     public CategoryService(ILocalSettingsService localSettings, IDataCollectionService<Galgame> galgameService)
     {
         _localSettings = localSettings;
         _galgameService = (galgameService as GalgameCollectionService)!;
-        _galgameService.PhrasedEvent2 += UpdateCategory;
+        _galgameService.GalgameAddedEvent += UpdateCategory;
+        _galgameService.GalgameDeletedEvent += galgame =>
+        {
+            List<Category> toRemove = galgame.Categories.ToList();
+            toRemove.ForEach(c => c.Remove(galgame));
+        };
         _bgmPhraser = (BgmPhraser)_galgameService.PhraserList[(int)RssType.Bangumi];
         App.MainWindow.AppWindow.Closing += async (_, _) => await SaveAsync();
         _dispatcher = DispatcherQueue.GetForCurrentThread();
@@ -66,6 +74,26 @@ public class CategoryService : ICategoryService
                     });
             }
         });
+        
+        foreach (Galgame g in _galgameService.Galgames) 
+        {
+            if (GetStatusCategory(g) == null)
+                _statusCategory[(int)g.PlayType].Add(g);
+            g.GalPropertyChanged += tuple =>
+            {
+                Galgame gal = tuple.Item1;
+                switch (tuple.Item2)
+                {
+                    case "developer":
+                        UpdateCategory(gal);
+                        break;
+                    case "playType":
+                        GetStatusCategory(gal)?.Remove(gal);
+                        _statusCategory[(int)gal.PlayType].Add(gal);
+                        break;
+                }
+            };
+        }
         
         _isInit = true;
     }
@@ -125,9 +153,12 @@ public class CategoryService : ICategoryService
         if (_isInit == false) await Init();
         // 更新开发商分类组
         if (await _localSettings.ReadSettingAsync<bool>(KeyValues.AutoCategory) 
-            && galgame.Developer.Value != Galgame.DefaultString && galgame.Developer.Value != string.Empty
-            && HasDeveloperCategory(galgame) == false)
+            && galgame.Developer.Value != Galgame.DefaultString && galgame.Developer.Value != string.Empty)
         {
+            //移除旧的开发商分类
+            Category? old = GetDeveloperCategory(galgame);
+            old?.Remove(galgame);
+            
             Category developer;
             try
             {
@@ -170,12 +201,30 @@ public class CategoryService : ICategoryService
     }
 
     /// <summary>
-    /// 判断一个galgame是否已经有开发商分类了
+    /// 获取开发商分类，如果没有则返回null
     /// </summary>
-    private bool HasDeveloperCategory(Galgame galgame)
+    private Category? GetDeveloperCategory(Galgame galgame)
     {
-        return galgame.Categories.Any(category => _categoryGroups.Any(group =>
-            group.Type == CategoryGroupType.Developer && group.Categories.Contains(category)));
+        foreach(Category category in galgame.Categories)
+            if(_developerGroup!.Categories.Contains(category))
+                return category;
+        return null;
+    }
+
+    /// <summary>
+    /// 获取状态分类，如果没有则返回null
+    /// </summary>
+    private Category? GetStatusCategory(IEnumerable<Category> categories)
+    {
+        return categories.FirstOrDefault(category => _statusGroup!.Categories.Contains(category));
+    }
+
+    /// <summary>
+    /// 获取状态分类，如果没有则返回null
+    /// </summary>
+    private Category? GetStatusCategory(Galgame galgame)
+    {
+        return GetStatusCategory(galgame.Categories);
     }
 
     /// 状态分类组是即时构造的
@@ -188,5 +237,10 @@ public class CategoryService : ICategoryService
         _statusGroup.Categories.Add(new Category(PlayType.Playing.GetLocalized()));
         _statusGroup.Categories.Add(new Category(PlayType.Shelved.GetLocalized()));
         _statusGroup.Categories.Add(new Category(PlayType.Abandoned.GetLocalized()));
+        _statusCategory[(int)PlayType.None] = _statusGroup.Categories[0];
+        _statusCategory[(int)PlayType.Played] = _statusGroup.Categories[1];
+        _statusCategory[(int)PlayType.Playing] = _statusGroup.Categories[2];
+        _statusCategory[(int)PlayType.Shelved] = _statusGroup.Categories[3];
+        _statusCategory[(int)PlayType.Abandoned] = _statusGroup.Categories[4];
     }
 }

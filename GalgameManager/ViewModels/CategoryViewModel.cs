@@ -17,13 +17,16 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
 {
     private readonly CategoryService _categoryService;
     private readonly INavigationService _navigationService;
+    private readonly ILocalSettingsService _localSettingsService;
     public ObservableCollection<Category> Source = new();
     private ObservableCollection<CategoryGroup> _categoryGroups = new();
     private CategoryGroup? _currentGroup;
 
-    public CategoryViewModel(ICategoryService categoryService, INavigationService navigationService)
+    public CategoryViewModel(ICategoryService categoryService, INavigationService navigationService,
+        ILocalSettingsService localSettingsService)
     {
         _categoryService = (categoryService as CategoryService)!;
+        _localSettingsService = localSettingsService;
         _navigationService = navigationService;
     }
 
@@ -33,19 +36,45 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         _navigationService.NavigateTo(typeof(HomeViewModel).FullName!, new CategoryFilter(category));
     }
 
-    private void UpdateSource()
-    {
-        Source.Clear();
-        // 暂时展示开发商分类
-        CategoryGroup developer = _categoryGroups.First(c => c.Type == CategoryGroupType.Developer);
-        _currentGroup = developer;
-        developer.Categories.ForEach(c => Source.Add(c));
-    }
-
     public async void OnNavigatedTo(object parameter)
     {
         _categoryGroups = await _categoryService.GetCategoryGroupsAsync();
+        await GetCategoryGroup();
         UpdateSource();
+    }
+
+    // 并不符合MVVM要求，但暂时没有更好的办法
+    public void UpdateCategoryGroupFlyout(MenuFlyout? categoryGroupFlyout)
+    {
+        if (categoryGroupFlyout == null) return;
+        categoryGroupFlyout.Items.Clear();
+        foreach (CategoryGroup group in _categoryGroups)
+            categoryGroupFlyout.Items.Add(new MenuFlyoutItem
+            {
+                Text = group.Name,
+                Command = SelectCategoryGroupCommand,
+                CommandParameter = group
+            });
+    }
+
+    private void UpdateSource()
+    {
+        Source.Clear();
+        _currentGroup!.Categories.ForEach(c => Source.Add(c));
+    }
+
+    /// <summary>
+    /// 获取设置中要显示的分类组
+    /// </summary>
+    private async Task GetCategoryGroup()
+    {
+        var groupStr = await _localSettingsService.ReadSettingAsync<string>(KeyValues.CategoryGroup);
+        _currentGroup = _categoryGroups.FirstOrDefault(c => c.Name == groupStr);
+        if (_currentGroup == null)
+        {
+            _currentGroup = _categoryGroups.First(c => c.Type == CategoryGroupType.Status);
+            await _localSettingsService.SaveSettingAsync(KeyValues.CategoryGroup, _currentGroup.Name);
+        }
     }
 
     public void OnNavigatedFrom()
@@ -70,7 +99,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         if (!delete) return;
         
         _categoryService.DeleteCategory(category);
-        UpdateSource();
+        Source.Remove(category);
     }
 
     [RelayCommand]
@@ -81,7 +110,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         await dialog.ShowAsync();
         if (dialog.Target == null) return;
         _categoryService.Merge(dialog.Target, source);
-        UpdateSource();
+        Source.Remove(source);
     }
 
     private class CombineCategoryDialog : ContentDialog
@@ -116,5 +145,13 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     private void UpdateCategory(Category category)
     {
         _categoryService.UpdateCategory(category);
+    }
+
+    [RelayCommand]
+    private async void SelectCategoryGroup(CategoryGroup group)
+    {
+        _currentGroup = group;
+        UpdateSource();
+        await _localSettingsService.SaveSettingAsync(KeyValues.CategoryGroup, group.Name);
     }
 }

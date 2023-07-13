@@ -39,6 +39,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
     private bool _isSaveInCloud;
     private RssType _rssType = RssType.None;
+    [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
@@ -60,7 +61,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         }
     }
 
-    public event GenericDelegate<Galgame>? GalPropertyChanged;
+    public event GenericDelegate<(Galgame, string)>? GalPropertyChanged;
 
     public RssType RssType
     {
@@ -88,7 +89,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public Galgame()
     {
         _tags.Value = new ObservableCollection<string>();
-        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke(this);
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
+        
     }
 
     public Galgame(string path)
@@ -96,7 +98,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
         Path = path;
-        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke(this);
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
     
     /// <summary>
@@ -272,9 +274,10 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         return meta;
     }
 
-    private void InvokeDeveloperChangedEvent()
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnPlayTypeChanged(PlayType value)
     {
-        GalPropertyChanged?.Invoke(this);
+        GalPropertyChanged?.Invoke((this, "playType"));
     }
 }
 

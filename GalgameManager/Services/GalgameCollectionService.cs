@@ -203,12 +203,20 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         return galgame;
     }
 
+    /// <summary>
+    /// 获取要显示的galgame列表
+    /// </summary>
     public async Task<ObservableCollection<Galgame>> GetContentGridDataAsync()
     {
         await Task.CompletedTask;
         return _displayGalgames;
     }
-    
+
+    /// <summary>
+    /// 获取所有galgame
+    /// </summary>
+    public List<Galgame> Galgames => _galgames;
+
     /// <summary>
     /// 搜索galgame并更新显示列表
     /// </summary>

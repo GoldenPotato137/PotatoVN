@@ -29,7 +29,7 @@ public static class KeyValues
     public const string LastNoticeUpdateVersion = "lastNoticeUpdateVersion"; // string,上次通知更新的版本
     public const string UploadData = "uploadData"; // bool,是否将匿名数据上传到AppCenter
     public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
-    public const string Categories = "categories"; // List<ICategory>,分类
+    public const string CategoryGroup = "categoryGroup"; // string，分类页展示的分类组
     public const string AutoCategory = "autoCategory"; // bool,是否自动分类
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
 }

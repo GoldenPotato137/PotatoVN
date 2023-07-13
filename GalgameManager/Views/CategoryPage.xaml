@@ -22,8 +22,22 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="0 -67 0 0">
+            <AppBarButton Icon="ViewAll" x:Uid="CategoryPage_CategoryGroup" AllowFocusOnInteraction="True">
+                <AppBarButton.Flyout>
+                    <MenuFlyout Placement="Bottom" x:Name="CategoryGroupFlyout" Opening="CategoryGroupFlyout_OnOpening"/>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+        </CommandBar>
+        
         <controls:AdaptiveGridView
-            Grid.Row="0" 
+            Grid.Row="1" 
             DesiredWidth="220"
             ItemHeight="160"
             IsItemClickEnabled="True"

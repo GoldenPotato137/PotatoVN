@@ -16,4 +16,9 @@ public sealed partial class CategoryPage : Page
         ViewModel = App.GetService<CategoryViewModel>();
         InitializeComponent();
     }
+
+    private void CategoryGroupFlyout_OnOpening(object? sender, object e)
+    {
+        ViewModel.UpdateCategoryGroupFlyout(CategoryGroupFlyout);
+    }
 }
