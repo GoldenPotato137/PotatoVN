@@ -308,6 +308,11 @@
                                     IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />    
                             </control:Panel>
                             <control:Panel>
+                                <local:SettingToggleSwitch 
+                                    x:Uid="SettingsPage_Start_AuthenticateUser"
+                                    IsOn="{x:Bind ViewModel.AuthenticateUser, Mode=TwoWay}" />
+                            </control:Panel>
+                            <control:Panel>
                                 <control:Setting x:Uid="SettingsPage_Start_Page">
                                     <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
                                               ItemsSource="{x:Bind ViewModel.StartPages}"

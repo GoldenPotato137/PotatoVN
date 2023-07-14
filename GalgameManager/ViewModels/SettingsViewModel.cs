@@ -123,6 +123,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //QUICK_START
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
+        AuthenticateUser = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AuthenticateUser).Result;
         //UPLOAD
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
     }
@@ -271,10 +272,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _quitStart;
     public readonly PageEnum[] StartPages = { PageEnum.Home , PageEnum.Category};
     [ObservableProperty] private PageEnum _startPage;
+    [ObservableProperty] private bool _authenticateUser;
 
     partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
-    
+
     partial void OnStartPageChanged(PageEnum value) => _localSettingsService.SaveSettingAsync(KeyValues.StartPage, value);
+
+    partial void OnAuthenticateUserChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AuthenticateUser, value);
 
     #endregion
     

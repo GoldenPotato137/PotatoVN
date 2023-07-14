@@ -101,6 +101,8 @@ public partial class App : Application
             services.AddTransient<HomePage>();
             services.AddTransient<ShellPage>();
             services.AddTransient<ShellViewModel>();
+            services.AddTransient<AuthenticationPage>();
+            services.AddTransient<AuthenticationViewModel>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

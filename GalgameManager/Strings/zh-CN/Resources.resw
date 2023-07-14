@@ -632,4 +632,13 @@
   <data name="CategoryPage_CategoryGroup.Label" xml:space="preserve">
     <value>分类组</value>
   </data>
+  <data name="SettingsPage_Start_AuthenticateUser.Title" xml:space="preserve">
+    <value>验证身份</value>
+  </data>
+  <data name="SettingsPage_Start_AuthenticateUser.Description" xml:space="preserve">
+    <value>在应用启动时是否验证你的身份</value>
+  </data>
+  <data name="AuthenticateUserMessage" xml:space="preserve">
+    <value>为安全起见，PotatoVN 需要验证你的身份</value>
+  </data>
 </root>

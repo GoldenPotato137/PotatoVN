@@ -32,4 +32,5 @@ public static class KeyValues
     public const string CategoryGroup = "categoryGroup"; // string，分类页展示的分类组
     public const string AutoCategory = "autoCategory"; // bool,是否自动分类
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
+    public const string AuthenticateUser = "authenticateUser"; // bool,是否验证用户身份
 }
