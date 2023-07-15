@@ -74,6 +74,7 @@ public partial class App : Application
             services.AddSingleton<ICategoryService, CategoryService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IAppCenterService, AppCenterService>();
+            services.AddSingleton<IAuthenticationService, AuthenticationService>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();

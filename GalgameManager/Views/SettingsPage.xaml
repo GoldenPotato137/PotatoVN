@@ -14,6 +14,7 @@
         <converter:RssTypeToVisibilityConverter x:Key="RssTypeToVisibilityConverter"/>
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
+        <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -305,8 +306,23 @@
                             <control:Panel>
                                 <local:SettingToggleSwitch 
                                     x:Uid="SettingsPage_Start_AutoStartGame"
-                                    IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />    
+                                    IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />
                             </control:Panel>
+
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Start_AuthenticationType">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.AuthenticationTypes}"
+                                              SelectedItem="{x:Bind ViewModel.AuthenticationType, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:AuthenticationType">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource AuthenticationTypeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                            
                             <control:Panel>
                                 <control:Setting x:Uid="SettingsPage_Start_Page">
                                     <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"

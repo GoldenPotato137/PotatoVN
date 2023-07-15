@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Windows.Services.Store;
+﻿using Windows.Services.Store;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,6 +13,10 @@ using GalgameManager.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.Security.Credentials.UI;
+using System.Reflection;
+using Windows.Security.Credentials;
+using GalgameManager.Views;
 
 namespace GalgameManager.ViewModels;
 
@@ -123,12 +126,19 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //QUICK_START
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
+        _authenticationType = _localSettingsService.ReadSettingAsync<AuthenticationType>(KeyValues.AuthenticationType).Result;
         //UPLOAD
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
+
+        //Check the availability of Windows Hello
+        UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
+        AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
+            ? (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword })
+            : (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword });
     }
 
     #region UPDATE
-    
+
     private bool _shouldDisplayUpdateNotification;
     
     private async Task ShowUpdateNotification()
@@ -271,13 +281,60 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _quitStart;
     public readonly PageEnum[] StartPages = { PageEnum.Home , PageEnum.Category};
     [ObservableProperty] private PageEnum _startPage;
+    public readonly AuthenticationType[] AuthenticationTypes;
+    [ObservableProperty] private AuthenticationType _authenticationType;
 
     partial void OnQuitStartChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.QuitStart, value);
-    
+
     partial void OnStartPageChanged(PageEnum value) => _localSettingsService.SaveSettingAsync(KeyValues.StartPage, value);
 
+    async partial void OnAuthenticationTypeChanged(AuthenticationType value)
+    {
+        switch (value)
+        {
+            case AuthenticationType.NoAuthentication:
+            case AuthenticationType.WindowsHello:
+                break;
+            case AuthenticationType.CustomPassword:
+                bool result = await TrySetCustomPassword();
+                if (!result)
+                {
+                    AuthenticationType = AuthenticationType.NoAuthentication;
+                    return;
+                }
+                break;
+        }
+
+        await _localSettingsService.SaveSettingAsync(KeyValues.AuthenticationType, value);
+    }
+
+    private async Task<bool> TrySetCustomPassword()
+    {
+        PasswordDialog passwordDialog = new()
+        {
+            Title = "SetYourPasswordLiteral".GetLocalized(),
+            Message = "SaveYourPasswordCarefullyLiteral".GetLocalized(),
+            PrimaryButtonText = "ConfirmLiteral".GetLocalized(),
+            CloseButtonText = "Cancel".GetLocalized(),
+            PasswordBoxPlaceholderText = "PasswordLiteral".GetLocalized(),
+        };
+        await passwordDialog.ShowAsync();
+
+        var password = passwordDialog.Password;
+        if (string.IsNullOrEmpty(password) is not true)
+        {
+            PasswordCredential credential = new(KeyValues.CustomPasswordSaverName, KeyValues.CustomPasswordDisplayName, password);
+            new PasswordVault().Add(credential);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     #endregion
-    
+
     #region UPLOAD
 
     [ObservableProperty] private bool _uploadToAppCenter;
