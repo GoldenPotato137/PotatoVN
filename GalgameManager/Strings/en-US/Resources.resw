@@ -375,13 +375,40 @@ Users who do not know the regular expression can understand：The name of the ga
   <data name="Shell_Category.Content" xml:space="preserve">
     <value>Category</value>
   </data>
-  <data name="SettingsPage_Start_AuthenticateUser.Title" xml:space="preserve">
-    <value>Authenticate your identity</value>
+  <data name="SettingsPage_Start_AuthenticationType.Title" xml:space="preserve">
+    <value>Authentication type</value>
   </data>
-  <data name="SettingsPage_Start_AuthenticateUser.Description" xml:space="preserve">
-    <value>Whether to authenticate your identity on application startup</value>
+  <data name="SettingsPage_Start_AuthenticationType.Description" xml:space="preserve">
+    <value>Set the authentication type on application startup</value>
   </data>
   <data name="AuthenticateUserMessage" xml:space="preserve">
     <value>For security, PotatoVN needs to verify your identity</value>
+  </data>
+  <data name="NoAuthentication" xml:space="preserve">
+    <value>No authentication</value>
+  </data>
+  <data name="WindowsHello" xml:space="preserve">
+    <value>Windows Hello (Suggested)</value>
+  </data>
+  <data name="CustomPassword" xml:space="preserve">
+    <value>Login by custom password</value>
+  </data>
+  <data name="EnterYourPasswordLiteral" xml:space="preserve">
+    <value>Please enter your password</value>
+  </data>
+  <data name="PasswordLiteral" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="ConfirmLiteral" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="SetYourPasswordLiteral" xml:space="preserve">
+    <value>Set your password</value>
+  </data>
+  <data name="SaveYourPasswordCarefullyLiteral" xml:space="preserve">
+    <value>Take care of your password.</value>
+  </data>
+  <data name="ForgetPasswordMessage" xml:space="preserve">
+    <value>If you forget your password, go to Credential Manager to access your password.</value>
   </data>
 </root>

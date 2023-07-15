@@ -1,7 +1,6 @@
 ﻿using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
-using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Views;
 using Microsoft.UI.Xaml;
@@ -19,7 +18,7 @@ public class ActivationService : IActivationService
     private readonly IDataCollectionService<Galgame> _galgameCollectionService;
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
-    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IAuthenticationService _authenticationService;
     private UIElement? _shell = null;
 
     public ActivationService(ActivationHandler<List<string>> defaultHandler,
@@ -28,7 +27,7 @@ public class ActivationService : IActivationService
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,
-        ILocalSettingsService localSettingsService)
+        IAuthenticationService authenticationService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
@@ -38,7 +37,7 @@ public class ActivationService : IActivationService
         _updateService = updateService;
         _appCenterService = appCenterService;
         _categoryService = categoryService;
-        _localSettingsService = localSettingsService;
+        _authenticationService = authenticationService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -49,24 +48,35 @@ public class ActivationService : IActivationService
         // Set the MainWindow Content.
         if (App.MainWindow.Content == null)
         {
-            var isAuthenticateUser = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AuthenticateUser);
-            if (isAuthenticateUser)
-            {
-                _shell = App.GetService<AuthenticationPage>();
-                App.MainWindow.Content = _shell ?? new Frame();
-            }
-            else
-            {
-                _shell = App.GetService<ShellPage>();
-                App.MainWindow.Content = _shell ?? new Frame();
-            }
+            _shell = App.GetService<ShellPage>();
+            App.MainWindow.Content = _shell ?? new Frame();
         }
 
-        // Handle activation via ActivationHandlers.
-        await HandleActivationAsync(activationArgs);
+        //防止有人手快按到页面内容
+        App.MainWindow.Content.Visibility = Visibility.Collapsed;
 
         // Activate the MainWindow.
         App.MainWindow.Activate();
+
+        var result = await _authenticationService.StartAuthentication();
+        if (!result)
+        {
+            Application.Current.Exit();
+            return;
+        }
+
+        await _galgameCollectionService.InitAsync();
+        await _galgameFolderCollectionService.InitAsync();
+        await _categoryService.Init();
+
+        //准备好数据后，再呈现页面
+        App.MainWindow.Content.Visibility = Visibility.Visible;
+
+        //使窗口重新获得焦点
+        App.MainWindow.Activate();
+
+        // Handle activation via ActivationHandlers.
+        await HandleActivationAsync(activationArgs);
 
         // Execute tasks after activation.
         await StartupAsync();
@@ -90,8 +100,6 @@ public class ActivationService : IActivationService
     private async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
-        await _galgameCollectionService.InitAsync();
-        await _galgameFolderCollectionService.InitAsync();
         await Task.CompletedTask;
     }
 
@@ -100,6 +108,5 @@ public class ActivationService : IActivationService
         await _themeSelectorService.SetRequestedThemeAsync();
         await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
-        await _categoryService.Init();
     }
 }

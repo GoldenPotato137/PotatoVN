@@ -24,6 +24,8 @@ public static class KeyValues
     public const string SaveBackupMetadata = "saveBackupMetadata";
     public const string Filters = "filters";
     public const string DisplayedUpdateVersion = "displayedUpdateVersion";
+    public const string CustomPasswordSaverName = "PotatoVN";
+    public const string CustomPasswordDisplayName = "CustomPassword";
     public const string LastUpdateCheckDate = "lastUpdateCheckDate"; // DateTime,上次检查更新的时间
     public const string LastUpdateCheckResult = "lastUpdateCheckResult"; // bool,上次检查更新的结果
     public const string LastNoticeUpdateVersion = "lastNoticeUpdateVersion"; // string,上次通知更新的版本
@@ -32,5 +34,5 @@ public static class KeyValues
     public const string CategoryGroup = "categoryGroup"; // string，分类页展示的分类组
     public const string AutoCategory = "autoCategory"; // bool,是否自动分类
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
-    public const string AuthenticateUser = "authenticateUser"; // bool,是否验证用户身份
+    public const string AuthenticationType = "authenticationType"; // AuthenticationType,身份验证类型
 }

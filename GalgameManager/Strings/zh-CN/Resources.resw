@@ -632,13 +632,40 @@
   <data name="CategoryPage_CategoryGroup.Label" xml:space="preserve">
     <value>分类组</value>
   </data>
-  <data name="SettingsPage_Start_AuthenticateUser.Title" xml:space="preserve">
-    <value>验证身份</value>
+  <data name="SettingsPage_Start_AuthenticationType.Title" xml:space="preserve">
+    <value>身份验证类型</value>
   </data>
-  <data name="SettingsPage_Start_AuthenticateUser.Description" xml:space="preserve">
-    <value>在应用启动时是否验证你的身份</value>
+  <data name="SettingsPage_Start_AuthenticationType.Description" xml:space="preserve">
+    <value>设置应用启动时的身份验证类型</value>
   </data>
   <data name="AuthenticateUserMessage" xml:space="preserve">
     <value>为安全起见，PotatoVN 需要验证你的身份</value>
+  </data>
+  <data name="NoAuthentication" xml:space="preserve">
+    <value>无身份验证</value>
+  </data>
+  <data name="WindowsHello" xml:space="preserve">
+    <value>Windows Hello（推荐）</value>
+  </data>
+  <data name="CustomPassword" xml:space="preserve">
+    <value>自定义密码登录</value>
+  </data>
+  <data name="EnterYourPasswordLiteral" xml:space="preserve">
+    <value>输入你的密码</value>
+  </data>
+  <data name="PasswordLiteral" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="ConfirmLiteral" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="SetYourPasswordLiteral" xml:space="preserve">
+    <value>设置你的密码</value>
+  </data>
+  <data name="SaveYourPasswordCarefullyLiteral" xml:space="preserve">
+    <value>请妥善保存你的密码。</value>
+  </data>
+  <data name="ForgetPasswordMessage" xml:space="preserve">
+    <value>如果你忘记了密码，请在系统的凭据管理器中查看密码。</value>
   </data>
 </root>

@@ -54,7 +54,7 @@
     <None Remove="Assets\Potato.targetsize-32.png" />
     <None Remove="Assets\Potato.targetsize-48.png" />
     <None Remove="Assets\Potato.targetsize-48_altform-unplated.png" />
-    <None Remove="Views\AuthenticationPage.xaml" />
+    <None Remove="Views\PasswordDialog.xaml" />
     <None Remove="Views\SettingExpander.xaml" />
   </ItemGroup>
 
@@ -86,7 +86,7 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Update="Views\AuthenticationPage.xaml">
+    <Page Update="Views\PasswordDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\SettingExpander.xaml">
