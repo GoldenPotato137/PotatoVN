@@ -22,6 +22,8 @@ PotatoVN是一个用于管理galgame的游戏的工具，旨在为galgame屯屯�
 **对于windows10用户:** windows10用户需要额外安装[Segoe Fluent 图标字体](https://aka.ms/SegoeFluentIcons)
 
 ## 翻译
+![en translation](https://img.shields.io/badge/dynamic/json?color=blue&label=en&style=flat&logo=crowdin&query=%24.progress[?(@.data.languageId==%27en%27)].data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15790227-581621.json)
+
 PotatoVN使用crowdin来进行本地化，欢迎在[crowdin](https://crowdin.com/project/potatovn)将PotatoVN带到您的语言当中。
 
 ## 开发者相关
