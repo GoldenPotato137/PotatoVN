@@ -1,0 +1,45 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.ChangePlayStatusDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="游玩状态" VerticalAlignment="Center" />
+                <ComboBox MinWidth="100" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="评分" VerticalAlignment="Center" />
+                <ComboBox MinWidth="100" />
+            </StackPanel>
+        </Grid>
+
+        <TextBox Grid.Row="1" Margin="{StaticResource SmallTopMargin}" TextWrapping="Wrap"
+                 MinHeight="50" AcceptsReturn="True" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="15" Margin="0 20 0 0">
+            <CheckBox Content="同步至Bangumi" />
+            <CheckBox Content="同步至VNDB" />
+            <CheckBox Content="私密" />
+        </StackPanel>
+    </Grid>
+</ContentDialog>

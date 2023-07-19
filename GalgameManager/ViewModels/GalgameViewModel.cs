@@ -10,6 +10,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -137,7 +138,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void GetInfoFromRss()
+    private async Task GetInfoFromRss()
     {
         if (Item == null) return;
         IsPhrasing = true;
@@ -153,7 +154,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void ChangeSavePosition()
+    private async Task ChangeSavePosition()
     {
         if(Item == null) return;
         await _galgameService.ChangeGalgameSavePosition(Item);
@@ -168,7 +169,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
     
     [RelayCommand]
-    private async void DeleteFromDisk()
+    private async Task DeleteFromDisk()
     {
         if(Item == null) return;
         ContentDialog dialog = new()
@@ -188,7 +189,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
     
     [RelayCommand]
-    private async void OpenInExplorer()
+    private async Task OpenInExplorer()
     {
         if(Item == null) return;
         await Launcher.LaunchUriAsync(new Uri(Item.Path));
@@ -204,5 +205,15 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private async Task SaveAsync()
     {
         await _galgameService.SaveGalgamesAsync(Item);
+    }
+
+    [RelayCommand]
+    private async Task ChangePlayStatus()
+    {
+        ChangePlayStatusDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+        };
+        await dialog.ShowAsync();
     }
 }

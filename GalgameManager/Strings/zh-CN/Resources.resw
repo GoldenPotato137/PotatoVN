@@ -668,4 +668,7 @@
   <data name="ForgetPasswordMessage" xml:space="preserve">
     <value>如果你忘记了密码，请在系统的凭据管理器中查看密码。</value>
   </data>
+  <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
 </root>

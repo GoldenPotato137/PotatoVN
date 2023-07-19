@@ -65,12 +65,7 @@
                 </AppBarButton>
                 <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
                 <!-- 游玩状态 -->
-                <AppBarButton x:Uid="GalgamePage_PlayStatus">
-                    <AppBarButton.Flyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem/>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
+                <AppBarButton x:Uid="GalgamePage_PlayStatus" Command="{x:Bind ViewModel.ChangePlayStatusCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74C;" />
                     </AppBarButton.Icon>

@@ -16,7 +16,7 @@ public sealed partial class PasswordDialog : ContentDialog
     }
 
     /// <summary>
-    /// ÓÃ»§ÊäÈëµÄÃÜÂë
+    /// ç”¨æˆ·è¾“å…¥çš„å¯†ç 
     /// </summary>
     public string? Password
     {
@@ -25,7 +25,7 @@ public sealed partial class PasswordDialog : ContentDialog
     }
 
     /// <summary>
-    /// ÒªÏòÓÃ»§ÏÔÊ¾µÄÏûÏ¢
+    /// è¦å‘ç”¨æˆ·æ˜¾ç¤ºçš„æ¶ˆæ¯
     /// </summary>
     public string Message
     {
@@ -34,7 +34,7 @@ public sealed partial class PasswordDialog : ContentDialog
     }
 
     /// <summary>
-    /// ÃÜÂë¿òµÄÕ¼Î»ÎÄ±¾
+    /// å¯†ç æ¡†çš„å ä½æ–‡æœ¬
     /// </summary>
     public string PasswordBoxPlaceholderText
     {
