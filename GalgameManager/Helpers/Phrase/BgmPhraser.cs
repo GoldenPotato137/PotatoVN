@@ -5,10 +5,8 @@ using System.Reflection;
 using System.Web;
 
 using GalgameManager.Contracts.Phrase;
-using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models;
-using GalgameManager.Services;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 
@@ -55,17 +53,19 @@ public class BgmPhraser : IGalInfoPhraser
         List<JToken>? producers = json.ToObject<List<JToken>>();
         producers!.ForEach(dev =>
         {
-            if (IGalInfoPhraser.IsNullOrEmpty(dev["name"]!.ToString()) == false)
+            if (IsNullOrEmpty(dev["name"]!.ToString()) == false)
                 _developerList.Add(dev["name"]!.ToString());
-            if (IGalInfoPhraser.IsNullOrEmpty(dev["latin"]!.ToString()) == false)
+            if (IsNullOrEmpty(dev["latin"]!.ToString()) == false)
                 _developerList.Add(dev["latin"]!.ToString());
-            if (IGalInfoPhraser.IsNullOrEmpty(dev["alias"]!.ToString()) == false)
+            if (IsNullOrEmpty(dev["alias"]!.ToString()) == false)
             {
                 var tmp = dev["alias"]!.ToString();
                 _developerList.AddRange(tmp.Split("\n"));
             }
         });
     }
+
+    private static bool IsNullOrEmpty(string str) => str is "null" or "";
 
     private async Task<int?> GetId(string name)
     {
@@ -143,7 +143,7 @@ public class BgmPhraser : IGalInfoPhraser
 
     #endregion
     
-    public async Task<Galgame?> GetGalgameInfo(Galgame galgame, ILocalSettingsService ?localSettingsService)
+    public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (_init == false)
             await InitAsync();
@@ -173,18 +173,7 @@ public class BgmPhraser : IGalInfoPhraser
         // id
         result.Id = jsonToken["id"]!.ToObject<string>()!;
         // name
-        if (localSettingsService is not null 
-            && await localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName)
-            && await localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi)
-            )
-        {
-            result.Name = jsonToken["name_cn"]!.ToObject<string>() is not null ? 
-                jsonToken["name_cn"]!.ToObject<string>()! : jsonToken["name"]!.ToObject<string>()!;
-        }
-        else
-        {
-            result.Name = jsonToken["name"]!.ToObject<string>()!;
-        }
+        result.Name = jsonToken["name"]!.ToObject<string>()!;
         // description
         result.Description = jsonToken["summary"]!.ToObject<string>()!;
         // imageUrl

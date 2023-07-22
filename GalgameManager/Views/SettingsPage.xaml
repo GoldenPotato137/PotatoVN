@@ -134,17 +134,10 @@
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <control:Panel>
-                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
-                                    <local:SettingToggleSwitch
+                                <local:SettingToggleSwitch
                                     Title="{x:Bind ViewModel.UiDownLoadOverrideNameTitle}"
                                     Description="{x:Bind ViewModel.UiDownLoadOverrideNameDescription}"
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
-                                    <local:SettingToggleSwitch
-                                    Title="{x:Bind ViewModel.UiDownLoadOverrideNameWithCNByBangumiTitle}"
-                                    Description="{x:Bind ViewModel.UiDownLoadOverrideNameWithCNByBangumiDescription}"
-                                    IsOn="{x:Bind ViewModel.OverrideLocalNameWithCNByBangumi, Mode=TwoWay}" 
-                                    Visibility="{x:Bind ViewModel.OverrideLocalName, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                </StackPanel>
                             </control:Panel>
                             <control:Panel>
                                 <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
