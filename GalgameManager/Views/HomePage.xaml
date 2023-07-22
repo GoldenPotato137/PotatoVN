@@ -22,7 +22,7 @@
         </CommandBarFlyout>
     </Page.Resources>
 
-    <Grid>
+    <Grid AllowDrop="True" Drop="{x:Bind ViewModel.Grid_Drop}" DragOver="{x:Bind ViewModel.Grid_DragOver}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
