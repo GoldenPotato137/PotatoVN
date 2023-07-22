@@ -179,7 +179,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)
     {
-        Galgame? tmp = await phraser.GetGalgameInfo(galgame);
+        Galgame? tmp = await phraser.GetGalgameInfo(galgame, LocalSettingsService);
         if (tmp == null) return galgame;
 
         galgame.RssType = phraser.GetPhraseType();

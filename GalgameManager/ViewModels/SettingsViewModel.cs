@@ -42,6 +42,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     public readonly string UiDownloadDescription = ResourceLoader.GetString("SettingsPage_DownloadDescription");
     public readonly string UiDownLoadOverrideNameTitle = ResourceLoader.GetString("SettingsPage_Download_OverrideNameTitle");
     public readonly string UiDownLoadOverrideNameDescription = ResourceLoader.GetString("SettingsPage_Download_OverrideNameDescription");
+    public readonly string UiDownLoadOverrideNameWithCNByBangumiTitle = ResourceLoader.GetString("SettingsPage_Download_OverrideNameWithCNByBangumiTitle");
+    public readonly string UiDownLoadOverrideNameWithCNByBangumiDescription = ResourceLoader.GetString("SettingsPage_Download_OverrideNameWithCNByBangumiDescription");
     public readonly string UiCloudSyncTitle = ResourceLoader.GetString("SettingsPage_CloudSyncTitle");
     public readonly string UiCloudSyncDescription = ResourceLoader.GetString("SettingsPage_CloudSyncDescription");
     public readonly string UiCloudSyncRoot = ResourceLoader.GetString("SettingsPage_CloudSync_Root");
@@ -108,6 +110,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
+        _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
@@ -193,10 +196,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
+    [ObservableProperty] private bool _overrideLocalNameWithCNByBangumi;
     [ObservableProperty] private bool _autoCategory;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
-    
+
+    partial void OnOverrideLocalNameWithCNByBangumiChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithCNByBangumi, value);
+
     partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
 
     [RelayCommand]

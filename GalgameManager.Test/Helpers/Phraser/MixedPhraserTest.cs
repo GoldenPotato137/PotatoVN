@@ -29,7 +29,7 @@ public class MixedPhraserTest
         // Arrange
         Galgame? game = new(name);
         // Act
-        game = await _mixedPhraser!.GetGalgameInfo(game);
+        game = await _mixedPhraser!.GetGalgameInfo(game, null);
         // Assert
         if(game == null)
         {
@@ -60,7 +60,7 @@ public class MixedPhraserTest
         game.RssType = RssType.Mixed;
         game.Id = $"bgm:{bgmId},vndb:{vndbId}";
         // Act
-        game = await _mixedPhraser!.GetGalgameInfo(game);
+        game = await _mixedPhraser!.GetGalgameInfo(game, null);
         // Assert
         if(game == null)
         {

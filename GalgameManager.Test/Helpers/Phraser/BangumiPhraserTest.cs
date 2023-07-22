@@ -29,7 +29,7 @@ public class BangumiPhraserTest
         // Arrange
         Galgame? game = new(name);
         // Act
-        game = await _phraser.GetGalgameInfo(game);
+        game = await _phraser.GetGalgameInfo(game, null);
         // Assert
         if(game == null)
         {
@@ -65,7 +65,7 @@ public class BangumiPhraserTest
             Id = id
         };
         // Act
-        game = await _phraser.GetGalgameInfo(game);
+        game = await _phraser.GetGalgameInfo(game, null);
         // Assert
         if(game == null)
         {

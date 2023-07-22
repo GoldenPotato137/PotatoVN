@@ -671,4 +671,10 @@
   <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
     <value>游玩状态</value>
   </data>
+  <data name="SettingsPage_Download_OverrideNameWithCNByBangumiDescription" xml:space="preserve">
+    <value>是否优先用Bangumi源获取到的galgame中文名覆盖本地名字</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithCNByBangumiTitle" xml:space="preserve">
+    <value>用中文名覆盖名字</value>
+  </data>
 </root>
