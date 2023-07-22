@@ -16,9 +16,6 @@ using GalgameManager.Services;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
-using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.DataTransfer;
-using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace GalgameManager.ViewModels;
 
@@ -113,63 +110,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         {
             _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
             _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path);
-        }
-    }
-
-    public void Grid_DragOver(object sender, DragEventArgs e)
-    {
-        e.AcceptedOperation = DataPackageOperation.Link;
-    }
-
-    public async void Grid_Drop(object sender, DragEventArgs e)
-    {
-        if (e.DataView.Contains(StandardDataFormats.StorageItems))
-        {
-            var items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count > 0)
-            {
-                foreach (StorageFile item in items)
-                {
-                    try
-                    {
-                        if (item != null)
-                        {
-                            var folder = item.Path.Substring(0, item.Path.LastIndexOf('\\'));
-                            IsPhrasing = true;
-                            GalgameCollectionService.AddGalgameResult result = await _galgameService.TryAddGalgameAsync(folder, true);
-                            if (result == GalgameCollectionService.AddGalgameResult.Success)
-                            {
-                                IsInfoBarOpen = true;
-                                InfoBarMessage = _uiAddGameSuccess;
-                                InfoBarSeverity = InfoBarSeverity.Success;
-                                await Task.Delay(3000);
-                                IsInfoBarOpen = false;
-                            }
-                            else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
-                            {
-                                throw new Exception(_uiAlreadyInLibrary);
-                            }
-                            else //NotFoundInRss
-                            {
-                                IsInfoBarOpen = true;
-                                InfoBarMessage = _uiNoInfo;
-                                InfoBarSeverity = InfoBarSeverity.Warning;
-                                await Task.Delay(3000);
-                                IsInfoBarOpen = false;
-                            }
-                        }
-                    }
-                    catch (Exception error)
-                    {
-                        IsPhrasing = false;
-                        IsInfoBarOpen = true;
-                        InfoBarMessage = error.Message;
-                        InfoBarSeverity = InfoBarSeverity.Error;
-                        await Task.Delay(3000);
-                        IsInfoBarOpen = false;
-                    }
-                }
-            }
         }
     }
 
