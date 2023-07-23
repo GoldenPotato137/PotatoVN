@@ -174,6 +174,7 @@ public class BgmPhraser : IGalInfoPhraser
         result.Id = jsonToken["id"]!.ToObject<string>()!;
         // name
         result.Name = jsonToken["name"]!.ToObject<string>()!;
+        // Chinese name
         result.CnName = jsonToken["name_cn"]!.ToObject<string>()!;
         // description
         result.Description = jsonToken["summary"]!.ToObject<string>()!;

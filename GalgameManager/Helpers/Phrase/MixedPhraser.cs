@@ -51,7 +51,9 @@ public class MixedPhraser : IGalInfoPhraser
         result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}";
         // name
         result.Name = vndb !=null ? vndb.Name : bgm!.Name;
+
         result.CnName = bgm != null ? bgm!.CnName:"";
+
         // description
         result.Description = bgm != null ? bgm.Description : vndb!.Description;
         // developer

@@ -106,7 +106,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
-        _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
@@ -192,13 +191,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
-    [ObservableProperty] private bool _overrideLocalNameWithCNByBangumi;
     [ObservableProperty] private bool _autoCategory;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
-
-    partial void OnOverrideLocalNameWithCNByBangumiChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithCNByBangumi, value);
-
+    
     partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
 
     [RelayCommand]
