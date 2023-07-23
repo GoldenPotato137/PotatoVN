@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using GalgameManager.Contracts.Phrase;
-using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using Newtonsoft.Json.Linq;
@@ -53,7 +52,7 @@ public class VndbPhraser : IGalInfoPhraser
         galgame.RssType = old;
     }
     
-    public async Task<Galgame?> GetGalgameInfo(Galgame galgame, ILocalSettingsService ?localSettingsService)
+    public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (!_init) await Init();
         var result = new Galgame();

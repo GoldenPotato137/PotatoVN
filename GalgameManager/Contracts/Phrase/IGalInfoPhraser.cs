@@ -1,5 +1,4 @@
-﻿using GalgameManager.Contracts.Services;
-using GalgameManager.Enums;
+﻿using GalgameManager.Enums;
 using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Phrase;
@@ -11,7 +10,7 @@ public interface IGalInfoPhraser
     /// </summary>
     /// <param name="galgame">galgame</param>
     /// <returns>获取到的galgame信息（放到一个空的galgame里），如果获取不到信息则返回null</returns>
-    public Task<Galgame?> GetGalgameInfo(Galgame galgame, ILocalSettingsService ?localSettingsService);
+    public Task<Galgame?> GetGalgameInfo(Galgame galgame);
     
     public RssType GetPhraseType();
 
@@ -60,6 +59,4 @@ public interface IGalInfoPhraser
             return 0;
         return (match / (double)n + match / (double)m + (match - swap / 2.0) / match) / 3.0;
     }
-
-    public static bool IsNullOrEmpty(string ?str) => str is null or "" or "null";
 }

@@ -27,6 +27,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
+    [JsonIgnore][ObservableProperty] private string _cnName = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;

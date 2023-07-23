@@ -1,5 +1,4 @@
 ﻿using GalgameManager.Contracts.Phrase;
-using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 
@@ -16,7 +15,7 @@ public class MixedPhraser : IGalInfoPhraser
         _vndbPhraser = vndbPhraser;
     }
     
-    public async Task<Galgame?> GetGalgameInfo(Galgame galgame, ILocalSettingsService ?localSettingsService)
+    public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         Galgame? bgm = new(), vndb = new();
         bgm.Name = galgame.Name;
@@ -41,8 +40,8 @@ public class MixedPhraser : IGalInfoPhraser
             // ignored
         }
         // 从bgm和vndb中获取信息
-        bgm = await _bgmPhraser.GetGalgameInfo(bgm, localSettingsService);
-        vndb = await _vndbPhraser.GetGalgameInfo(vndb, localSettingsService);
+        bgm = await _bgmPhraser.GetGalgameInfo(bgm);
+        vndb = await _vndbPhraser.GetGalgameInfo(vndb);
         if(bgm == null && vndb == null)
             return null;
         
@@ -51,18 +50,8 @@ public class MixedPhraser : IGalInfoPhraser
         result.RssType = RssType.Mixed;
         result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}";
         // name
-        if (localSettingsService is not null
-            && await localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName)
-            && await localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi)
-            && bgm != null
-            ) {
-            result.Name = !IGalInfoPhraser.IsNullOrEmpty(bgm.Name)? bgm.Name : vndb!.Name;
-        }
-        else
-        {
-            result.Name = vndb != null ? vndb.Name : bgm!.Name;
-        }
-            
+        result.Name = vndb !=null ? vndb.Name : bgm!.Name;
+        result.CnName = bgm != null ? bgm!.CnName:"";
         // description
         result.Description = bgm != null ? bgm.Description : vndb!.Description;
         // developer
