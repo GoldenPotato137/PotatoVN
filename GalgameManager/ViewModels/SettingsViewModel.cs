@@ -40,10 +40,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     public readonly string UiRssBgmPlaceholder = ResourceLoader.GetString("SettingsPage_Rss_BgmPlaceholder");
     public readonly string UiDownloadTitle = ResourceLoader.GetString("SettingsPage_DownloadTitle");
     public readonly string UiDownloadDescription = ResourceLoader.GetString("SettingsPage_DownloadDescription");
-    public readonly string UiDownLoadOverrideNameTitle = ResourceLoader.GetString("SettingsPage_Download_OverrideNameTitle");
-    public readonly string UiDownLoadOverrideNameDescription = ResourceLoader.GetString("SettingsPage_Download_OverrideNameDescription");
-    public readonly string UiDownLoadOverrideNameWithCNByBangumiTitle = ResourceLoader.GetString("SettingsPage_Download_OverrideNameWithCNByBangumiTitle");
-    public readonly string UiDownLoadOverrideNameWithCNByBangumiDescription = ResourceLoader.GetString("SettingsPage_Download_OverrideNameWithCNByBangumiDescription");
     public readonly string UiCloudSyncTitle = ResourceLoader.GetString("SettingsPage_CloudSyncTitle");
     public readonly string UiCloudSyncDescription = ResourceLoader.GetString("SettingsPage_CloudSyncDescription");
     public readonly string UiCloudSyncRoot = ResourceLoader.GetString("SettingsPage_CloudSync_Root");
