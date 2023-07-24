@@ -7,6 +7,7 @@ public static class KeyValues
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
     public const string OverrideLocalName = "overrideLocalName";
+    public const string OverrideLocalNameWithCNByBangumi = "overrideLocalNameWithCNByBangumi";
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
     public const string SortKey1 = "sortKey1";

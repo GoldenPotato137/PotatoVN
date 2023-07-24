@@ -231,10 +231,10 @@
   <data name="SettingsPage_DownloadDescription" xml:space="preserve">
     <value>从信息源获取信息有关的设置</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameTitle" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Title" xml:space="preserve">
     <value>覆盖名字</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameDescription" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Description" xml:space="preserve">
     <value>是否将信息源获取到的galgame名字覆盖本地名字</value>
   </data>
   <data name="SettingsPage_CloudSyncTitle" xml:space="preserve">
@@ -676,6 +676,12 @@
   </data>
   <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
     <value>游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithCNByBangumi.Description" xml:space="preserve">
+    <value>是否优先用Bangumi源获取到的galgame中文名覆盖本地名字</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithCNByBangumi.Title" xml:space="preserve">
+    <value>用中文名覆盖名字</value>
   </data>
   <data name="BgmPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
     <value>尚未登录，需要在设置中登录Bangumi账号</value>

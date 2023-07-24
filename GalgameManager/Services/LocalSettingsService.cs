@@ -103,6 +103,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)"";
             case KeyValues.AutoCategory:
                 return (T?)(object)true;
+            case KeyValues.OverrideLocalNameWithCNByBangumi:
+                return (T?)(object)false;
             default:
                 return default;
         }
