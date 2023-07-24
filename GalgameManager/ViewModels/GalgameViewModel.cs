@@ -28,6 +28,9 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
+    [ObservableProperty] private bool _canOpenInBgm = false;
+    [ObservableProperty] private bool _canOpenInVndb = false;
+    private string _bgmId = "", _vndbId = "";
 
     #region UI_STRINGS
 
@@ -95,6 +98,61 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
+        switch (Item?.RssType)
+        {
+            case RssType.Mixed:
+                (_bgmId, _vndbId) = TryGetId(Item?.Id);
+                if (_bgmId is not "null" && _bgmId is not "")
+                {
+                    CanOpenInBgm = true;
+                }
+                if (_vndbId is not "null" && _vndbId is not "")
+                {
+                    CanOpenInVndb = true;
+                }
+                break;
+            case RssType.Bangumi:
+                _bgmId = Item?.Id!;
+                if (_bgmId is not "null" && _bgmId is not "")
+                {
+                    CanOpenInBgm = true;
+                }
+                break;
+            case RssType.Vndb:
+                _vndbId = Item?.Id!;
+                if (_bgmId is not "null" && _bgmId is not "")
+                {
+                    CanOpenInVndb = true;
+                }
+                break;
+        }
+    }
+    
+    private static (string bgmId, string vndbId) TryGetId(string? id)  //id: bgm:xxx,vndb:xxx
+    {
+        if (id == null || id.Contains("bgm:") == false || id.Contains(",vndb:") == false)
+            return ("", "");
+        id = id.Replace("bgm:", "").Replace("vndb:", "").Replace(" ","");
+        id = id.Replace("，", ","); //替换中文逗号为英文逗号
+        var tmp = id.Split(",").ToArray();
+        string bgmId = "", vndbId = "";
+        if (tmp[0] != "null") bgmId = tmp[0];
+        if (tmp[1] != "null") vndbId = tmp[1];
+        return (bgmId, vndbId);
+    }
+    
+    [RelayCommand]
+    private async Task OpenInBgm()
+    {
+        if(_bgmId is "" or "null") return;
+        await Launcher.LaunchUriAsync(new Uri("https://bgm.tv/subject/"+_bgmId));
+    }
+    
+    [RelayCommand]
+    private async Task OpenInVndb()
+    {
+        if(_vndbId is "" or "null") return;
+        await Launcher.LaunchUriAsync(new Uri("https://vndb.org/v"+_vndbId));
     }
 
     [RelayCommand]
