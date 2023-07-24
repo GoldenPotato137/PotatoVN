@@ -72,6 +72,22 @@
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"/>
+                    <AppBarButton x:Uid="GalgamePage_OpenInBgm" Command="{x:Bind ViewModel.OpenInBgmCommand}" 
+                                  Visibility="{x:Bind ViewModel.CanOpenInBgm, 
+                                  Converter={StaticResource BoolToVisibilityConverter}, 
+                                  Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton x:Uid="GalgamePage_OpenInVndb" Command="{x:Bind ViewModel.OpenInVndbCommand}" 
+                                  Visibility="{x:Bind ViewModel.CanOpenInVndb, 
+                                  Converter={StaticResource BoolToVisibilityConverter}, 
+                                  Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" />
                     <AppBarSeparator/>
