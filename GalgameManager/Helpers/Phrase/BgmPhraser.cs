@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using System.Web;
 
 using GalgameManager.Contracts.Phrase;
@@ -12,11 +13,13 @@ using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
 
-public class BgmPhraser : IGalInfoPhraser
+public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
 {
     private const string ProducerFile = @"Assets\Data\producers.json";
     private HttpClient _httpClient;
     private bool _init;
+    private bool _authed;
+    private Task? _checkAuthTask;
     private readonly List<string> _developerList = new();
 
     public BgmPhraser(BgmPhraserData data)
@@ -33,15 +36,23 @@ public class BgmPhraser : IGalInfoPhraser
     
     private void GetHttpClient(BgmPhraserData data)
     {
+        _authed = false;
         var bgmToken = data.Token;
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        if(bgmToken != null)
+        if (bgmToken != null)
+        {
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
+            _checkAuthTask = Task.Run(() =>
+            {
+                HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
+                _authed = response.IsSuccessStatusCode;
+            });
+        }
     }
-    
+
     private async Task InitAsync()
     {
         _init = true;
@@ -309,6 +320,33 @@ public class BgmPhraser : IGalInfoPhraser
             return null;
         }
     }
+
+    private struct UploadPack
+    {
+        public int? Rate;
+        public string? Comment;
+        public int Status;
+        [JsonPropertyName("private")]public bool IsPrivate;
+    }
+
+    public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
+    {
+        if (_checkAuthTask != null) await _checkAuthTask;
+        if (_authed == false)
+            return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
+            return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
+        UploadPack pack = new()
+        {
+            Rate = galgame.MyRate == -1 ? null : galgame.MyRate,
+            Comment = galgame.Comment,
+            Status = (int)galgame.PlayType,
+            IsPrivate = galgame.PrivateComment
+        };
+        return (GalStatusSyncResult.Ok, string.Empty);
+    }
+
+    public Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame) => throw new NotImplementedException();
 }
 
 public class BgmPhraserData : IGalInfoPhraserData
