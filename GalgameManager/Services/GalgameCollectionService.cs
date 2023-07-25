@@ -190,7 +190,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock)
             galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
-            galgame.Name.Value = tmp.Name.Value;
+        {
+            if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi))
+            {
+                galgame.Name.Value = tmp.CnName is not "" ?tmp.CnName:tmp.Name.Value;
+            }
+            else
+            {
+                galgame.Name.Value = tmp.Name.Value;
+            }
+        }
         galgame.ImageUrl = tmp.ImageUrl;
         if (!galgame.Rating.IsLock)
             galgame.Rating.Value = tmp.Rating.Value;
