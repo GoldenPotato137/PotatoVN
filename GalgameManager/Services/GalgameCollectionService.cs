@@ -155,8 +155,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         UpdateDisplay(UpdateType.Add, galgame);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
-
-
+    
     /// <summary>
     /// 从下载源获取这个galgame的信息
     /// </summary>
@@ -210,6 +209,21 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await Task.CompletedTask;
         return _displayGalgames;
+    }
+
+    /// <summary>
+    /// 向信息源上传游玩状态
+    /// </summary>
+    /// <param name="galgame">要同步的游戏</param>
+    /// <param name="rssType">信息源</param>
+    /// <returns>(上传结果， 结果解释)</returns>
+    /// <exception cref="NotSupportedException">若信息源没有实现IGalStatusSync，则抛此异常</exception>
+    public async Task<(GalStatusSyncResult, string)> UploadPlayStatusAsync(Galgame galgame, RssType rssType)
+    {
+        IGalInfoPhraser phraser = PhraserList[(int)rssType];
+        if (phraser is IGalStatusSync syncer)
+            return await syncer.UploadAsync(galgame);
+        throw new NotSupportedException("这个数据源不支持同步游玩状态");
     }
 
     /// <summary>

@@ -42,6 +42,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
@@ -197,6 +198,10 @@
                     </ItemsRepeater>
                 </StackPanel>
             </ScrollViewer>
+
+            <InfoBar Grid.Row="2" Visibility="{x:Bind ViewModel.InfoBarVisibility, Mode=OneWay}"
+                     Severity="{x:Bind ViewModel.InfoBarSeverity,Mode=OneWay}"
+                     Message="{x:Bind ViewModel.InfoBarMsg,Mode=OneWay}" />
         </Grid>
 
         <Grid

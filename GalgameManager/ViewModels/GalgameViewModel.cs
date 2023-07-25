@@ -28,7 +28,11 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
-
+    [ObservableProperty] private Visibility _infoBarVisibility = Visibility.Collapsed;
+    [ObservableProperty] private string _infoBarMsg = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    private int _msgIndex;
+    
     #region UI_STRINGS
 
     public readonly string UiPlay ="GalgamePage_Play".GetLocalized();
@@ -95,6 +99,16 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async Task DisplayMsg(InfoBarSeverity severity, string msg, int displayTimeMs = 3000)
+    {
+        var myIndex = ++_msgIndex;
+        InfoBarVisibility = Visibility.Visible;
+        InfoBarMsg = msg;
+        await Task.Delay(displayTimeMs);
+        if (myIndex == _msgIndex)
+            InfoBarVisibility = Visibility.Collapsed;
     }
 
     [RelayCommand]
@@ -210,10 +224,20 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task ChangePlayStatus()
     {
-        ChangePlayStatusDialog dialog = new()
+        if (Item == null) return;
+        ChangePlayStatusDialog dialog = new(Item)
         {
             XamlRoot = App.MainWindow.Content.XamlRoot,
         };
         await dialog.ShowAsync();
+        if (dialog.Canceled) return;
+        if (dialog.UploadToBgm)
+        {
+            _ = DisplayMsg(InfoBarSeverity.Informational, "HomePage_UploadingToBgm".GetLocalized(), 1000 * 10);
+            (GalStatusSyncResult, string) result = await _galgameService.UploadPlayStatusAsync(Item, RssType.Bangumi);
+            await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
+        }
+        if (dialog.UploadToVndb)
+            throw new NotImplementedException();
     }
 }

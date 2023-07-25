@@ -677,4 +677,10 @@
   <data name="BgmPhraser_UploadAsync_NoId" xml:space="preserve">
     <value>这个游戏目前没有bangumi id，请在编辑界面手动设置一个</value>
   </data>
+  <data name="BgmPhraser_UploadAsync_Success" xml:space="preserve">
+    <value>已成功同步游玩状态到bangumi</value>
+  </data>
+  <data name="HomePage_UploadingToBgm" xml:space="preserve">
+    <value>将游玩信息同步到bangumi中</value>
+  </data>
 </root>

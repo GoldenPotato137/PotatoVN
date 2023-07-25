@@ -2,13 +2,14 @@
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Text.Json.Serialization;
+using System.Text;
 using System.Web;
 
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
@@ -19,6 +20,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
     private HttpClient _httpClient;
     private bool _init;
     private bool _authed;
+    private string _userId = string.Empty;
     private Task? _checkAuthTask;
     private readonly List<string> _developerList = new();
 
@@ -49,6 +51,9 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             {
                 HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
                 _authed = response.IsSuccessStatusCode;
+                if (!_authed) return;
+                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                _userId = json["id"]!.ToString();
             });
         }
     }
@@ -319,14 +324,6 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         }
     }
 
-    private struct UploadPack
-    {
-        public int? Rate;
-        public string? Comment;
-        public int Status;
-        [JsonPropertyName("private")]public bool IsPrivate;
-    }
-
     public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
     {
         if (_checkAuthTask != null) await _checkAuthTask;
@@ -334,14 +331,34 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
             return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
-        UploadPack pack = new()
+        var data = new
         {
-            Rate = galgame.MyRate == -1 ? null : galgame.MyRate,
-            Comment = galgame.Comment,
-            Status = (int)galgame.PlayType,
-            IsPrivate = galgame.PrivateComment
+            @private = galgame.PrivateComment,
+            rate = galgame.MyRate,
+            comment = galgame.Comment,
+            type = galgame.PlayType.ToBgmCollectionType()
         };
-        return (GalStatusSyncResult.Ok, string.Empty);
+        StringContent content = new(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+        var error = string.Empty;
+        HttpResponseMessage? response = null;
+        try
+        {
+            response = await _httpClient.PostAsync($"https://api.bgm.tv/v0/users/{_userId}/collections/{galgame.Ids[(int)RssType.Bangumi]}", content);
+            if (response.IsSuccessStatusCode == false)
+            {
+                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                var tmp = json.ToString();
+                error = json["description"]!.ToString();
+            }
+        }
+        catch (Exception e)
+        {
+            error = e.Message;
+        }
+        if(response == null || response.IsSuccessStatusCode == false)
+            return (GalStatusSyncResult.Other, error);
+        
+        return (GalStatusSyncResult.Ok, "BgmPhraser_UploadAsync_Success".GetLocalized());
     }
 
     public Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame) => throw new NotImplementedException();
