@@ -27,10 +27,9 @@ public class BgmOAuthService : IBgmOAuthService
 
     public async Task FinishOAuthWithUri(string uri)
     {
-        var parts = uri.Split("://")[1].Split("/");
-        if (parts[0] == "bgm_oauth")
+        if (uri.StartsWith(BgmOAuthConfig.RedirectUri))
         {
-            await FinishOAuthWithCode(parts[1]);
+            await FinishOAuthWithCode(uri.Split("=")[1]);
         }
         await Task.CompletedTask;
     }
@@ -48,25 +47,8 @@ public class BgmOAuthService : IBgmOAuthService
         var responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent).Result;
         if (!responseMessage.IsSuccessStatusCode) return;
         JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
-        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, json["access_token"]!.ToString());
-        
-        ContentDialog dialog = new()
-        {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
-            Title = "Bgm",
-            PrimaryButtonText = "App_UnhandledException_BackToHome".GetLocalized(),
-            CloseButtonText = "App_UnhandledException_Exit".GetLocalized(),
-            DefaultButton = ContentDialogButton.Primary
-        };
-        StackPanel stackPanel = new();
-        stackPanel.Children.Add(new TextBlock()
-        {
-            Text = responseMessage.Content.ReadAsStringAsync().Result,
-            TextWrapping = TextWrapping.WrapWholeWords
-        });
-        dialog.Content = stackPanel;
-        await dialog.ShowAsync();
-        
+        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccessToken, json["access_token"]!.ToString());
+        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiRefreshToken, json["refresh_token"]!.ToString());
         await Task.CompletedTask;
     }
 

@@ -84,6 +84,7 @@
                 <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiRssTitle}"
                     SettingDescription="{x:Bind ViewModel.UiRssDescription}"
+                    SettingIcon="&#xE701;"
                     >
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
