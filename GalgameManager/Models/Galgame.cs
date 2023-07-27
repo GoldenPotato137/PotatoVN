@@ -166,6 +166,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         return 0;
     }
 
+    /// <summary>
+    /// 时间转换
+    /// </summary>
+    /// <param name="time">年/月/日</param>
+    /// <returns></returns>
     private long GetTime(string time)
     {
         if (time == DefaultString)

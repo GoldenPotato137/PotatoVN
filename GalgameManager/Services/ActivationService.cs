@@ -5,6 +5,7 @@ using GalgameManager.Models;
 using GalgameManager.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.AppLifecycle;
 
 namespace GalgameManager.Services;
 
@@ -42,6 +43,15 @@ public class ActivationService : IActivationService
 
     public async Task ActivateAsync(object activationArgs)
     {
+        // 多实例启动，切换到第一实例，第一实例 App.OnActivated() 响应
+        IList<AppInstance> instances = AppInstance.GetInstances();
+        if (instances.Count > 1)
+        {
+            await instances[0].RedirectActivationToAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
+            Application.Current.Exit();
+            return;
+        }
+        
         // Execute tasks before activation.
         await InitializeAsync();
 

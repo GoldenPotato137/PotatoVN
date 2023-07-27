@@ -1,4 +1,5 @@
-﻿using GalgameManager.Activation;
+﻿using Windows.ApplicationModel.Activation;
+using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
@@ -14,6 +15,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 using Windows.ApplicationModel.DataTransfer;
+using Microsoft.Windows.AppLifecycle;
+using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
 
 namespace GalgameManager;
 
@@ -75,6 +78,7 @@ public partial class App : Application
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IAppCenterService, AppCenterService>();
             services.AddSingleton<IAuthenticationService, AuthenticationService>();
+            services.AddSingleton<IBgmOAuthService, BgmOAuthService>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();
@@ -109,6 +113,7 @@ public partial class App : Application
         Build();
 
         UnhandledException += App_UnhandledException;
+        AppInstance.GetCurrent().Activated += OnActivated;
     }
 
     private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -150,6 +155,7 @@ public partial class App : Application
         await dialog.ShowAsync();
     }
 
+
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
@@ -157,5 +163,14 @@ public partial class App : Application
         //已知bug：args的参数永远是空string
         //见：https://github.com/microsoft/microsoft-ui-xaml/issues/3368
         await App.GetService<IActivationService>().ActivateAsync(Environment.GetCommandLineArgs().ToList());
+    }
+    
+    protected async void OnActivated(object? sender, AppActivationArguments arguments){
+        switch (arguments.Kind)
+        {
+            case ExtendedActivationKind.Protocol:
+                await GetService<IBgmOAuthService>().FinishOAuthWithUri((arguments.Data as ProtocolActivatedEventArgs)!.Uri.ToString());
+                break;
+        }
     }
 }

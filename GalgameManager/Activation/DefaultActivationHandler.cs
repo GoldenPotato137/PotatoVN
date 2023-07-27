@@ -1,8 +1,18 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using Windows.UI.Popups;
+using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 
 namespace GalgameManager.Activation;
+
+public class TestException: ApplicationException
+{
+    public TestException(string message): base(message)
+    {
+    }
+}
 
 public class DefaultActivationHandler : ActivationHandler<List<string>>
 {
@@ -46,6 +56,10 @@ public class DefaultActivationHandler : ActivationHandler<List<string>>
         }
         else //jump list 
         {
+            if (args[1] == "/p")
+            {
+                // throw new TestException(args[2].ToString());
+            }
             _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, new Tuple<string, bool>(args[1], true));
         }
         await Task.CompletedTask;
