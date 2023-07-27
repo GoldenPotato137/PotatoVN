@@ -58,5 +58,6 @@ public sealed partial class ChangePlayStatusDialog
         PlayType tmp = _galgame.PlayType == PlayType.None ? PlayType.Playing : _galgame.PlayType;
         PlayStatusBox.SelectedItem = _playStatusList.First(x => x == tmp.GetLocalized());
         CommentBox.Text = _galgame.Comment;
+        PrivateCheckBox.IsChecked = _galgame.PrivateComment;
     }
 }
