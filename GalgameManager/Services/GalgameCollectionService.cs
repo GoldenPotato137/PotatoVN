@@ -60,6 +60,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await GetGalgames();
         await _jumpListService.CheckJumpListAsync(_galgames);
+        await Upgrade();
     }
 
     private async Task GetGalgames()
@@ -71,6 +72,19 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames.ForEach(g => _galgameMap.Add(g.Path, g));
         GalgameLoadedEvent?.Invoke();
         UpdateDisplay(UpdateType.Init);
+    }
+
+    /// <summary>
+    /// 可能不同版本行为不同，需要对已存储的galgame进行升级
+    /// </summary>
+    private async Task Upgrade()
+    {
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.IdFromMixedUpgraded) == false)
+        {
+            foreach (Galgame galgame in _galgames)
+                galgame.UpdateIdFromMixed();
+            await LocalSettingsService.SaveSettingAsync(KeyValues.IdFromMixedUpgraded, true);
+        }
     }
 
     /// <summary>为Galgame类更新新的排序规则</summary>

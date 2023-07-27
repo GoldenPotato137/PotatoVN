@@ -325,14 +325,6 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             return null;
         }
     }
-    
-    public class JsonContent : ByteArrayContent
-    {
-        public JsonContent(object obj) : base(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj)))
-        {
-            Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        }
-    }
 
     public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
     {
