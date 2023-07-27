@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Phrase;
 using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
@@ -60,7 +61,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             if (Ids[(int)RssType] != value)
             {
                Ids[(int)RssType] = value;
-               OnPropertyChanged(); 
+               OnPropertyChanged();
+               if (_rssType == RssType.Mixed)
+                   UpdateIdFromMixed();
             }
         }
     }
@@ -287,6 +290,18 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     partial void OnPlayTypeChanged(PlayType value)
     {
         GalPropertyChanged?.Invoke((this, "playType"));
+    }
+
+    /// <summary>
+    /// 从混合数据源的id更新其他数据源的id
+    /// </summary>
+    public void UpdateIdFromMixed()
+    {
+        (string? bgmId, string? vndbId) tmp = MixedPhraser.TryGetId(Ids[(int)RssType.Mixed]);
+        if (tmp.bgmId != null && string.IsNullOrEmpty(Ids[(int)RssType.Bangumi])) 
+            Ids[(int)RssType.Bangumi] = tmp.bgmId;
+        if (tmp.vndbId != null && string.IsNullOrEmpty(Ids[(int)RssType.Vndb])) 
+            Ids[(int)RssType.Vndb] = tmp.vndbId;
     }
 }
 

@@ -341,15 +341,15 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             type = galgame.PlayType.ToBgmCollectionType()
         };
         StringContent content = new(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+        content.Headers.ContentType!.CharSet = ""; //bgm.tv的api不支持charset
         var error = string.Empty;
         HttpResponseMessage? response = null;
         try
         {
-            response = await _httpClient.PostAsync($"https://api.bgm.tv/v0/users/{_userId}/collections/{galgame.Ids[(int)RssType.Bangumi]}", content);
+            response = await _httpClient.PostAsync($"https://api.bgm.tv/v0/users/-/collections/{galgame.Ids[(int)RssType.Bangumi]}", content);
             if (response.IsSuccessStatusCode == false)
             {
                 JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                var tmp = json.ToString();
                 error = json["description"]!.ToString();
             }
         }

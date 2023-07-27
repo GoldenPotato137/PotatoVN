@@ -71,7 +71,7 @@ public class MixedPhraser : IGalInfoPhraser
         return result;
     }
 
-    private static (string? bgmId, string? vndbId) TryGetId(string? id)  //id: bgm:xxx,vndb:xxx
+    public static (string? bgmId, string? vndbId) TryGetId(string? id)  //id: bgm:xxx,vndb:xxx
     {
         if (id == null || id.Contains("bgm:") == false || id.Contains(",vndb:") == false)
             return (null, null);
