@@ -216,6 +216,18 @@
   <data name="SettingsPage_ThemeDescription" xml:space="preserve">
     <value>与显示有关的设置</value>
   </data>
+  <data name="SettingsPage_OAuth.SettingTitle" xml:space="preserve">
+    <value>第三方账户</value>
+  </data>
+  <data name="SettingsPage_OAuth.SettingDescription" xml:space="preserve">
+    <value>管理第三方账户</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Title" xml:space="preserve">
+    <value>登录Bangumi</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Description" xml:space="preserve">
+    <value>通过OAuth登录Bangumi</value>
+  </data>
   <data name="SettingsPage_RssTitle" xml:space="preserve">
     <value>信息源</value>
   </data>

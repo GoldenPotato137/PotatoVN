@@ -1,6 +1,12 @@
 ﻿using System.Net.Http.Headers;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
+using GalgameManager.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
@@ -16,7 +22,7 @@ public class BgmOAuthService : IBgmOAuthService
 
     public async Task StartOAuth()
     {
-        await Task.CompletedTask;
+        await Launcher.LaunchUriAsync(new Uri(BgmOAuthConfig.OAuthUrl));
     }
 
     public async Task FinishOAuthWithUri(string uri)
@@ -34,14 +40,33 @@ public class BgmOAuthService : IBgmOAuthService
         var httpClient = GetHttpClient();
         var parameters = new Dictionary<string, string>();
         parameters.Add("grant_type", "authorization_code");
-        parameters.Add("client_id", "bgm273264c1e79e6c30c");
-        parameters.Add("client_secret", "6aaad2643c4abfc6393860262b092338");
+        parameters.Add("client_id", BgmOAuthConfig.AppId);
+        parameters.Add("client_secret", BgmOAuthConfig.AppSecret);
+        parameters.Add("redirect_uri", BgmOAuthConfig.RedirectUri);
         parameters.Add("code", code);
         var requestContent = new FormUrlEncodedContent(parameters);
         var responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent).Result;
         if (!responseMessage.IsSuccessStatusCode) return;
         JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
         await _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, json["access_token"]!.ToString());
+        
+        ContentDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            Title = "Bgm",
+            PrimaryButtonText = "App_UnhandledException_BackToHome".GetLocalized(),
+            CloseButtonText = "App_UnhandledException_Exit".GetLocalized(),
+            DefaultButton = ContentDialogButton.Primary
+        };
+        StackPanel stackPanel = new();
+        stackPanel.Children.Add(new TextBlock()
+        {
+            Text = responseMessage.Content.ReadAsStringAsync().Result,
+            TextWrapping = TextWrapping.WrapWholeWords
+        });
+        dialog.Content = stackPanel;
+        await dialog.ShowAsync();
+        
         await Task.CompletedTask;
     }
 

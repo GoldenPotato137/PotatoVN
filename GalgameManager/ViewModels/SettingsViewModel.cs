@@ -28,6 +28,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly IUpdateService _updateService;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ICategoryService _categoryService;
+    private readonly IBgmOAuthService _bgmOAuthService;
     private string _versionDescription;
 
     #region UI_STRINGS
@@ -87,12 +88,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
-        ICategoryService categoryService)
+        ICategoryService categoryService, IBgmOAuthService bgmOAuthService)
     {
         _categoryService = categoryService;
         _themeSelectorService = themeSelectorService;
         _navigationService = navigationService;
         _updateService = updateService;
+        _bgmOAuthService = bgmOAuthService;
         updateService.SettingBadgeEvent += result => _shouldDisplayUpdateNotification = result;
         updateService.UpdateSettingsBadgeAsync(); //只是为了触发事件，原地TP，先这么写吧
         _versionDescription = GetVersionDescription();
@@ -103,7 +105,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
-        BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
         _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
@@ -173,9 +174,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
+    #region OAuth
+
+    [RelayCommand]
+    private async Task LoginBgm()
+    {
+        await _bgmOAuthService.StartOAuth();
+    }
+
+    #endregion
+
     #region RSS
 
-    [ObservableProperty] private string _bangumiToken = string.Empty;
     [ObservableProperty] private RssType _rssType;
     // ReSharper disable once CollectionNeverQueried.Global
     public readonly RssType[] RssTypes = { RssType.Mixed , RssType.Bangumi, RssType.Vndb};
@@ -185,7 +195,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _localSettingsService.SaveSettingAsync(KeyValues.RssType, value);
     }
 
-    partial void OnBangumiTokenChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, value);
 
     #endregion
 

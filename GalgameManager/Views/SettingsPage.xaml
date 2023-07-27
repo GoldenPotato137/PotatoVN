@@ -61,12 +61,30 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
+                
+                <!-- OAuth -->
+                <control:SettingExpander
+                    x:Uid="SettingsPage_OAuth"
+                    SettingIcon="&#xE701;"
+                    >
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_OAuth_LoginBgm">
+                                    <Button Content="Go" Width="75" Command="{x:Bind ViewModel.LoginBgmCommand}">
+                                    </Button>
+                                </control:Setting>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                    
+                </control:SettingExpander>
 
                 <!-- 信息源 -->
                 <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiRssTitle}"
                     SettingDescription="{x:Bind ViewModel.UiRssDescription}"
-                    SettingIcon="&#xE701;">
+                    >
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <control:Panel>
@@ -90,10 +108,6 @@
                                     <TextBlock x:Uid="SettingsPage_Rss_Bangumi_Description" TextWrapping="Wrap"
                                                Style="{StaticResource DescriptionTextStyle}"
                                                Margin="{StaticResource XSmallBottomMargin}"/>
-                                    <TextBox
-                                        Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
-                                        PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                        Margin="0 5 0 5" /> 
                                 </StackPanel>
                             </control:Panel>
                             <!-- VNDB -->
@@ -116,10 +130,6 @@
                                     <TextBlock x:Uid="SettingsPage_Rss_Mixed_Description" TextWrapping="Wrap"
                                                Style="{StaticResource DescriptionTextStyle}"
                                                Margin="{StaticResource XSmallBottomMargin}"/>
-                                    <TextBox
-                                        Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
-                                        PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                        Margin="0 5 0 5" /> 
                                 </StackPanel>
                             </control:Panel>
                         </StackPanel>
