@@ -34,6 +34,42 @@ public class BgmOAuthService : IBgmOAuthService
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// 检查Bgm OAuth状态
+    /// </summary>
+    /// <returns>OAuth状态有效期（单位：s）</returns>
+    public async Task<int> CheckOAuthState()
+    {
+        var accessToken = await _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiAccessToken);
+        if (accessToken! is "") return 0;
+        HttpClient httpClient = GetHttpClient();
+        Dictionary<string, string> parameters = new Dictionary<string, string> { { "access_token", accessToken! } };
+        FormUrlEncodedContent requestContent = new FormUrlEncodedContent(parameters);
+        HttpResponseMessage responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/token_status", requestContent).Result;
+        if (!responseMessage.IsSuccessStatusCode) return 0;
+        JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
+        return json["expires"]!.ToObject<int>();
+    }
+
+    public async Task RefreshOAuthState()
+    {
+        var refreshToken = await _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiRefreshToken);
+        if (refreshToken! is "") return;
+        var httpClient = GetHttpClient();
+        var parameters = new Dictionary<string, string>();
+        parameters.Add("grant_type", "authorization_code");
+        parameters.Add("client_id", BgmOAuthConfig.AppId);
+        parameters.Add("client_secret", BgmOAuthConfig.AppSecret);
+        parameters.Add("redirect_uri", BgmOAuthConfig.RedirectUri);
+        parameters.Add("refresh_token", refreshToken!);
+        var requestContent = new FormUrlEncodedContent(parameters);
+        var responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent).Result;
+        if (!responseMessage.IsSuccessStatusCode) return;
+        JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
+        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccessToken, json["access_token"]!.ToString());
+        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiRefreshToken, json["refresh_token"]!.ToString());
+    }
+
     private async Task FinishOAuthWithCode(string code)
     {
         var httpClient = GetHttpClient();

@@ -182,6 +182,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         await _bgmOAuthService.StartOAuth();
     }
 
+    public string OAuthState => (_bgmOAuthService.CheckOAuthState().Result / 86400).ToString()+"天"+" "+_localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiAccessToken).Result;
+
     #endregion
 
     #region RSS

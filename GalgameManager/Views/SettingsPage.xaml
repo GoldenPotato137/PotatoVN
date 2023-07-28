@@ -70,10 +70,15 @@
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <control:Panel>
-                                <control:Setting x:Uid="SettingsPage_OAuth_LoginBgm">
+                                <StackPanel>
+                                    <control:Setting x:Uid="SettingsPage_OAuth_LoginBgm">
                                     <Button Content="Go" Width="75" Command="{x:Bind ViewModel.LoginBgmCommand}">
                                     </Button>
-                                </control:Setting>
+                                    </control:Setting>
+                                    <TextBlock Text="{x:Bind ViewModel.OAuthState, Mode=OneWay}" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                </StackPanel>
                             </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
