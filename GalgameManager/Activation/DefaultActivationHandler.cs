@@ -1,4 +1,5 @@
-﻿using Windows.UI.Popups;
+﻿using Windows.ApplicationModel.Activation;
+using Windows.UI.Popups;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.ViewModels;
@@ -19,13 +20,15 @@ public class DefaultActivationHandler : ActivationHandler<AppActivationArguments
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IUpdateService _updateService;
+    private readonly IBgmOAuthService _bgmOAuthService;
 
     public DefaultActivationHandler(INavigationService navigationService, IUpdateService updateService,
-        ILocalSettingsService localSettingsService)
+        ILocalSettingsService localSettingsService, IBgmOAuthService bgmOAuthService)
     {
         _navigationService = navigationService;
         _updateService = updateService;
         _localSettingsService = localSettingsService;
+        _bgmOAuthService = bgmOAuthService;
     }
 
     protected override bool CanHandleInternal(AppActivationArguments args)
@@ -59,11 +62,23 @@ public class DefaultActivationHandler : ActivationHandler<AppActivationArguments
                         }
                     }
                 }
-                else if (cmlArgs.Count == 2)
+                else if (cmlArgs.Count == 3)
                 {
-                    // jump list
-                    _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, new Tuple<string, bool>(cmlArgs[1], true));
+                    switch (cmlArgs[1])
+                    {
+                        case "/j":
+                            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, new Tuple<string, bool>(cmlArgs[2], true));
+                            break;
+                        case "/p":
+                            // 理论上会通过 case ExtendedActivationKind.Protocol
+                            // 以防万一
+                            await _bgmOAuthService.FinishOAuthWithUri(cmlArgs[2]);
+                            break;
+                    }
                 }
+                break;
+            case ExtendedActivationKind.Protocol:
+                await _bgmOAuthService.FinishOAuthWithUri((args.Data as ProtocolActivatedEventArgs)!.Uri.ToString());
                 break;
         }
         await Task.CompletedTask;

@@ -42,7 +42,7 @@ public class JumpListService : IJumpListService
         var item = items.FirstOrDefault(i => i.Arguments == $"\"{galgame.Path}\"");
         if (item == null)
         {
-            item = JumpListItem.CreateWithArguments($"\"{galgame.Path}\"", galgame.Name);
+            item = JumpListItem.CreateWithArguments($"/j \"{galgame.Path}\"", galgame.Name);
             item.Logo = new Uri("ms-appx:///Assets/heart.png");
         }
         else

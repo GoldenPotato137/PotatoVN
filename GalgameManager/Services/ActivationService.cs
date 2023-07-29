@@ -45,7 +45,11 @@ public class ActivationService : IActivationService
         IList<AppInstance> instances = AppInstance.GetInstances();
         if (instances.Count > 1)
         {
-            await instances[0].RedirectActivationToAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
+            if (activationArgs is AppActivationArguments args)
+            {
+                await instances[0].RedirectActivationToAsync(args);
+            } 
+            
             Application.Current.Exit();
             return;
         }
