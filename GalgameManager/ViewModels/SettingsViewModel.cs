@@ -20,6 +20,7 @@ using GalgameManager.Views;
 
 namespace GalgameManager.ViewModels;
 
+
 public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ILocalSettingsService _localSettingsService;
@@ -135,6 +136,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
             ? (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword })
             : (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword });
+        _oAuthState = "";
+        _bgmOAuthService.OnOAuthStateChange += bgmOAuthState =>
+        {
+            OAuthState = "授权还剩" + bgmOAuthState.Expires / 86400 + "天";
+        };
+        _bgmOAuthService.CheckOAuthState();
     }
 
     #region UPDATE
@@ -182,7 +189,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         await _bgmOAuthService.StartOAuth();
     }
 
-    public string OAuthState => (_bgmOAuthService.CheckOAuthState().Result / 86400).ToString()+"天"+" "+_localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiAccessToken).Result;
+    [ObservableProperty] private string _oAuthState;
 
     #endregion
 

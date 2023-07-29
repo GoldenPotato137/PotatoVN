@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
 
+
 public class BgmOAuthService : IBgmOAuthService
 {
     private readonly ILocalSettingsService _localSettingsService;
@@ -25,36 +26,44 @@ public class BgmOAuthService : IBgmOAuthService
         await Launcher.LaunchUriAsync(new Uri(BgmOAuthConfig.OAuthUrl));
     }
 
-    public async Task FinishOAuthWithUri(string uri)
+    public async Task<BgmOAuthState> FinishOAuthWithUri(string uri)
     {
         if (uri.StartsWith(BgmOAuthConfig.RedirectUri))
         {
-            await FinishOAuthWithCode(uri.Split("=")[1]);
+            return await FinishOAuthWithCode(uri.Split("=")[1]);
         }
-        await Task.CompletedTask;
+
+        return new BgmOAuthState();
     }
 
     /// <summary>
     /// 检查Bgm OAuth状态
     /// </summary>
     /// <returns>OAuth状态有效期（单位：s）</returns>
-    public async Task<int> CheckOAuthState()
+    public async Task<BgmOAuthState> CheckOAuthState()
     {
         var accessToken = await _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiAccessToken);
-        if (accessToken! is "") return 0;
+        if (accessToken! is "") return new BgmOAuthState();
         HttpClient httpClient = GetHttpClient();
         Dictionary<string, string> parameters = new Dictionary<string, string> { { "access_token", accessToken! } };
         FormUrlEncodedContent requestContent = new FormUrlEncodedContent(parameters);
         HttpResponseMessage responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/token_status", requestContent).Result;
-        if (!responseMessage.IsSuccessStatusCode) return 0;
+        if (!responseMessage.IsSuccessStatusCode) return new BgmOAuthState();
         JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
-        return json["expires"]!.ToObject<int>();
+        BgmOAuthState bgmOAuthState = new BgmOAuthState
+        {
+            OAuthed = true,
+            UserId = json["user_id"]!.ToString()
+        };
+        if (!int.TryParse(json["expires"]!.ToString(), out bgmOAuthState.Expires)) return new BgmOAuthState();
+        OnOAuthStateChange?.Invoke(bgmOAuthState);
+        return bgmOAuthState;
     }
 
-    public async Task RefreshOAuthState()
+    public async Task<BgmOAuthState> RefreshOAuthState()
     {
         var refreshToken = await _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiRefreshToken);
-        if (refreshToken! is "") return;
+        if (refreshToken! is "") return new BgmOAuthState();
         var httpClient = GetHttpClient();
         var parameters = new Dictionary<string, string>();
         parameters.Add("grant_type", "authorization_code");
@@ -64,13 +73,16 @@ public class BgmOAuthService : IBgmOAuthService
         parameters.Add("refresh_token", refreshToken!);
         var requestContent = new FormUrlEncodedContent(parameters);
         var responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent).Result;
-        if (!responseMessage.IsSuccessStatusCode) return;
+        if (!responseMessage.IsSuccessStatusCode) return new BgmOAuthState();
         JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
         await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccessToken, json["access_token"]!.ToString());
         await _localSettingsService.SaveSettingAsync(KeyValues.BangumiRefreshToken, json["refresh_token"]!.ToString());
+        return await CheckOAuthState();
     }
 
-    private async Task FinishOAuthWithCode(string code)
+    public event IBgmOAuthService.Delegate? OnOAuthStateChange;
+
+    public async Task<BgmOAuthState> FinishOAuthWithCode(string code)
     {
         var httpClient = GetHttpClient();
         var parameters = new Dictionary<string, string>();
@@ -81,11 +93,11 @@ public class BgmOAuthService : IBgmOAuthService
         parameters.Add("code", code);
         var requestContent = new FormUrlEncodedContent(parameters);
         var responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent).Result;
-        if (!responseMessage.IsSuccessStatusCode) return;
+        if (!responseMessage.IsSuccessStatusCode) return new BgmOAuthState();
         JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
         await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccessToken, json["access_token"]!.ToString());
         await _localSettingsService.SaveSettingAsync(KeyValues.BangumiRefreshToken, json["refresh_token"]!.ToString());
-        await Task.CompletedTask;
+        return await CheckOAuthState();
     }
 
     

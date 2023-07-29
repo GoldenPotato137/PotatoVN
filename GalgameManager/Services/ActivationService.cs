@@ -11,7 +11,6 @@ namespace GalgameManager.Services;
 
 public class ActivationService : IActivationService
 {
-    private readonly ActivationHandler<List<string>> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUpdateService _updateService;
@@ -22,7 +21,7 @@ public class ActivationService : IActivationService
     private readonly IAuthenticationService _authenticationService;
     private UIElement? _shell = null;
 
-    public ActivationService(ActivationHandler<List<string>> defaultHandler,
+    public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
         IDataCollectionService<GalgameFolder> galgameFolderCollectionService,
         IDataCollectionService<Galgame> galgameCollectionService,
@@ -30,7 +29,6 @@ public class ActivationService : IActivationService
         ICategoryService categoryService,
         IAuthenticationService authenticationService)
     {
-        _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _galgameFolderCollectionService = galgameFolderCollectionService;
@@ -41,7 +39,7 @@ public class ActivationService : IActivationService
         _authenticationService = authenticationService;
     }
 
-    public async Task ActivateAsync(object activationArgs)
+    public async Task LaunchedAsync(object activationArgs)
     {
         // 多实例启动，切换到第一实例，第一实例 App.OnActivated() 响应
         IList<AppInstance> instances = AppInstance.GetInstances();
@@ -99,11 +97,6 @@ public class ActivationService : IActivationService
         if (activationHandler != null)
         {
             await activationHandler.HandleAsync(activationArgs);
-        }
-
-        if (_defaultHandler.CanHandle(activationArgs))
-        {
-            await _defaultHandler.HandleAsync(activationArgs);
         }
     }
 

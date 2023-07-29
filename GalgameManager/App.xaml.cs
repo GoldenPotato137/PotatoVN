@@ -58,7 +58,7 @@ public partial class App : Application
         ConfigureServices((context, services) =>
         {
             // Default Activation Handler
-            services.AddTransient<ActivationHandler<List<string>>, DefaultActivationHandler>();
+            services.AddTransient<IActivationHandler, DefaultActivationHandler>();
 
             // Other Activation Handlers
 
@@ -160,9 +160,7 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        //已知bug：args的参数永远是空string
-        //见：https://github.com/microsoft/microsoft-ui-xaml/issues/3368
-        await App.GetService<IActivationService>().ActivateAsync(Environment.GetCommandLineArgs().ToList());
+        await App.GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
     
     protected async void OnActivated(object? sender, AppActivationArguments arguments){

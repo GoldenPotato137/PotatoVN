@@ -2,5 +2,5 @@
 
 public interface IActivationService
 {
-    Task ActivateAsync(object activationArgs);
+    Task LaunchedAsync(object activationArgs);
 }

@@ -4,6 +4,7 @@ public static class KeyValues
 {
     public const string BangumiAccessToken = "bangumiAccessToken";
     public const string BangumiRefreshToken = "bangumiRefreshToken";
+    public const string BangumiUserId = "bangumiUserId";
     public const string RssType = "rssType";
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
