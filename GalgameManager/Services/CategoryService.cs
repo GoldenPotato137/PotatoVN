@@ -53,10 +53,11 @@ public class CategoryService : ICategoryService
         try
         {
             _developerGroup = _categoryGroups.First(cg => cg.Type == CategoryGroupType.Developer);
+            _developerGroup.Name = ResourceExtensions.GetLocalized("CategoryService_Developer");
         }
         catch
         {
-            _developerGroup = new CategoryGroup(StringExtensions.GetLocalized("CategoryService_Developer"), CategoryGroupType.Developer);
+            _developerGroup = new CategoryGroup(ResourceExtensions.GetLocalized("CategoryService_Developer"), CategoryGroupType.Developer);
             _categoryGroups.Add(_developerGroup);
         }
         InitStatusGroup();

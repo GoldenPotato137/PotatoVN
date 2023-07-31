@@ -363,7 +363,30 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         return (GalStatusSyncResult.Ok, "BgmPhraser_UploadAsync_Success".GetLocalized());
     }
 
-    public Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame) => throw new NotImplementedException();
+    public async Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame)
+    {
+        if (_checkAuthTask != null) await _checkAuthTask;
+        if (_authed == false) 
+            return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
+            return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
+        var errorMsg = string.Empty;
+        try
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(
+                $"https://api.bgm.tv/v0/users/{_userId}/collections/{galgame.Ids[(int)RssType.Bangumi]}");
+            JToken json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            if (response.IsSuccessStatusCode == false)
+                throw new Exception(json["description"]!.ToString());
+            
+        }
+        catch (Exception e)
+        {
+            errorMsg = e.Message;
+        }
+
+        return (GalStatusSyncResult.Other, errorMsg);
+    }
 }
 
 public class BgmPhraserData : IGalInfoPhraserData
