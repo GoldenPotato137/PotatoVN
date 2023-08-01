@@ -130,6 +130,7 @@ public class VndbPhraser : IGalInfoPhraser
                 {
                     VndbResponse<Producer> producers = await _vndb.GetProducerAsync(
                         VndbFilters.Id.Equals(Convert.ToUInt32(attribute.Value[2..])), VndbFlags.FullProducer);
+                    // magic number 2.., href eg: "/p98"[2..] = "98"
                     result = producers.Items[0].OriginalName;
                 }
             }
