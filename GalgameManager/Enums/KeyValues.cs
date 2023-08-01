@@ -39,6 +39,7 @@ public static class KeyValues
     public const string AutoCategory = "autoCategory"; // bool,是否自动分类
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
     public const string AuthenticationType = "authenticationType"; // AuthenticationType,身份验证类型
+    public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 主页是否显示游玩状态的小三角形
     
     
     //是否执行过某种升级, bool

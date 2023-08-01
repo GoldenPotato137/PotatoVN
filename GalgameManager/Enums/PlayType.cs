@@ -1,4 +1,6 @@
-﻿using GalgameManager.Helpers;
+﻿using Windows.UI;
+using GalgameManager.Helpers;
+using Microsoft.UI;
 
 namespace GalgameManager.Enums;
 
@@ -69,6 +71,27 @@ public static class PlayTypeHelper
                 return PlayType.Shelved;
             case 5:
                 return PlayType.Abandoned;
+        }
+    }
+
+    /// <summary>
+    /// 转为代表色
+    /// </summary>
+    public static Color ToColor(this PlayType playType)
+    {
+        switch (playType)
+        {
+            default:
+            case PlayType.None:
+                return Colors.Gray;
+            case PlayType.Played:
+                return Colors.LimeGreen;
+            case PlayType.Playing:
+                return Colors.Blue;
+            case PlayType.Shelved:
+                return Colors.Orange;
+            case PlayType.Abandoned:
+                return Colors.IndianRed;
         }
     }
 }

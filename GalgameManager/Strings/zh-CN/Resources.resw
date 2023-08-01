@@ -719,4 +719,10 @@
   <data name="HomePage_UploadingToBgm" xml:space="preserve">
     <value>将游玩信息同步到bangumi中</value>
   </data>
+  <data name="HomePage_FixHorizontalPicture.Label" xml:space="preserve">
+    <value>裁剪水平封面图</value>
+  </data>
+  <data name="HomePage_DisplayPlayType.Label" xml:space="preserve">
+    <value>游玩状态标记</value>
+  </data>
 </root>
