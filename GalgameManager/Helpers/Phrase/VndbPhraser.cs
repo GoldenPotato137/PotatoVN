@@ -3,11 +3,13 @@ using System.Reflection;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
+using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using SharpCompress;
 using VndbSharp;
 using VndbSharp.Models;
 using VndbSharp.Models.Errors;
+using VndbSharp.Models.Producer;
 using VndbSharp.Models.VisualNovel;
 
 namespace GalgameManager.Helpers.Phrase;
@@ -89,15 +91,16 @@ public class VndbPhraser : IGalInfoPhraser
             result.Description = rssItem.Description;
             result.RssType = GetPhraseType();
             result.Id = rssItem.Id.ToString();
+            result.Developer = await GetDeveloperFromVndb(result.Id) ?? string.Empty;
             result.Rating = (float)rssItem.Rating;
             result.ExpectedPlayTime = rssItem.Length.ToString() ?? Galgame.DefaultString;
             result.ImageUrl = rssItem.Image;
             //Tags
             result.Tags.Value = new ObservableCollection<string>();
-            var tmpTags = new List<TagMetadata>(rssItem.Tags).OrderByDescending(t => t.Score);
+            IOrderedEnumerable<TagMetadata> tmpTags = new List<TagMetadata>(rssItem.Tags).OrderByDescending(t => t.Score);
             tmpTags.ForEach(tag =>
             {
-                if (_tagDb.TryGetValue((int)tag.Id, out var tagInfo))
+                if (_tagDb.TryGetValue((int)tag.Id, out JToken? tagInfo))
                     result.Tags.Value.Add(tagInfo["name"]!.ToString());
             });
         }
@@ -105,6 +108,38 @@ public class VndbPhraser : IGalInfoPhraser
         {
             return null;
         }
+        return result;
+    }
+    
+    public async Task<string?> GetDeveloperFromVndb(string id)
+    {
+        string? result = null;
+        try
+        {
+            HttpClient httpClient = new();
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
+            var searchUrl = $"https://vndb.org/v{id}";
+            HttpResponseMessage response = await httpClient.GetAsync(searchUrl);
+            if (!response.IsSuccessStatusCode) return null;
+            HtmlDocument doc = new();
+            doc.LoadHtml(await response.Content.ReadAsStringAsync());
+            HtmlNode node = doc.DocumentNode.SelectSingleNode("//td[text()='Developer']/../td[2]/a");
+            foreach (HtmlAttribute attribute in node.Attributes)
+            {
+                if (attribute.Name == "href")
+                {
+                    VndbResponse<Producer> producers = await _vndb.GetProducerAsync(
+                        VndbFilters.Id.Equals(Convert.ToUInt32(attribute.Value[2..])), VndbFlags.FullProducer);
+                    result = producers.Items[0].OriginalName;
+                }
+            }
+            
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
         return result;
     }
 

@@ -46,19 +46,24 @@ public class MixedPhraser : IGalInfoPhraser
             return null;
         
         // 合并信息
-        Galgame result = new();
-        result.RssType = RssType.Mixed;
-        result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}";
-        // name
-        result.Name = vndb !=null ? vndb.Name : bgm!.Name;
+        Galgame result = new()
+        {
+            RssType = RssType.Mixed,
+            Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}",
+            // name
+            Name = vndb !=null ? vndb.Name : bgm!.Name,
+            CnName = bgm != null ? bgm!.CnName:"",
+            // description
+            Description = bgm != null ? bgm.Description : vndb!.Description
+        };
 
-        result.CnName = bgm != null ? bgm!.CnName:"";
-
-        // description
-        result.Description = bgm != null ? bgm.Description : vndb!.Description;
         // developer
-        if(bgm != null)
+        if(bgm != null && !string.IsNullOrEmpty(bgm!.Developer))
             result.Developer = bgm.Developer;
+        else if (vndb != null && !string.IsNullOrEmpty(vndb!.Developer))
+        {
+            result.Developer = vndb.Developer;
+        }
         // expectedPlayTime
         if(vndb != null)
             result.ExpectedPlayTime = vndb.ExpectedPlayTime;
