@@ -44,7 +44,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        if (bgmToken != null)
+        if (!string.IsNullOrEmpty(bgmToken))
         {
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
             _checkAuthTask = Task.Run(() =>
