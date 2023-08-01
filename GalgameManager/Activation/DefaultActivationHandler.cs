@@ -8,12 +8,6 @@ using Microsoft.Windows.AppLifecycle;
 
 namespace GalgameManager.Activation;
 
-public class TestException: ApplicationException
-{
-    public TestException(string message): base(message)
-    {
-    }
-}
 
 public class DefaultActivationHandler : ActivationHandler<AppActivationArguments>
 {
