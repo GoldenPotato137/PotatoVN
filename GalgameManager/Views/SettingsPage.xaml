@@ -15,6 +15,7 @@
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
+        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -61,12 +62,49 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
+                
+                <!-- OAuth -->
+                <control:SettingExpander
+                    x:Uid="SettingsPage_OAuth"
+                    SettingIcon="&#xE77b;"
+                    >
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <StackPanel>
+                                    <control:Setting x:Uid="SettingsPage_OAuth_LoginBgm" 
+                                                     Visibility="{x:Bind ViewModel.OAuthButtonVisibility,
+                                                     Mode=OneWay
+                                                     }">
+                                        <Button x:Uid="SettingsPage_OAuth_LoginBgm_Button" Width="75" Command="{x:Bind ViewModel.LoginBgmCommand}"/>
+                                    </control:Setting>
+                                    <control:Setting x:Uid="SettingsPage_OAuth_LogoutBgm" 
+                                                     Visibility="{x:Bind ViewModel.OAuthButtonVisibility, 
+                                                     Converter={StaticResource InverseVisibilityConverter},
+                                                     Mode=OneWay
+                                                     }">
+                                        <Button x:Uid="SettingsPage_OAuth_LogoutBgm_Button" Width="100" Command="{x:Bind ViewModel.LogoutBgmCommand}"/>
+                                    </control:Setting>
+                                    <TextBlock Text="{x:Bind ViewModel.OAuthStateString, Mode=OneWay}" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"
+                                               Visibility="{x:Bind ViewModel.OAuthButtonVisibility, 
+                                                     Converter={StaticResource InverseVisibilityConverter},
+                                                     Mode=OneWay
+                                                     }"/>
+                                </StackPanel>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                    
+                </control:SettingExpander>
 
                 <!-- 信息源 -->
                 <control:SettingExpander
                     SettingTitle="{x:Bind ViewModel.UiRssTitle}"
                     SettingDescription="{x:Bind ViewModel.UiRssDescription}"
-                    SettingIcon="&#xE701;">
+                    SettingIcon="&#xE701;"
+                    >
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <control:Panel>
@@ -90,10 +128,6 @@
                                     <TextBlock x:Uid="SettingsPage_Rss_Bangumi_Description" TextWrapping="Wrap"
                                                Style="{StaticResource DescriptionTextStyle}"
                                                Margin="{StaticResource XSmallBottomMargin}"/>
-                                    <TextBox
-                                        Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
-                                        PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                        Margin="0 5 0 5" /> 
                                 </StackPanel>
                             </control:Panel>
                             <!-- VNDB -->
@@ -116,10 +150,6 @@
                                     <TextBlock x:Uid="SettingsPage_Rss_Mixed_Description" TextWrapping="Wrap"
                                                Style="{StaticResource DescriptionTextStyle}"
                                                Margin="{StaticResource XSmallBottomMargin}"/>
-                                    <TextBox
-                                        Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
-                                        PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                        Margin="0 5 0 5" /> 
                                 </StackPanel>
                             </control:Panel>
                         </StackPanel>
