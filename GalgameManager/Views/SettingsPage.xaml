@@ -15,6 +15,7 @@
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
+        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -71,11 +72,20 @@
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <control:Panel>
                                 <StackPanel>
-                                    <control:Setting x:Uid="SettingsPage_OAuth_LoginBgm">
-                                    <Button Content="Go" Width="75" Command="{x:Bind ViewModel.LoginBgmCommand}">
-                                    </Button>
+                                    <control:Setting x:Uid="SettingsPage_OAuth_LoginBgm" 
+                                                     Visibility="{x:Bind ViewModel.OAuthButtonVisibility,
+                                                     Mode=OneWay
+                                                     }">
+                                        <Button x:Uid="SettingsPage_OAuth_LoginBgm_Button" Width="75" Command="{x:Bind ViewModel.LoginBgmCommand}"/>
                                     </control:Setting>
-                                    <TextBlock Text="{x:Bind ViewModel.OAuthState, Mode=OneWay}" TextWrapping="Wrap"
+                                    <control:Setting x:Uid="SettingsPage_OAuth_LogoutBgm" 
+                                                     Visibility="{x:Bind ViewModel.OAuthButtonVisibility, 
+                                                     Converter={StaticResource InverseVisibilityConverter},
+                                                     Mode=OneWay
+                                                     }">
+                                        <Button x:Uid="SettingsPage_OAuth_LogoutBgm_Button" Width="100" Command="{x:Bind ViewModel.LogoutBgmCommand}"/>
+                                    </control:Setting>
+                                    <TextBlock Text="{x:Bind ViewModel.OAuthStateString, Mode=OneWay}" TextWrapping="Wrap"
                                                Style="{StaticResource DescriptionTextStyle}"
                                                Margin="{StaticResource XSmallBottomMargin}"/>
                                 </StackPanel>

@@ -1,4 +1,5 @@
 ﻿using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -8,15 +9,13 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-
-using Windows.ApplicationModel.DataTransfer;
 using Microsoft.Windows.AppLifecycle;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
+using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
 namespace GalgameManager;
 
@@ -36,7 +35,7 @@ public partial class App : Application
     public static T GetService<T>()
         where T : class
     {
-        if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+        if ((Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
         {
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
         }
@@ -116,7 +115,7 @@ public partial class App : Application
         AppInstance.GetCurrent().Activated += OnActivated;
     }
 
-    private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    private async void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
         ContentDialog dialog = new()
@@ -128,7 +127,7 @@ public partial class App : Application
             DefaultButton = ContentDialogButton.Primary
         };
         StackPanel stackPanel = new();
-        stackPanel.Children.Add(new TextBlock()
+        stackPanel.Children.Add(new TextBlock
         {
             Text = e.Exception.ToString(),
             TextWrapping = TextWrapping.WrapWholeWords
@@ -160,14 +159,18 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        await App.GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
+        await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
-    
-    protected async void OnActivated(object? sender, AppActivationArguments arguments){
+
+    private void OnActivated(object?_, AppActivationArguments arguments){
         switch (arguments.Kind)
         {
             case ExtendedActivationKind.Protocol:
-                await GetService<IBgmOAuthService>().FinishOAuthWithUri((arguments.Data as ProtocolActivatedEventArgs)!.Uri.ToString());
+                MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                {
+                    await GetService<IBgmOAuthService>()
+                        .FinishOAuthWithUri((arguments.Data as ProtocolActivatedEventArgs)!.Uri.ToString());
+                });
                 break;
         }
     }

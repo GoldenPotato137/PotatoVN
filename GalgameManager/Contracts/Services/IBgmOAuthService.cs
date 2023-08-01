@@ -2,32 +2,26 @@
 
 public class BgmOAuthState
 {
-    public bool OAuthed;
-    public int Expires;
-    public string UserId;
-
-    public BgmOAuthState(bool oAuthed, int expires, string userId)
-    {
-        OAuthed = oAuthed;
-        Expires = expires;
-        UserId = userId;
-    }
-    public BgmOAuthState()
-    {
-        OAuthed = false;
-        Expires = 0;
-        UserId = "";
-    }
+    public bool OAuthed =>  BangumiAccessToken is not "" && BangumiRefreshToken is not "";
+    public DateTime Expires = DateTime.Now;
+    public string UserId = "";
+    public string BangumiAccessToken = "";
+    public string BangumiRefreshToken = "";
 }
 
 public interface IBgmOAuthService
 {
     Task StartOAuth();
-    Task<BgmOAuthState> FinishOAuthWithUri(string uri);
-    Task<BgmOAuthState> FinishOAuthWithCode(string code);
-    Task<BgmOAuthState> CheckOAuthState();
+    Task FinishOAuthWithUri(string uri);
+    Task<bool> FinishOAuthWithCode(string code);
 
-    Task<BgmOAuthState> RefreshOAuthState();
+    Task<bool> RefreshOAuthState();
+
+    Task<string> GetOAuthStateString(bool forceRefresh=false);
+
+    Task<BgmOAuthState?> GetOAuthState(bool forceRefresh=false);
+
+    Task<bool> QuitLoginBgm();
     
     public delegate void Delegate(BgmOAuthState bgmOAuthState);
     
@@ -35,4 +29,9 @@ public interface IBgmOAuthService
     /// 当设置值改变时触发
     /// </summary>
     public event Delegate? OnOAuthStateChange;
+    
+    public static DateTime UnixTimeStampToDateTime( double unixTimeStamp )
+    {
+        return DateTime.UnixEpoch.AddSeconds( unixTimeStamp ).ToLocalTime();;
+    }
 }

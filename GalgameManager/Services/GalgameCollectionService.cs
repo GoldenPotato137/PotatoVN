@@ -521,7 +521,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         BgmPhraserData data = new()
         {
-            Token = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.BangumiAccessToken)
+            Token = (await LocalSettingsService.ReadSettingAsync<BgmOAuthState>(KeyValues.BangumiOAuthState))?.BangumiAccessToken ?? ""
         };
         return data;
     }
@@ -530,7 +530,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         switch (key)
         {
-            case KeyValues.BangumiAccessToken:
+            case KeyValues.BangumiOAuthState:
                 PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
                 break;
         }

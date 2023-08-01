@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Security.Credentials.UI;
-using System.Reflection;
 using Windows.Security.Credentials;
 using GalgameManager.Views;
 
@@ -83,6 +82,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             await ShowUpdateNotification();
             await _updateService.UpdateSettingsBadgeAsync();
         }
+
+        OAuthStateBool = (await _bgmOAuthService.GetOAuthState())!.OAuthed;
+        OAuthButtonVisibility = OAuthStateBool ? Visibility.Collapsed : Visibility.Visible;
+        OAuthStateString = await _bgmOAuthService.GetOAuthStateString();
     }
 
     public void OnNavigatedFrom() { }
@@ -134,14 +137,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
-            ? (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword })
-            : (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword });
-        _oAuthState = "";
-        _bgmOAuthService.OnOAuthStateChange += bgmOAuthState =>
-        {
-            OAuthState = "授权还剩" + bgmOAuthState.Expires / 86400 + "天";
-        };
-        _bgmOAuthService.CheckOAuthState();
+            ? new[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword }
+            : new[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword };
+        _localSettingsService.OnSettingChanged += OnSettingChange;
     }
 
     #region UPDATE
@@ -181,15 +179,38 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    #region OAuth
+    #region OAUTH
 
     [RelayCommand]
     private async Task LoginBgm()
     {
         await _bgmOAuthService.StartOAuth();
     }
+    
+    [RelayCommand]
+    private async Task LogoutBgm()
+    {
+        await _bgmOAuthService.QuitLoginBgm();
+    }
 
-    [ObservableProperty] private string _oAuthState;
+    private void OnSettingChange(string key, object value)
+    {
+        switch (key)
+        {
+            case KeyValues.BangumiOAuthState:
+                if (value is BgmOAuthState state)
+                {
+                    OAuthStateBool = state.OAuthed;
+                    OAuthButtonVisibility = state.OAuthed ? Visibility.Collapsed : Visibility.Visible;
+                    OAuthStateString = _bgmOAuthService.GetOAuthStateString().Result;
+                }
+                break;
+        }
+    }
+
+    [ObservableProperty] private string _oAuthStateString = "";
+    [ObservableProperty] private bool _oAuthStateBool;
+    [ObservableProperty] private Visibility _oAuthButtonVisibility = Visibility.Visible;
 
     #endregion
 
@@ -316,7 +337,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             case AuthenticationType.WindowsHello:
                 break;
             case AuthenticationType.CustomPassword:
-                bool result = await TrySetCustomPassword();
+                var result = await TrySetCustomPassword();
                 if (!result)
                 {
                     AuthenticationType = AuthenticationType.NoAuthentication;
