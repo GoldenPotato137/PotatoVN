@@ -33,8 +33,6 @@
                 HorizontalAlignment="Center"
                 Style="{ThemeResource BodyTextStyle}"
                 Text="{x:Bind Title, Mode=OneWay}" />
-            
-            <TextBlock Text="{x:Bind DisplayPlayType, Mode=OneWay}"></TextBlock>
         </StackPanel>
     </Grid>
 </UserControl>

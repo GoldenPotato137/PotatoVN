@@ -11,6 +11,7 @@ public static class KeyValues
     public const string Galgames = "galgames";
     public const string OverrideLocalName = "overrideLocalName";
     public const string OverrideLocalNameWithCNByBangumi = "overrideLocalNameWithCNByBangumi";
+    public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
     public const string SortKey1 = "sortKey1";
