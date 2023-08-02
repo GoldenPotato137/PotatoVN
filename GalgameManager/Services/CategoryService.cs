@@ -186,12 +186,8 @@ public class CategoryService : ICategoryService
             Category developer;
             try
             {
-                Producer producer = _producers.First(p =>
-                    {
-                        return p.Name == galgame.Developer.Value! || p.Latin == galgame.Developer.Value! ||
-                               p.Alias.Contains(galgame.Developer.Value!);
-                    }
-                );
+                Producer producer = _producers.First(p => p.Name == galgame.Developer.Value! || p.Latin == galgame.Developer.Value! ||
+                                                          p.Alias.Contains(galgame.Developer.Value!));
                 try
                 {
                     developer = _developerGroup!.Categories.First(c => c.Name.Equals(producer.Name));
