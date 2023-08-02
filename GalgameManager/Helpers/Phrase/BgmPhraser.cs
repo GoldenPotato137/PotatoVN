@@ -185,7 +185,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
 
         Galgame result = new();
         // rssType
-        result.RssType = RssType.Bangumi;
+        result.RssType = GetPhraseType();
         // id
         result.Id = jsonToken["id"]!.ToObject<string>()!;
         // name

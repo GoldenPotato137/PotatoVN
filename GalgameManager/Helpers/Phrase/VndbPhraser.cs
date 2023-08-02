@@ -57,7 +57,7 @@ public class VndbPhraser : IGalInfoPhraser
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (!_init) await Init();
-        var result = new Galgame();
+        Galgame result = new Galgame();
         try
         {
             // 试图离线获取ID
@@ -86,7 +86,7 @@ public class VndbPhraser : IGalInfoPhraser
                 visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
                 if (visualNovels == null) return null;
             }
-            var rssItem = visualNovels.Items[0];
+            VisualNovel? rssItem = visualNovels.Items[0];
             result.Name = rssItem.OriginalName;
             result.Description = rssItem.Description;
             result.RssType = GetPhraseType();
