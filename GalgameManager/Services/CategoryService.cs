@@ -284,10 +284,5 @@ public class Producer
     public string Id = "";
     public string Name = "";
     public string Latin = "";
-    public List<string> Alias = new List<string>();
-
-    public Producer()
-    {
-        
-    }
+    public List<string> Alias = new();
 }
