@@ -91,7 +91,7 @@ public class VndbPhraser : IGalInfoPhraser
             result.Description = rssItem.Description;
             result.RssType = GetPhraseType();
             result.Id = rssItem.Id.ToString();
-            result.Developer = await GetDeveloperFromVndb(result.Id) ?? string.Empty;
+            result.Developer = await GetDeveloperFromVndb(result.Id) ?? Galgame.DefaultString;
             result.Rating = (float)rssItem.Rating;
             result.ExpectedPlayTime = rssItem.Length.ToString() ?? Galgame.DefaultString;
             result.ImageUrl = rssItem.Image;
@@ -110,8 +110,8 @@ public class VndbPhraser : IGalInfoPhraser
         }
         return result;
     }
-    
-    public async Task<string?> GetDeveloperFromVndb(string id)
+
+    private async Task<string?> GetDeveloperFromVndb(string id)
     {
         string? result = null;
         try
