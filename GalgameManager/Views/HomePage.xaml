@@ -11,7 +11,8 @@
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d"
-    x:Name="Page">
+    x:Name="Page"
+    NavigationCacheMode="Required">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
