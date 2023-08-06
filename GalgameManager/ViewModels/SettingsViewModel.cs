@@ -285,7 +285,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     partial void OnGameFolderMustContainChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.GameFolderMustContain, value);
 
     [RelayCommand]
-    private void OnRegexTryItOut() => RegexTryItOut = NameRegex.GetName(_regexTryItOut, _regex, _regexRemoveBorder, _regexIndex);
+    private void OnRegexTryItOut() => RegexTryItOut = NameRegex.GetName(RegexTryItOut, Regex, RegexRemoveBorder, RegexIndex);
 
     private void SetSaveMetaPopUp(Galgame galgame)
     {
@@ -309,7 +309,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
     }
     [RelayCommand]
-    private async void SelectRemoteFolder()
+    private async Task SelectRemoteFolder()
     {
         FolderPicker openPicker = new();
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
@@ -391,7 +391,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region ABOUT
 
     [RelayCommand]
-    private async void Rate()
+    private async Task Rate()
     {
         StoreContext context = StoreContext.GetDefault();
         WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());
