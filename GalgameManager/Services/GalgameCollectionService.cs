@@ -14,7 +14,7 @@ namespace GalgameManager.Services;
 public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private List<Galgame> _galgames = new();
-    private Dictionary<string, Galgame> _galgameMap = new(); // 路径->Galgame
+    private readonly Dictionary<string, Galgame> _galgameMap = new(); // 路径->Galgame
     private readonly ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
@@ -171,7 +171,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     }
     
     /// <summary>
-    /// 从下载源获取这个galgame的信息
+    /// 从下载源获取这个galgame的信息，并获取游玩状态（若设置里开启）
     /// </summary>
     /// <param name="galgame">galgame</param>
     /// <param name="rssType">信息源，若设置为None则使用galgame指定的数据源，若不存在则使用设置中的默认数据源</param>
@@ -183,6 +183,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if(selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
+            await DownLoadPlayStatusAsync(galgame);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
@@ -223,6 +225,12 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.CheckSavePosition();
         return galgame;
+    }
+
+    private async Task DownLoadPlayStatusAsync(Galgame galgame)
+    {
+        if (PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
+            await bgmPhraser.DownloadAsync(galgame);
     }
 
     /// <summary>
@@ -282,6 +290,17 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         return _galgameMap.TryGetValue(path, out Galgame? result) ? result : null;
     }
 
+    /// <summary>
+    /// 从id获取galgame
+    /// </summary>
+    /// <param name="id">id</param>
+    /// <param name="rssType">id的信息源</param>
+    /// <returns>galgame，若找不到返回null</returns>
+    public Galgame? GetGalgameFromId(string id, RssType rssType)
+    {
+        return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
+    }
+    
     /// <summary>
     /// 保存galgame列表（以及其内部的galgame）
     /// </summary>

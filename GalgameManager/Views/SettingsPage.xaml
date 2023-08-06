@@ -164,7 +164,6 @@
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <control:Panel>
-
                                 <StackPanel>
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
@@ -190,6 +189,9 @@
                                       </Button>
                                   </control:Setting>
                                 </StackPanel>
+                            </control:Panel>
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Download_SyncPlayStatusWhenPhrasing"/>
                             </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>

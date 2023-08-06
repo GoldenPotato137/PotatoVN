@@ -44,7 +44,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        if (bgmToken != null)
+        if (!string.IsNullOrEmpty(bgmToken))
         {
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
             _checkAuthTask = Task.Run(() =>
@@ -370,7 +370,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
             return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
-        var errorMsg = string.Empty;
+        string errorMsg;
         try
         {
             HttpResponseMessage response = await _httpClient.GetAsync(
@@ -378,14 +378,28 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             JToken json = JObject.Parse(await response.Content.ReadAsStringAsync());
             if (response.IsSuccessStatusCode == false)
                 throw new Exception(json["description"]!.ToString());
-            
+            return PhrasePlayStatusJToken(json, galgame);
         }
         catch (Exception e)
         {
             errorMsg = e.Message;
         }
-
         return (GalStatusSyncResult.Other, errorMsg);
+    }
+
+    /// <summary>
+    /// 将bgm游玩状态json解析到游戏中，需要调用方手动捕捉json解析异常
+    /// </summary>
+    /// <param name="json">游玩状态json</param>
+    /// <param name="galgame">游戏</param>
+    /// <returns>解析状态，状态解释</returns>
+    private static (GalStatusSyncResult, string) PhrasePlayStatusJToken(JToken json, Galgame galgame)
+    {
+        galgame.PlayType = json["type"]!.ToObject<int>().BgmCollectionTypeToPlayType();
+        galgame.Comment = json["comment"]!.ToString();
+        galgame.MyRate = json["rate"]!.ToObject<int>();
+        galgame.PrivateComment = json["private"]!.ToObject<bool>();
+        return (GalStatusSyncResult.Ok, string.Empty);
     }
 }
 

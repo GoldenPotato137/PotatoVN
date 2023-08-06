@@ -9,8 +9,10 @@
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d"
-    x:Name="Page">
+    x:Name="Page"
+    NavigationCacheMode="Required">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -60,6 +62,18 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
+                <CommandBar.SecondaryCommands>
+                    <AppBarToggleButton x:Uid="HomePage_FixHorizontalPicture" Icon="Crop"
+                                        IsChecked="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}"/>
+                    <AppBarToggleButton x:Uid="HomePage_DisplayPlayType" 
+                                        IsChecked="{x:Bind ViewModel.DisplayPlayTypePolygon, Mode=TwoWay}"
+                                        Visibility="{x:Bind ViewModel.FixHorizontalPicture, Mode=OneWay, 
+                                        Converter={StaticResource BoolToVisibilityConverter}}">
+                        <AppBarToggleButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE890;"/>
+                        </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <controls:AdaptiveGridView
@@ -73,27 +87,12 @@
                 StretchContentForSingleRow="False">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
-                        <Grid
-                            x:Name="itemThumbnail"
-                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-                            ContextFlyout="{StaticResource GalFlyout}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <!-- 裁剪水平图片版 -->
-                                <Rectangle Height="209" Width="150"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Rectangle.Fill>
-                                        <ImageBrush ImageSource="{x:Bind ImagePath.Value}"
-                                                    Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch}" />
-                                    </Rectangle.Fill>
-                                </Rectangle>
-                                <TextBlock
-                                    MaxHeight="85"
-                                    Margin="{StaticResource XXSmallTopMargin}"
-                                    HorizontalAlignment="Center"
-                                    Style="{ThemeResource BodyTextStyle}"
-                                    Text="{x:Bind Name, Mode=OneWay}" />
-                            </StackPanel>
-                        </Grid>
+                        <control:HomeItem Image="{x:Bind ImagePath, Mode=OneWay}" 
+                                          Title="{x:Bind Name, Mode=OneWay}"
+                                          PlayType="{x:Bind PlayType, Mode=OneWay}"
+                                          DisplayPlayType="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
+                                          Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
+                                          ContextFlyout="{StaticResource GalFlyout}"/>
                     </DataTemplate>
                 </controls:AdaptiveGridView.ItemTemplate>
             </controls:AdaptiveGridView>
