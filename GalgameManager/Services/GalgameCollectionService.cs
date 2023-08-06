@@ -14,7 +14,7 @@ namespace GalgameManager.Services;
 public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     private List<Galgame> _galgames = new();
-    private Dictionary<string, Galgame> _galgameMap = new(); // 路径->Galgame
+    private readonly Dictionary<string, Galgame> _galgameMap = new(); // 路径->Galgame
     private readonly ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
@@ -60,6 +60,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await GetGalgames();
         await _jumpListService.CheckJumpListAsync(_galgames);
+        await Upgrade();
     }
 
     private async Task GetGalgames()
@@ -71,6 +72,19 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames.ForEach(g => _galgameMap.Add(g.Path, g));
         GalgameLoadedEvent?.Invoke();
         UpdateDisplay(UpdateType.Init);
+    }
+
+    /// <summary>
+    /// 可能不同版本行为不同，需要对已存储的galgame进行升级
+    /// </summary>
+    private async Task Upgrade()
+    {
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.IdFromMixedUpgraded) == false)
+        {
+            foreach (Galgame galgame in _galgames)
+                galgame.UpdateIdFromMixed();
+            await LocalSettingsService.SaveSettingAsync(KeyValues.IdFromMixedUpgraded, true);
+        }
     }
 
     /// <summary>为Galgame类更新新的排序规则</summary>
@@ -155,10 +169,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         UpdateDisplay(UpdateType.Add, galgame);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
-
-
+    
     /// <summary>
-    /// 从下载源获取这个galgame的信息
+    /// 从下载源获取这个galgame的信息，并获取游玩状态（若设置里开启）
     /// </summary>
     /// <param name="galgame">galgame</param>
     /// <param name="rssType">信息源，若设置为None则使用galgame指定的数据源，若不存在则使用设置中的默认数据源</param>
@@ -170,6 +183,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if(selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
+            await DownLoadPlayStatusAsync(galgame);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
@@ -191,7 +206,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock)
             galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
-            galgame.Name.Value = tmp.Name.Value;
+        {
+            if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi))
+            {
+                galgame.Name.Value = tmp.CnName is not "" ?tmp.CnName:tmp.Name.Value;
+            }
+            else
+            {
+                galgame.Name.Value = tmp.Name.Value;
+            }
+        }
         galgame.ImageUrl = tmp.ImageUrl;
         if (!galgame.Rating.IsLock)
             galgame.Rating.Value = tmp.Rating.Value;
@@ -203,6 +227,12 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         return galgame;
     }
 
+    private async Task DownLoadPlayStatusAsync(Galgame galgame)
+    {
+        if (PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
+            await bgmPhraser.DownloadAsync(galgame);
+    }
+
     /// <summary>
     /// 获取要显示的galgame列表
     /// </summary>
@@ -210,6 +240,21 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         await Task.CompletedTask;
         return _displayGalgames;
+    }
+
+    /// <summary>
+    /// 向信息源上传游玩状态
+    /// </summary>
+    /// <param name="galgame">要同步的游戏</param>
+    /// <param name="rssType">信息源</param>
+    /// <returns>(上传结果， 结果解释)</returns>
+    /// <exception cref="NotSupportedException">若信息源没有实现IGalStatusSync，则抛此异常</exception>
+    public async Task<(GalStatusSyncResult, string)> UploadPlayStatusAsync(Galgame galgame, RssType rssType)
+    {
+        IGalInfoPhraser phraser = PhraserList[(int)rssType];
+        if (phraser is IGalStatusSync syncer)
+            return await syncer.UploadAsync(galgame);
+        throw new NotSupportedException("这个数据源不支持同步游玩状态");
     }
 
     /// <summary>
@@ -245,6 +290,17 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         return _galgameMap.TryGetValue(path, out Galgame? result) ? result : null;
     }
 
+    /// <summary>
+    /// 从id获取galgame
+    /// </summary>
+    /// <param name="id">id</param>
+    /// <param name="rssType">id的信息源</param>
+    /// <returns>galgame，若找不到返回null</returns>
+    public Galgame? GetGalgameFromId(string id, RssType rssType)
+    {
+        return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
+    }
+    
     /// <summary>
     /// 保存galgame列表（以及其内部的galgame）
     /// </summary>
@@ -484,7 +540,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         BgmPhraserData data = new()
         {
-            Token = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken)
+            Token = (await LocalSettingsService.ReadSettingAsync<BgmOAuthState>(KeyValues.BangumiOAuthState))?.BangumiAccessToken ?? ""
         };
         return data;
     }
@@ -493,7 +549,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         switch (key)
         {
-            case KeyValues.BangumiToken:
+            case KeyValues.BangumiOAuthState:
                 PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
                 break;
         }

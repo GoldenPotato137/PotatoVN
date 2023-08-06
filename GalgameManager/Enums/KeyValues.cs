@@ -2,11 +2,16 @@
 
 public static class KeyValues
 {
-    public const string BangumiToken = "bangumiToken";
+    // public const string BangumiAccessToken = "bangumiAccessToken";
+    // public const string BangumiRefreshToken = "bangumiRefreshToken";
+    public const string BangumiOAuthState= "bangumiOAuthState";
+    public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
     public const string RssType = "rssType";
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
     public const string OverrideLocalName = "overrideLocalName";
+    public const string OverrideLocalNameWithCNByBangumi = "overrideLocalNameWithCNByBangumi";
+    public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
     public const string SortKey1 = "sortKey1";
@@ -35,4 +40,9 @@ public static class KeyValues
     public const string AutoCategory = "autoCategory"; // bool,是否自动分类
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
     public const string AuthenticationType = "authenticationType"; // AuthenticationType,身份验证类型
+    public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 主页是否显示游玩状态的小三角形
+    
+    
+    //是否执行过某种升级, bool
+    public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
 }

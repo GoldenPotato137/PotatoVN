@@ -31,6 +31,16 @@ public sealed partial class SettingExpander
     public static readonly DependencyProperty SettingDescriptionProperty =
         DependencyProperty.Register(nameof(SettingDescription), typeof(string), typeof(SettingExpander), new PropertyMetadata(string.Empty));
 
+    public bool IsExpanded
+    {
+        get => (bool)GetValue(IsExpandedProperty);
+        set => SetValue(IsExpandedProperty, value);
+    }
+
+    public static readonly DependencyProperty IsExpandedProperty =
+        DependencyProperty.Register(nameof(IsExpanded), typeof(bool), typeof(SettingExpander), new PropertyMetadata(false));
+
+    
     public object SettingContent
     {
         get => GetValue(SettingContentProperty);

@@ -14,11 +14,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Security.Credentials.UI;
-using System.Reflection;
 using Windows.Security.Credentials;
 using GalgameManager.Views;
 
 namespace GalgameManager.ViewModels;
+
 
 public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 {
@@ -28,6 +28,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly IUpdateService _updateService;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ICategoryService _categoryService;
+    private readonly IBgmOAuthService _bgmOAuthService;
     private string _versionDescription;
 
     #region UI_STRINGS
@@ -40,8 +41,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     public readonly string UiRssBgmPlaceholder = ResourceLoader.GetString("SettingsPage_Rss_BgmPlaceholder");
     public readonly string UiDownloadTitle = ResourceLoader.GetString("SettingsPage_DownloadTitle");
     public readonly string UiDownloadDescription = ResourceLoader.GetString("SettingsPage_DownloadDescription");
-    public readonly string UiDownLoadOverrideNameTitle = ResourceLoader.GetString("SettingsPage_Download_OverrideNameTitle");
-    public readonly string UiDownLoadOverrideNameDescription = ResourceLoader.GetString("SettingsPage_Download_OverrideNameDescription");
     public readonly string UiCloudSyncTitle = ResourceLoader.GetString("SettingsPage_CloudSyncTitle");
     public readonly string UiCloudSyncDescription = ResourceLoader.GetString("SettingsPage_CloudSyncDescription");
     public readonly string UiCloudSyncRoot = ResourceLoader.GetString("SettingsPage_CloudSync_Root");
@@ -83,18 +82,23 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             await ShowUpdateNotification();
             await _updateService.UpdateSettingsBadgeAsync();
         }
+
+        OAuthStateBool = (await _bgmOAuthService.GetOAuthState())!.OAuthed;
+        OAuthButtonVisibility = OAuthStateBool ? Visibility.Collapsed : Visibility.Visible;
+        OAuthStateString = await _bgmOAuthService.GetOAuthStateString();
     }
 
     public void OnNavigatedFrom() { }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
-        ICategoryService categoryService)
+        ICategoryService categoryService, IBgmOAuthService bgmOAuthService)
     {
         _categoryService = categoryService;
         _themeSelectorService = themeSelectorService;
         _navigationService = navigationService;
         _updateService = updateService;
+        _bgmOAuthService = bgmOAuthService;
         updateService.SettingBadgeEvent += result => _shouldDisplayUpdateNotification = result;
         updateService.UpdateSettingsBadgeAsync(); //只是为了触发事件，原地TP，先这么写吧
         _versionDescription = GetVersionDescription();
@@ -105,10 +109,11 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
-        BangumiToken = _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken).Result ?? "";
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
+        _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
+        _downloadPlayStatusWhenPhrasing = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
         _galgameCollectionService.MetaSavedEvent += SetSaveMetaPopUp;
@@ -133,8 +138,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
-            ? (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword })
-            : (new AuthenticationType[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword });
+            ? new[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword }
+            : new[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword };
+        _localSettingsService.OnSettingChanged += OnSettingChange;
     }
 
     #region UPDATE
@@ -174,9 +180,43 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
+    #region OAUTH
+
+    [RelayCommand]
+    private async Task LoginBgm()
+    {
+        await _bgmOAuthService.StartOAuth();
+    }
+    
+    [RelayCommand]
+    private async Task LogoutBgm()
+    {
+        await _bgmOAuthService.QuitLoginBgm();
+    }
+
+    private void OnSettingChange(string key, object value)
+    {
+        switch (key)
+        {
+            case KeyValues.BangumiOAuthState:
+                if (value is BgmOAuthState state)
+                {
+                    OAuthStateBool = state.OAuthed;
+                    OAuthButtonVisibility = state.OAuthed ? Visibility.Collapsed : Visibility.Visible;
+                    OAuthStateString = _bgmOAuthService.GetOAuthStateString().Result;
+                }
+                break;
+        }
+    }
+
+    [ObservableProperty] private string _oAuthStateString = "";
+    [ObservableProperty] private bool _oAuthStateBool;
+    [ObservableProperty] private Visibility _oAuthButtonVisibility = Visibility.Visible;
+
+    #endregion
+
     #region RSS
 
-    [ObservableProperty] private string _bangumiToken = string.Empty;
     [ObservableProperty] private RssType _rssType;
     // ReSharper disable once CollectionNeverQueried.Global
     public readonly RssType[] RssTypes = { RssType.Mixed , RssType.Bangumi, RssType.Vndb};
@@ -186,18 +226,23 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _localSettingsService.SaveSettingAsync(KeyValues.RssType, value);
     }
 
-    partial void OnBangumiTokenChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.BangumiToken, value);
 
     #endregion
 
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
+    [ObservableProperty] private bool _overrideLocalNameWithCNByBangumi;
     [ObservableProperty] private bool _autoCategory;
+    [ObservableProperty] private bool _downloadPlayStatusWhenPhrasing;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
     
+    partial void OnOverrideLocalNameWithCNByBangumiChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithCNByBangumi, value);
+    
     partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
+    
+    partial void OnDownloadPlayStatusWhenPhrasingChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SyncPlayStatusWhenPhrasing, value);
 
     [RelayCommand]
     private async Task CategoryNow()
@@ -296,7 +341,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             case AuthenticationType.WindowsHello:
                 break;
             case AuthenticationType.CustomPassword:
-                bool result = await TrySetCustomPassword();
+                var result = await TrySetCustomPassword();
                 if (!result)
                 {
                     AuthenticationType = AuthenticationType.NoAuthentication;

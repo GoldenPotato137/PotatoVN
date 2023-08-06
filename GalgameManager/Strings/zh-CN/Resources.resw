@@ -216,6 +216,30 @@
   <data name="SettingsPage_ThemeDescription" xml:space="preserve">
     <value>与显示有关的设置</value>
   </data>
+  <data name="SettingsPage_OAuth.SettingTitle" xml:space="preserve">
+    <value>第三方账户</value>
+  </data>
+  <data name="SettingsPage_OAuth.SettingDescription" xml:space="preserve">
+    <value>管理第三方账户</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Title" xml:space="preserve">
+    <value>登录Bangumi</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Description" xml:space="preserve">
+    <value>通过OAuth登录Bangumi</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm_Button.Content" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm.Title" xml:space="preserve">
+    <value>退出Bangumi登录</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm.Description" xml:space="preserve">
+    <value>退出Bangumi OAuth登录</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm_Button.Content" xml:space="preserve">
+    <value>退出登录</value>
+  </data>
   <data name="SettingsPage_RssTitle" xml:space="preserve">
     <value>信息源</value>
   </data>
@@ -231,10 +255,10 @@
   <data name="SettingsPage_DownloadDescription" xml:space="preserve">
     <value>从信息源获取信息有关的设置</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameTitle" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Title" xml:space="preserve">
     <value>覆盖名字</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameDescription" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Description" xml:space="preserve">
     <value>是否将信息源获取到的galgame名字覆盖本地名字</value>
   </data>
   <data name="SettingsPage_CloudSyncTitle" xml:space="preserve">
@@ -460,6 +484,12 @@
   <data name="GalgamePage_OpenInExplorer.Label" xml:space="preserve">
     <value>在文件管理器中打开</value>
   </data>
+  <data name="GalgamePage_OpenInBgm.Label" xml:space="preserve">
+    <value>在Bangumi中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInVndb.Label" xml:space="preserve">
+    <value>在Vndb中打开</value>
+  </data>
   <data name="SettingsPage_Library_IgnoreFetchResult.Title" xml:space="preserve">
     <value>忽略游戏查询结果</value>
   </data>
@@ -670,5 +700,35 @@
   </data>
   <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
     <value>游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithCNByBangumi.Description" xml:space="preserve">
+    <value>是否优先用Bangumi源获取到的galgame中文名覆盖本地名字</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithCNByBangumi.Title" xml:space="preserve">
+    <value>用中文名覆盖名字</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
+    <value>尚未登录，需要在设置中登录Bangumi账号</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_NoId" xml:space="preserve">
+    <value>这个游戏目前没有bangumi id，请在编辑界面手动设置一个</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_Success" xml:space="preserve">
+    <value>已成功同步游玩状态到bangumi</value>
+  </data>
+  <data name="HomePage_UploadingToBgm" xml:space="preserve">
+    <value>将游玩信息同步到bangumi中</value>
+  </data>
+  <data name="HomePage_FixHorizontalPicture.Label" xml:space="preserve">
+    <value>裁剪水平封面图</value>
+  </data>
+  <data name="HomePage_DisplayPlayType.Label" xml:space="preserve">
+    <value>游玩状态标记</value>
+  </data>
+  <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Title" xml:space="preserve">
+    <value>下载游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Description" xml:space="preserve">
+    <value>是否在获取信息时下载游玩状态（需登录第三方账号）</value>
   </data>
 </root>

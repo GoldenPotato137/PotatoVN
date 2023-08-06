@@ -2,21 +2,26 @@
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using System.Web;
 
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
 
-public class BgmPhraser : IGalInfoPhraser
+public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
 {
     private const string ProducerFile = @"Assets\Data\producers.json";
     private HttpClient _httpClient;
     private bool _init;
+    private bool _authed;
+    private string _userId = string.Empty;
+    private Task? _checkAuthTask;
     private readonly List<string> _developerList = new();
 
     public BgmPhraser(BgmPhraserData data)
@@ -33,15 +38,26 @@ public class BgmPhraser : IGalInfoPhraser
     
     private void GetHttpClient(BgmPhraserData data)
     {
+        _authed = false;
         var bgmToken = data.Token;
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        if(bgmToken != null)
+        if (!string.IsNullOrEmpty(bgmToken))
+        {
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
+            _checkAuthTask = Task.Run(() =>
+            {
+                HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
+                _authed = response.IsSuccessStatusCode;
+                if (!_authed) return;
+                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                _userId = json["id"]!.ToString();
+            });
+        }
     }
-    
+
     private async Task InitAsync()
     {
         _init = true;
@@ -174,6 +190,8 @@ public class BgmPhraser : IGalInfoPhraser
         result.Id = jsonToken["id"]!.ToObject<string>()!;
         // name
         result.Name = jsonToken["name"]!.ToObject<string>()!;
+        // Chinese name
+        result.CnName = jsonToken["name_cn"]!.ToObject<string>()!;
         // description
         result.Description = jsonToken["summary"]!.ToObject<string>()!;
         // imageUrl
@@ -306,6 +324,82 @@ public class BgmPhraser : IGalInfoPhraser
                 return await GetDeveloperImageUrlById(id, retry + 1);
             return null;
         }
+    }
+
+    public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
+    {
+        if (_checkAuthTask != null) await _checkAuthTask;
+        if (_authed == false)
+            return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
+            return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
+        var data = new
+        {
+            @private = galgame.PrivateComment,
+            rate = galgame.MyRate,
+            comment = galgame.Comment,
+            type = galgame.PlayType.ToBgmCollectionType()
+        };
+        StringContent content = new(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+        content.Headers.ContentType!.CharSet = ""; //bgm.tv的api不支持charset
+        var error = string.Empty;
+        HttpResponseMessage? response = null;
+        try
+        {
+            response = await _httpClient.PostAsync($"https://api.bgm.tv/v0/users/-/collections/{galgame.Ids[(int)RssType.Bangumi]}", content);
+            if (response.IsSuccessStatusCode == false)
+            {
+                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                error = json["description"]!.ToString();
+            }
+        }
+        catch (Exception e)
+        {
+            error = e.Message;
+        }
+        if(response == null || response.IsSuccessStatusCode == false)
+            return (GalStatusSyncResult.Other, error);
+        
+        return (GalStatusSyncResult.Ok, "BgmPhraser_UploadAsync_Success".GetLocalized());
+    }
+
+    public async Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame)
+    {
+        if (_checkAuthTask != null) await _checkAuthTask;
+        if (_authed == false) 
+            return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
+            return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
+        string errorMsg;
+        try
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(
+                $"https://api.bgm.tv/v0/users/{_userId}/collections/{galgame.Ids[(int)RssType.Bangumi]}");
+            JToken json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            if (response.IsSuccessStatusCode == false)
+                throw new Exception(json["description"]!.ToString());
+            return PhrasePlayStatusJToken(json, galgame);
+        }
+        catch (Exception e)
+        {
+            errorMsg = e.Message;
+        }
+        return (GalStatusSyncResult.Other, errorMsg);
+    }
+
+    /// <summary>
+    /// 将bgm游玩状态json解析到游戏中，需要调用方手动捕捉json解析异常
+    /// </summary>
+    /// <param name="json">游玩状态json</param>
+    /// <param name="galgame">游戏</param>
+    /// <returns>解析状态，状态解释</returns>
+    private static (GalStatusSyncResult, string) PhrasePlayStatusJToken(JToken json, Galgame galgame)
+    {
+        galgame.PlayType = json["type"]!.ToObject<int>().BgmCollectionTypeToPlayType();
+        galgame.Comment = json["comment"]!.ToString();
+        galgame.MyRate = json["rate"]!.ToObject<int>();
+        galgame.PrivateComment = json["private"]!.ToObject<bool>();
+        return (GalStatusSyncResult.Ok, string.Empty);
     }
 }
 

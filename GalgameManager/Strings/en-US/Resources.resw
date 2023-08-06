@@ -231,10 +231,10 @@
   <data name="SettingsPage_DownloadDescription" xml:space="preserve">
     <value>Retrieving information related settings from sources</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameTitle" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Title" xml:space="preserve">
     <value>Overwrite Local Name</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameDescription" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Description" xml:space="preserve">
     <value>Whether to overwrite the local name of visual novel's name from the source</value>
   </data>
   <data name="SettingsPage_CloudSyncTitle" xml:space="preserve">

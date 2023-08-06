@@ -18,7 +18,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
-using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace GalgameManager.ViewModels;
 
@@ -29,6 +28,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
+    private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
     private IFilter? _filter; //进入界面时的使用的过滤器，退出界面后移除
     private DateTime _lastSearchTime = DateTime.Now;
@@ -39,6 +39,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private Stretch _stretch;
     [ObservableProperty] private string _searchKey = string.Empty;
     [ObservableProperty] private string _searchTitle = string.Empty;
+    [ObservableProperty] private bool _fixHorizontalPicture; // 是否修复横向图片（截断为标准的长方形）
+    [ObservableProperty] private bool _displayPlayTypePolygon = true; // 是否显示游玩状态的小三角形
 
     #region UI
 
@@ -74,6 +76,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _navigationService = navigationService;
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)_dataCollectionService;
+        _localSettingsService = localSettingsService;
         _filterService = filterService;
         
         ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
@@ -82,6 +85,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
         _stretch = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result
             ? Stretch.UniformToFill : Stretch.Uniform;
+        _fixHorizontalPicture = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
+        DisplayPlayTypePolygon = localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayPlayTypePolygon).Result;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
@@ -280,4 +285,15 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         await _galgameService.PhraseGalInfoAsync(galgame);
         IsPhrasing = false;
     }
+
+    partial void OnFixHorizontalPictureChanged(bool value)
+    {
+        _localSettingsService.SaveSettingAsync(KeyValues.FixHorizontalPicture, value);
+        Stretch = value ? Stretch.UniformToFill : Stretch.Uniform;
+        if (value == false)
+            DisplayPlayTypePolygon = false;
+    }
+
+    partial void OnDisplayPlayTypePolygonChanged(bool value) =>
+        _localSettingsService.SaveSettingAsync(KeyValues.DisplayPlayTypePolygon, value);
 }

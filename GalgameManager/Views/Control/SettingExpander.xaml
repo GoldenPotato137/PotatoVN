@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+        <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="{x:Bind IsExpanded}">
             <Expander.Header>
                 <Grid Padding="0,18,0,18">
                     <Grid.ColumnDefinitions>

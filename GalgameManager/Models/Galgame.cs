@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Phrase;
 using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
@@ -27,6 +28,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
+    [JsonIgnore][ObservableProperty] private string _cnName = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
@@ -44,6 +46,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
     [Newtonsoft.Json.JsonIgnore] public ObservableCollection<Category> Categories = new();
+    [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
+    [ObservableProperty] private int _myRate; //我的评分
+    [ObservableProperty] private bool _privateComment; //是否私密评论
 
     public static readonly List<SortKeys> SortKeysList = new ();
 
@@ -56,7 +61,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             if (Ids[(int)RssType] != value)
             {
                Ids[(int)RssType] = value;
-               OnPropertyChanged(); 
+               OnPropertyChanged();
+               if (_rssType == RssType.Mixed)
+                   UpdateIdFromMixed();
             }
         }
     }
@@ -162,6 +169,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         return 0;
     }
 
+    /// <summary>
+    /// 时间转换
+    /// </summary>
+    /// <param name="time">年/月/日</param>
+    /// <returns></returns>
     private long GetTime(string time)
     {
         if (time == DefaultString)
@@ -278,6 +290,18 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     partial void OnPlayTypeChanged(PlayType value)
     {
         GalPropertyChanged?.Invoke((this, "playType"));
+    }
+
+    /// <summary>
+    /// 从混合数据源的id更新其他数据源的id
+    /// </summary>
+    public void UpdateIdFromMixed()
+    {
+        (string? bgmId, string? vndbId) tmp = MixedPhraser.TryGetId(Ids[(int)RssType.Mixed]);
+        if (tmp.bgmId != null && string.IsNullOrEmpty(Ids[(int)RssType.Bangumi])) 
+            Ids[(int)RssType.Bangumi] = tmp.bgmId;
+        if (tmp.vndbId != null && string.IsNullOrEmpty(Ids[(int)RssType.Vndb])) 
+            Ids[(int)RssType.Vndb] = tmp.vndbId;
     }
 }
 
