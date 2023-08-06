@@ -1,5 +1,6 @@
 ﻿using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.DataTransfer;
+using CommunityToolkit.WinUI;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -121,9 +122,9 @@ public partial class App : Application
         ContentDialog dialog = new()
         {
             XamlRoot = MainWindow.Content.XamlRoot,
-            Title = "App_UnhandledException_Oops".GetLocalized(),
-            PrimaryButtonText = "App_UnhandledException_BackToHome".GetLocalized(),
-            CloseButtonText = "App_UnhandledException_Exit".GetLocalized(),
+            Title = ResourceExtensions.GetLocalized("App_UnhandledException_Oops"),
+            PrimaryButtonText = ResourceExtensions.GetLocalized("App_UnhandledException_BackToHome"),
+            CloseButtonText = ResourceExtensions.GetLocalized("App_UnhandledException_Exit"),
             DefaultButton = ContentDialogButton.Primary
         };
         StackPanel stackPanel = new();
@@ -134,7 +135,7 @@ public partial class App : Application
         });
         HyperlinkButton button = new()
         {
-            Content = "App_UnhandledException_Hyperlink".GetLocalized(),
+            Content = ResourceExtensions.GetLocalized("App_UnhandledException_Hyperlink"),
             NavigateUri = new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new/choose"),
         };
         button.Click += (_, _) =>
@@ -166,7 +167,7 @@ public partial class App : Application
         switch (arguments.Kind)
         {
             case ExtendedActivationKind.Protocol:
-                MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                MainWindow.DispatcherQueue.EnqueueAsync(async () =>
                 {
                     await GetService<IBgmOAuthService>()
                         .FinishOAuthWithUri((arguments.Data as ProtocolActivatedEventArgs)!.Uri.ToString());

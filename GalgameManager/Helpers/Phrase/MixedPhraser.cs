@@ -59,6 +59,10 @@ public class MixedPhraser : IGalInfoPhraser
         // developer
         if(bgm != null)
             result.Developer = bgm.Developer;
+        else if (vndb != null)
+        {
+            result.Developer = vndb.Developer;
+        }
         // expectedPlayTime
         if(vndb != null)
             result.ExpectedPlayTime = vndb.ExpectedPlayTime;
