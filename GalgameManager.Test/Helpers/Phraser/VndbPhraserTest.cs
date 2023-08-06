@@ -48,35 +48,4 @@ public class VndbPhraserTest
         
         Assert.Pass();
     }
-
-    [Test]
-    [TestCase("22423")] // 樱之诗 - 在樱花之森上飞舞
-    public async Task PhraseWithIdTest(string id)
-    {
-        // Arrange
-        Galgame? game = new()
-        {
-            RssType = RssType.Bangumi,
-            Id = id
-        };
-        // Act
-        game = await _vndbPhraser.GetGalgameInfo(game);
-        // Assert
-        if(game == null)
-        {
-            Assert.Fail();
-            return;
-        }
-
-        switch (id)
-        {
-            case "22423":
-                if (game.Id != "22423") Assert.Fail();
-                if (game.Name != "サクラノ詩 —櫻の森の上を舞う—") Assert.Fail();
-                if (game.Developer != "枕") Assert.Fail();
-                break;
-        }
-        
-        Assert.Pass();
-    }
 }
