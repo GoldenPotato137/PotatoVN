@@ -113,6 +113,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
         _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
+        _downloadPlayStatusWhenPhrasing = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
         _galgameCollectionService.MetaSavedEvent += SetSaveMetaPopUp;
@@ -233,12 +234,15 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _overrideLocalName;
     [ObservableProperty] private bool _overrideLocalNameWithCNByBangumi;
     [ObservableProperty] private bool _autoCategory;
+    [ObservableProperty] private bool _downloadPlayStatusWhenPhrasing;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
     
     partial void OnOverrideLocalNameWithCNByBangumiChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithCNByBangumi, value);
     
     partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
+    
+    partial void OnDownloadPlayStatusWhenPhrasingChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SyncPlayStatusWhenPhrasing, value);
 
     [RelayCommand]
     private async Task CategoryNow()
