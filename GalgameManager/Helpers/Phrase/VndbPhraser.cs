@@ -84,7 +84,7 @@ public class VndbPhraser : IGalInfoPhraser
             }
             
             if (visualNovels == null || visualNovels.Count == 0) return null;
-            var rssItem = visualNovels[0]!;
+            JsonNode rssItem = visualNovels[0]!;
             result.Name = rssItem["title"]!.ToString();
             result.Description = rssItem["description"]!.ToString();
             result.RssType = GetPhraseType();
