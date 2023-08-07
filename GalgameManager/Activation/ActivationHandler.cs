@@ -1,12 +1,9 @@
 ﻿namespace GalgameManager.Activation;
 
-// Extend this class to implement new ActivationHandlers. See DefaultActivationHandler for an example.
-// https://github.com/microsoft/TemplateStudio/blob/main/docs/WinUI/activation.md
-public abstract class ActivationHandler<T> : IActivationHandler
-    where T : class
+public abstract class ActivationHandler<T> : IActivationHandler where T : class
 {
     // Override this method to add the logic for whether to handle the activation.
-    protected virtual bool CanHandleInternal(T args) => true;
+    protected abstract bool CanHandleInternal(T args);
 
     // Override this method to add the logic for your activation handler.
     protected abstract Task HandleInternalAsync(T args);

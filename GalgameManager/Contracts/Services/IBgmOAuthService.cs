@@ -2,7 +2,7 @@
 
 public class BgmOAuthState
 {
-    public bool OAuthed =>  BangumiAccessToken is not "" && BangumiRefreshToken is not "";
+    public bool OAuthed =>  BangumiAccessToken is not "";
     public DateTime Expires = DateTime.Now;
     public string UserId = "";
     public string BangumiAccessToken = "";
@@ -12,8 +12,7 @@ public class BgmOAuthState
 public interface IBgmOAuthService
 {
     Task StartOAuth();
-    Task FinishOAuthWithUri(string uri);
-    Task<bool> FinishOAuthWithCode(string code);
+    Task FinishOAuthWithUri(Uri uri);
 
     Task<bool> RefreshOAuthState();
 
