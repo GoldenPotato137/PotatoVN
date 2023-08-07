@@ -19,7 +19,7 @@ public class ActivationService : IActivationService
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
     private readonly IAuthenticationService _authenticationService;
-    private UIElement? _shell = null;
+    private UIElement? _shell;
 
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
@@ -48,8 +48,7 @@ public class ActivationService : IActivationService
             if (activationArgs is AppActivationArguments args)
             {
                 await instances[0].RedirectActivationToAsync(args);
-            } 
-            
+            }
             Application.Current.Exit();
             return;
         }
@@ -94,9 +93,9 @@ public class ActivationService : IActivationService
         await StartupAsync();
     }
 
-    private async Task HandleActivationAsync(object activationArgs)
+    public async Task HandleActivationAsync(object activationArgs)
     {
-        var activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
+        IActivationHandler? activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
 
         if (activationHandler != null)
         {
@@ -107,7 +106,6 @@ public class ActivationService : IActivationService
     private async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
-        await Task.CompletedTask;
     }
 
     private async Task StartupAsync()

@@ -1,6 +1,4 @@
-﻿using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.DataTransfer;
-using CommunityToolkit.WinUI;
+﻿using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -57,10 +55,15 @@ public partial class App : Application
         UseContentRoot(AppContext.BaseDirectory).
         ConfigureServices((context, services) =>
         {
-            // Default Activation Handler
-            services.AddTransient<IActivationHandler, DefaultActivationHandler>();
-
-            // Other Activation Handlers
+            // 启动跳转处理
+            // 从前往后依次处理，直到找到能处理的处理器
+            // Launch Activation Handlers
+            services.AddTransient<IActivationHandler, JumpListActivationHandler>();     // JumpList
+            services.AddTransient<IActivationHandler, UpdateContentHandler>();          // 更新内容
+            // Protocol Activation Handlers
+            services.AddTransient<IActivationHandler, BgmOAuthActivationHandler>();     // BgmOAuth
+            // Default Handler
+            services.AddTransient<IActivationHandler, DefaultActivationHandler>();      // 启动页
 
             // Services
             services.AddTransient<INavigationViewService, NavigationViewService>();
@@ -122,9 +125,9 @@ public partial class App : Application
         ContentDialog dialog = new()
         {
             XamlRoot = MainWindow.Content.XamlRoot,
-            Title = ResourceExtensions.GetLocalized("App_UnhandledException_Oops"),
-            PrimaryButtonText = ResourceExtensions.GetLocalized("App_UnhandledException_BackToHome"),
-            CloseButtonText = ResourceExtensions.GetLocalized("App_UnhandledException_Exit"),
+            Title = "App_UnhandledException_Oops".GetLocalized(),
+            PrimaryButtonText = "App_UnhandledException_BackToHome".GetLocalized(),
+            CloseButtonText = "App_UnhandledException_Exit".GetLocalized(),
             DefaultButton = ContentDialogButton.Primary
         };
         StackPanel stackPanel = new();
@@ -135,7 +138,7 @@ public partial class App : Application
         });
         HyperlinkButton button = new()
         {
-            Content = ResourceExtensions.GetLocalized("App_UnhandledException_Hyperlink"),
+            Content = "App_UnhandledException_Hyperlink".GetLocalized(),
             NavigateUri = new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new/choose"),
         };
         button.Click += (_, _) =>
@@ -154,8 +157,10 @@ public partial class App : Application
         e.Handled = true;
         await dialog.ShowAsync();
     }
-
-
+    
+    /// <summary>
+    /// 应用启动入口
+    /// </summary>
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
@@ -163,16 +168,8 @@ public partial class App : Application
         await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
 
-    private void OnActivated(object?_, AppActivationArguments arguments){
-        switch (arguments.Kind)
-        {
-            case ExtendedActivationKind.Protocol:
-                MainWindow.DispatcherQueue.EnqueueAsync(async () =>
-                {
-                    await GetService<IBgmOAuthService>()
-                        .FinishOAuthWithUri((arguments.Data as ProtocolActivatedEventArgs)!.Uri.ToString());
-                });
-                break;
-        }
+    private async void OnActivated(object?_, AppActivationArguments arguments)
+    {
+        await GetService<IActivationService>().HandleActivationAsync(arguments);
     }
 }

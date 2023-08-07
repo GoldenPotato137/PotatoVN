@@ -74,7 +74,10 @@
                 Category="windows.protocol">
           <uap3:Protocol
                   Name="potato-vn"
-                  Parameters="/p &quot;%1&quot;" />
+                  Parameters="/p &quot;%1&quot;" >
+            <uap:DisplayName>PotatoVN</uap:DisplayName>
+            <uap:Logo>Assets\Pictures\Potato.png</uap:Logo>
+          </uap3:Protocol>
         </uap3:Extension>
       </Extensions>
     </Application>

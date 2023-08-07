@@ -1,7 +1,9 @@
 ﻿using System.Net.Http.Headers;
+using Windows.Foundation;
 using Windows.System;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
@@ -15,8 +17,7 @@ public class BgmOAuthService : IBgmOAuthService
     private readonly TimeSpan _minUpdateTime = new(1, 0, 0, 0);
     private readonly TimeSpan _minRefreshTime = new(5, 0, 0, 0);
     private bool _isInitialized;
-
-
+    
     public BgmOAuthService(ILocalSettingsService localSettingsService)
     {
         _localSettingsService = localSettingsService;
@@ -36,11 +37,27 @@ public class BgmOAuthService : IBgmOAuthService
         await Launcher.LaunchUriAsync(new Uri(BgmOAuthConfig.OAuthUrl));
     }
 
-    public async Task FinishOAuthWithUri(string uri)
+    public async Task FinishOAuthWithUri(Uri uri)
     {
-        if (uri.StartsWith(BgmOAuthConfig.RedirectUri))
+        await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            await FinishOAuthWithCode(uri.Split("=")[1]);
+            App.MainWindow.Activate(); //把窗口提到最前面
+        });
+        WwwFormUrlDecoder decoder = new(uri.Query);
+        var code = decoder.GetFirstValueByNameOrEmpty("code");
+        HttpClient client = GetHttpClient();
+        try
+        {
+            HttpResponseMessage response = await client.GetAsync(string.Format(BgmOAuthConfig.GetTokenUrl, code));
+            if (!response.IsSuccessStatusCode) return;
+            JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            _bgmOAuthState.BangumiAccessToken = json["access_token"]!.ToString();
+            _bgmOAuthState.BangumiRefreshToken = json["refresh_token"]!.ToString();
+            await GetOAuthStateFromBgm();
+        }
+        catch
+        {
+            //todo: 报错提示
         }
     }
 
@@ -68,29 +85,27 @@ public class BgmOAuthService : IBgmOAuthService
     }
 
     /// <summary>
-    /// 用于与 https://bgm.tv/oauth/access_token 交互，更新授权状态，并刷新授权时间
+    /// 更新授权状态，并刷新授权时间
     /// </summary>
+    /// <returns>是否成功</returns>
     public async Task<bool> RefreshOAuthState()
     {
         if (!_isInitialized) await Init();
-        if (!_bgmOAuthState.OAuthed) return false;
-        HttpClient httpClient = GetHttpClient();
-        Dictionary<string, string> parameters = new()
+        if (string.IsNullOrEmpty(_bgmOAuthState.BangumiRefreshToken)) return false;
+        HttpClient client = GetHttpClient();
+        try
         {
-            { "grant_type", "authorization_code" },
-            { "client_id", BgmOAuthConfig.AppId },
-            { "client_secret", BgmOAuthConfig.AppSecret },
-            { "redirect_uri", BgmOAuthConfig.RedirectUri },
-            { "refresh_token", _bgmOAuthState.BangumiRefreshToken }
-        };
-        FormUrlEncodedContent requestContent = new(parameters);
-        HttpResponseMessage responseMessage = await httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent);
-        if (!responseMessage.IsSuccessStatusCode) return false;
-        JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
-        _bgmOAuthState.BangumiAccessToken = json["access_token"]!.ToString();
-        _bgmOAuthState.BangumiRefreshToken = json["refresh_token"]!.ToString();
-        await GetOAuthStateFromBgm();
-        return true;
+            HttpResponseMessage response = await client.GetAsync(string.Format(BgmOAuthConfig.RefreshTokenUrl, _bgmOAuthState.BangumiRefreshToken));
+            JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            _bgmOAuthState.BangumiAccessToken = json["access_token"]!.ToString();
+            _bgmOAuthState.BangumiRefreshToken = json["refresh_token"]!.ToString();
+            await GetOAuthStateFromBgm();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task<string> GetOAuthStateString(bool forceRefresh=false)
@@ -129,6 +144,9 @@ public class BgmOAuthService : IBgmOAuthService
         return true;
     }
 
+    /// <summary>
+    /// 检查是否需要刷新授权
+    /// </summary>
     private async Task<bool> CheckForRefresh()
     {
         if (!_isInitialized)
@@ -139,39 +157,23 @@ public class BgmOAuthService : IBgmOAuthService
 
     private async Task SaveOAuthState()
     {
-        OnOAuthStateChange?.Invoke(_bgmOAuthState);
-        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthState, _bgmOAuthState);
+        await UiThreadInvokeHelper.InvokeAsync(async Task() =>
+        {
+            OnOAuthStateChange?.Invoke(_bgmOAuthState);
+            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthState, _bgmOAuthState);
+        });
     }
 
     private async Task SaveLastUpdateTime()
     {
-        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthStateLastUpdate, _lastUpdateDateTime);
+        await UiThreadInvokeHelper.InvokeAsync(async Task () =>
+        {
+            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthStateLastUpdate, _lastUpdateDateTime);
+        });
     }
 
     public event IBgmOAuthService.Delegate? OnOAuthStateChange;
-
-    public async Task<bool> FinishOAuthWithCode(string code)
-    {
-        if (!_isInitialized) await Init();
-        HttpClient httpClient = GetHttpClient();
-        Dictionary<string, string> parameters = new()
-        {
-            { "grant_type", "authorization_code" },
-            { "client_id", BgmOAuthConfig.AppId },
-            { "client_secret", BgmOAuthConfig.AppSecret },
-            { "redirect_uri", BgmOAuthConfig.RedirectUri },
-            { "code", code }
-        };
-        FormUrlEncodedContent requestContent = new(parameters);
-        HttpResponseMessage responseMessage = httpClient.PostAsync("https://bgm.tv/oauth/access_token", requestContent).Result;
-        if (!responseMessage.IsSuccessStatusCode) return false ;
-        JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
-        _bgmOAuthState.BangumiAccessToken = json["access_token"]!.ToString();
-        _bgmOAuthState.BangumiRefreshToken = json["refresh_token"]!.ToString();
-        await GetOAuthStateFromBgm();
-        return true;
-    }
-
+    
     
     private static HttpClient GetHttpClient()
     {
