@@ -19,6 +19,7 @@ public class ActivationService : IActivationService
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
     private readonly IAuthenticationService _authenticationService;
+    private readonly IBgmOAuthService _bgmOAuthService;
     private UIElement? _shell;
 
     public ActivationService(
@@ -26,7 +27,7 @@ public class ActivationService : IActivationService
         IDataCollectionService<GalgameFolder> galgameFolderCollectionService,
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
-        ICategoryService categoryService,
+        ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService)
     {
         _activationHandlers = activationHandlers;
@@ -36,6 +37,7 @@ public class ActivationService : IActivationService
         _updateService = updateService;
         _appCenterService = appCenterService;
         _categoryService = categoryService;
+        _bgmOAuthService = bgmOAuthService;
         _authenticationService = authenticationService;
     }
 
@@ -113,5 +115,6 @@ public class ActivationService : IActivationService
         await _themeSelectorService.SetRequestedThemeAsync();
         await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
+        await _bgmOAuthService.TryRefreshOAuthAsync();
     }
 }

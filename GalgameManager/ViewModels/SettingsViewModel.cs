@@ -83,9 +83,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             await _updateService.UpdateSettingsBadgeAsync();
         }
 
-        OAuthStateBool = (await _bgmOAuthService.GetOAuthState())!.OAuthed;
-        OAuthButtonVisibility = OAuthStateBool ? Visibility.Collapsed : Visibility.Visible;
-        OAuthStateString = await _bgmOAuthService.GetOAuthStateString();
+        await LoadBgmAccountAsync(await _bgmOAuthService.GetBgmAccountWithCache());
     }
 
     public void OnNavigatedFrom() { }
@@ -181,37 +179,40 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #endregion
 
     #region OAUTH
-
-    [RelayCommand]
-    private async Task LoginBgm()
-    {
-        await _bgmOAuthService.StartOAuth();
-    }
+    
+    [ObservableProperty] private string _bgmStateString = string.Empty;
+    [ObservableProperty] private string _bgmAvatar = string.Empty;
+    [ObservableProperty] private string _bgmUserName = string.Empty;
+    [ObservableProperty] private string _bgmButtonText = string.Empty;
+    private BgmAccount _bgmAccount = new();
     
     [RelayCommand]
-    private async Task LogoutBgm()
+    private async Task ChangeBgmState()
     {
-        await _bgmOAuthService.QuitLoginBgm();
+        if (_bgmAccount.OAuthed)
+            await _bgmOAuthService.QuitLoginBgm();
+        else
+            await _bgmOAuthService.StartOAuth();
     }
 
-    private void OnSettingChange(string key, object value)
+    private async void OnSettingChange(string key, object value)
     {
         switch (key)
         {
             case KeyValues.BangumiOAuthState:
-                if (value is BgmOAuthState state)
-                {
-                    OAuthStateBool = state.OAuthed;
-                    OAuthButtonVisibility = state.OAuthed ? Visibility.Collapsed : Visibility.Visible;
-                    OAuthStateString = _bgmOAuthService.GetOAuthStateString().Result;
-                }
+                await LoadBgmAccountAsync((value as BgmAccount)!); 
                 break;
         }
     }
 
-    [ObservableProperty] private string _oAuthStateString = "";
-    [ObservableProperty] private bool _oAuthStateBool;
-    [ObservableProperty] private Visibility _oAuthButtonVisibility = Visibility.Visible;
+    private async Task LoadBgmAccountAsync(BgmAccount account)
+    {
+        _bgmAccount = account;
+        BgmAvatar = account.Avatar;
+        BgmUserName = account.Name;
+        BgmStateString = await _bgmOAuthService.GetOAuthStateString();
+        BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
+    }
 
     #endregion
 
