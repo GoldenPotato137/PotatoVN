@@ -540,7 +540,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         BgmPhraserData data = new()
         {
-            Token = (await LocalSettingsService.ReadSettingAsync<BgmOAuthState>(KeyValues.BangumiOAuthState))?.BangumiAccessToken ?? ""
+            Token = (await LocalSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiOAuthState))?.BangumiAccessToken ?? ""
         };
         return data;
     }

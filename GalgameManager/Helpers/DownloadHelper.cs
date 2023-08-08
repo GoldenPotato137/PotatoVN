@@ -26,12 +26,15 @@ public static class DownloadHelper
             StorageFile? storageFile;
             try
             {
-                storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+                storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
             }
             catch (FileNotFoundException)
             {
                 fileName = Path.GetRandomFileName(); //随机文件名
-                storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+                var format = GetImageFormat(imageBytes);
+                if (format != string.Empty)
+                    fileName = fileName[..fileName.LastIndexOf('.')] + format;
+                storageFile = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
             }
 
             await using (Stream? fileStream = await storageFile.OpenStreamForWriteAsync())
@@ -47,6 +50,32 @@ public static class DownloadHelper
         catch(Exception)
         {
             return null;
+        }
+    }
+    
+    /// <summary>
+    /// 试图识别图片格式
+    /// </summary>
+    /// <param name="bytes">图片</param>
+    /// <returns>后缀名，若无法识别则返回空</returns>
+    private static string GetImageFormat(byte[] bytes)
+    {
+        switch (bytes)
+        {
+            //jpg
+            case [0xFF, 0xD8, ..]:
+                return ".jpg";
+            //png
+            case [0x89, 0x50, 0x4E, 0x47, ..]:
+                return ".png";
+            //gif
+            case [0x47, 0x49, 0x46, 0x38, ..]:
+                return ".gif";
+            //bmp
+            case [0x42, 0x4D, ..]:
+                return ".bmp";
+            default:
+                return string.Empty;
         }
     }
 }

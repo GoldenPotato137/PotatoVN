@@ -104,7 +104,7 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
-            <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
+            <ScrollViewer Grid.Row="1" IsTabStop="True">
                 <StackPanel>
                     <RelativePanel>
                         <Grid
@@ -215,9 +215,11 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <InfoBar Grid.Row="2" Visibility="{x:Bind ViewModel.InfoBarVisibility, Mode=OneWay}"
-                     Severity="{x:Bind ViewModel.InfoBarSeverity,Mode=OneWay}"
-                     Message="{x:Bind ViewModel.InfoBarMsg,Mode=OneWay}" />
+            <InfoBar Grid.Row="2"
+                     Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                     Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}" 
+                     IsOpen="{x:Bind ViewModel.InfoBarOpen, Mode=OneWay}"
+                     Margin="0 0 0 40"/>
         </Grid>
 
         <Grid

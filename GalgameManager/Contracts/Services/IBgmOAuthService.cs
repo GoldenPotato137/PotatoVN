@@ -1,13 +1,6 @@
-﻿namespace GalgameManager.Contracts.Services;
+﻿using GalgameManager.Models;
 
-public class BgmOAuthState
-{
-    public bool OAuthed =>  BangumiAccessToken is not "";
-    public DateTime Expires = DateTime.Now;
-    public string UserId = "";
-    public string BangumiAccessToken = "";
-    public string BangumiRefreshToken = "";
-}
+namespace GalgameManager.Contracts.Services;
 
 public interface IBgmOAuthService
 {
@@ -18,11 +11,16 @@ public interface IBgmOAuthService
 
     Task<string> GetOAuthStateString(bool forceRefresh=false);
 
-    Task<BgmOAuthState?> GetOAuthState(bool forceRefresh=false);
+    Task<BgmAccount> GetBgmAccountWithCache(bool forceRefresh=false);
 
     Task<bool> QuitLoginBgm();
+
+    /// <summary>
+    /// 使用刷新令牌刷新授权，如果还没到刷新时间则什么都不做
+    /// </summary>
+    Task TryRefreshOAuthAsync();
     
-    public delegate void Delegate(BgmOAuthState bgmOAuthState);
+    public delegate void Delegate(BgmAccount bgmAccount);
     
     /// <summary>
     /// 当设置值改变时触发
