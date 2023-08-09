@@ -19,7 +19,7 @@ public class VndbPhraser : IGalInfoPhraser
     /// <summary>
     /// id eg:g530[1..]=530=(int)530
     /// </summary>
-    private const string VndbFields = "title, description, image.url, id, rating, length, length_minutes, tags.id, tags.rating, developers.original";
+    private const string VndbFields = "title, titles.title, titles.lang, description, image.url, id, rating, length, length_minutes, tags.id, tags.rating, developers.original";
 
     private async Task Init()
     {
@@ -58,25 +58,35 @@ public class VndbPhraser : IGalInfoPhraser
             // 试图离线获取ID
             await TryGetId(galgame);
 
-            JsonArray? visualNovels;
+            VndbResponse? visualNovels;
             try
             {
                 if (galgame.RssType != RssType.Vndb) throw new Exception();
                 var idString = galgame.Id;
                 if (!string.IsNullOrEmpty(idString) && idString[0] == 'v')
                     idString = idString[1..];
-                visualNovels = await _vndb.GetVisualNovelAsync(new JsonArray("id", "=", "v" + idString), VndbFields);
+                visualNovels = await _vndb.GetVisualNovelAsync(new VndbQuery
+                {
+                    Fields = VndbFields,
+                    Filters = VndbFilters.Equal("id", "v"+idString)
+                });
                 if (visualNovels.Count == 0)
                 {
-                    visualNovels =
-                        await _vndb.GetVisualNovelAsync(new JsonArray("search", "=", galgame.Name.Value), VndbFields);
+                    visualNovels = await _vndb.GetVisualNovelAsync(new VndbQuery
+                        {
+                            Fields = VndbFields,
+                            Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                        });
                 }
             }
             catch (VndbApi.ThrottledException)
             {
                 await Task.Delay(60 * 1000); // 1 minute
-                visualNovels =
-                    await _vndb.GetVisualNovelAsync(new JsonArray("search", "=", galgame.Name.Value), VndbFields);
+                visualNovels = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                    });
             }
             catch (Exception)
             {
@@ -84,8 +94,9 @@ public class VndbPhraser : IGalInfoPhraser
             }
             
             if (visualNovels == null || visualNovels.Count == 0) return null;
-            JsonNode rssItem = visualNovels[0]!;
+            JsonNode rssItem = visualNovels.Results?[0]!;
             result.Name = rssItem["title"]!.ToString();
+            result.CnName = GetChineseName(rssItem["titles"]!.AsArray());
             result.Description = rssItem["description"]!.ToString();
             result.RssType = GetPhraseType();
             // id eg: v16044 -> 16044
@@ -116,6 +127,12 @@ public class VndbPhraser : IGalInfoPhraser
     }
 
     public RssType GetPhraseType() => RssType.Vndb;
+
+    private static string GetChineseName(JsonArray titles)
+    {
+        JsonNode? title = titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hans") ?? titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hant");
+        return title is not null ? title!["title"]!.ToString() : "";
+    }
 
     private static int CheckNotNullToInt(string inString)
     {

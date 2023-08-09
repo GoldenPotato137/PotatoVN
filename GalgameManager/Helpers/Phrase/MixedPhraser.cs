@@ -52,7 +52,7 @@ public class MixedPhraser : IGalInfoPhraser
         // name
         result.Name = vndb !=null ? vndb.Name : bgm!.Name;
 
-        result.CnName = bgm != null ? bgm!.CnName:"";
+        result.CnName = bgm != null && string.IsNullOrEmpty(bgm.CnName) ? bgm.CnName : (vndb != null ? vndb.CnName:"");
 
         // description
         result.Description = bgm != null ? bgm.Description : vndb!.Description;

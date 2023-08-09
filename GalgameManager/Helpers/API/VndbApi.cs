@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace GalgameManager.Helpers.API;
@@ -20,29 +21,23 @@ public class VndbApi
         return httpClient;
     }
 
-    public async Task<string> PostRequestInnerAsync(string query, string path)
+    public async Task<Stream> PostRequestInnerAsync(string query, string path)
     {
         using HttpClient httpClient = GetHttpClient();
         HttpContent content = new StringContent(query, new MediaTypeWithQualityHeaderValue("application/json"));
         HttpResponseMessage responseMessage = await httpClient.PostAsync(VndbApiBaseUrl + path, content);
         if (responseMessage.StatusCode == HttpStatusCode.TooManyRequests) throw new ThrottledException();
         responseMessage.EnsureSuccessStatusCode();
-        return await responseMessage.Content.ReadAsStringAsync();
+        return await responseMessage.Content.ReadAsStreamAsync();
     }
 
-    public async Task<JsonArray> GetVisualNovelAsync(JsonArray filters, string fields, string sort="", int results=1, bool reverse=false)
+    public async Task<VndbResponse> GetVisualNovelAsync(VndbQuery vndbQuery)
     {
-        JsonObject vndbQuery = new()
-        {
-            ["filters"] = filters,
-            ["fields"] = fields,
-            ["sort"] = sort,
-            ["results"] = results,
-            ["reverse"] = reverse
-        };
-        JsonNode? responseJson = JsonNode.Parse(await PostRequestInnerAsync(vndbQuery.ToJsonString(), "vn"));
-        if (responseJson is null) throw new NullResponseException();
-        return responseJson["results"]!.AsArray();
+        var query = JsonSerializer.Serialize(vndbQuery);
+        VndbResponse? vndbResponse =
+            await JsonSerializer.DeserializeAsync<VndbResponse>(await PostRequestInnerAsync(query, "vn"));
+        if (vndbResponse is null) throw new NullResponseException();
+        return vndbResponse;
     }
     
     public class NullResponseException : Exception
@@ -59,5 +54,3 @@ public class VndbApi
         }
     }
 }
-
-
