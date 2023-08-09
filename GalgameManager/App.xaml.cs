@@ -1,5 +1,4 @@
-﻿using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.DataTransfer;
+﻿using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -56,10 +55,15 @@ public partial class App : Application
         UseContentRoot(AppContext.BaseDirectory).
         ConfigureServices((context, services) =>
         {
-            // Default Activation Handler
-            services.AddTransient<IActivationHandler, DefaultActivationHandler>();
-
-            // Other Activation Handlers
+            // 启动跳转处理
+            // 从前往后依次处理，直到找到能处理的处理器
+            // Launch Activation Handlers
+            services.AddTransient<IActivationHandler, JumpListActivationHandler>();     // JumpList
+            services.AddTransient<IActivationHandler, UpdateContentHandler>();          // 更新内容
+            // Protocol Activation Handlers
+            services.AddTransient<IActivationHandler, BgmOAuthActivationHandler>();     // BgmOAuth
+            // Default Handler
+            services.AddTransient<IActivationHandler, DefaultActivationHandler>();      // 启动页
 
             // Services
             services.AddTransient<INavigationViewService, NavigationViewService>();
@@ -153,8 +157,10 @@ public partial class App : Application
         e.Handled = true;
         await dialog.ShowAsync();
     }
-
-
+    
+    /// <summary>
+    /// 应用启动入口
+    /// </summary>
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
@@ -162,16 +168,8 @@ public partial class App : Application
         await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
 
-    private void OnActivated(object?_, AppActivationArguments arguments){
-        switch (arguments.Kind)
-        {
-            case ExtendedActivationKind.Protocol:
-                MainWindow.DispatcherQueue.TryEnqueue(async () =>
-                {
-                    await GetService<IBgmOAuthService>()
-                        .FinishOAuthWithUri((arguments.Data as ProtocolActivatedEventArgs)!.Uri.ToString());
-                });
-                break;
-        }
+    private async void OnActivated(object?_, AppActivationArguments arguments)
+    {
+        await GetService<IActivationService>().HandleActivationAsync(arguments);
     }
 }

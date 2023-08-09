@@ -1,13 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Windows.UI.StartScreen;
+﻿using Windows.UI.StartScreen;
 
 using GalgameManager.Contracts.Services;
 using GalgameManager.Models;
 
 namespace GalgameManager.Services;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public class JumpListService : IJumpListService
 {
     private JumpList? _jumpList;

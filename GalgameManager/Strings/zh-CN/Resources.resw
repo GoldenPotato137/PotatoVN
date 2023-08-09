@@ -228,7 +228,7 @@
   <data name="SettingsPage_OAuth_LoginBgm.Description" xml:space="preserve">
     <value>通过OAuth登录Bangumi</value>
   </data>
-  <data name="SettingsPage_OAuth_LoginBgm_Button.Content" xml:space="preserve">
+  <data name="Login" xml:space="preserve">
     <value>登录</value>
   </data>
   <data name="SettingsPage_OAuth_LogoutBgm.Title" xml:space="preserve">
@@ -237,7 +237,7 @@
   <data name="SettingsPage_OAuth_LogoutBgm.Description" xml:space="preserve">
     <value>退出Bangumi OAuth登录</value>
   </data>
-  <data name="SettingsPage_OAuth_LogoutBgm_Button.Content" xml:space="preserve">
+  <data name="Logout" xml:space="preserve">
     <value>退出登录</value>
   </data>
   <data name="SettingsPage_RssTitle" xml:space="preserve">
@@ -730,5 +730,17 @@
   </data>
   <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Description" xml:space="preserve">
     <value>是否在获取信息时下载游玩状态（需登录第三方账号）</value>
+  </data>
+  <data name="BgmAccount_NoName" xml:space="preserve">
+    <value>阿~卡~林~</value>
+  </data>
+  <data name="BgmOAuthService_NoLogin" xml:space="preserve">
+    <value>还没登录Bangumi账号呢~</value>
+  </data>
+  <data name="BgmOAuthService_Id" xml:space="preserve">
+    <value>用户ID:</value>
+  </data>
+  <data name="BgmOAuthService_AuthLimit" xml:space="preserve">
+    <value>, 授权至:</value>
   </data>
 </root>

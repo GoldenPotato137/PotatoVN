@@ -31,7 +31,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _canOpenInBgm = false;
     [ObservableProperty] private bool _canOpenInVndb = false;
 
-    [ObservableProperty] private Visibility _infoBarVisibility = Visibility.Collapsed;
+    [ObservableProperty] private bool _infoBarOpen = false;
     [ObservableProperty] private string _infoBarMsg = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
@@ -123,11 +123,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private async Task DisplayMsg(InfoBarSeverity severity, string msg, int displayTimeMs = 3000)
     {
         var myIndex = ++_msgIndex;
-        InfoBarVisibility = Visibility.Visible;
+        InfoBarOpen = true;
         InfoBarMsg = msg;
+        InfoBarSeverity = severity;
         await Task.Delay(displayTimeMs);
         if (myIndex == _msgIndex)
-            InfoBarVisibility = Visibility.Collapsed;
+            InfoBarOpen = false;
     }
 
     [RelayCommand]
