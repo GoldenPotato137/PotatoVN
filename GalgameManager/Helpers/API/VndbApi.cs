@@ -12,6 +12,12 @@ namespace GalgameManager.Helpers.API;
 public class VndbApi
 {
     public readonly string VndbApiBaseUrl = "https://api.vndb.org/kana/";
+
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = new SnakeNamingPolicy()
+    };
     private static HttpClient GetHttpClient()
     {
         HttpClient httpClient = new();
@@ -33,9 +39,9 @@ public class VndbApi
 
     public async Task<VndbResponse> GetVisualNovelAsync(VndbQuery vndbQuery)
     {
-        var query = JsonSerializer.Serialize(vndbQuery);
+        var query = JsonSerializer.Serialize(vndbQuery, _jsonSerializerOptions);
         VndbResponse? vndbResponse =
-            await JsonSerializer.DeserializeAsync<VndbResponse>(await PostRequestInnerAsync(query, "vn"));
+            await JsonSerializer.DeserializeAsync<VndbResponse>(await PostRequestInnerAsync(query, "vn"), _jsonSerializerOptions);
         if (vndbResponse is null) throw new NullResponseException();
         return vndbResponse;
     }
