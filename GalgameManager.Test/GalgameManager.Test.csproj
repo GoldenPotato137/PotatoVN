@@ -24,4 +24,5 @@
       <ProjectReference Include="..\GalgameManager\GalgameManager.csproj" />
     </ItemGroup>
 
+
 </Project>

@@ -42,7 +42,7 @@ public class VndbPhraserTest
                 if(game.Id != "16044") Assert.Fail();
                 break;
             case "喫茶ステラと死神の蝶":
-                if (game.Id != "26414") Assert.Fail();
+                if (game.Id != "26414" || game.CnName != "星光咖啡馆与死神之蝶") Assert.Fail();
                 break;
         }
         
