@@ -161,9 +161,9 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             // name
             Name = jsonToken["name"]!.ToObject<string>()!,
             // Chinese name
-            CnName = jsonToken["name_cn"]!.ToObject<string>()!,
+            CnName = jsonToken["name_cn"]!.ToObject<string>() ?? "",
             // description
-            Description = jsonToken["summary"]!.ToObject<string>()!,
+            Description = jsonToken["summary"]!.ToObject<string>() ?? "",
             // imageUrl
             ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!,
             // rating
@@ -176,18 +176,18 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         // developer
         List<JToken>? infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
         JToken? developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
-        if (developerInfoBox is not null)
+        if (developerInfoBox?["value"] != null)
         {
             switch (developerInfoBox["value"]!.Type)
             {
                 case JTokenType.Array:
                 {
-                    IEnumerable<char> tmp = developerInfoBox.SelectMany(dev => dev["v"]!.ToString());
+                    IEnumerable<char> tmp = developerInfoBox["value"]!.SelectMany(dev => dev["v"]!.ToString());
                     result.Developer = string.Join(",", tmp);
                     break;
                 }
                 case JTokenType.String:
-                    result.Developer = developerInfoBox.ToString();
+                    result.Developer = developerInfoBox["value"]!.ToString();
                     break;
                 default:
                     result.Developer = Galgame.DefaultString;
