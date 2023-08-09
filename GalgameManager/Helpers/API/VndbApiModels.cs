@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -29,9 +30,40 @@ public class VndbResponse
     public VndbFilters? NormalizedFilters { get; set; }
 }
 
+[SuppressMessage("ReSharper", "IdentifierTypo")]
+public class VndbVn
+{
+    public string? Id { get; set; }
+    public string? Title { get; set; }
+    // Alternative title
+    public string? Alttitle { get; set; }
+    public IList<VnTitle>? Titles;
+    public IList<string>? Aliases { get; set; }
+    // language the VN has originally been written in. 
+    public string? Olang { get; set; }
+    public DevstatusEnum? Devstatus { get; set; }
+    public string? Released { get; set; }
+    
+    public class VnTitle
+    {
+        public string? Lang { get; set; }
+        public string? Title { get; set; }
+        public string? Latin { get; set; }
+        public bool? Official { get; set; }
+        public bool? Main { get; set; }
+    }
+    
+    public enum DevstatusEnum
+    {
+        Finished=0,
+        InDevelopment=1,
+        Cancelled=2
+    }
+}
+
 public class VndbProducer
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Original { get; set; }
     public IList<string>? Aliases { get; set; }

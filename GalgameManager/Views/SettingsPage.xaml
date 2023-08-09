@@ -166,8 +166,8 @@
                                 <StackPanel>
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
-                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideNameWithCNByBangumi"
-                                                               IsOn="{x:Bind ViewModel.OverrideLocalNameWithCNByBangumi, Mode=TwoWay}" 
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideNameWithChinese"
+                                                               IsOn="{x:Bind ViewModel.OverrideLocalNameWithChinese, Mode=TwoWay}" 
                                                                Visibility="{x:Bind ViewModel.OverrideLocalName, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                Margin="0, 13, 0, 0"
                                     />

@@ -109,7 +109,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
-        _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
+        _overrideLocalNameWithChinese = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithChinese).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         _downloadPlayStatusWhenPhrasing = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing).Result;
         //LIBRARY
@@ -233,13 +233,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
-    [ObservableProperty] private bool _overrideLocalNameWithCNByBangumi;
+    [ObservableProperty] private bool _overrideLocalNameWithChinese;
     [ObservableProperty] private bool _autoCategory;
     [ObservableProperty] private bool _downloadPlayStatusWhenPhrasing;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
     
-    partial void OnOverrideLocalNameWithCNByBangumiChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithCNByBangumi, value);
+    partial void OnOverrideLocalNameWithChineseChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithChinese, value);
     
     partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
     

@@ -19,6 +19,8 @@ public class VndbPhraserTest
     [TestCase("スタディ§ステディ")]
     [TestCase("サノバウィッチ")]
     [TestCase("喫茶ステラと死神の蝶")]
+    // 特例：Description为空
+    [TestCase("妹調教日記～こんなツンデレが俺の妹なわけない!～")]
     public async Task PhraseTest(string name)
     {
         // Arrange
@@ -43,6 +45,9 @@ public class VndbPhraserTest
                 break;
             case "喫茶ステラと死神の蝶":
                 if (game.Id != "26414" || game.CnName != "星光咖啡馆与死神之蝶") Assert.Fail();
+                break;
+            case "妹調教日記～こんなツンデレが俺の妹なわけない!～":
+                if (game.Id != "26414" || game.CnName != "妹调教日记") Assert.Fail();
                 break;
         }
         
