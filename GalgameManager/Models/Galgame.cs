@@ -231,8 +231,10 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                 Thread.Sleep(1000 * 60);
                 if (!process.HasExited)
                 {
-                    // maybe error
-                    TotalPlayTime++;
+                    UiThreadInvokeHelper.Invoke(() =>
+                    {
+                        TotalPlayTime++;
+                    });
                     var now = DateTime.Now.ToShortDateString();
                     if (PlayedTime.ContainsKey(now))
                         PlayedTime[now]++;

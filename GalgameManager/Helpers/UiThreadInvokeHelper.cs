@@ -16,4 +16,17 @@ public static class UiThreadInvokeHelper
             await action();
         });
     }
+    
+    public static void Invoke(Func<Task> action)
+    {
+        App.MainWindow.DispatcherQueue.EnqueueAsync(async () =>
+        {
+            await action();
+        });
+    }
+    
+    public static void Invoke(Action action)
+    {
+        App.MainWindow.DispatcherQueue.EnqueueAsync(action);
+    }
 }

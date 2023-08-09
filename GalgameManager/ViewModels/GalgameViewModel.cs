@@ -160,8 +160,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             await _jumpListService.AddToJumpListAsync(Item);
 
             await process.WaitForExitAsync();
-            Item.TotalPlayTime--;
-            Item.TotalPlayTime++; //手动刷新一下时间显示
             ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
             await SaveAsync(); //保存游戏信息(更新时长)
         }
