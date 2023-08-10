@@ -1,10 +1,7 @@
-﻿#nullable enable
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Web;
-
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
@@ -64,10 +61,10 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         try
         {
             var url = "https://api.bgm.tv/search/subject/" + HttpUtility.UrlEncode(name) + "?type=4";
-            var response = await _httpClient.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null;
-            var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
-            var games = jsonToken["list"]!.ToObject<List<JToken>>();
+            JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
+            List<JToken>? games = jsonToken["list"]!.ToObject<List<JToken>>();
             if (games==null || games.Count == 0) return null;
             
             double maxSimilarity = 0;
@@ -133,7 +130,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
-        var name = galgame.Name;
+        LockableProperty<string> name = galgame.Name;
         int? id;
         try
         {
@@ -147,7 +144,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         
         if (id == null) return null;
         var url = "https://api.bgm.tv/v0/subjects/" + id;
-        var response = await _httpClient.GetAsync(url);
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
         if (!response.IsSuccessStatusCode) return null;
         
         JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
