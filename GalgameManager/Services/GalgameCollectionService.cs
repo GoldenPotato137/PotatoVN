@@ -144,7 +144,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         var metaFolder = Path.Combine(path, Galgame.MetaPath);
         if (Path.Exists(Path.Combine(metaFolder, "meta.json"))) // 有元数据备份
         {
-            galgame =  _fileService.Read<Galgame>(metaFolder, "meta.json", true);
+            galgame =  _fileService.Read<Galgame>(metaFolder, "meta.json");
             Galgame.ResolveMeta(galgame, metaFolder);
             PhrasedEvent?.Invoke();
         }
@@ -322,7 +322,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private async Task SaveMetaAsync(Galgame galgame)
     {
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
-        await _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy(), true);
+        _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy());
         var imagePath = Path.Combine(galgame.Path, Galgame.MetaPath);
         imagePath = Path.Combine(imagePath, Path.GetFileName(galgame.ImagePath));
         if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(imagePath))

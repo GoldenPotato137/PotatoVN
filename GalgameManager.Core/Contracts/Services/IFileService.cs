@@ -7,17 +7,30 @@ public interface IFileService
     /// </summary>
     /// <param name="folderPath">文件夹路径</param>
     /// <param name="fileName">文件名</param>
-    /// <param name="useJonSerializer">是否使用 JsonSerializer，若为否则使用JsonConvert</param>
-    T Read<T>(string folderPath, string fileName, bool useJonSerializer = false);
+    T Read<T>(string folderPath, string fileName);
 
     /// <summary>
-    /// 保存数据
+    /// 向保存文件队列添加保存任务 <br/>
+    /// 被保存的对象会被序列化为JSON来保存
     /// </summary>
     /// <param name="folderPath">文件夹路径</param>
     /// <param name="fileName">文件名</param>
     /// <param name="content">要保存的内容</param>
-    /// <param name="useJonSerializer">是否使用 JsonSerializer，若为否则使用JsonConvert</param>
-    Task Save<T>(string folderPath, string fileName, T content, bool useJonSerializer = false);
+    void Save<T>(string folderPath, string fileName, T content);
+    
+    /// <summary>
+    /// 立即保存文件 <br/>
+    /// 被保存的对象会被序列化为JSON来保存
+    /// </summary>
+    /// <param name="folderPath">文件夹路径</param>
+    /// <param name="fileName">文件名</param>
+    /// <param name="content">要保存的内容</param>
+    void SaveNow<T>(string folderPath, string fileName, T content);
+
+    /// <summary>
+    /// 等待保存队列完成
+    /// </summary>
+    Task WaitForWriteFinishAsync();
 
     void Delete(string folderPath, string fileName);
 }

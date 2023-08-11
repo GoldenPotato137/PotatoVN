@@ -45,4 +45,5 @@ public static class KeyValues
     
     //是否执行过某种升级, bool
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
+    public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
 }

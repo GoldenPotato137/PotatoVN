@@ -105,6 +105,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //THEME
         _elementTheme = themeSelectorService.Theme;
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
+        //OAUTH
+        _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
@@ -140,6 +142,32 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             : new[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword };
         _localSettingsService.OnSettingChanged += OnSettingChange;
     }
+
+    #region INFOBAR_CONTROL
+
+    [ObservableProperty] private string _infoBarMsg = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    [ObservableProperty] private bool _isInfoBarOpen;
+    private int _displayIndex;
+
+    /// <summary>
+    /// 使用InfoBar显示消息
+    /// </summary>
+    /// <param name="severity">严重程度</param>
+    /// <param name="msg">消息本体</param>
+    /// <param name="time">显示时间(ms)</param>
+    private async Task DisplayMsgAsync(InfoBarSeverity severity, string msg, int time = 3000)
+    {
+        var index = ++_displayIndex;
+        InfoBarSeverity = severity;
+        InfoBarMsg = msg;
+        IsInfoBarOpen = true;
+        await Task.Delay(time);
+        if (index == _displayIndex)
+            IsInfoBarOpen = false;
+    }
+
+    #endregion
 
     #region UPDATE
 
@@ -212,6 +240,22 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BgmUserName = account.Name;
         BgmStateString = await _bgmOAuthService.GetOAuthStateString();
         BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
+    }
+    
+    private async void BgmAuthResultNotify((OAuthResult, string) arg)
+    {
+        switch (arg.Item1)
+        {
+            case OAuthResult.Done:
+            case OAuthResult.Failed:
+                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                break;
+            case OAuthResult.FetchingAccount: 
+            case OAuthResult.FetchingToken:
+            default:
+                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                break;
+        }
     }
 
     #endregion
