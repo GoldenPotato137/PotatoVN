@@ -137,7 +137,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
-        LockableProperty<string> name = galgame.Name;
+        var name = galgame.Name.Value ?? "";
         int? id;
         try
         {
@@ -146,7 +146,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         }
         catch (Exception)
         {
-            id = await GetId(name!);
+            id = await GetId(name);
         }
         
         if (id == null) return null;

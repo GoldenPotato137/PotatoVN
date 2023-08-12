@@ -28,12 +28,12 @@ public class VndbPhraser : IGalInfoPhraser
     private async Task Init()
     {
         _init = true;
-        var assembly = Assembly.GetExecutingAssembly();
+        Assembly assembly = Assembly.GetExecutingAssembly();
         var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, TagDbFile);
         if (!File.Exists(file)) return;
 
-        var json = JToken.Parse(await File.ReadAllTextAsync(file));
-        var tags = json.ToObject<List<JToken>>();
+        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
+        List<JToken>? tags = json.ToObject<List<JToken>>();
         tags!.ForEach(tag => _tagDb.Add(int.Parse(tag["id"]!.ToString()), tag));
     }
 
@@ -136,7 +136,7 @@ public class VndbPhraser : IGalInfoPhraser
             IOrderedEnumerable<Tag> tmpTags = GetTags(rssItem["tags"]!.AsArray()).OrderByDescending(t => t.Rating);
             tmpTags.ForEach(tag =>
             {
-                if (_tagDb.TryGetValue((int)tag.Id, out JToken? tagInfo))
+                if (_tagDb.TryGetValue(tag.Id, out JToken? tagInfo))
                     result.Tags.Value.Add(CheckNotNullToString(tagInfo["name"]));
             });
         }
@@ -151,8 +151,9 @@ public class VndbPhraser : IGalInfoPhraser
 
     private static string GetChineseName(JsonArray titles)
     {
-        JsonNode? title = titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hans") ?? titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hant");
-        return title is not null ? title!["title"]!.ToString() : "";
+        JsonNode? title = titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hans") ??
+                          titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hant");
+        return title is not null ? title["title"]!.ToString() : "";
     }
 
     private static int CheckNotNullToInt(JsonNode? jsonNode)
