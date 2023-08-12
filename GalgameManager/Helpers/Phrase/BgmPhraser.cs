@@ -43,11 +43,18 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
             _checkAuthTask = Task.Run(() =>
             {
-                HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
-                _authed = response.IsSuccessStatusCode;
-                if (!_authed) return;
-                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                _userId = json["id"]!.ToString();
+                try
+                {
+                    HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
+                    _authed = response.IsSuccessStatusCode;
+                    if (!_authed) return;
+                    JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    _userId = json["id"]!.ToString();
+                }
+                catch (Exception)
+                {
+                    //ignore
+                }
             });
         }
     }

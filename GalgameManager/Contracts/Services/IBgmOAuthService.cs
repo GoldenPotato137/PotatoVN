@@ -1,4 +1,6 @@
-﻿using GalgameManager.Models;
+﻿using GalgameManager.Enums;
+using GalgameManager.Helpers;
+using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Services;
 
@@ -27,6 +29,11 @@ public interface IBgmOAuthService
     /// </summary>
     public event Delegate? OnOAuthStateChange;
     
+    /// <summary>
+    /// 当授权状态改变时触发（用于提示当前授权获取进度）
+    /// </summary>
+    public event GenericDelegate<(OAuthResult, string)> OnAuthResultChange; 
+
     public static DateTime UnixTimeStampToDateTime( double unixTimeStamp )
     {
         return DateTime.UnixEpoch.AddSeconds( unixTimeStamp ).ToLocalTime();;

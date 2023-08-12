@@ -26,7 +26,12 @@
 
 
     <Grid Margin="0 0 0 40">
-        <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0 10 25 0">
 
                 <!-- 主题 -->
@@ -407,5 +412,9 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
+        
+        <InfoBar Grid.Row="1" IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}"/>
     </Grid>
 </Page>
