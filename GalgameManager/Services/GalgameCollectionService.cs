@@ -207,9 +207,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
         {
-            if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi))
+            if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithChinese))
             {
-                galgame.Name.Value = tmp.CnName is not "" ?tmp.CnName:tmp.Name.Value;
+                galgame.Name.Value = !string.IsNullOrEmpty(tmp.CnName) ? tmp.CnName : tmp.Name.Value;
             }
             else
             {

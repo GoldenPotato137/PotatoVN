@@ -108,7 +108,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async void AddGalgame()
+    private async Task AddGalgame()
     {
         var openPicker = new FileOpenPicker();
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
@@ -176,7 +176,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async void GetInfoFromRss()
+    private async Task GetInfoFromRss()
     {
         if (Item == null) return;
         if (_selectedGalgames.Count == 0)
@@ -186,14 +186,14 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async void GetGalInFolder()
+    private async Task GetGalInFolder()
     {
         if (_item == null) return;
         await _item.GetGalgameInFolder(_localSettingsService);
     }
     
     [RelayCommand]
-    private async void AddGalFromZip()
+    private async Task AddGalFromZip()
     {
         var openPicker = new FileOpenPicker
         {

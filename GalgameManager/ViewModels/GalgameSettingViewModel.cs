@@ -73,7 +73,7 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
     }
 
     [RelayCommand]
-    private async void OnGetInfoFromRss()
+    private async Task OnGetInfoFromRss()
     {
         IsPhrasing = true;
         await _galService.PhraseGalInfoAsync(Gal);

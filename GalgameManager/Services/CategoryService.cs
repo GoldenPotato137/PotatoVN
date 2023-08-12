@@ -147,6 +147,7 @@ public class CategoryService : ICategoryService
         ObservableCollection<Galgame> games = await _galgameService.GetContentGridDataAsync();
         foreach (Galgame game in games)
             UpdateCategory(game);
+        //todo:空Category删除
     }
 
     private async void UpdateCategory(Galgame galgame)
@@ -174,6 +175,7 @@ public class CategoryService : ICategoryService
             }
             developer.Add(galgame);
         }
+        
     }
 
     private async void Worker()
