@@ -295,6 +295,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         await _categoryService.UpdateAllGames();
     }
 
+    [RelayCommand]
+    private async Task DownloadPlayStatusFormBgmNow()
+    {
+        _ = DisplayMsgAsync(InfoBarSeverity.Informational, "HomePage_Downloading".GetLocalized(), 1000 * 120);
+        (GalStatusSyncResult, string) result = await _galgameCollectionService.DownloadAllPlayStatus(RssType.Bangumi);
+        await DisplayMsgAsync(result.Item1.ToInfoBarSeverity(), result.Item2);
+    }
+
     #endregion
 
     #region LIBRARY

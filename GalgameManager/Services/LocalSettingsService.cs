@@ -14,7 +14,6 @@ namespace GalgameManager.Services;
 public class LocalSettingsService : ILocalSettingsService
 {
     private const string ErrorFileName ="You_Should_Not_See_This_File.Check_AppSettingsJson.json";
-    private const string DefaultLocalSettingsFile = "LocalSettings.json";
 
     private readonly IFileService _fileService;
 
@@ -54,14 +53,16 @@ public class LocalSettingsService : ILocalSettingsService
             if (_isInitialized) return;
             await UpgradeAsync();
 
-            _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? new Dictionary<string, object>();
+            _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
+                        new Dictionary<string, object>();
 
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
             if (CheckSettings() == false)
             {
                 // 恢复最后一个正确的配置
-                if (File.Exists(Path.Combine(_applicationDataFolder, _localsettingsBackupFile))) File.Copy(backupFile, settingFile, true);
+                if (File.Exists(Path.Combine(_applicationDataFolder, _localsettingsBackupFile))) 
+                    File.Copy(backupFile, settingFile, true);
                 retry ++;
                 continue;
             }
@@ -198,7 +199,7 @@ public class LocalSettingsService : ILocalSettingsService
         try
         {
             foreach (var value in _settings.Values)
-                if (value is JToken token)
+                if (value is JToken)
                     JsonConvert.DeserializeObject(value.ToString()!);
         }
         catch

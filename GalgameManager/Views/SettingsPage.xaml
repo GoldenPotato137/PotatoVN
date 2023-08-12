@@ -167,6 +167,7 @@
                     SettingIcon="&#xE896;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 覆盖名字 -->
                             <control:Panel>
                                 <StackPanel>
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
@@ -179,6 +180,7 @@
                                     <!-- Magic Number: SettingsPageStackPanelSpacing=13 修复SettingToggleSwitch隐藏时 StackPanel 下侧仍有Spacing 问题 -->
                                 </StackPanel>
                             </control:Panel>
+                            <!-- 自动分类 -->
                             <control:Panel>
                                 <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
                                   <local:SettingToggleSwitch x:Uid="SettingsPage_Download_AutoCategory"
@@ -194,8 +196,16 @@
                                   </control:Setting>
                                 </StackPanel>
                             </control:Panel>
+                            <!-- 游玩状态同步 -->
                             <control:Panel>
-                                <local:SettingToggleSwitch x:Uid="SettingsPage_Download_SyncPlayStatusWhenPhrasing"/>
+                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_SyncPlayStatusWhenPhrasing"
+                                                               IsOn="{x:Bind ViewModel.DownloadPlayStatusWhenPhrasing, Mode=TwoWay}"/>
+                                    
+                                    <control:Setting x:Uid="SettingsPage_Download_SyncBgmPlayStatusNow">
+                                        <Button Content="Go" Width="75" Command="{x:Bind ViewModel.DownloadPlayStatusFormBgmNowCommand}"/>
+                                    </control:Setting>
+                                </StackPanel>
                             </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>

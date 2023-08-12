@@ -184,7 +184,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
-            await DownLoadPlayStatusAsync(galgame);
+            await DownLoadPlayStatusAsync(galgame, RssType.Bangumi);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
@@ -226,11 +226,33 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.CheckSavePosition();
         return galgame;
     }
-
-    private async Task DownLoadPlayStatusAsync(Galgame galgame)
+    
+    /// <summary>
+    /// 下载某个游戏的游玩状态
+    /// </summary>
+    /// <param name="galgame">游戏</param>
+    /// <param name="source">下载源</param>
+    /// <returns>(下载结果，结果解释)</returns>
+    public async Task<(GalStatusSyncResult, string)> DownLoadPlayStatusAsync(Galgame galgame, RssType source)
     {
-        if (PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
-            await bgmPhraser.DownloadAsync(galgame);
+        if (source == RssType.Bangumi && PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
+            return await bgmPhraser.DownloadAsync(galgame);
+        return (GalStatusSyncResult.Other, "这个数据源不支持同步游玩状态");
+    }
+
+    /// <summary>
+    /// 从某个信息源下载所有游戏的游玩状态
+    /// </summary>
+    /// <param name="source">信息源</param>
+    /// <returns>(结果，结果解释)</returns>
+    public async Task<(GalStatusSyncResult ,string)> DownloadAllPlayStatus(RssType source)
+    {
+        var msg = string.Empty;
+        GalStatusSyncResult result = GalStatusSyncResult.Other;
+        IGalInfoPhraser phraser = PhraserList[(int)source];
+        if (phraser is IGalStatusSync sync)
+            (result, msg) = await sync.DownloadAllAsync(_galgames);
+        return (result, msg);
     }
 
     /// <summary>

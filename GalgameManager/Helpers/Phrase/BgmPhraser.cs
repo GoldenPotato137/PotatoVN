@@ -348,6 +348,46 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         return (GalStatusSyncResult.Other, errorMsg);
     }
 
+    public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(List<Galgame> galgames)
+    {
+        if (_checkAuthTask is not null) await _checkAuthTask;
+        if (_authed == false) return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        int offset = 0, total = -1, cnt = 0;
+        GalStatusSyncResult result = GalStatusSyncResult.Ok;
+        var msg = string.Empty;
+        while (total == -1 || offset < total)
+        {
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync(
+                    $"https://api.bgm.tv/v0/users/{_userId}/collections?subject_type=4&limit=30&offset={offset}");
+                JToken json = JObject.Parse(await response.Content.ReadAsStringAsync());
+                if (response.IsSuccessStatusCode == false)
+                    throw new Exception(json["description"]!.ToString());
+                total = json["total"]!.ToObject<int>();
+                List<JToken>? games = json["data"]!.ToObject<List<JToken>>();
+                offset += games!.Count;
+                foreach (JToken game in games)
+                {
+                    Galgame? tmp = galgames.FirstOrDefault(g => g.Ids[(int)RssType.Bangumi] == game["subject_id"]!.ToString());
+                    if (tmp is null) continue;
+                    PhrasePlayStatusJToken(game, tmp);
+                    cnt++;
+                }
+            }
+            catch (Exception e)
+            {
+                result = GalStatusSyncResult.Other;
+                msg = e.Message;
+                break;
+            }
+        }
+        if (string.IsNullOrEmpty(msg))
+            msg = string.Format("BgmPhraser_DownloadPlayStatus_Success".GetLocalized(), cnt);
+        
+        return (result, msg);
+    }
+
     /// <summary>
     /// 将bgm游玩状态json解析到游戏中，需要调用方手动捕捉json解析异常
     /// </summary>
@@ -360,7 +400,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         galgame.Comment = json["comment"]!.ToString();
         galgame.MyRate = json["rate"]!.ToObject<int>();
         galgame.PrivateComment = json["private"]!.ToObject<bool>();
-        return (GalStatusSyncResult.Ok, string.Empty);
+        return (GalStatusSyncResult.Ok, "BgmPhraser_DownloadAsync_Success".GetLocalized());
     }
 }
 
