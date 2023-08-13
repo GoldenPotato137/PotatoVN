@@ -15,7 +15,6 @@ namespace GalgameManager.Services;
 
 public class CategoryService : ICategoryService
 {
-    private const string ProducerFile = @"Assets\Data\producers.json";
     private ObservableCollection<CategoryGroup> _categoryGroups = new();
     private readonly GalgameCollectionService _galgameService;
     private CategoryGroup? _developerGroup, _statusGroup;
@@ -25,7 +24,6 @@ public class CategoryService : ICategoryService
     private readonly BlockingCollection<Category> _queue = new();
     private readonly BgmPhraser _bgmPhraser;
     private readonly DispatcherQueue? _dispatcher;
-    private List<Producer> _producers = new List<Producer>();
 
     public CategoryGroup StatusGroup => _statusGroup!;
 
@@ -65,25 +63,6 @@ public class CategoryService : ICategoryService
             _categoryGroups.Add(_developerGroup);
         }
         InitStatusGroup();
-        
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, ProducerFile);
-        if (!File.Exists(file)) return;
-
-        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
-        List<JToken>? producersJson = json.ToObject<List<JToken>>();
-        producersJson!.ForEach(dev =>
-        {
-            if (!string.IsNullOrEmpty(dev["name"]!.ToString()))
-            {
-                _producers.Add(new Producer()
-                {
-                    Name = dev["name"]!.ToString(),
-                    Latin = dev["latin"]!.ToString(),
-                    Alias = dev["alias"]!.ToString().Split("\n").ToList()
-                });
-            }
-        });
         
         // 将分类里的Galgame从string还原
         await Task.Run(() =>
@@ -187,8 +166,11 @@ public class CategoryService : ICategoryService
             Category developer;
             try
             {
-                Producer producer = _producers.First(p => p.Name == galgame.Developer.Value! || p.Latin == galgame.Developer.Value! ||
-                                                          p.Alias.Contains(galgame.Developer.Value!));
+                Producer producer = ProducerDataHelper.Producers.First(
+                    p => p.Name == galgame.Developer.Value! || 
+                         p.Latin == galgame.Developer.Value! || 
+                         p.Alias.Contains(galgame.Developer.Value!)
+                         );
                 try
                 {
                     developer = _developerGroup!.Categories.First(c => c.Name.Equals(producer.Name));
@@ -279,12 +261,4 @@ public class CategoryService : ICategoryService
         _statusCategory[(int)PlayType.Shelved] = _statusGroup.Categories[3];
         _statusCategory[(int)PlayType.Abandoned] = _statusGroup.Categories[4];
     }
-}
-
-public class Producer
-{
-    public string Id = "";
-    public string Name = "";
-    public string Latin = "";
-    public List<string> Alias = new();
 }

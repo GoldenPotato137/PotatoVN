@@ -1,8 +1,6 @@
-﻿using System.Reflection;
-using GalgameManager.Contracts.Phrase;
+﻿using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
-using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
 
@@ -10,46 +8,32 @@ public class MixedPhraser : IGalInfoPhraser
 {
     private readonly BgmPhraser _bgmPhraser;
     private readonly VndbPhraser _vndbPhraser;
-    private readonly List<string> _developerList = new();
+    private IEnumerable<string> _developerList;
     private bool _init;
-    private const string ProducerFile = @"Assets\Data\producers.json";
 
     
-    private async Task InitAsync()
+    private void Init()
     {
         _init = true;
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, ProducerFile);
-        if (!File.Exists(file)) return;
-
-        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
-        List<JToken>? producers = json.ToObject<List<JToken>>();
-        producers!.ForEach(dev =>
-        {
-            if (!string.IsNullOrEmpty(dev["name"]!.ToString()))
-                _developerList.Add(dev["name"]!.ToString());
-            if (!string.IsNullOrEmpty(dev["latin"]!.ToString()))
-                _developerList.Add(dev["latin"]!.ToString());
-            if (!string.IsNullOrEmpty(dev["alias"]!.ToString()))
-            {
-                var tmp = dev["alias"]!.ToString();
-                _developerList.AddRange(tmp.Split("\n"));
-            }
-        });
+        _developerList = ProducerDataHelper.Producers.SelectMany(p => p.Names);
     }
     
     private string? GetDeveloperFromTags(Galgame galgame)
     {
+        if (_init == false)
+            Init();
         string? result = null;
         foreach (var tag in galgame.Tags.Value!)
         {
             double maxSimilarity = 0;
             foreach(var dev in _developerList)
+            {
                 if (IGalInfoPhraser.Similarity(dev, tag) > maxSimilarity)
                 {
                     maxSimilarity = IGalInfoPhraser.Similarity(dev, tag);
                     result = dev;
                 }
+            }
 
             if (result != null && maxSimilarity > 0.75) // magic number: 一个tag和开发商的相似度大于0.75就认为是开发商
                 break;
@@ -61,12 +45,13 @@ public class MixedPhraser : IGalInfoPhraser
     {
         _bgmPhraser = bgmPhraser;
         _vndbPhraser = vndbPhraser;
+        _developerList = new List<string>();
     }
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (_init == false)
-            await InitAsync();
+            Init();
         Galgame? bgm = new(), vndb = new();
         bgm.Name = galgame.Name;
         vndb.Name = galgame.Name;
