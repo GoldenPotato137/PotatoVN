@@ -84,4 +84,12 @@ public class BangumiPhraserTest
         
         Assert.Pass();
     }
+
+    [Test]
+    [TestCase("ゆずソフト", "https://lain.bgm.tv/pic/crt/l/1c/fd/7175_prsn_k7z6x.jpg?r=1553269010")]
+    public async Task GetDeveloperImageUrlAsyncTest(string name, string url)
+    {
+        var imageUrl = await _phraser.GetDeveloperImageUrlAsync(name);
+        Assert.That(url, Is.EqualTo(imageUrl));
+    }
 }

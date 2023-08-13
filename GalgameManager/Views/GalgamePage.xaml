@@ -190,6 +190,7 @@
                     <TextBlock
                         Style="{ThemeResource BodyTextBlockStyle}"
                         Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}"
+                        IsTextSelectionEnabled="True"
                         Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
 
                     <TextBlock
