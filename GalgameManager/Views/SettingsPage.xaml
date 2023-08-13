@@ -26,7 +26,12 @@
 
 
     <Grid Margin="0 0 0 40">
-        <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0 10 25 0">
 
                 <!-- 主题 -->
@@ -166,8 +171,8 @@
                                 <StackPanel>
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
-                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideNameWithCNByBangumi"
-                                                               IsOn="{x:Bind ViewModel.OverrideLocalNameWithCNByBangumi, Mode=TwoWay}" 
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideNameWithChinese"
+                                                               IsOn="{x:Bind ViewModel.OverrideLocalNameWithChinese, Mode=TwoWay}" 
                                                                Visibility="{x:Bind ViewModel.OverrideLocalName, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                Margin="0, 13, 0, 0"
                                     />
@@ -407,5 +412,9 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
+        
+        <InfoBar Grid.Row="1" IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}"/>
     </Grid>
 </Page>

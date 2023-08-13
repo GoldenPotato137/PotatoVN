@@ -701,10 +701,10 @@
   <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
     <value>游玩状态</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameWithCNByBangumi.Description" xml:space="preserve">
-    <value>是否优先用Bangumi源获取到的galgame中文名覆盖本地名字</value>
+  <data name="SettingsPage_Download_OverrideNameWithChinese.Description" xml:space="preserve">
+    <value>是否优先使用获取到的galgame中文名覆盖本地名字</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameWithCNByBangumi.Title" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideNameWithChinese.Title" xml:space="preserve">
     <value>用中文名覆盖名字</value>
   </data>
   <data name="BgmPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
@@ -742,5 +742,17 @@
   </data>
   <data name="BgmOAuthService_AuthLimit" xml:space="preserve">
     <value>, 授权至:</value>
+  </data>
+  <data name="OAuthResult_Done" xml:space="preserve">
+    <value>登录成功</value>
+  </data>
+  <data name="OAuthResult_Failed" xml:space="preserve">
+    <value>因为以下原因登录失败：</value>
+  </data>
+  <data name="OAuthResult_FetchingToken" xml:space="preserve">
+    <value>获取Token中，请稍后</value>
+  </data>
+  <data name="OAuthResult_FetchingAccount" xml:space="preserve">
+    <value>获取账号信息中，请稍后</value>
   </data>
 </root>

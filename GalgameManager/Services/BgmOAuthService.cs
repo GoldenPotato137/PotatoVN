@@ -19,6 +19,10 @@ public class BgmOAuthService : IBgmOAuthService
     private readonly TimeSpan _minRefreshTime = new(5, 0, 0, 0);
     private bool _isInitialized;
     
+    public event IBgmOAuthService.Delegate? OnOAuthStateChange;
+    public event GenericDelegate<(OAuthResult, string)>? OnAuthResultChange;
+
+    
     public BgmOAuthService(ILocalSettingsService localSettingsService)
     {
         _localSettingsService = localSettingsService;
@@ -47,6 +51,7 @@ public class BgmOAuthService : IBgmOAuthService
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
             App.MainWindow.Activate(); //把窗口提到最前面
+            OnAuthResultChange?.Invoke((OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg()));
         });
         WwwFormUrlDecoder decoder = new(uri.Query);
         var code = decoder.GetFirstValueByNameOrEmpty("code");
@@ -60,9 +65,12 @@ public class BgmOAuthService : IBgmOAuthService
             _bgmAccount.BangumiRefreshToken = json["refresh_token"]!.ToString();
             await GetBgmAccount();
         }
-        catch
+        catch (Exception e)
         {
-            //todo: 报错提示
+            await UiThreadInvokeHelper.InvokeAsync(() =>
+            {
+                OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message));
+            });
         }
     }
     
@@ -110,6 +118,10 @@ public class BgmOAuthService : IBgmOAuthService
     {
         if (!_isInitialized) await Init();
         if (!_bgmAccount.OAuthed) return;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            OnAuthResultChange?.Invoke((OAuthResult.FetchingAccount, OAuthResult.FetchingAccount.ToMsg()));
+        });
         HttpClient httpClient = GetHttpClient();
         try
         {
@@ -123,25 +135,30 @@ public class BgmOAuthService : IBgmOAuthService
             _bgmAccount.UserId = json["user_id"]!.ToString();
             _bgmAccount.Expires = IBgmOAuthService.UnixTimeStampToDateTime(expires);
             _lastUpdateDateTime = DateTime.Now;
-            await SaveOAuthState();
-            await SaveLastUpdateTime();
             //下载用户数据
             //用户名
             responseMessage = await httpClient.GetAsync($"https://api.bgm.tv/v0/users/{_bgmAccount.UserId}");
             JToken userJson = JToken.Parse(await responseMessage.Content.ReadAsStringAsync());
             _bgmAccount.Name = userJson["nickname"]!.ToString();
-            await SaveOAuthState();
             //头像
             var avatarUrl = userJson["avatar"]!["large"]!.ToString();
             avatarUrl = avatarUrl[..avatarUrl.LastIndexOf('?')]; //xx.jpg?r=1684973055&hd=1 => xx.jpg
             var path = await DownloadHelper.DownloadAndSaveImageAsync(avatarUrl);
             if (path != null)
                 _bgmAccount.Avatar = path;
+            await SaveLastUpdateTime();
             await SaveOAuthState();
+            await UiThreadInvokeHelper.InvokeAsync(() =>
+            {
+                OnAuthResultChange?.Invoke((OAuthResult.Done, OAuthResult.Done.ToMsg()));
+            });
         }
-        catch
+        catch (Exception e)
         {
-            //
+            await UiThreadInvokeHelper.InvokeAsync(() =>
+            {
+                OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg() + e.Message));
+            });
         }
     }
 
@@ -199,9 +216,6 @@ public class BgmOAuthService : IBgmOAuthService
         });
     }
 
-    public event IBgmOAuthService.Delegate? OnOAuthStateChange;
-    
-    
     private static HttpClient GetHttpClient()
     {
         HttpClient httpClient = new();

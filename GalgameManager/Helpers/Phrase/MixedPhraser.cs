@@ -1,6 +1,8 @@
-﻿using GalgameManager.Contracts.Phrase;
+﻿using System.Reflection;
+using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
+using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
 
@@ -8,6 +10,52 @@ public class MixedPhraser : IGalInfoPhraser
 {
     private readonly BgmPhraser _bgmPhraser;
     private readonly VndbPhraser _vndbPhraser;
+    private readonly List<string> _developerList = new();
+    private bool _init;
+    private const string ProducerFile = @"Assets\Data\producers.json";
+
+    
+    private async Task InitAsync()
+    {
+        _init = true;
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, ProducerFile);
+        if (!File.Exists(file)) return;
+
+        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
+        List<JToken>? producers = json.ToObject<List<JToken>>();
+        producers!.ForEach(dev =>
+        {
+            if (!string.IsNullOrEmpty(dev["name"]!.ToString()))
+                _developerList.Add(dev["name"]!.ToString());
+            if (!string.IsNullOrEmpty(dev["latin"]!.ToString()))
+                _developerList.Add(dev["latin"]!.ToString());
+            if (!string.IsNullOrEmpty(dev["alias"]!.ToString()))
+            {
+                var tmp = dev["alias"]!.ToString();
+                _developerList.AddRange(tmp.Split("\n"));
+            }
+        });
+    }
+    
+    private string? GetDeveloperFromTags(Galgame galgame)
+    {
+        string? result = null;
+        foreach (var tag in galgame.Tags.Value!)
+        {
+            double maxSimilarity = 0;
+            foreach(var dev in _developerList)
+                if (IGalInfoPhraser.Similarity(dev, tag) > maxSimilarity)
+                {
+                    maxSimilarity = IGalInfoPhraser.Similarity(dev, tag);
+                    result = dev;
+                }
+
+            if (result != null && maxSimilarity > 0.75) // magic number: 一个tag和开发商的相似度大于0.75就认为是开发商
+                break;
+        }
+        return result;
+    }
     
     public MixedPhraser(BgmPhraser bgmPhraser, VndbPhraser vndbPhraser)
     {
@@ -17,6 +65,8 @@ public class MixedPhraser : IGalInfoPhraser
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
+        if (_init == false)
+            await InitAsync();
         Galgame? bgm = new(), vndb = new();
         bgm.Name = galgame.Name;
         vndb.Name = galgame.Name;
@@ -46,28 +96,43 @@ public class MixedPhraser : IGalInfoPhraser
             return null;
         
         // 合并信息
-        Galgame result = new();
-        result.RssType = RssType.Mixed;
-        result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}";
-        // name
-        result.Name = vndb !=null ? vndb.Name : bgm!.Name;
+        Galgame result = new()
+        {
+            RssType = RssType.Mixed,
+            Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}",
+            // name
+            Name = vndb != null ? vndb.Name : bgm!.Name
+        };
 
-        result.CnName = bgm != null ? bgm!.CnName:"";
+        // Chinese name
+        if (bgm != null && !string.IsNullOrEmpty(bgm.CnName))result.CnName =  bgm.CnName;
+        else if (vndb != null && !string.IsNullOrEmpty(vndb.CnName)) result.CnName = vndb.CnName;
+        else result.CnName = "";
 
         // description
         result.Description = bgm != null ? bgm.Description : vndb!.Description;
+        
         // developer
-        if(bgm != null)
-            result.Developer = bgm.Developer;
+        if (bgm != null && bgm.Developer != Galgame.DefaultString)result.Developer = bgm.Developer;
+        else if (vndb != null && vndb.Developer != Galgame.DefaultString)result.Developer = vndb.Developer;
+        
         // expectedPlayTime
-        if(vndb != null)
-            result.ExpectedPlayTime = vndb.ExpectedPlayTime;
+        if(vndb != null)result.ExpectedPlayTime = vndb.ExpectedPlayTime;
         // rating
         result.Rating = bgm != null ? bgm.Rating : vndb!.Rating;
         // imageUrl
         result.ImageUrl = vndb != null ? vndb.ImageUrl : bgm!.ImageUrl;
         // tags
+        //todo: mix Bgm's and Vndb's tag 
         result.Tags = bgm != null ? bgm.Tags : vndb!.Tags;
+        
+        // developer from tag
+        if (result.Developer == Galgame.DefaultString)
+        {
+            var tmp = GetDeveloperFromTags(result);
+            if (tmp != null)
+                result.Developer = tmp;
+        }
         return result;
     }
 

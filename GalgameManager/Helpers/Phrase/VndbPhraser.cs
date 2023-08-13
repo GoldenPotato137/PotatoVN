@@ -1,38 +1,39 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Windows.Data.Json;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
+using GalgameManager.Helpers.API;
 using GalgameManager.Models;
 using Newtonsoft.Json.Linq;
 using SharpCompress;
-using VndbSharp;
-using VndbSharp.Models;
-using VndbSharp.Models.Errors;
-using VndbSharp.Models.VisualNovel;
+using JsonArray = System.Text.Json.Nodes.JsonArray;
 
 namespace GalgameManager.Helpers.Phrase;
 
 public class VndbPhraser : IGalInfoPhraser
 {
-    private readonly Vndb _vndb;
+    private readonly VndbApi _vndb = new();
     private readonly Dictionary<int, JToken> _tagDb = new();
     private bool _init;
     private const string TagDbFile = @"Assets\Data\vndb-tags-2023-04-15.json";
-    
-    public VndbPhraser()
-    {
-        _vndb = new Vndb(true).WithClientDetails("GalgameManager", "1.0-dev").WithFlagsCheck(true);
-    }
+    /// <summary>
+    /// id eg:g530[1..]=530=(int)530
+    /// </summary>
+    private const string VndbFields = "title, titles.title, titles.lang, description, image.url, id, rating, length, " +
+                                      "length_minutes, tags.id, tags.rating, developers.original, developers.name";
 
     private async Task Init()
     {
         _init = true;
-        var assembly = Assembly.GetExecutingAssembly();
+        Assembly assembly = Assembly.GetExecutingAssembly();
         var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, TagDbFile);
         if (!File.Exists(file)) return;
 
-        var json = JToken.Parse(await File.ReadAllTextAsync(file));
-        var tags = json.ToObject<List<JToken>>();
+        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
+        List<JToken>? tags = json.ToObject<List<JToken>>();
         tags!.ForEach(tag => _tagDb.Add(int.Parse(tag["id"]!.ToString()), tag));
     }
 
@@ -55,50 +56,88 @@ public class VndbPhraser : IGalInfoPhraser
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (!_init) await Init();
-        var result = new Galgame();
+        Galgame result = new();
         try
         {
             // 试图离线获取ID
             await TryGetId(galgame);
 
-            VndbResponse<VisualNovel> visualNovels;
+            VndbResponse vndbResponse;
             try
             {
-                if(galgame.RssType != RssType.Vndb) throw new Exception();
+                if (galgame.RssType != RssType.Vndb) throw new Exception();
+                // with v
                 var idString = galgame.Id;
-                if(!string.IsNullOrEmpty(idString) && idString[0]=='v')
-                    idString = idString[1..];
-                var id = Convert.ToUInt32(idString);
-                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Id.Equals(id), VndbFlags.FullVisualNovel);
+                if (string.IsNullOrEmpty(idString))
+                {
+                    vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                    });
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(idString) && idString[0] != 'v')
+                        idString = "v"+idString;
+                    vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("id", idString)
+                    });
+                    if (vndbResponse.Results is null || vndbResponse.Results.Count == 0)
+                    {
+                        vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                        {
+                            Fields = VndbFields,
+                            Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                        });
+                    }
+                }
+            }
+            catch (VndbApi.ThrottledException)
+            {
+                await Task.Delay(60 * 1000); // 1 minute
+                vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                    });
             }
             catch (Exception)
             {
-                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
+                return null;
             }
             
-            if (visualNovels == null || visualNovels.Count == 0)
-            {
-                var error = _vndb.GetLastError();
-                if (error is not { Type: ErrorType.Throttled }) return null;
-                await Task.Delay(60 * 1000); // 1 minute
-                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
-                if (visualNovels == null) return null;
-            }
-            var rssItem = visualNovels.Items[0];
-            result.Name = rssItem.OriginalName;
-            result.Description = rssItem.Description;
+            if (vndbResponse.Results is null || vndbResponse.Results.Count == 0) return null;
+            JsonNode rssItem = vndbResponse.Results[0]!;
+            result.Name = CheckNotNullToString(rssItem["title"]);
+            result.CnName = GetChineseName(rssItem["titles"]!.AsArray());
+            result.Description = CheckNotNullToString(rssItem["description"], Galgame.DefaultString);
             result.RssType = GetPhraseType();
-            result.Id = rssItem.Id.ToString();
-            result.Rating = (float)rssItem.Rating;
-            result.ExpectedPlayTime = rssItem.Length.ToString() ?? Galgame.DefaultString;
-            result.ImageUrl = rssItem.Image;
-            //Tags
+            // id eg: v16044 -> 16044
+            var id = CheckNotNullToString(rssItem["id"]);
+            result.Id = id.StartsWith("v")?id[1..]:id;
+            result.Rating = (float)CheckNotNullToInt(rssItem["rating"]);
+            result.ExpectedPlayTime = GetLength(rssItem["length"],rssItem["length_minutes"]);
+            result.ImageUrl = rssItem["image"] != null ? CheckNotNullToString(rssItem["image"]!["url"]):"";
+            // Developers
+            if (rssItem["developers"]!.AsArray().Count > 0)
+            {
+                IEnumerable<string> developers = rssItem["developers"]!.AsArray().Select<JsonNode?, string>(d =>
+                    CheckNotNullToString(d!["original"], d["name"]!.ToString()));
+                result.Developer = string.Join(",", developers);
+            }else
+            {
+                result.Developer = Galgame.DefaultString;
+            }
+            // Tags
             result.Tags.Value = new ObservableCollection<string>();
-            var tmpTags = new List<TagMetadata>(rssItem.Tags).OrderByDescending(t => t.Score);
+            IOrderedEnumerable<Tag> tmpTags = GetTags(rssItem["tags"]!.AsArray()).OrderByDescending(t => t.Rating);
             tmpTags.ForEach(tag =>
             {
-                if (_tagDb.TryGetValue((int)tag.Id, out var tagInfo))
-                    result.Tags.Value.Add(tagInfo["name"]!.ToString());
+                if (_tagDb.TryGetValue(tag.Id, out JToken? tagInfo))
+                    result.Tags.Value.Add(CheckNotNullToString(tagInfo["name"]));
             });
         }
         catch (Exception)
@@ -109,4 +148,89 @@ public class VndbPhraser : IGalInfoPhraser
     }
 
     public RssType GetPhraseType() => RssType.Vndb;
+
+    private static string GetChineseName(JsonArray titles)
+    {
+        JsonNode? title = titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hans") ??
+                          titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hant");
+        return title is not null ? title["title"]!.ToString() : "";
+    }
+
+    private static int CheckNotNullToInt(JsonNode? jsonNode)
+    {
+        if (jsonNode is not null)
+        {
+            var inString = jsonNode.ToString();
+            if (string.IsNullOrWhiteSpace(inString) && inString != "null")
+            {
+                if (int.TryParse(inString, out var outInt)) return outInt;
+            }
+        }
+
+        return 0;
+    }
+    
+    private static string CheckNotNullToString(JsonNode? jsonNode, string defaultString = "")
+    {
+        return jsonNode is not null ? jsonNode.AsValue().GetValue<string>() : defaultString;
+    }
+    
+    private static string CheckNotNullToString(JToken? jsonNode, string defaultString = "")
+    {
+        return jsonNode is not null ? jsonNode.Value<string>() ?? "" : defaultString;
+    }
+
+    private static string GetLength(JsonNode? length, JsonNode? lengthMinutes)
+    {
+        if (lengthMinutes != null && int.TryParse(lengthMinutes.ToString(), out var lengthInt))
+        {
+            return (lengthInt > 60?lengthInt / 60 + "h":"") + (lengthInt%60 != 0?lengthInt % 60 + "s":"");
+        }
+
+        if (length != null && int.TryParse(length.ToString(), out lengthInt))
+        {
+            switch (lengthInt)
+            {
+                case 1:
+                    return "very short";
+                case 2:
+                    return "short";
+                case 3:
+                    return "medium";
+                case 4:
+                    return "long";
+                case 5:
+                    return "very long";
+            }
+        }
+
+        return Galgame.DefaultString;
+    }
+
+    private static List<Tag> GetTags(JsonArray tags)
+    {
+        List<Tag> tagsList = new();
+        foreach (JsonNode? tag in tags)
+        {
+            if (tag is not null)
+            {
+                float.TryParse(tag["rating"]!.ToString(), out var rating);
+                // eg g1212->1212
+                int.TryParse(tag["id"]!.ToString()[1..], out var id);
+                tagsList.Add(new Tag
+                {
+                    Id = id,
+                    Rating = rating
+                });
+            }
+        }
+
+        return tagsList;
+    }
+
+    public struct Tag
+    {
+        public int Id;
+        public float Rating;
+    }
 }

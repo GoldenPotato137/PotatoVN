@@ -150,17 +150,17 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             switch (keyValue)
             {
                 case SortKeys.Developer:
-                    result = string.Compare(_developer.Value!, other._developer.Value, StringComparison.Ordinal);
+                    result = string.Compare(Developer.Value!, other.Developer.Value, StringComparison.Ordinal);
                     break;
                 case SortKeys.Name:
-                    result = string.Compare(_name.Value!, other._name.Value, StringComparison.CurrentCultureIgnoreCase);
+                    result = string.Compare(Name.Value!, other.Name.Value, StringComparison.CurrentCultureIgnoreCase);
                     take = 1;
                     break;
                 case SortKeys.Rating:
-                    result = _rating.Value.CompareTo(other._rating.Value);
+                    result = Rating.Value.CompareTo(other.Rating.Value);
                     break;
                 case SortKeys.LastPlay:
-                    result = GetTime(_lastPlay.Value!).CompareTo(GetTime(other._lastPlay.Value!));
+                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(other.LastPlay.Value!));
                     break;
             }
             if (result != 0)
@@ -231,7 +231,10 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                 Thread.Sleep(1000 * 60);
                 if (!process.HasExited)
                 {
-                    _totalPlayTime++;
+                    UiThreadInvokeHelper.Invoke(() =>
+                    {
+                        TotalPlayTime++;
+                    });
                     var now = DateTime.Now.ToShortDateString();
                     if (PlayedTime.ContainsKey(now))
                         PlayedTime[now]++;
@@ -261,7 +264,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         if(ExePath != null)
             result.ExePath = "..\\" + System.IO.Path.GetFileName(ExePath);
         result.Path = "..\\";
-        result._imagePath = new LockableProperty<string>();
+        result.ImagePath = new LockableProperty<string>();
         if (ImagePath.Value == DefaultImagePath)
             result.ImagePath.Value = DefaultImagePath;
         else

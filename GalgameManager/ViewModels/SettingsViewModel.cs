@@ -105,11 +105,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //THEME
         _elementTheme = themeSelectorService.Theme;
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
+        //OAUTH
+        _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
         _overrideLocalName = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName).Result;
-        _overrideLocalNameWithCNByBangumi = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithCNByBangumi).Result;
+        _overrideLocalNameWithChinese = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithChinese).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         _downloadPlayStatusWhenPhrasing = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing).Result;
         //LIBRARY
@@ -140,6 +142,32 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             : new[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword };
         _localSettingsService.OnSettingChanged += OnSettingChange;
     }
+
+    #region INFOBAR_CONTROL
+
+    [ObservableProperty] private string _infoBarMsg = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    [ObservableProperty] private bool _isInfoBarOpen;
+    private int _displayIndex;
+
+    /// <summary>
+    /// 使用InfoBar显示消息
+    /// </summary>
+    /// <param name="severity">严重程度</param>
+    /// <param name="msg">消息本体</param>
+    /// <param name="time">显示时间(ms)</param>
+    private async Task DisplayMsgAsync(InfoBarSeverity severity, string msg, int time = 3000)
+    {
+        var index = ++_displayIndex;
+        InfoBarSeverity = severity;
+        InfoBarMsg = msg;
+        IsInfoBarOpen = true;
+        await Task.Delay(time);
+        if (index == _displayIndex)
+            IsInfoBarOpen = false;
+    }
+
+    #endregion
 
     #region UPDATE
 
@@ -213,6 +241,22 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BgmStateString = await _bgmOAuthService.GetOAuthStateString();
         BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
     }
+    
+    private async void BgmAuthResultNotify((OAuthResult, string) arg)
+    {
+        switch (arg.Item1)
+        {
+            case OAuthResult.Done:
+            case OAuthResult.Failed:
+                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                break;
+            case OAuthResult.FetchingAccount: 
+            case OAuthResult.FetchingToken:
+            default:
+                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                break;
+        }
+    }
 
     #endregion
 
@@ -233,13 +277,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region DOWNLOAD_BEHAVIOR
 
     [ObservableProperty] private bool _overrideLocalName;
-    [ObservableProperty] private bool _overrideLocalNameWithCNByBangumi;
+    [ObservableProperty] private bool _overrideLocalNameWithChinese;
     [ObservableProperty] private bool _autoCategory;
     [ObservableProperty] private bool _downloadPlayStatusWhenPhrasing;
 
     partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
     
-    partial void OnOverrideLocalNameWithCNByBangumiChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithCNByBangumi, value);
+    partial void OnOverrideLocalNameWithChineseChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalNameWithChinese, value);
     
     partial void OnAutoCategoryChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AutoCategory, value);
     
@@ -286,7 +330,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     partial void OnGameFolderMustContainChanged(string value) => _localSettingsService.SaveSettingAsync(KeyValues.GameFolderMustContain, value);
 
     [RelayCommand]
-    private void OnRegexTryItOut() => RegexTryItOut = NameRegex.GetName(_regexTryItOut, _regex, _regexRemoveBorder, _regexIndex);
+    private void OnRegexTryItOut() => RegexTryItOut = NameRegex.GetName(RegexTryItOut, Regex, RegexRemoveBorder, RegexIndex);
 
     private void SetSaveMetaPopUp(Galgame galgame)
     {
@@ -310,7 +354,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
     }
     [RelayCommand]
-    private async void SelectRemoteFolder()
+    private async Task SelectRemoteFolder()
     {
         FolderPicker openPicker = new();
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
@@ -392,7 +436,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region ABOUT
 
     [RelayCommand]
-    private async void Rate()
+    private async Task Rate()
     {
         StoreContext context = StoreContext.GetDefault();
         WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());

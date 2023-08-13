@@ -82,7 +82,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void DeleteCategory(Category category)
+    private async Task DeleteCategory(Category category)
     {
         var delete = false;
         ContentDialog dialog = new()
@@ -103,7 +103,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void CombineCategory(Category source)
+    private async Task CombineCategory(Category source)
     {
         if (_currentGroup == null) return;
         CombineCategoryDialog dialog = new(_currentGroup, source);
@@ -148,7 +148,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void SelectCategoryGroup(CategoryGroup group)
+    private async Task SelectCategoryGroup(CategoryGroup group)
     {
         _currentGroup = group;
         UpdateSource();

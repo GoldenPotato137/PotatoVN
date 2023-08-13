@@ -37,13 +37,13 @@ public partial class HelpViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void DownloadFaqs()
+    private async Task DownloadFaqs()
     {
         Faqs = await _faqService.GetFaqAsync(true);
     }
 
     [RelayCommand]
-    private async void Issues()
+    private async Task Issues()
     {
         await Launcher.LaunchUriAsync(new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new/choose"));
     }

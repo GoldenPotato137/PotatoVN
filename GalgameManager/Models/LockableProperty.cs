@@ -14,7 +14,7 @@ public partial class LockableProperty<T> : ObservableObject
         get => _value;
         set
         {
-            if (_isLock) return;
+            if (IsLock) return;
             SetProperty(ref _value, value);
             OnValueChanged?.Invoke(value);
         }

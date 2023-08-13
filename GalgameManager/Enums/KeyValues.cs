@@ -10,7 +10,7 @@ public static class KeyValues
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
     public const string OverrideLocalName = "overrideLocalName";
-    public const string OverrideLocalNameWithCNByBangumi = "overrideLocalNameWithCNByBangumi";
+    public const string OverrideLocalNameWithChinese = "overrideLocalNameWithChinese";
     public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
@@ -45,4 +45,5 @@ public static class KeyValues
     
     //是否执行过某种升级, bool
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
+    public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
 }

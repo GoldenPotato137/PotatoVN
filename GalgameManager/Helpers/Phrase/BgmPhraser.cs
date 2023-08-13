@@ -1,10 +1,7 @@
-﻿#nullable enable
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Web;
-
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
@@ -16,13 +13,10 @@ namespace GalgameManager.Helpers.Phrase;
 
 public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
 {
-    private const string ProducerFile = @"Assets\Data\producers.json";
     private HttpClient _httpClient;
-    private bool _init;
     private bool _authed;
     private string _userId = string.Empty;
     private Task? _checkAuthTask;
-    private readonly List<string> _developerList = new();
 
     public BgmPhraser(BgmPhraserData data)
     {
@@ -49,40 +43,22 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
             _checkAuthTask = Task.Run(() =>
             {
-                HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
-                _authed = response.IsSuccessStatusCode;
-                if (!_authed) return;
-                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                _userId = json["id"]!.ToString();
+                try
+                {
+                    HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
+                    _authed = response.IsSuccessStatusCode;
+                    if (!_authed) return;
+                    JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    _userId = json["id"]!.ToString();
+                }
+                catch (Exception)
+                {
+                    //ignore
+                }
             });
         }
     }
-
-    private async Task InitAsync()
-    {
-        _init = true;
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, ProducerFile);
-        if (!File.Exists(file)) return;
-
-        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
-        List<JToken>? producers = json.ToObject<List<JToken>>();
-        producers!.ForEach(dev =>
-        {
-            if (IsNullOrEmpty(dev["name"]!.ToString()) == false)
-                _developerList.Add(dev["name"]!.ToString());
-            if (IsNullOrEmpty(dev["latin"]!.ToString()) == false)
-                _developerList.Add(dev["latin"]!.ToString());
-            if (IsNullOrEmpty(dev["alias"]!.ToString()) == false)
-            {
-                var tmp = dev["alias"]!.ToString();
-                _developerList.AddRange(tmp.Split("\n"));
-            }
-        });
-    }
-
-    private static bool IsNullOrEmpty(string str) => str is "null" or "";
-
+    
     private async Task<int?> GetId(string name)
     {
         // 先试图从本地数据库获取
@@ -92,10 +68,10 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         try
         {
             var url = "https://api.bgm.tv/search/subject/" + HttpUtility.UrlEncode(name) + "?type=4";
-            var response = await _httpClient.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null;
-            var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
-            var games = jsonToken["list"]!.ToObject<List<JToken>>();
+            JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
+            List<JToken>? games = jsonToken["list"]!.ToObject<List<JToken>>();
             if (games==null || games.Count == 0) return null;
             
             double maxSimilarity = 0;
@@ -161,10 +137,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
-        if (_init == false)
-            await InitAsync();
-        
-        var name = galgame.Name;
+        var name = galgame.Name.Value ?? "";
         int? id;
         try
         {
@@ -173,69 +146,57 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         }
         catch (Exception)
         {
-            id = await GetId(name!);
+            id = await GetId(name);
         }
         
         if (id == null) return null;
         var url = "https://api.bgm.tv/v0/subjects/" + id;
-        var response = await _httpClient.GetAsync(url);
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
         if (!response.IsSuccessStatusCode) return null;
         
-        var jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
+        JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
 
-        Galgame result = new();
-        // rssType
-        result.RssType = RssType.Bangumi;
-        // id
-        result.Id = jsonToken["id"]!.ToObject<string>()!;
-        // name
-        result.Name = jsonToken["name"]!.ToObject<string>()!;
-        // Chinese name
-        result.CnName = jsonToken["name_cn"]!.ToObject<string>()!;
-        // description
-        result.Description = jsonToken["summary"]!.ToObject<string>()!;
-        // imageUrl
-        result.ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!;
-        // rating
-        result.Rating = jsonToken["rating"]!["score"]!.ToObject<float>();
+        Galgame result = new()
+        {
+            // rssType
+            RssType = RssType.Bangumi,
+            // id
+            Id = jsonToken["id"]!.ToObject<string>()!,
+            // name
+            Name = jsonToken["name"]!.ToObject<string>()!,
+            // Chinese name
+            CnName = jsonToken["name_cn"]!.ToObject<string>() ?? "",
+            // description
+            Description = jsonToken["summary"]!.ToObject<string>() ?? "",
+            // imageUrl
+            ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!,
+            // rating
+            Rating = jsonToken["rating"]!["score"]!.ToObject<float>()
+        };
         // tags
-        var tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
+        List<JToken>? tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
         result.Tags.Value = new ObservableCollection<string>();
         tags.ForEach(tag => result.Tags.Value.Add(tag["name"]!.ToObject<string>()!));
         // developer
-        var infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
-        var developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
-        developerInfoBox = developerInfoBox == null ? Galgame.DefaultString : developerInfoBox["value"] ?? Galgame.DefaultString;
-        if (developerInfoBox.Type.ToString() == "Array")
+        List<JToken>? infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
+        JToken? developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
+        if (developerInfoBox?["value"] != null)
         {
-            IEnumerable<char> tmp = developerInfoBox.SelectMany(dev => dev["v"]!.ToString());
-            developerInfoBox = string.Join(",", tmp);
-        }
-        result.Developer = developerInfoBox.ToString();
-        if (result.Developer == Galgame.DefaultString)
-        {
-            var tmp = GetDeveloperFromTags(result);
-            if (tmp != null)
-                result.Developer = tmp;
-        }
-        return result;
-    }
-
-    private string? GetDeveloperFromTags(Galgame galgame)
-    {
-        string? result = null;
-        foreach (var tag in galgame.Tags.Value!)
-        {
-            double maxSimilarity = 0;
-            foreach(var dev in _developerList)
-                if (IGalInfoPhraser.Similarity(dev, tag) > maxSimilarity)
+            switch (developerInfoBox["value"]!.Type)
+            {
+                case JTokenType.Array:
                 {
-                    maxSimilarity = IGalInfoPhraser.Similarity(dev, tag);
-                    result = dev;
+                    IEnumerable<char> tmp = developerInfoBox["value"]!.SelectMany(dev => dev["v"]!.ToString());
+                    result.Developer = string.Join(",", tmp);
+                    break;
                 }
-
-            if (result != null && maxSimilarity > 0.75) // magic number: 一个tag和开发商的相似度大于0.75就认为是开发商
-                break;
+                case JTokenType.String:
+                    result.Developer = developerInfoBox["value"]!.ToString();
+                    break;
+                default:
+                    result.Developer = Galgame.DefaultString;
+                    break;
+            }
         }
         return result;
     }

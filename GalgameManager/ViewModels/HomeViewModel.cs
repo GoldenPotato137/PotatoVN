@@ -179,7 +179,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void AddGalgame()
+    private async Task AddGalgame()
     {
         try
         {
@@ -227,7 +227,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
     
     [RelayCommand]
-    private async void Sort()
+    private async Task Sort()
     {
         await _galgameService.SetSortKeysAsync();
     }
@@ -251,7 +251,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void GalFlyOutDelete(Galgame? galgame)
+    private async Task GalFlyOutDelete(Galgame? galgame)
     {
         if(galgame == null) return;
         ContentDialog dialog = new()
@@ -278,7 +278,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void GalFlyOutGetInfoFromRss(Galgame? galgame)
+    private async Task GalFlyOutGetInfoFromRss(Galgame? galgame)
     {
         if(galgame == null) return;
         IsPhrasing = true;
