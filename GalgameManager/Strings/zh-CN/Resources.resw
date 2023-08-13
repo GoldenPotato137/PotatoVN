@@ -755,4 +755,7 @@
   <data name="OAuthResult_FetchingAccount" xml:space="preserve">
     <value>获取账号信息中，请稍后</value>
   </data>
+  <data name="GalgamePage_ReleaseDate" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
 </root>
