@@ -123,7 +123,6 @@ public class MixedPhraser : IGalInfoPhraser
         if (bgm != null && bgm.Developer != Galgame.DefaultString)result.Developer = bgm.Developer;
         else if (vndb != null && vndb.Developer != Galgame.DefaultString)result.Developer = vndb.Developer;
         // tags
-        //todo: mix Bgm's and Vndb's tag 
         result.Tags = bgm != null ? bgm.Tags : vndb!.Tags;
         
         // developer from tag
