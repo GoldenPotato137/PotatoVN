@@ -184,7 +184,7 @@ public class VndbPhraser : IGalInfoPhraser
     {
         if (lengthMinutes != null && int.TryParse(lengthMinutes.ToString(), out var lengthInt))
         {
-            return (lengthInt > 60?lengthInt / 60 + "h":"") + (lengthInt%60 != 0?lengthInt % 60 + "s":"");
+            return (lengthInt > 60?lengthInt / 60 + "h":"") + (lengthInt%60 != 0?lengthInt % 60 + "m":"");
         }
 
         if (length != null && int.TryParse(length.ToString(), out lengthInt))
