@@ -259,6 +259,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             if (target is not null)
             {
                 HtmlNode? id = target.SelectSingleNode(".//a[@class='l']");
+                // eg: /person/7175
                 var idStr = id.GetAttributeValue("href", "")[8..];
                 return await GetDeveloperImageUrlById(idStr);
             }

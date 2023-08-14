@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using CommunityToolkit.WinUI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -8,6 +9,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 using Microsoft.UI.Dispatching;
+using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
 
@@ -170,10 +172,23 @@ public class CategoryService : ICategoryService
             Category developer;
             try
             {
-                developer = _developerGroup!.Categories.First(c =>
-                    c.Name.Equals(galgame.Developer, StringComparison.OrdinalIgnoreCase));
+                Producer producer = ProducerDataHelper.Producers.First(
+                    p => p.Name == galgame.Developer.Value! || 
+                         p.Latin == galgame.Developer.Value! || 
+                         p.Alias.Contains(galgame.Developer.Value!)
+                         );
+                try
+                {
+                    developer = _developerGroup!.Categories.First(c => c.Name.Equals(producer.Name));
+                }
+                catch (InvalidOperationException)
+                {
+                    developer = new Category(producer.Name!);
+                    _queue.Add(developer);
+                    _developerGroup!.Categories.Add(developer);
+                }
             }
-            catch
+            catch (InvalidOperationException)
             {
                 developer = new Category(galgame.Developer.Value!);
                 _queue.Add(developer);
