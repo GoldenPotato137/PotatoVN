@@ -169,6 +169,7 @@ public class LocalSettingsService : ILocalSettingsService
         else if(value!=null)
         {
             await InitializeAsync();
+            _settings[key] = value;
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
         if(value != null)
