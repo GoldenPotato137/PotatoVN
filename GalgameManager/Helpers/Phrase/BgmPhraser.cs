@@ -171,7 +171,10 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             // imageUrl
             ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!,
             // rating
-            Rating = jsonToken["rating"]!["score"]!.ToObject<float>()
+            Rating = jsonToken["rating"]!["score"]!.ToObject<float>(),
+            ReleaseDate = (jsonToken["date"] != null
+                ? IGalInfoPhraser.GetDateTimeFromString(jsonToken["date"]!.ToObject<string>()!)
+                : null) ?? DateTime.MinValue
         };
         // tags
         List<JToken>? tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;

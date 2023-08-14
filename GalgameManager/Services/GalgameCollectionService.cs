@@ -199,11 +199,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
         galgame.RssType = phraser.GetPhraseType();
         galgame.Id = tmp.Id;
-        if (!galgame.Description.IsLock)
-            galgame.Description.Value = tmp.Description.Value;
-        if (tmp.Developer != Galgame.DefaultString && !galgame.Developer.IsLock)
+        galgame.Description.Value = tmp.Description.Value;
+        if (tmp.Developer != Galgame.DefaultString)
             galgame.Developer.Value = tmp.Developer.Value;
-        if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock)
+        if (tmp.ExpectedPlayTime != Galgame.DefaultString)
             galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
         {
@@ -217,12 +216,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             }
         }
         galgame.ImageUrl = tmp.ImageUrl;
-        if (!galgame.Rating.IsLock)
-            galgame.Rating.Value = tmp.Rating.Value;
-        if (!galgame.Tags.IsLock)
-            galgame.Tags.Value = tmp.Tags.Value;
-        if (!galgame.ImagePath.IsLock)
-            galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+        galgame.Rating.Value = tmp.Rating.Value;
+        galgame.Tags.Value = tmp.Tags.Value;
+        galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+        galgame.ReleaseDate = tmp.ReleaseDate.Value;
         galgame.CheckSavePosition();
         return galgame;
     }
@@ -510,7 +507,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             SortKeys.Name,
             SortKeys.Developer,
             SortKeys.Rating,
-            SortKeys.LastPlay
+            SortKeys.LastPlay,
+            SortKeys.ReleaseDate
         };
         ContentDialog dialog = new()
         {

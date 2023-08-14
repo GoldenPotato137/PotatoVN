@@ -776,4 +776,7 @@
   <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
     <value>已成功下载{0}个游戏的游玩状态</value>
   </data>
+  <data name="GalgamePage_ReleaseDate" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
 </root>
