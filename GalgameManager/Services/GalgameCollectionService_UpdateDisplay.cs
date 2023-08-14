@@ -62,10 +62,8 @@ public partial class GalgameCollectionService
     {
         if (_displayGalgames.Contains(galgame)) return;
         if (CheckDisplay(galgame) == false) return;
-        // 根据当前排序方式插入
-        UpdateSortKeys();
         for(var i = 0;i < _displayGalgames.Count;i++) //这里可以用二分查找优化, 暂时不做
-            if (galgame.CompareTo(_displayGalgames[i]) <= 0)
+            if (CompareTo(galgame, _displayGalgames[i]))
             {
                 _displayGalgames.Insert(i, galgame);
                 return;

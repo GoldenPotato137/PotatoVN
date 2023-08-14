@@ -11,7 +11,7 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject, IComparable<Galgame>
+public partial class Galgame : ObservableObject
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -51,9 +51,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论
-
-    public static readonly List<SortKeys> SortKeysList = new ();
-
+    
     [JsonIgnore] public string? Id
     {
         get => Ids[(int)RssType];
@@ -141,59 +139,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public void Delete()
     {
         new DirectoryInfo(Path).Delete(true);
-    }
-
-    public int CompareTo(Galgame? other)
-    {
-        if (other is null) return 1;
-        foreach (SortKeys keyValue in SortKeysList)
-        {
-            var result = 0;
-            var take = -1; //默认降序
-            switch (keyValue)
-            {
-                case SortKeys.Developer:
-                    result = string.Compare(Developer.Value!, other.Developer.Value, StringComparison.Ordinal);
-                    break;
-                case SortKeys.Name:
-                    result = string.Compare(Name.Value!, other.Name.Value, StringComparison.CurrentCultureIgnoreCase);
-                    take = 1;
-                    break;
-                case SortKeys.Rating:
-                    result = Rating.Value.CompareTo(other.Rating.Value);
-                    break;
-                case SortKeys.LastPlay:
-                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(other.LastPlay.Value!));
-                    break;
-                case SortKeys.ReleaseDate:
-                    if (ReleaseDate != null && other.ReleaseDate != null )
-                    {
-                        result = ReleaseDate.Value.CompareTo(other.ReleaseDate);
-                    }
-                    break;
-            }
-            if (result != 0)
-                return take * result; 
-        }
-        return 0;
-    }
-
-    /// <summary>
-    /// 时间转换
-    /// </summary>
-    /// <param name="time">年/月/日</param>
-    /// <returns></returns>
-    private long GetTime(string time)
-    {
-        if (time == DefaultString)
-            return 0;
-        if (DateTime.TryParseExact(time, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                out DateTime dateTime))
-        {
-            return (long)(dateTime - DateTime.MinValue).TotalDays;
-        }
-
-        return 0;
     }
 
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;

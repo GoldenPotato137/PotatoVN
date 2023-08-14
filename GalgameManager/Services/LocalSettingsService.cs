@@ -131,10 +131,10 @@ public class LocalSettingsService : ILocalSettingsService
                 var result = Environment.GetEnvironmentVariable("OneDrive");
                 result = result==null ? null : result + "\\GameSaves";
                 return (T?)(object?)result;
-            case KeyValues.SortKey1:
-                return (T?)(object?)SortKeys.LastPlay;
-            case KeyValues.SortKey2:
-                return (T?)(object?)SortKeys.Developer;
+            case KeyValues.SortKeys:
+                return (T?)(object?)new [] { SortKeys.LastPlay , SortKeys.Developer};
+            case KeyValues.SortKeysAscending:
+                return (T?)(object?)new [] { false , false};
             case KeyValues.SearchChildFolder:
                 return (T?)(object?)false;
             case KeyValues.SearchChildFolderDepth:

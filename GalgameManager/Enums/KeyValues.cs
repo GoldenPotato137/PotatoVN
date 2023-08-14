@@ -14,8 +14,8 @@ public static class KeyValues
     public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
-    public const string SortKey1 = "sortKey1";
-    public const string SortKey2 = "sortKey2";
+    public const string SortKeys = "sortKeys";
+    public const string SortKeysAscending = "sortKeysAscending";
     public const string SearchChildFolder = "searchChildFolder";
     public const string SearchChildFolderDepth = "searchChildFolderDepth";
     public const string IgnoreFetchResult = "ignoreFetchResult";
