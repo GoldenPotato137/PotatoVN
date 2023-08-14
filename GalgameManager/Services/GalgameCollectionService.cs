@@ -199,7 +199,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
         galgame.RssType = phraser.GetPhraseType();
         galgame.Id = tmp.Id;
-        if (phraser is VndbPhraser)
+        if (phraser is MixedPhraser)
             galgame.UpdateIdFromMixed();
         galgame.Description.Value = tmp.Description.Value;
         if (tmp.Developer != Galgame.DefaultString)

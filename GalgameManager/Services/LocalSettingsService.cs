@@ -46,11 +46,11 @@ public class LocalSettingsService : ILocalSettingsService
 
     private async Task InitializeAsync()
     {
+        if (_isInitialized) return;
         var retry = 0;
         while (true)
         {
             if (retry > 3) throw new ConfigurationErrorsException("配置读取失败");
-            if (_isInitialized) return;
             await UpgradeAsync();
 
             _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 

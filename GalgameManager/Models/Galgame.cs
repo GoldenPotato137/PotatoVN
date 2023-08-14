@@ -319,9 +319,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public void UpdateIdFromMixed()
     {
         (string? bgmId, string? vndbId) tmp = MixedPhraser.TryGetId(Ids[(int)RssType.Mixed]);
-        if (tmp.bgmId != null && string.IsNullOrEmpty(Ids[(int)RssType.Bangumi])) 
+        if (tmp.bgmId != null) 
             Ids[(int)RssType.Bangumi] = tmp.bgmId;
-        if (tmp.vndbId != null && string.IsNullOrEmpty(Ids[(int)RssType.Vndb])) 
+        if (tmp.vndbId != null) 
             Ids[(int)RssType.Vndb] = tmp.vndbId;
     }
 }
