@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Enums;
@@ -186,15 +187,13 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         if (time == DefaultString)
             return 0;
-        try
+        if (DateTime.TryParseExact(time, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out DateTime dateTime))
         {
-            var tmp = time.Split('/');
-            return Convert.ToInt64(tmp[2]) + Convert.ToInt64(tmp[1]) * 31 + Convert.ToInt64(tmp[0]) * 30 * 12;
+            return (long)(dateTime - DateTime.MinValue).TotalDays;
         }
-        catch
-        {
-            return 0;
-        }
+
+        return 0;
     }
 
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
@@ -250,7 +249,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                     {
                         TotalPlayTime++;
                     });
-                    var now = DateTime.Now.ToShortDateString();
+                    var now = DateTime.Now.ToString("yyyy/M/d");
                     if (PlayedTime.ContainsKey(now))
                         PlayedTime[now]++;
                     else
