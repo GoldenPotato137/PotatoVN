@@ -21,4 +21,11 @@ public interface IGalStatusSync
     /// <param name="galgame">游戏</param>
     /// <returns>(结果， 结果解释信息)</returns>
     public Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame);
+    
+    /// <summary>
+    /// 下载玩家在信息源上所有游戏的游玩状态
+    /// </summary>
+    /// <param name="galgames">游戏列表</param>
+    /// <returns>(结果，结果解释信息)</returns>
+    public Task<(GalStatusSyncResult, string)> DownloadAllAsync(List<Galgame> galgames);
 }

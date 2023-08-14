@@ -87,7 +87,7 @@
                 StretchContentForSingleRow="False">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
-                        <control:HomeItem Image="{x:Bind ImagePath, Mode=OneWay}" 
+                        <control:HomeItem Image="{x:Bind ImagePath.Value, Mode=OneWay}"
                                           Title="{x:Bind Name, Mode=OneWay}"
                                           PlayType="{x:Bind PlayType, Mode=OneWay}"
                                           DisplayPlayType="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"

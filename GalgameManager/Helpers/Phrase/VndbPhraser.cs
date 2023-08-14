@@ -1,8 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using Windows.Data.Json;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Helpers.API;
@@ -23,7 +21,7 @@ public class VndbPhraser : IGalInfoPhraser
     /// id eg:g530[1..]=530=(int)530
     /// </summary>
     private const string VndbFields = "title, titles.title, titles.lang, description, image.url, id, rating, length, " +
-                                      "length_minutes, tags.id, tags.rating, developers.original, developers.name";
+                                      "length_minutes, tags.id, tags.rating, developers.original, developers.name, released";
 
     private async Task Init()
     {
@@ -37,20 +35,16 @@ public class VndbPhraser : IGalInfoPhraser
         tags!.ForEach(tag => _tagDb.Add(int.Parse(tag["id"]!.ToString()), tag));
     }
 
-    private async Task TryGetId(Galgame galgame)
+    private static async Task TryGetId(Galgame galgame)
     {
-        RssType old = galgame.RssType;
-        galgame.RssType = GetPhraseType();
-        if (string.IsNullOrEmpty(galgame.Id))
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Vndb]))
         {
             var id = await PhraseHelper.TryGetVndbIdAsync(galgame.Name!);
             if (id is not null)
             {
-                galgame.Id = id.ToString();
-                return;
+                galgame.Ids[(int)RssType.Vndb] = id.ToString();
             }
         }
-        galgame.RssType = old;
     }
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
@@ -65,9 +59,8 @@ public class VndbPhraser : IGalInfoPhraser
             VndbResponse vndbResponse;
             try
             {
-                if (galgame.RssType != RssType.Vndb) throw new Exception();
                 // with v
-                var idString = galgame.Id;
+                var idString = galgame.Ids[(int)RssType.Vndb];
                 if (string.IsNullOrEmpty(idString))
                 {
                     vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
@@ -131,6 +124,10 @@ public class VndbPhraser : IGalInfoPhraser
             {
                 result.Developer = Galgame.DefaultString;
             }
+
+            result.ReleaseDate = (rssItem["released"] != null
+                ? IGalInfoPhraser.GetDateTimeFromString(rssItem["released"]!.ToString())
+                : null) ?? DateTime.MinValue;
             // Tags
             result.Tags.Value = new ObservableCollection<string>();
             IOrderedEnumerable<Tag> tmpTags = GetTags(rssItem["tags"]!.AsArray()).OrderByDescending(t => t.Rating);

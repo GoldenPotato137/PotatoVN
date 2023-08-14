@@ -1,4 +1,5 @@
-﻿using GalgameManager.Enums;
+﻿using System.Globalization;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Phrase;
@@ -58,5 +59,16 @@ public interface IGalInfoPhraser
         if (match == 0)
             return 0;
         return (match / (double)n + match / (double)m + (match - swap / 2.0) / match) / 3.0;
+    }
+
+    public static DateTime? GetDateTimeFromString(string date, string format = "yyyy-MM-dd")
+    {
+        if (DateTime.TryParseExact(date, format, System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out DateTime dateTime))
+        {
+            return dateTime;
+        }
+
+        return null;
     }
 }

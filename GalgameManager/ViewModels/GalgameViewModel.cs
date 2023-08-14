@@ -28,10 +28,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
-    [ObservableProperty] private bool _canOpenInBgm = false;
-    [ObservableProperty] private bool _canOpenInVndb = false;
+    [ObservableProperty] private bool _canOpenInBgm;
+    [ObservableProperty] private bool _canOpenInVndb;
 
-    [ObservableProperty] private bool _infoBarOpen = false;
+    [ObservableProperty] private bool _infoBarOpen;
     [ObservableProperty] private string _infoBarMsg = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
@@ -43,6 +43,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     public readonly string UiChangeSavePosition = "GalgamePage_ChangeSavePosition".GetLocalized();
     public readonly string UiDevelopers = "GalgamePage_Developers".GetLocalized();
     public readonly string UiExpectedPlayTime = "GalgamePage_ExpectedPlayTime".GetLocalized();
+    public readonly string UiReleaseDate = "GalgamePage_ReleaseDate".GetLocalized();
     public readonly string UiSavePosition = "GalgamePage_SavePosition".GetLocalized();
     public readonly string UiLastPlayTime = "GalgamePage_LastPlayTime".GetLocalized();
     public readonly string UiDescription = "GalgamePage_Description".GetLocalized();
@@ -257,5 +258,14 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
         if (dialog.UploadToVndb)
             throw new NotImplementedException();
+    }
+
+    [RelayCommand]
+    private async Task SyncFromBgm()
+    {
+        if (Item == null) return;
+        _ =  DisplayMsg(InfoBarSeverity.Informational, "HomePage_Downloading".GetLocalized(), 1000 * 100);
+        (GalStatusSyncResult, string) result = await _galgameService.DownLoadPlayStatusAsync(Item, RssType.Bangumi);
+        await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
     }
 }

@@ -184,7 +184,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
-            await DownLoadPlayStatusAsync(galgame);
+            await DownLoadPlayStatusAsync(galgame, RssType.Bangumi);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
@@ -199,11 +199,14 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
         galgame.RssType = phraser.GetPhraseType();
         galgame.Id = tmp.Id;
-        if (!galgame.Description.IsLock)
+        if (phraser is VndbPhraser)
+            galgame.UpdateIdFromMixed();
+        galgame.Description.Value = tmp.Description.Value;
+        if (tmp.Developer != Galgame.DefaultString)
             galgame.Description.Value = tmp.Description.Value;
-        if (tmp.Developer != Galgame.DefaultString && !galgame.Developer.IsLock)
+        if (tmp.Developer != Galgame.DefaultString)
             galgame.Developer.Value = tmp.Developer.Value;
-        if (tmp.ExpectedPlayTime != Galgame.DefaultString && !galgame.ExpectedPlayTime.IsLock)
+        if (tmp.ExpectedPlayTime != Galgame.DefaultString)
             galgame.ExpectedPlayTime.Value = tmp.ExpectedPlayTime.Value;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalName))
         {
@@ -217,20 +220,40 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             }
         }
         galgame.ImageUrl = tmp.ImageUrl;
-        if (!galgame.Rating.IsLock)
-            galgame.Rating.Value = tmp.Rating.Value;
-        if (!galgame.Tags.IsLock)
-            galgame.Tags.Value = tmp.Tags.Value;
-        if (!galgame.ImagePath.IsLock)
-            galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+        galgame.Rating.Value = tmp.Rating.Value;
+        galgame.Tags.Value = tmp.Tags.Value;
+        galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
+        galgame.ReleaseDate = tmp.ReleaseDate.Value;
         galgame.CheckSavePosition();
         return galgame;
     }
-
-    private async Task DownLoadPlayStatusAsync(Galgame galgame)
+    
+    /// <summary>
+    /// 下载某个游戏的游玩状态
+    /// </summary>
+    /// <param name="galgame">游戏</param>
+    /// <param name="source">下载源</param>
+    /// <returns>(下载结果，结果解释)</returns>
+    public async Task<(GalStatusSyncResult, string)> DownLoadPlayStatusAsync(Galgame galgame, RssType source)
     {
-        if (PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
-            await bgmPhraser.DownloadAsync(galgame);
+        if (source == RssType.Bangumi && PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
+            return await bgmPhraser.DownloadAsync(galgame);
+        return (GalStatusSyncResult.Other, "这个数据源不支持同步游玩状态");
+    }
+
+    /// <summary>
+    /// 从某个信息源下载所有游戏的游玩状态
+    /// </summary>
+    /// <param name="source">信息源</param>
+    /// <returns>(结果，结果解释)</returns>
+    public async Task<(GalStatusSyncResult ,string)> DownloadAllPlayStatus(RssType source)
+    {
+        var msg = string.Empty;
+        GalStatusSyncResult result = GalStatusSyncResult.Other;
+        IGalInfoPhraser phraser = PhraserList[(int)source];
+        if (phraser is IGalStatusSync sync)
+            (result, msg) = await sync.DownloadAllAsync(_galgames);
+        return (result, msg);
     }
 
     /// <summary>
@@ -488,7 +511,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             SortKeys.Name,
             SortKeys.Developer,
             SortKeys.Rating,
-            SortKeys.LastPlay
+            SortKeys.LastPlay,
+            SortKeys.ReleaseDate
         };
         ContentDialog dialog = new()
         {

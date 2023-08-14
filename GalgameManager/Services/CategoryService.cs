@@ -52,6 +52,12 @@ public class CategoryService : ICategoryService
         if (_isInit) return;
         _categoryGroups = await _localSettings.ReadSettingAsync<ObservableCollection<CategoryGroup>>
             (KeyValues.CategoryGroups, true) ?? new ObservableCollection<CategoryGroup>();
+
+        // 有时候程序崩溃的时候没能移除游玩状态就保存了，需要手动把游玩状态移除
+        List<CategoryGroup> toRemove = _categoryGroups.Where(group => group.Type == CategoryGroupType.Status).ToList();
+        foreach (CategoryGroup group in toRemove)
+            _categoryGroups.Remove(group);
+
         try
         {
             _developerGroup = _categoryGroups.First(cg => cg.Type == CategoryGroupType.Developer);

@@ -13,6 +13,7 @@
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
+        <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -170,6 +171,15 @@
                                            Text="{x:Bind ViewModel.UiExpectedPlayTime}" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
+                            </StackPanel>
+                            
+                            <!-- 发布日期 -->
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiReleaseDate}" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.ReleaseDate.Value, Mode=OneWay, FallbackValue={}, 
+                                           Converter={StaticResource DateTimeToStringConverter}}" />
                             </StackPanel>
                         </StackPanel>
 

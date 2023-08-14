@@ -755,4 +755,28 @@
   <data name="OAuthResult_FetchingAccount" xml:space="preserve">
     <value>获取账号信息中，请稍后</value>
   </data>
+  <data name="GalgamePage_SyncStatus.Label" xml:space="preserve">
+    <value>同步状态</value>
+  </data>
+  <data name="GalgamePage_SyncStatus_Bangumi.Text" xml:space="preserve">
+    <value>从Bgm同步游玩状态</value>
+  </data>
+  <data name="BgmPhraser_DownloadAsync_Success" xml:space="preserve">
+    <value>已成功同步游玩状态</value>
+  </data>
+  <data name="HomePage_Downloading" xml:space="preserve">
+    <value>正在同步游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Title" xml:space="preserve">
+    <value>从Bgm获取游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Description" xml:space="preserve">
+    <value>立刻从Bangumi获取游玩状态，需登录Bangumi账号</value>
+  </data>
+  <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
+    <value>已成功下载{0}个游戏的游玩状态</value>
+  </data>
+  <data name="GalgamePage_ReleaseDate" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
 </root>
