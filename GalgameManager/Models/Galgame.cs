@@ -34,6 +34,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
+    [ObservableProperty] private LockableProperty<DateTime> _releaseDate;
     [JsonIgnore][ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
@@ -45,6 +46,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
     [Newtonsoft.Json.JsonIgnore] public ObservableCollection<Category> Categories = new();
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
     [ObservableProperty] private int _myRate; //我的评分
@@ -97,13 +99,14 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         _tags.Value = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
-        
+        _releaseDate = DateTime.MinValue;
     }
 
     public Galgame(string path)
     {
         Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
+        _releaseDate = DateTime.MinValue;
         Path = path;
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
@@ -161,6 +164,12 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                     break;
                 case SortKeys.LastPlay:
                     result = GetTime(LastPlay.Value!).CompareTo(GetTime(other.LastPlay.Value!));
+                    break;
+                case SortKeys.ReleaseDate:
+                    if (ReleaseDate != null && other.ReleaseDate != null )
+                    {
+                        result = ReleaseDate.Value.CompareTo(other.ReleaseDate);
+                    }
                     break;
             }
             if (result != 0)
@@ -264,7 +273,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         if(ExePath != null)
             result.ExePath = "..\\" + System.IO.Path.GetFileName(ExePath);
         result.Path = "..\\";
-        result.ImagePath = new LockableProperty<string>();
+#pragma warning disable MVVMTK0034
+        result._imagePath = new LockableProperty<string>();
+#pragma warning restore MVVMTK0034
         if (ImagePath.Value == DefaultImagePath)
             result.ImagePath.Value = DefaultImagePath;
         else
@@ -314,5 +325,6 @@ public enum SortKeys
     Name,
     LastPlay,
     Developer,
-    Rating
+    Rating,
+    ReleaseDate
 }

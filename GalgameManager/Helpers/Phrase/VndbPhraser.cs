@@ -23,7 +23,7 @@ public class VndbPhraser : IGalInfoPhraser
     /// id eg:g530[1..]=530=(int)530
     /// </summary>
     private const string VndbFields = "title, titles.title, titles.lang, description, image.url, id, rating, length, " +
-                                      "length_minutes, tags.id, tags.rating, developers.original, developers.name";
+                                      "length_minutes, tags.id, tags.rating, developers.original, developers.name, released";
 
     private async Task Init()
     {
@@ -131,6 +131,10 @@ public class VndbPhraser : IGalInfoPhraser
             {
                 result.Developer = Galgame.DefaultString;
             }
+
+            result.ReleaseDate = (rssItem["released"] != null
+                ? IGalInfoPhraser.GetDateTimeFromString(rssItem["released"]!.ToString())
+                : null) ?? DateTime.MinValue;
             // Tags
             result.Tags.Value = new ObservableCollection<string>();
             IOrderedEnumerable<Tag> tmpTags = GetTags(rssItem["tags"]!.AsArray()).OrderByDescending(t => t.Rating);

@@ -43,6 +43,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     public readonly string UiChangeSavePosition = "GalgamePage_ChangeSavePosition".GetLocalized();
     public readonly string UiDevelopers = "GalgamePage_Developers".GetLocalized();
     public readonly string UiExpectedPlayTime = "GalgamePage_ExpectedPlayTime".GetLocalized();
+    public readonly string UiReleaseDate = "GalgamePage_ReleaseDate".GetLocalized();
     public readonly string UiSavePosition = "GalgamePage_SavePosition".GetLocalized();
     public readonly string UiLastPlayTime = "GalgamePage_LastPlayTime".GetLocalized();
     public readonly string UiDescription = "GalgamePage_Description".GetLocalized();

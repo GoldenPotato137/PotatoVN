@@ -101,27 +101,27 @@ public class MixedPhraser : IGalInfoPhraser
             RssType = RssType.Mixed,
             Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}",
             // name
-            Name = vndb != null ? vndb.Name : bgm!.Name
+            Name = vndb != null ? vndb.Name : bgm!.Name,
+            // description
+            Description = bgm != null ? bgm.Description : vndb!.Description,
+            // expectedPlayTime
+            ExpectedPlayTime = vndb != null ? vndb.ExpectedPlayTime: Galgame.DefaultString,
+            // rating
+            Rating = bgm != null ? bgm.Rating : vndb!.Rating,
+            // imageUrl
+            ImageUrl = vndb != null ? vndb.ImageUrl : bgm!.ImageUrl,
+            // release date
+            ReleaseDate = bgm?.ReleaseDate ?? vndb!.ReleaseDate
         };
 
         // Chinese name
         if (bgm != null && !string.IsNullOrEmpty(bgm.CnName))result.CnName =  bgm.CnName;
         else if (vndb != null && !string.IsNullOrEmpty(vndb.CnName)) result.CnName = vndb.CnName;
         else result.CnName = "";
-
-        // description
-        result.Description = bgm != null ? bgm.Description : vndb!.Description;
         
         // developer
         if (bgm != null && bgm.Developer != Galgame.DefaultString)result.Developer = bgm.Developer;
         else if (vndb != null && vndb.Developer != Galgame.DefaultString)result.Developer = vndb.Developer;
-        
-        // expectedPlayTime
-        if(vndb != null)result.ExpectedPlayTime = vndb.ExpectedPlayTime;
-        // rating
-        result.Rating = bgm != null ? bgm.Rating : vndb!.Rating;
-        // imageUrl
-        result.ImageUrl = vndb != null ? vndb.ImageUrl : bgm!.ImageUrl;
         // tags
         //todo: mix Bgm's and Vndb's tag 
         result.Tags = bgm != null ? bgm.Tags : vndb!.Tags;
