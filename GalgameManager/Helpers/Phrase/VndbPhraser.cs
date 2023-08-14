@@ -1,13 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Text.Json.Nodes;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Helpers.API;
 using GalgameManager.Models;
 using Newtonsoft.Json.Linq;
 using SharpCompress;
-using JsonArray = System.Text.Json.Nodes.JsonArray;
 
 namespace GalgameManager.Helpers.Phrase;
 
@@ -56,7 +54,7 @@ public class VndbPhraser : IGalInfoPhraser
             // 试图离线获取ID
             await TryGetId(galgame);
 
-            VndbResponse vndbResponse;
+            VndbResponse<VndbVn> vndbResponse;
             try
             {
                 // with v
@@ -66,7 +64,7 @@ public class VndbPhraser : IGalInfoPhraser
                     vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
                     {
                         Fields = VndbFields,
-                        Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value!)
                     });
                 }
                 else
@@ -83,7 +81,7 @@ public class VndbPhraser : IGalInfoPhraser
                         vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
                         {
                             Fields = VndbFields,
-                            Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                            Filters = VndbFilters.Equal("search", galgame.Name.Value!)
                         });
                     }
                 }
@@ -94,7 +92,7 @@ public class VndbPhraser : IGalInfoPhraser
                 vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
                     {
                         Fields = VndbFields,
-                        Filters = VndbFilters.Equal("search", galgame.Name.Value)
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value!)
                     });
             }
             catch (Exception)
@@ -103,39 +101,43 @@ public class VndbPhraser : IGalInfoPhraser
             }
             
             if (vndbResponse.Results is null || vndbResponse.Results.Count == 0) return null;
-            JsonNode rssItem = vndbResponse.Results[0]!;
-            result.Name = CheckNotNullToString(rssItem["title"]);
-            result.CnName = GetChineseName(rssItem["titles"]!.AsArray());
-            result.Description = CheckNotNullToString(rssItem["description"], Galgame.DefaultString);
+            VndbVn rssItem = vndbResponse.Results[0];
+            result.Name = rssItem.Title ?? "";
+            result.CnName = GetChineseName(rssItem.Titles);
+            result.Description = rssItem.Description ?? Galgame.DefaultString;
             result.RssType = GetPhraseType();
             // id eg: v16044 -> 16044
-            var id = CheckNotNullToString(rssItem["id"]);
+            var id = rssItem.Id! ;
             result.Id = id.StartsWith("v")?id[1..]:id;
-            result.Rating = (float)CheckNotNullToInt(rssItem["rating"]);
-            result.ExpectedPlayTime = GetLength(rssItem["length"],rssItem["length_minutes"]);
-            result.ImageUrl = rssItem["image"] != null ? CheckNotNullToString(rssItem["image"]!["url"]):"";
+            result.Rating = rssItem.Rating ?? 0;
+            result.ExpectedPlayTime = GetLength(rssItem.Lenth,rssItem.LengthMinutes);
+            result.ImageUrl = rssItem.Image != null ? rssItem.Image.Url! :"";
             // Developers
-            if (rssItem["developers"]!.AsArray().Count > 0)
+            if (rssItem.Developers?.Count > 0)
             {
-                IEnumerable<string> developers = rssItem["developers"]!.AsArray().Select<JsonNode?, string>(d =>
-                    CheckNotNullToString(d!["original"], d["name"]!.ToString()));
+                IEnumerable<string> developers = rssItem.Developers.Select<VndbProducer, string>(d =>
+                    d.Original ?? d.Name ?? "");
                 result.Developer = string.Join(",", developers);
             }else
             {
                 result.Developer = Galgame.DefaultString;
             }
 
-            result.ReleaseDate = (rssItem["released"] != null
-                ? IGalInfoPhraser.GetDateTimeFromString(rssItem["released"]!.ToString())
+            result.ReleaseDate = (rssItem.Released != null
+                ? IGalInfoPhraser.GetDateTimeFromString(rssItem.Released)
                 : null) ?? DateTime.MinValue;
             // Tags
             result.Tags.Value = new ObservableCollection<string>();
-            IOrderedEnumerable<Tag> tmpTags = GetTags(rssItem["tags"]!.AsArray()).OrderByDescending(t => t.Rating);
-            tmpTags.ForEach(tag =>
+            if (rssItem.Tags != null)
             {
-                if (_tagDb.TryGetValue(tag.Id, out JToken? tagInfo))
-                    result.Tags.Value.Add(CheckNotNullToString(tagInfo["name"]));
-            });
+                IOrderedEnumerable<VndbTag> tmpTags = rssItem.Tags.OrderByDescending(t => t.Rating);
+                tmpTags.ForEach(tag =>
+                {
+                    if (!int.TryParse(tag.Id![1..], out var i)) return;
+                    if (_tagDb.TryGetValue(i, out JToken? tagInfo))
+                        result.Tags.Value.Add(tagInfo["name"]!.ToString() ?? "");
+                });
+            }
         }
         catch (Exception)
         {
@@ -146,88 +148,37 @@ public class VndbPhraser : IGalInfoPhraser
 
     public RssType GetPhraseType() => RssType.Vndb;
 
-    private static string GetChineseName(JsonArray titles)
+    private static string GetChineseName(List<VndbTitle>? titles)
     {
-        JsonNode? title = titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hans") ??
-                          titles.FirstOrDefault(t => t!["lang"]!.ToString() == "zh-Hant");
-        return title is not null ? title["title"]!.ToString() : "";
+        if (titles == null) return "";
+        VndbTitle? title = titles.FirstOrDefault(t => t.Lang == "zh-Hans") ??
+                           titles.FirstOrDefault(t => t.Lang == "zh-Hant");
+        return title?.Title!;
     }
-
-    private static int CheckNotNullToInt(JsonNode? jsonNode)
+    private static string GetLength(VndbVn.VnLenth? length, int? lengthMinutes)
     {
-        if (jsonNode is not null)
+        if (lengthMinutes != null)
         {
-            var inString = jsonNode.ToString();
-            if (string.IsNullOrWhiteSpace(inString) && inString != "null")
-            {
-                if (int.TryParse(inString, out var outInt)) return outInt;
-            }
+            return (lengthMinutes > 60?lengthMinutes / 60 + "h":"") + (lengthMinutes%60 != 0?lengthMinutes % 60 + "m":"");
         }
 
-        return 0;
-    }
-    
-    private static string CheckNotNullToString(JsonNode? jsonNode, string defaultString = "")
-    {
-        return jsonNode is not null ? jsonNode.AsValue().GetValue<string>() : defaultString;
-    }
-    
-    private static string CheckNotNullToString(JToken? jsonNode, string defaultString = "")
-    {
-        return jsonNode is not null ? jsonNode.Value<string>() ?? "" : defaultString;
-    }
-
-    private static string GetLength(JsonNode? length, JsonNode? lengthMinutes)
-    {
-        if (lengthMinutes != null && int.TryParse(lengthMinutes.ToString(), out var lengthInt))
+        if (length != null)
         {
-            return (lengthInt > 60?lengthInt / 60 + "h":"") + (lengthInt%60 != 0?lengthInt % 60 + "m":"");
-        }
-
-        if (length != null && int.TryParse(length.ToString(), out lengthInt))
-        {
-            switch (lengthInt)
+            switch (length)
             {
-                case 1:
+                case VndbVn.VnLenth.VeryShort:
                     return "very short";
-                case 2:
+                case VndbVn.VnLenth.Short:
                     return "short";
-                case 3:
+                case VndbVn.VnLenth.Medium:
                     return "medium";
-                case 4:
+                case VndbVn.VnLenth.Long:
                     return "long";
-                case 5:
+                case VndbVn.VnLenth.VeryLong:
                     return "very long";
             }
         }
 
         return Galgame.DefaultString;
-    }
-
-    private static List<Tag> GetTags(JsonArray tags)
-    {
-        List<Tag> tagsList = new();
-        foreach (JsonNode? tag in tags)
-        {
-            if (tag is not null)
-            {
-                float.TryParse(tag["rating"]!.ToString(), out var rating);
-                // eg g1212->1212
-                int.TryParse(tag["id"]!.ToString()[1..], out var id);
-                tagsList.Add(new Tag
-                {
-                    Id = id,
-                    Rating = rating
-                });
-            }
-        }
-
-        return tagsList;
-    }
-
-    public struct Tag
-    {
-        public int Id;
-        public float Rating;
     }
 }

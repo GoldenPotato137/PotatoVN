@@ -1,14 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.API;
 
 public class VndbQuery
 {
-    [JsonConverter(typeof(VndbFilters.VndbFiltersJsonConverter))]
+    [JsonConverter(typeof(VndbFilters.VndbFiltersConverter))]
     public VndbFilters? Filters { get; set; }
     public string? Fields { get; set; }
     public string? Sort { get; set; }
@@ -21,9 +19,9 @@ public class VndbQuery
     public bool? NormalizedFilters { get; set; }
 }
 
-public class VndbResponse
+public class VndbResponse<T>
 {
-    public JsonArray? Results { get; set; }
+    public List<T>? Results { get; set; }
     public bool? More { get; set; }
     public int? Count { get; set; }
     public string? CompactFilters { get; set; }
@@ -37,23 +35,34 @@ public class VndbVn
     public string? Title { get; set; }
     // Alternative title
     public string? Alttitle { get; set; }
-    public IList<VnTitle>? Titles;
-    public IList<string>? Aliases { get; set; }
+    public List<VndbTitle>? Titles;
+    public List<string>? Aliases { get; set; }
     // language the VN has originally been written in. 
     public string? Olang { get; set; }
-    public DevstatusEnum? Devstatus { get; set; }
+    public DevStatusEnum? Devstatus { get; set; }
     public string? Released { get; set; }
+    public List<string>? Languages { get; set; }
+    public List<string>? Platforms { get; set; }
+    public VndbImage? Image { get; set; }
+    public VnLenth? Lenth { get; set; }
+    public int? LengthMinutes { get; set; }
+    public int? LengthVotes { get; set; }
+    public string? Description { get; set; }
+    public float? Rating { get; set; }
+    public int? Votecount { get; set; }
+    public List<VnTag>? Tags { get; set; }
+    public List<VndbProducer>? Developers { get; set; }
     
-    public class VnTitle
+    public enum VnLenth
     {
-        public string? Lang { get; set; }
-        public string? Title { get; set; }
-        public string? Latin { get; set; }
-        public bool? Official { get; set; }
-        public bool? Main { get; set; }
+        VeryShort = 1,
+        Short = 2,
+        Medium = 3,
+        Long = 4,
+        VeryLong = 5
     }
     
-    public enum DevstatusEnum
+    public enum DevStatusEnum
     {
         Finished=0,
         InDevelopment=1,
@@ -66,37 +75,62 @@ public class VndbProducer
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Original { get; set; }
-    public IList<string>? Aliases { get; set; }
+    public List<string>? Aliases { get; set; }
     public string? Lang { get; set; }
     public string? Type { get; set; }
     public string? Description { get; set; }
 }
 
-public class SnakeNamingPolicy : JsonNamingPolicy
+public class VndbImage
 {
-    public override string ConvertName(string name)
-    {
-        var snake_name = "";
-        for (var i = 0; i < name.Length; i++)
-        {
-            if (i > 0 && name[i] >= 'A' && name[i] <= 'Z')
-            {
-                snake_name += "_" + name[i].ToString().ToLower();
-            }else
-            {
-                snake_name += name[i].ToString().ToLower();
-            }
-        }
+    public string? Id { get; set; }
+    public string? Url { get; set; }
+    public int[]? Dims { get; set; }
+    public float? Sexual { get; set; }
+    public float? Violence { get; set; }
+}
 
-        return snake_name;
-    }
+public class VndbScreenshot : VndbImage
+{
+    public string? Thumbnail { get; set; }
+    public int[]? ThumbnailDims { get; set; }
+    // todo: Add screenshots.release.*
+}
+
+public class VndbTag
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public List<string>? Aliases { get; set; }
+    public string? Description { get; set; }
+    // "cont" for content, "ero" for sexual content and "tech" for technical tags. 
+    public string? Category { get; set; }
+    public bool? Searchable { get; set; }
+    public bool? Applicable { get; set; }
+    public int? VnCount { get; set; }
+}
+
+public class VnTag : VndbTag
+{
+    public float? Rating { get; set; }
+    public int? Spoiler { get; set; }
+    public bool? Lie { get; set; }
+}
+
+public class VndbTitle
+{
+    public string? Lang { get; set; }
+    public string? Title { get; set; }
+    public string? Latin { get; set; }
+    public bool? Official { get; set; }
+    public bool? Main { get; set; }
 }
 
 public class VndbFilters
 {
-    private JsonArray? _jsonArray;
+    private readonly JArray? _jsonArray;
 
-    public VndbFilters(JsonArray jsonArray)
+    private VndbFilters(JArray jsonArray)
     {
         _jsonArray = jsonArray;
     }
@@ -108,10 +142,10 @@ public class VndbFilters
 
     public static VndbFilters And(params VndbFilters[] vndbFiltersArray)
     {
-        JsonArray jsonArray = new("and");
+        JArray jsonArray = new("and");
         foreach (VndbFilters vndbFilters in vndbFiltersArray)
         {
-            jsonArray.Add(vndbFilters._jsonArray);
+            if (vndbFilters._jsonArray != null) jsonArray.Add(vndbFilters._jsonArray);
         }
 
         return new VndbFilters(jsonArray);
@@ -119,72 +153,73 @@ public class VndbFilters
 
     public static VndbFilters Or(params VndbFilters[] vndbFiltersArray)
     {
-        JsonArray jsonArray = new("or");
+        JArray jsonArray = new("or");
         foreach (VndbFilters vndbFilters in vndbFiltersArray)
         {
-            jsonArray.Add(vndbFilters._jsonArray);
+            if (vndbFilters._jsonArray != null) jsonArray.Add(vndbFilters._jsonArray);
         }
 
         return new VndbFilters(jsonArray);
     }
     
-    public static VndbFilters Equal(string name, string? value)
+    public static VndbFilters Equal(string name, string value)
     {
-        JsonArray jsonArray = new(name, "=", value);
+        JArray jsonArray = new(name, "=", value);
         return new VndbFilters(jsonArray);
     }
     
-    public static VndbFilters Greater(string name, string? value)
+    public static VndbFilters Greater(string name, string value)
     {
-        JsonArray jsonArray = new(name, ">", value);
+        JArray jsonArray = new(name, ">", value);
         return new VndbFilters(jsonArray);
     }
     
-    public static VndbFilters GreaterEqual(string name, string? value)
+    public static VndbFilters GreaterEqual(string name, string value)
     {
-        JsonArray jsonArray = new(name, ">=", value);
+        JArray jsonArray = new(name, ">=", value);
         return new VndbFilters(jsonArray);
     }
     
-    public static VndbFilters Less(string name, string? value)
+    public static VndbFilters Less(string name, string value)
     {
-        JsonArray jsonArray = new(name, "<", value);
+        JArray jsonArray = new(name, "<", value);
         return new VndbFilters(jsonArray);
     }
     
-    public static VndbFilters LessEqual(string name, string? value)
+    public static VndbFilters LessEqual(string name, string value)
     {
-        JsonArray jsonArray = new(name, "<=", value);
+        JArray jsonArray = new(name, "<=", value);
         return new VndbFilters(jsonArray);
     }
     
-    public static VndbFilters NotEqual(string name, string? value)
+    public static VndbFilters NotEqual(string name, string value)
     {
-        JsonArray jsonArray = new(name, "!=", value);
+        JArray jsonArray = new(name, "!=", value);
         return new VndbFilters(jsonArray);
     }
     
-    public class VndbFiltersJsonConverter : JsonConverter<VndbFilters>
+    public class VndbFiltersConverter : JsonConverter<VndbFilters>
     {
-        public override VndbFilters Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
+        public override void WriteJson(JsonWriter writer, VndbFilters? value, JsonSerializer serializer)
         {
-            return new VndbFilters(JsonNode.Parse(ref reader)!.AsArray());
+            value?._jsonArray?.WriteTo(writer);
         }
 
-        public override void Write(
-            Utf8JsonWriter writer,
-            VndbFilters vndbFiltersValue,
-            JsonSerializerOptions options)
+        public override VndbFilters? ReadJson(JsonReader reader, Type objectType, VndbFilters? existingValue,
+            bool hasExistingValue,
+            JsonSerializer serializer)
         {
-            if (vndbFiltersValue._jsonArray is not null)
+            try
             {
-                vndbFiltersValue._jsonArray.WriteTo(writer);
-                return;
+                return new VndbFilters(JArray.Load(reader));
             }
-            writer.WriteNullValue();
+            catch
+            {
+                return null;
+            }
+        
         }
     }
 }
+
+
