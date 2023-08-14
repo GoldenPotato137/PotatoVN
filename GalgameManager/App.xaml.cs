@@ -170,6 +170,9 @@ public partial class App : Application
 
     private async void OnActivated(object?_, AppActivationArguments arguments)
     {
-        await GetService<IActivationService>().HandleActivationAsync(arguments);
+        await UiThreadInvokeHelper.InvokeAsync(async Task() =>
+        {
+            await GetService<IActivationService>().HandleActivationAsync(arguments);
+        });
     }
 }
