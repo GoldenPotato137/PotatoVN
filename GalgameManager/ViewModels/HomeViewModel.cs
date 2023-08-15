@@ -63,11 +63,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    public ICommand ItemClickCommand
-    {
-        get;
-    }
-
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
@@ -87,8 +82,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             ? Stretch.UniformToFill : Stretch.Uniform;
         _fixHorizontalPicture = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         DisplayPlayTypePolygon = localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayPlayTypePolygon).Result;
-
-        ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -109,15 +102,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         {
             await Task.Delay(200); //等待动画结束
             _filterService.RemoveFilter(_filter);
-        }
-    }
-
-    private void OnItemClick(Galgame? clickedItem)
-    {
-        if (clickedItem != null)
-        {
-            _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path);
         }
     }
 

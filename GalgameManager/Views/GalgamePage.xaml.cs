@@ -1,7 +1,9 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using Windows.Foundation.Metadata;
+using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
-
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace GalgameManager.Views;
@@ -22,14 +24,32 @@ public sealed partial class HomeDetailPage : Page
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
-        if (e.NavigationMode == NavigationMode.Back)
+        if (e.SourcePageType == typeof(HomePage))
         {
-            var navigationService = App.GetService<INavigationService>();
+            INavigationService navigationService = App.GetService<INavigationService>();
 
             if (ViewModel.Item != null)
             {
                 navigationService.SetListDataItemForNextConnectedAnimation(ViewModel.Item);
             }
+            ConnectedAnimationService.GetForCurrentView().PrepareToAnimate("BackConnectedAnimation", DetailedImage);
         }
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        ConnectedAnimation? imageAnimation = ConnectedAnimationService.GetForCurrentView().GetAnimation("ForwardConnectedAnimation");
+        if (imageAnimation != null)
+        {
+            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7))
+            {
+                imageAnimation.Configuration = new GravityConnectedAnimationConfiguration();
+            }
+            // Connected animation
+            imageAnimation.TryStart(DetailedImage);
+
+        }
+
     }
 }
