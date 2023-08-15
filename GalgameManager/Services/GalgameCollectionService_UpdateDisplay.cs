@@ -99,9 +99,8 @@ public partial class GalgameCollectionService
 
     private bool ApplySearchKey(Galgame galgame)
     {
-        if (galgame.Name.Value!.Contains(_searchKey)) return true;
-        if (galgame.Developer.Value!.Contains(_searchKey)) return true;
-        if (galgame.Tags.Value!.Any(str => str.Contains(_searchKey))) return true;
-        return false;
+        return galgame.Name.Value!.Contains(_searchKey) || 
+               galgame.Developer.Value!.Contains(_searchKey) || 
+               galgame.Tags.Value!.Any(str => str.Contains(_searchKey));
     }
 }
