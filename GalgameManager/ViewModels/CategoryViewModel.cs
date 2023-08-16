@@ -142,9 +142,10 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private void UpdateCategory(Category category)
+    private void EditCategory(Category category)
     {
-        _categoryService.UpdateCategory(category);
+        _navigationService.NavigateTo(typeof(CategorySettingViewModel).FullName!, category);
+        // _categoryService.UpdateCategory(category);
     }
 
     [RelayCommand]

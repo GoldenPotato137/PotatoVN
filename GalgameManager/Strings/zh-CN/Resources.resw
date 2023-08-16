@@ -779,4 +779,13 @@
   <data name="GalgamePage_ReleaseDate" xml:space="preserve">
     <value>发布日期</value>
   </data>
+  <data name="CategorySettingPage_CategoryName.Text" xml:space="preserve">
+    <value>分类名</value>
+  </data>
+  <data name="SelectImage.Content" xml:space="preserve">
+    <value>选择图片</value>
+  </data>
+  <data name="CategorySettingPage_CategoryImage.Text" xml:space="preserve">
+    <value>分类图片</value>
+  </data>
 </root>

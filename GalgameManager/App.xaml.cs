@@ -89,6 +89,8 @@ public partial class App : Application
             // Views and ViewModels
             services.AddTransient<CategoryViewModel>();
             services.AddTransient<CategoryPage>();
+            services.AddTransient<CategorySettingViewModel>();
+            services.AddTransient<CategorySettingPage>();
             services.AddTransient<HelpViewModel>();
             services.AddTransient<HelpPage>();
             services.AddTransient<GalgameSettingViewModel>();

@@ -11,7 +11,7 @@
     
     <Page.Resources>
         <MenuFlyout Placement="Right" x:Key="Flyout">
-            <MenuFlyoutItem x:Uid="CategoryPage_Category_Edit" Command="{x:Bind ViewModel.UpdateCategoryCommand}"
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Edit" Command="{x:Bind ViewModel.EditCategoryCommand}"
                             CommandParameter="{Binding}"/>
             <MenuFlyoutItem x:Uid="CategoryPage_Category_Combine" Command="{x:Bind ViewModel.CombineCategoryCommand}"
                             CommandParameter="{Binding}"/>
