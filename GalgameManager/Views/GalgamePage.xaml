@@ -7,7 +7,6 @@
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:local="using:GalgameManager.Helpers"
     xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     mc:Ignorable="d">
 
     <Page.Resources>

@@ -12,8 +12,8 @@ public sealed partial class HomePage : Page
 
     public HomePage()
     {
-        InitializeComponent();
         ViewModel = App.GetService<HomeViewModel>();
         DataContext = ViewModel;
+        InitializeComponent();
     }
 }
