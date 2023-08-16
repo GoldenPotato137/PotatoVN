@@ -9,7 +9,6 @@
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:control="using:GalgameManager.Views.Control"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     mc:Ignorable="d"
     x:Name="Page"
@@ -19,6 +18,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:ImagePathConverter x:Key="ImagePathConverter"/>
+        <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -111,7 +111,10 @@
                                     </Rectangle>
                                     <Polygon x:Name="PlayTypePolygon" HorizontalAlignment="Right" VerticalAlignment="Top" 
                                              StrokeThickness="2" Points="0,0 0,20 -20,0"
-                                             Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"/>
+                                             Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
+                                             Stroke="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
+                                             Fill="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
+                                             />
                                 </Grid>
             
                                 <TextBlock
