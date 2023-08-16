@@ -3,6 +3,7 @@ using GalgameManager.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using CommunityToolkit.WinUI.UI.Animations;
 
 namespace GalgameManager.Views;
 
@@ -17,12 +18,15 @@ public sealed partial class HomeDetailPage : Page
     {
         ViewModel = App.GetService<GalgameViewModel>();
         InitializeComponent();
+        //由于某种奇怪的Bug，直接在DetailImage处指定animations:Connected.Key=“galgameItem”没有动画效果
+        //所以采用这种写法
+        this.RegisterElementForConnectedAnimation("galgameItem", DetailImage); 
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
-        if (e.NavigationMode == NavigationMode.Back)
+        if (e.SourcePageType == typeof(HomePage))
         {
             var navigationService = App.GetService<INavigationService>();
 

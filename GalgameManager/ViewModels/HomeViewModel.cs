@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace GalgameManager.ViewModels;
 
@@ -117,7 +118,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         if (clickedItem != null)
         {
             _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path);
+            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path, infoOverride:new SuppressNavigationTransitionInfo());
         }
     }
 

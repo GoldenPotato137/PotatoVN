@@ -122,7 +122,8 @@
                                 VerticalAlignment="Center"
                                 MaxWidth="250"
                                 MaxHeight="250"
-                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" />
+                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" 
+                                x:Name="DetailImage"/>
                         </Grid>
 
                         <TextBlock
