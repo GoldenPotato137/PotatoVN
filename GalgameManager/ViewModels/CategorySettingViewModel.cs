@@ -6,8 +6,11 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
@@ -19,6 +22,10 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
     public Category Category = new();
     public ObservableCollection<CategoryGroupChecker> CategoryGroups = new();
     public ObservableCollection<GameChecker> Games = new();
+    private int _displayIndex;
+    [ObservableProperty] private string _infoBarMessage = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    [ObservableProperty] private bool _infoBarIsOpen;
 
     public CategorySettingViewModel(INavigationService navigationService, ICategoryService categoryService, 
         IDataCollectionService<Galgame> dataCollectionService)
@@ -36,11 +43,13 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
             ObservableCollection<CategoryGroup> tmpCategoryGroups = await _categoryService.GetCategoryGroupsAsync();
             foreach (CategoryGroup group in tmpCategoryGroups)
             {
-                CategoryGroups.Add(new CategoryGroupChecker
+                CategoryGroupChecker tmp = new()
                 {
                     Group = group,
                     IsSelect = group.Categories.Contains(Category)
-                });
+                };
+                tmp.Click += ClickCategoryGroup;
+                CategoryGroups.Add(tmp);
             }
             List<Galgame> games = _galgameCollectionService.Galgames;
             foreach (Galgame game in games)
@@ -75,6 +84,23 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
         }
     }
 
+    /// <summary>
+    /// 使用InfoBar显示消息
+    /// </summary>
+    /// <param name="severity">严重程度</param>
+    /// <param name="msg">消息</param>
+    /// <param name="delayMs">显示时间（毫秒）</param>
+    private async Task DisplayMsgAsync(InfoBarSeverity severity, string msg, int delayMs = 3000)
+    {
+        var index = ++ _displayIndex;
+        InfoBarMessage = msg;
+        InfoBarSeverity = severity;
+        InfoBarIsOpen = true;
+        await Task.Delay(delayMs);
+        if (index == _displayIndex)
+            InfoBarIsOpen = false;
+    }
+
     [RelayCommand]
     private void Back()
     {
@@ -98,12 +124,34 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
         if (file is not null)
             Category.ImagePath = file.Path;
     }
+    private void ClickCategoryGroup(CategoryGroupChecker? groupChecker)
+    {
+        if(groupChecker is null) return;
+        
+        if (groupChecker.Group.Type == CategoryGroupType.Status && groupChecker.IsSelect)
+            _ = DisplayMsgAsync(InfoBarSeverity.Error, "CategorySettingPage_StatusGroupCannotSelect".GetLocalized());
+        
+        var cnt = CategoryGroups.Count(checker => checker.IsSelect);
+        if (cnt == 0)
+            _ = DisplayMsgAsync(InfoBarSeverity.Error, "CategorySettingPage_AtLeastOnCategoryGroup".GetLocalized());
+    }
 }
 
 public class CategoryGroupChecker
 {
     public CategoryGroup Group = new();
-    public bool IsSelect;
+    public event GenericDelegate<CategoryGroupChecker>? Click;
+    private bool _isSelect;
+
+    public bool IsSelect
+    {
+        get => _isSelect;
+        set
+        {
+            _isSelect = value;
+            Click?.Invoke(this);
+        }
+    }
 }
 
 public class GameChecker

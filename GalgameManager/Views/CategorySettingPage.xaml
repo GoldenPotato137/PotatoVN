@@ -6,11 +6,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:GalgameManager.ViewModels"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Name="Page">
 
-    <Grid>
+    <Grid Margin="0 0 0 40">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -22,64 +24,70 @@
             </AppBarButton>
         </CommandBar>
 
-        <StackPanel Grid.Row="1" Spacing="25" Margin="{StaticResource MediumTopMargin}">
-            <!-- 分类名 -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" x:Uid="CategorySettingPage_CategoryName" VerticalAlignment="Center" />
-                <TextBox Grid.Column="1" Margin="10,0,0,0"
-                         Text="{x:Bind ViewModel.Category.Name, Mode=TwoWay}" />
-            </Grid>
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="25" Margin="0,24,10,0">
+                <!-- 分类名 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" x:Uid="CategorySettingPage_CategoryName" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Margin="10,0,0,0"
+                             Text="{x:Bind ViewModel.Category.Name, Mode=TwoWay}" />
+                </Grid>
 
-            <!-- 分类图片 -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" x:Uid="CategorySettingPage_CategoryImage" VerticalAlignment="Center" />
-                <TextBox Grid.Column="1" Margin="10,0,0,0" IsEnabled="False"
-                         Text="{x:Bind ViewModel.Category.ImagePath, Mode=TwoWay}" 
-                         TextWrapping="Wrap"/>
-                <Button Grid.Column="2" x:Uid="SelectImage" Margin="10 0 0 0"
-                        Command="{x:Bind ViewModel.PickImageCommand}" />
-            </Grid>
-            
-            <!-- 归属分类组 -->
-            <TextBlock x:Uid="CategorySettingPage_CategoryGroups" VerticalAlignment="Center" />
-            <ItemsRepeater
-                ItemsSource="{x:Bind ViewModel.CategoryGroups, Mode=OneWay}" Margin="-9 -15 0 0">
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:CategoryGroupChecker">
-                        <ToggleButton Content="{x:Bind Group.Name}" 
-                                      IsChecked="{x:Bind IsSelect, Mode=TwoWay}"
-                                      Margin="5 7 5 7"/>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-                <ItemsRepeater.Layout>
-                    <controls:WrapLayout Orientation="Horizontal" />
-                </ItemsRepeater.Layout>
-            </ItemsRepeater>
-            
-            <!-- 包含游戏 -->
-            <TextBlock x:Uid="CategorySettingPage_Games" VerticalAlignment="Center" />
-            <ItemsRepeater
-                ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}" Margin="-9 -15 0 0">
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:GameChecker">
-                        <ToggleButton Content="{x:Bind Game.Name.Value}" 
-                                      IsChecked="{x:Bind IsSelect, Mode=TwoWay}"
-                                      Margin="5 7 5 7"/>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-                <ItemsRepeater.Layout>
-                    <controls:WrapLayout Orientation="Horizontal" />
-                </ItemsRepeater.Layout>
-            </ItemsRepeater>
-        </StackPanel>
+                <!-- 分类图片 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" x:Uid="CategorySettingPage_CategoryImage" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Margin="10,0,0,0" IsEnabled="False"
+                             Text="{x:Bind ViewModel.Category.ImagePath, Mode=TwoWay}"
+                             TextWrapping="Wrap" />
+                    <Button Grid.Column="2" x:Uid="SelectImage" Margin="10 0 0 0"
+                            Command="{x:Bind ViewModel.PickImageCommand}" />
+                </Grid>
+
+                <!-- 归属分类组 -->
+                <TextBlock x:Uid="CategorySettingPage_CategoryGroups" VerticalAlignment="Center" />
+                <ItemsRepeater
+                    ItemsSource="{x:Bind ViewModel.CategoryGroups, Mode=OneWay}" Margin="0 -15 0 0">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:CategoryGroupChecker">
+                            <ToggleButton Content="{x:Bind Group.Name}"
+                                          IsChecked="{x:Bind IsSelect, Mode=TwoWay}"
+                                          Margin="5 7 5 7" />
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                    <ItemsRepeater.Layout>
+                        <controls:WrapLayout Orientation="Horizontal" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+
+                <!-- 包含游戏 -->
+                <TextBlock x:Uid="CategorySettingPage_Games" VerticalAlignment="Center" />
+                <ItemsRepeater
+                    ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}" Margin="0 -15 0 0">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:GameChecker">
+                            <ToggleButton Content="{x:Bind Game.Name.Value}"
+                                          IsChecked="{x:Bind IsSelect, Mode=TwoWay}"
+                                          Margin="5 7 5 7" />
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                    <ItemsRepeater.Layout>
+                        <controls:WrapLayout Orientation="Horizontal" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <InfoBar Grid.Row="2" IsOpen="{x:Bind ViewModel.InfoBarIsOpen, Mode=OneWay}"
+                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}"/>
     </Grid>
 </Page>

@@ -794,4 +794,10 @@
   <data name="CategorySettingPage_Games.Text" xml:space="preserve">
     <value>包含游戏</value>
   </data>
+  <data name="CategorySettingPage_AtLeastOnCategoryGroup" xml:space="preserve">
+    <value>至少选择一个分类组，否则你就再也找不到它啦</value>
+  </data>
+  <data name="CategorySettingPage_StatusGroupCannotSelect" xml:space="preserve">
+    <value>游玩状态组是动态生成的，这个设置将在重启软件后失效</value>
+  </data>
 </root>
