@@ -10,6 +10,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     mc:Ignorable="d"
     x:Name="Page"
     NavigationCacheMode="Required">
@@ -17,6 +18,7 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -84,15 +86,42 @@
                 ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
                 ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
                 SelectionMode="None"
-                StretchContentForSingleRow="False">
+                StretchContentForSingleRow="False"
+                animations:Connected.ListItemKey="galgameItem"
+                animations:Connected.ListItemElementName="connectedElement">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
-                        <control:HomeItem Image="{x:Bind ImagePath.Value, Mode=OneWay}"
-                                          Title="{x:Bind Name, Mode=OneWay}"
-                                          PlayType="{x:Bind PlayType, Mode=OneWay}"
-                                          DisplayPlayType="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
-                                          Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
-                                          ContextFlyout="{StaticResource GalFlyout}"/>
+                        <Grid
+                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Grid>
+                                    <Rectangle Height="209" Width="150"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               x:Name="connectedElement"
+                                               >
+                                        <Rectangle.Fill>
+                                            <ImageBrush 
+                                                ImageSource="{x:Bind ImagePath.Value, 
+                                                Mode=OneWay, 
+                                                Converter={StaticResource ImagePathConverter}}"
+                                                Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
+                                                />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                    <Polygon x:Name="PlayTypePolygon" HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                             StrokeThickness="2" Points="0,0 0,20 -20,0"
+                                             Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"/>
+                                </Grid>
+            
+                                <TextBlock
+                                    MaxHeight="85"
+                                    Margin="{StaticResource XXSmallTopMargin}"
+                                    HorizontalAlignment="Center"
+                                    Style="{ThemeResource BodyTextStyle}"
+                                    Text="{x:Bind Name, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
                     </DataTemplate>
                 </controls:AdaptiveGridView.ItemTemplate>
             </controls:AdaptiveGridView>
