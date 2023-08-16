@@ -73,8 +73,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         var path = parameter as string ?? null;
         var startGame = false;
-        Tuple<string, bool>? para = parameter as Tuple<string, bool> ?? null;
-        if (para != null)
+        if (parameter is Tuple<string, bool> para)
         {
             path = para.Item1;
             startGame = para.Item2;
