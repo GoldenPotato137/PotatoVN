@@ -22,6 +22,12 @@ public class NavigationService : INavigationService
 
     public event NavigatedEventHandler? Navigated;
 
+    public object? StoredItem
+    {
+        get;
+        private set;
+    }
+
     public Frame? Frame
     {
         get
@@ -127,5 +133,9 @@ public class NavigationService : INavigationService
         }
     }
 
-    public void SetListDataItemForNextConnectedAnimation(object item) => Frame.SetListDataItemForNextConnectedAnimation(item);
+    public void SetListDataItemForNextConnectedAnimation(object item)
+    {
+        StoredItem = item;
+        Frame.SetListDataItemForNextConnectedAnimation(item);
+    }
 }

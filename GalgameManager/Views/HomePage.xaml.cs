@@ -12,7 +12,6 @@ namespace GalgameManager.Views;
 
 public sealed partial class HomePage : Page
 {
-    private static Galgame? _storedItem;
     public HomeViewModel ViewModel
     {
         get;
@@ -32,7 +31,6 @@ public sealed partial class HomePage : Page
         {
             if (container.Content is Galgame clickedItem)
             {
-                _storedItem = clickedItem;
                 ConnectedAnimation? animation = AdaptiveGridView.PrepareConnectedAnimation("ForwardConnectedAnimation", clickedItem, "connectedElement");
                 navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
                 navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path, infoOverride:new SuppressNavigationTransitionInfo());
@@ -43,10 +41,11 @@ public sealed partial class HomePage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        if(_storedItem != null)
+        INavigationService navigationService = App.GetService<INavigationService>();
+        if(navigationService.StoredItem is Galgame storedItem)
         {
             // If the connected item appears outside the viewport, scroll it into view.
-            AdaptiveGridView.ScrollIntoView(_storedItem, ScrollIntoViewAlignment.Default);
+            AdaptiveGridView.ScrollIntoView(storedItem, ScrollIntoViewAlignment.Default);
             AdaptiveGridView.UpdateLayout();
 
             // Play the second connected animation.
@@ -60,7 +59,7 @@ public sealed partial class HomePage : Page
                     animation.Configuration = new DirectConnectedAnimationConfiguration();
                 }
 
-                AdaptiveGridView.TryStartConnectedAnimationAsync(animation, _storedItem, "connectedElement").GetResults();
+                AdaptiveGridView.TryStartConnectedAnimationAsync(animation, storedItem, "connectedElement").GetResults();
             }
 
             // Set focus on the list

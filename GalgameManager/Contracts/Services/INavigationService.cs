@@ -13,6 +13,11 @@ public interface INavigationService
         get;
     }
 
+    public object? StoredItem
+    {
+        get;
+    }
+
     Frame? Frame
     {
         get; set;

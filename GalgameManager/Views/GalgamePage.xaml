@@ -10,7 +10,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
         <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
@@ -210,7 +209,7 @@
                         Text="Tags"
                         Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
                     <ItemsRepeater
-                        ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay, FallbackValue={}}"
                         Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
