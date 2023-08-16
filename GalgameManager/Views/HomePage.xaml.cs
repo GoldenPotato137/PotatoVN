@@ -12,7 +12,7 @@ namespace GalgameManager.Views;
 
 public sealed partial class HomePage : Page
 {
-    private Galgame? _storedItem;
+    private static Galgame? _storedItem;
     public HomeViewModel ViewModel
     {
         get;
@@ -55,7 +55,7 @@ public sealed partial class HomePage : Page
             if (animation != null)
             {
                 // Setup the "back" configuration if the API is present.
-                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7))
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7)  && e.NavigationMode == NavigationMode.Back)
                 {
                     animation.Configuration = new DirectConnectedAnimationConfiguration();
                 }
@@ -66,6 +66,6 @@ public sealed partial class HomePage : Page
             // Set focus on the list
             AdaptiveGridView.Focus(FocusState.Programmatic);
         }
-
+        
     }
 }
