@@ -21,7 +21,7 @@ public class JumpListService : IJumpListService
         if (_jumpList == null) await Init();
         foreach (JumpListItem? item in _jumpList!.Items)
         {
-            if (galgames.Any(gal => $"\"{gal.Path}\"" == item.Arguments))
+            if (galgames.All(gal => $"\"{gal.Path}\"" != item.Arguments))
                 _jumpList.Items.Remove(item);
         }
         await _jumpList!.SaveAsync();

@@ -11,7 +11,7 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject
+public partial class Galgame : ObservableObject, IComparable<Galgame>
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -51,7 +51,19 @@ public partial class Galgame : ObservableObject
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论
-    
+
+    [JsonIgnore] public static SortKeys[] SortKeysList
+    {
+        get;
+        private set;
+    } = { SortKeys.LastPlay , SortKeys.Developer};
+
+    [JsonIgnore] public static bool[] SortKeysAscending
+    {
+        get;
+        private set;
+    } = {false, false};
+
     [JsonIgnore] public string? Id
     {
         get => Ids[(int)RssType];
@@ -102,7 +114,7 @@ public partial class Galgame : ObservableObject
 
     public Galgame(string path)
     {
-        Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
+        Name = SystemPath.GetFileName(SystemPath.GetDirectoryName(path + SystemPath.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
         _releaseDate = DateTime.MinValue;
         Path = path;
@@ -140,7 +152,81 @@ public partial class Galgame : ObservableObject
     {
         new DirectoryInfo(Path).Delete(true);
     }
+    
+    /// <summary>
+    /// 时间转换
+    /// </summary>
+    /// <param name="time">年/月/日</param>
+    /// <returns></returns>
+    private static long GetTime(string time)
+    {
+        if (time == DefaultString)
+            return 0;
+        if (DateTime.TryParseExact(time, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out DateTime dateTime))
+        {
+            return (long)(dateTime - DateTime.MinValue).TotalDays;
+        }
 
+        return 0;
+    }
+
+    /// <summary>
+    /// 更新CompareTo参数，可用于Sort
+    /// sortKeysList 和 sortKeysAscending长度相同
+    /// </summary>
+    /// <param name="sortKeysList"></param>
+    /// <param name="sortKeysAscending">升序/降序: true/false</param>
+    public static void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
+    {
+        SortKeysList = sortKeysList;
+        SortKeysAscending = sortKeysAscending;
+    }
+    
+    public static void UpdateSortKeys(SortKeys[] sortKeysList)
+    {
+        SortKeysList = sortKeysList;
+    }
+    
+    public static void UpdateSortKeysAscending(bool[] sortKeysAscending)
+    {
+        SortKeysAscending = sortKeysAscending;
+    }
+
+    public int CompareTo(Galgame? b)
+    {
+        if (b is null ) return 1;
+        for (var i = 0; i < Math.Min(SortKeysList.Length, SortKeysAscending.Length); i++)
+        {
+            var result = 0;
+            var take = SortKeysAscending[i]?-1:1; //true升序, false降序
+            switch (SortKeysList[i])
+            {
+                case SortKeys.Developer:
+                    result = string.Compare(Developer.Value!, b.Developer.Value, StringComparison.Ordinal);
+                    break;
+                case SortKeys.Name:
+                    result = string.Compare(Name.Value!, b.Name.Value, StringComparison.CurrentCultureIgnoreCase);
+                    take *= -1;
+                    break;
+                case SortKeys.Rating:
+                    result = Rating.Value.CompareTo(b.Rating.Value);
+                    break;
+                case SortKeys.LastPlay:
+                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(b.LastPlay.Value!));
+                    break;
+                case SortKeys.ReleaseDate:
+                    if (ReleaseDate != null && b.ReleaseDate != null )
+                    {
+                        result = ReleaseDate.Value.CompareTo(b.ReleaseDate.Value);
+                    }
+                    break;
+            }
+            if (result != 0)
+                return take * result; 
+        }
+        return 0;
+    }
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
     
     // ReSharper disable once NonReadonlyMemberInGetHashCode
@@ -210,7 +296,7 @@ public partial class Galgame : ObservableObject
     /// <returns></returns>
     public string GetMetaPath()
     {
-        return System.IO.Path.Combine(Path, MetaPath);
+        return SystemPath.Combine(Path, MetaPath);
     }
 
     /// <summary>
@@ -221,7 +307,7 @@ public partial class Galgame : ObservableObject
     {
         Galgame result = (Galgame)MemberwiseClone();
         if(ExePath != null)
-            result.ExePath = "..\\" + System.IO.Path.GetFileName(ExePath);
+            result.ExePath = "..\\" + SystemPath.GetFileName(ExePath);
         result.Path = "..\\";
 #pragma warning disable MVVMTK0034
         result._imagePath = new LockableProperty<string>();
@@ -229,7 +315,7 @@ public partial class Galgame : ObservableObject
         if (ImagePath.Value == DefaultImagePath)
             result.ImagePath.Value = DefaultImagePath;
         else
-            result.ImagePath.Value = ".\\" + System.IO.Path.GetFileName(ImagePath);
+            result.ImagePath.Value = ".\\" + SystemPath.GetFileName(ImagePath);
         return result;
     }
 

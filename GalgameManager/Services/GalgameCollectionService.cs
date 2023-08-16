@@ -31,8 +31,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
     public event GenericDelegate<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
     public bool IsPhrasing;
-    private bool[] _sortKeysAscending;
-    private SortKeys[] _sortKeysList;
 
     public IGalInfoPhraser[] PhraserList
     {
@@ -54,68 +52,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         PhraserList[(int)RssType.Vndb] = vndbPhraser;
         PhraserList[(int)RssType.Mixed] = new MixedPhraser(bgmPhraser, vndbPhraser);
         
-        _sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
+        SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
             { SortKeys.LastPlay , SortKeys.Developer};
-        _sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
+        var sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
             {false,false};
+        Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
 
         App.MainWindow.AppWindow.Closing += async (_, _) =>
         { 
             await SaveGalgamesAsync();
         };
-    }
-    
-    /// <summary>
-    /// 时间转换
-    /// </summary>
-    /// <param name="time">年/月/日</param>
-    /// <returns></returns>
-    private static long GetTime(string time)
-    {
-        if (time == Galgame.DefaultString)
-            return 0;
-        if (DateTime.TryParseExact(time, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                out DateTime dateTime))
-        {
-            return (long)(dateTime - DateTime.MinValue).TotalDays;
-        }
-
-        return 0;
-    }
-    
-    private bool CompareTo(Galgame? a, Galgame? b)
-    {
-        if (a is null || b is null ) return true;
-        for (var i = 0; i < Math.Min(_sortKeysList.Length, _sortKeysAscending.Length); i++)
-        {
-            var result = 0;
-            var take = -1; //默认降序
-            switch (_sortKeysList[i])
-            {
-                case SortKeys.Developer:
-                    result = string.Compare(a.Developer.Value!, b.Developer.Value, StringComparison.Ordinal);
-                    break;
-                case SortKeys.Name:
-                    result = string.Compare(a.Name.Value!, b.Name.Value, StringComparison.CurrentCultureIgnoreCase);
-                    take = 1;
-                    break;
-                case SortKeys.Rating:
-                    result = a.Rating.Value.CompareTo(b.Rating.Value);
-                    break;
-                case SortKeys.LastPlay:
-                    result = GetTime(a.LastPlay.Value!).CompareTo(GetTime(b.LastPlay.Value!));
-                    break;
-                case SortKeys.ReleaseDate:
-                    if (a.ReleaseDate != null && b.ReleaseDate != null )
-                    {
-                        result = a.ReleaseDate.Value.CompareTo(b.ReleaseDate.Value);
-                    }
-                    break;
-            }
-            if (result != 0)
-                return take * result <= 0 ^ _sortKeysAscending[i]; 
-        }
-        return true;
     }
     
     public async Task InitAsync()
@@ -576,7 +522,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = sortKeysList,
             Margin = new Thickness(0, 0, 5, 0),
-            SelectedItem = _sortKeysList[0]
+            SelectedItem = Galgame.SortKeysList[0]
         };
         ToggleSwitch toggleSwitch1 = new()
         {
@@ -585,7 +531,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             Margin = new Thickness(5, 0, 0, 0),
             OnContent = "升序",
             OffContent = "降序",
-            IsOn = _sortKeysAscending[0]
+            IsOn = Galgame.SortKeysAscending[0]
         };
         StackPanel panel1 = new ();
         panel1.Children.Add(comboBox1);
@@ -598,7 +544,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = sortKeysList,
             Margin = new Thickness(0, 0, 5, 0),
-            SelectedItem = _sortKeysList[1]
+            SelectedItem = Galgame.SortKeysList[1]
         };
         ToggleSwitch toggleSwitch2 = new()
         {
@@ -607,7 +553,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             Margin = new Thickness(5, 0, 0, 0),
             OnContent = "升序",
             OffContent = "降序",
-            IsOn = _sortKeysAscending[1]
+            IsOn = Galgame.SortKeysAscending[1]
         };
         StackPanel panel2 = new ();
         panel2.Children.Add(comboBox2);
@@ -617,10 +563,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            _sortKeysList = new[] { (SortKeys)comboBox1.SelectedItem, (SortKeys)comboBox2.SelectedItem };
-            _sortKeysAscending = new []{toggleSwitch1.IsOn, toggleSwitch2.IsOn};
-            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKeys, _sortKeysList);
-            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, _sortKeysAscending);
+            Galgame.UpdateSortKeys(
+                new[] { (SortKeys)comboBox1.SelectedItem, (SortKeys)comboBox2.SelectedItem },
+                new []{toggleSwitch1.IsOn, toggleSwitch2.IsOn});
+            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKeys, Galgame.SortKeysList);
+            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, Galgame.SortKeysAscending);
             Sort();
         };
         Grid content = new();
@@ -652,18 +599,18 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
                 break;
             case KeyValues.SortKeys:
-                _sortKeysList = await LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys) ?? new[]
+                Galgame.UpdateSortKeys(await LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys) ?? new[]
                 {
                     SortKeys.Name,
                     SortKeys.Rating
-                };
+                });
                 break;
             case KeyValues.SortKeysAscending:
-                _sortKeysAscending = await LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending) ?? new[]
+                Galgame.UpdateSortKeysAscending(await LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending) ?? new[]
                 {
                     false,
                     false
-                };
+                });
                 break;
         }
     }
