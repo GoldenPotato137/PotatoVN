@@ -4,6 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:viewModels="using:GalgameManager.ViewModels"
     mc:Ignorable="d">
 
     <Grid>
@@ -46,6 +48,38 @@
                 <Button Grid.Column="2" x:Uid="SelectImage" Margin="10 0 0 0"
                         Command="{x:Bind ViewModel.PickImageCommand}" />
             </Grid>
+            
+            <!-- 归属分类组 -->
+            <TextBlock x:Uid="CategorySettingPage_CategoryGroups" VerticalAlignment="Center" />
+            <ItemsRepeater
+                ItemsSource="{x:Bind ViewModel.CategoryGroups, Mode=OneWay}" Margin="-9 -15 0 0">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:CategoryGroupChecker">
+                        <ToggleButton Content="{x:Bind Group.Name}" 
+                                      IsChecked="{x:Bind IsSelect, Mode=TwoWay}"
+                                      Margin="5 7 5 7"/>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+                <ItemsRepeater.Layout>
+                    <controls:WrapLayout Orientation="Horizontal" />
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+            
+            <!-- 包含游戏 -->
+            <TextBlock x:Uid="CategorySettingPage_Games" VerticalAlignment="Center" />
+            <ItemsRepeater
+                ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}" Margin="-9 -15 0 0">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:GameChecker">
+                        <ToggleButton Content="{x:Bind Game.Name.Value}" 
+                                      IsChecked="{x:Bind IsSelect, Mode=TwoWay}"
+                                      Margin="5 7 5 7"/>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+                <ItemsRepeater.Layout>
+                    <controls:WrapLayout Orientation="Horizontal" />
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
         </StackPanel>
     </Grid>
 </Page>

@@ -788,4 +788,10 @@
   <data name="CategorySettingPage_CategoryImage.Text" xml:space="preserve">
     <value>分类图片</value>
   </data>
+  <data name="CategorySettingPage_CategoryGroups.Text" xml:space="preserve">
+    <value>归属分类组</value>
+  </data>
+  <data name="CategorySettingPage_Games.Text" xml:space="preserve">
+    <value>包含游戏</value>
+  </data>
 </root>
