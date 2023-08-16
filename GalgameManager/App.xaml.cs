@@ -89,6 +89,8 @@ public partial class App : Application
             // Views and ViewModels
             services.AddTransient<CategoryViewModel>();
             services.AddTransient<CategoryPage>();
+            services.AddTransient<CategorySettingViewModel>();
+            services.AddTransient<CategorySettingPage>();
             services.AddTransient<HelpViewModel>();
             services.AddTransient<HelpPage>();
             services.AddTransient<GalgameSettingViewModel>();
@@ -170,6 +172,9 @@ public partial class App : Application
 
     private async void OnActivated(object?_, AppActivationArguments arguments)
     {
-        await GetService<IActivationService>().HandleActivationAsync(arguments);
+        await UiThreadInvokeHelper.InvokeAsync(async Task() =>
+        {
+            await GetService<IActivationService>().HandleActivationAsync(arguments);
+        });
     }
 }

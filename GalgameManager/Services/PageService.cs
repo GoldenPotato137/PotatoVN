@@ -24,6 +24,7 @@ public class PageService : IPageService
         Configure<PlayedTimeViewModel, PlayedTimePage>();
         Configure<UpdateContentViewModel, UpdateContentPage>();
         Configure<CategoryViewModel, CategoryPage>();
+        Configure<CategorySettingViewModel, CategorySettingPage>();
     }
 
     public Type GetPageType(string key)
