@@ -27,14 +27,11 @@ public sealed partial class HomePage : Page
     private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
     {
         INavigationService navigationService = App.GetService<INavigationService>();
-        if (AdaptiveGridView.ContainerFromItem(e.ClickedItem) is GridViewItem container)
+        if (e.ClickedItem is Galgame clickedItem)
         {
-            if (container.Content is Galgame clickedItem)
-            {
-                ConnectedAnimation? animation = AdaptiveGridView.PrepareConnectedAnimation("ForwardConnectedAnimation", clickedItem, "connectedElement");
-                navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-                navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path, infoOverride:new SuppressNavigationTransitionInfo());
-            }
+            ConnectedAnimation? animation = AdaptiveGridView.PrepareConnectedAnimation("ForwardConnectedAnimation", clickedItem, "connectedElement");
+            navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
+            navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path, infoOverride:new SuppressNavigationTransitionInfo());
         }
     }
 
@@ -47,7 +44,6 @@ public sealed partial class HomePage : Page
             // If the connected item appears outside the viewport, scroll it into view.
             AdaptiveGridView.ScrollIntoView(storedItem, ScrollIntoViewAlignment.Default);
             AdaptiveGridView.UpdateLayout();
-
             // Play the second connected animation.
             ConnectedAnimation animation =
                 ConnectedAnimationService.GetForCurrentView().GetAnimation("BackConnectedAnimation");
@@ -58,10 +54,8 @@ public sealed partial class HomePage : Page
                 {
                     animation.Configuration = new DirectConnectedAnimationConfiguration();
                 }
-
                 AdaptiveGridView.TryStartConnectedAnimationAsync(animation, storedItem, "connectedElement").GetResults();
             }
-
             // Set focus on the list
             AdaptiveGridView.Focus(FocusState.Programmatic);
         }
