@@ -1,10 +1,10 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.Json;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using Newtonsoft.Json;
 
 namespace GalgameManager.Services;
 
@@ -89,7 +89,7 @@ public class FaqService : IFaqService
                 if (json != null)
                 {
                     _faqs.Clear();
-                    _faqs = JsonSerializer.Deserialize<ObservableCollection<Faq>>(json) ??
+                    _faqs = JsonConvert.DeserializeObject<ObservableCollection<Faq>>(json) ??
                             new ObservableCollection<Faq>();
                 }
             }
