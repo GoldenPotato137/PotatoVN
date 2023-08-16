@@ -26,13 +26,13 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="GameInfoBlock.(RelativePanel.RightOf)" Value="ImageBlock" />
-                        <Setter Target="GameInfoBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="GameInfoBlock.(RelativePanel.Below)" Value="TitleBlock" />
                         <Setter Target="GameInfoBlock.Width" Value="180" />
                         <Setter Target="PlayInfoBlock.(RelativePanel.RightOf)" Value="GameInfoBlock" />
-                        <Setter Target="PlayInfoBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="PlayInfoBlock.(RelativePanel.Below)" Value="TitleBlock" />
                         <Setter Target="PlayInfoBlock.Width" Value="180" />
                         <Setter Target="RatingBlock.(RelativePanel.RightOf)" Value="PlayInfoBlock" />
-                        <Setter Target="RatingBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="RatingBlock.(RelativePanel.Below)" Value="TitleBlock" />
                         <Setter Target="RatingBlock.Width" Value="180" />
                     </VisualState.Setters>
                 </VisualState>
@@ -107,7 +107,7 @@
 
             <ScrollViewer Grid.Row="1" IsTabStop="True">
                 <StackPanel>
-                    <RelativePanel>
+                    <RelativePanel x:Name="InfoPanel">
                         <Grid
                             x:Name="ImageBlock"
                             Height="250"
@@ -127,12 +127,13 @@
                         </Grid>
 
                         <TextBlock
-                            x:Name="Title"
+                            x:Name="TitleBlock"
                             Margin="{StaticResource XXSmallTopMargin}"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.RightOf="ImageBlock"
                             Style="{ThemeResource TitleTextBlockStyle}"
-                            Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay, FallbackValue={}}" />
+                            Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay, FallbackValue={}}" 
+                            />
 
                         <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
@@ -193,37 +194,44 @@
 
                     </RelativePanel>
 
-                    <TextBlock
-                        Margin="{StaticResource SmallTopBottomMargin}"
-                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.UiDescription}"
-                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
-                    <TextBlock
-                        Style="{ThemeResource BodyTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}"
-                        IsTextSelectionEnabled="True"
-                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
+                    <StackPanel>
+                        <StackPanel.ChildrenTransitions>
+                            <TransitionCollection>
+                                <EntranceThemeTransition FromVerticalOffset="200"/>
+                            </TransitionCollection>
+                        </StackPanel.ChildrenTransitions>
+                        <TextBlock
+                            Margin="{StaticResource SmallTopBottomMargin}"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.UiDescription}"
+                            Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
+                        <TextBlock
+                            Style="{ThemeResource BodyTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}"
+                            IsTextSelectionEnabled="True"
+                            Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
 
-                    <TextBlock
-                        Margin="{StaticResource SmallTopBottomMargin}"
-                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="Tags"
-                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
-                    <ItemsRepeater
-                        ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10"
-                                      Margin="5 7 5 7">
-                                    <TextBlock Padding="5" Text="{x:Bind}" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                        <ItemsRepeater.Layout>
-                            <controls1:WrapLayout Orientation="Horizontal" />
-                        </ItemsRepeater.Layout>
-                    </ItemsRepeater>
+                        <TextBlock
+                            Margin="{StaticResource SmallTopBottomMargin}"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="Tags"
+                            Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
+                        <ItemsRepeater
+                            ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10"
+                                          Margin="5 7 5 7">
+                                        <TextBlock Padding="5" Text="{x:Bind}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                            <ItemsRepeater.Layout>
+                                <controls1:WrapLayout Orientation="Horizontal" />
+                            </ItemsRepeater.Layout>
+                        </ItemsRepeater>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
 
