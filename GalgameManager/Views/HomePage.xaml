@@ -95,14 +95,20 @@
                             Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
                                 <Grid>
-                                    <Image 
-                                        Source="{x:Bind ImagePath.Value, Mode=OneWay, Converter={StaticResource ImagePathConverter}}"
-                                        Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
-                                        Height="209" Width="150"
-                                        HorizontalAlignment="Center" 
-                                        VerticalAlignment="Center"
-                                        x:Name="connectedElement"
-                                    />
+                                    <Rectangle Height="209" Width="150"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               x:Name="connectedElement"
+                                               >
+                                        <Rectangle.Fill>
+                                            <ImageBrush 
+                                                ImageSource="{x:Bind ImagePath.Value, 
+                                                Mode=OneWay, 
+                                                Converter={StaticResource ImagePathConverter}}"
+                                                Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
+                                                />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
                                     <Polygon x:Name="PlayTypePolygon" HorizontalAlignment="Right" VerticalAlignment="Top" 
                                              StrokeThickness="2" Points="0,0 0,20 -20,0"
                                              Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"/>
