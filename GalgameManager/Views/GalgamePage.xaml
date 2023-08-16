@@ -7,6 +7,7 @@
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:local="using:GalgameManager.Helpers"
     xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -122,7 +123,8 @@
                                 VerticalAlignment="Center"
                                 MaxWidth="250"
                                 MaxHeight="250"
-                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" />
+                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" 
+                                animations:Connected.Key="galgameItem"/>
                         </Grid>
 
                         <TextBlock
