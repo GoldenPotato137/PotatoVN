@@ -7,7 +7,6 @@ using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Helpers;
 
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace GalgameManager.Services;
@@ -84,7 +83,7 @@ public class NavigationService : INavigationService
         return false;
     }
 
-    public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false, NavigationTransitionInfo? infoOverride=null)
+    public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false)
     {
         var pageType = _pageService.GetPageType(pageKey);
 
@@ -92,7 +91,7 @@ public class NavigationService : INavigationService
         {
             _frame.Tag = clearNavigation;
             var vmBeforeNavigation = _frame.GetPageViewModel();
-            var navigated = infoOverride != null ?_frame.Navigate(pageType, parameter, infoOverride):_frame.Navigate(pageType, parameter);
+            var navigated = _frame.Navigate(pageType, parameter);
             if (navigated)
             {
                 _lastParameterUsed = parameter;

@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace GalgameManager.Models;
+﻿namespace GalgameManager.Models;
 
 public class Faq
 {

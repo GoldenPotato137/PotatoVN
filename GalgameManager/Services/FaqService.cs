@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.Json;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;

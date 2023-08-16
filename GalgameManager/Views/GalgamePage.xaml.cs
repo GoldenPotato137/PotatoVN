@@ -4,7 +4,6 @@ using GalgameManager.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using CommunityToolkit.WinUI.UI.Animations;
-using Microsoft.UI.Xaml;
 
 namespace GalgameManager.Views;
 
