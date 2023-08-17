@@ -6,8 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:GalgameManager.ViewModels"
-    mc:Ignorable="d"
-    x:Name="Page">
+    mc:Ignorable="d">
 
     <Grid Margin="0 0 0 40">
         <Grid.RowDefinitions>
@@ -17,6 +16,13 @@
         </Grid.RowDefinitions>
 
         <CommandBar Grid.Row="0" DefaultLabelPosition="Right">
+            <AppBarButton x:Uid="CategorySettingPage_CommandBar_DownloadImg" 
+                          Command="{x:Bind ViewModel.DownloadImageCommand}"
+                          Visibility="{x:Bind ViewModel.DownloadImgVisibility}">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
             <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;" />

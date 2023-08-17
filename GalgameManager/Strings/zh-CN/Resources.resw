@@ -800,4 +800,10 @@
   <data name="CategorySettingPage_StatusGroupCannotSelect" xml:space="preserve">
     <value>游玩状态组是动态生成的，这个设置将在重启软件后失效</value>
   </data>
+  <data name="CategorySettingPage_HavePutInQueue" xml:space="preserve">
+    <value>已添加入解析队列</value>
+  </data>
+  <data name="CategorySettingPage_CommandBar_DownloadImg.Label" xml:space="preserve">
+    <value>下载开发商图</value>
+  </data>
 </root>

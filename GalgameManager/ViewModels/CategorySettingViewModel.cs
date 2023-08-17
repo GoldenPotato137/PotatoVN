@@ -10,6 +10,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
@@ -23,6 +24,7 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
     public ObservableCollection<CategoryGroupChecker> CategoryGroups = new();
     public ObservableCollection<GameChecker> Games = new();
     private int _displayIndex;
+    [ObservableProperty] private Visibility _downloadImgVisibility = Visibility.Collapsed;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _infoBarIsOpen;
@@ -39,6 +41,9 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
     {
         if (parameter is Category category)
         {
+            if (_categoryService.IsInCategoryGroup(category, CategoryGroupType.Developer))
+                DownloadImgVisibility = Visibility.Visible;
+            
             Category = category;
             ObservableCollection<CategoryGroup> tmpCategoryGroups = await _categoryService.GetCategoryGroupsAsync();
             foreach (CategoryGroup group in tmpCategoryGroups)
@@ -124,6 +129,14 @@ public partial class CategorySettingViewModel : ObservableRecipient, INavigation
         if (file is not null)
             Category.ImagePath = file.Path;
     }
+
+    [RelayCommand]
+    private void DownloadImage()
+    {
+        _categoryService.UpdateCategory(Category);
+        _ = DisplayMsgAsync(InfoBarSeverity.Success, "CategorySettingPage_HavePutInQueue".GetLocalized());
+    }
+    
     private void ClickCategoryGroup(CategoryGroupChecker? groupChecker)
     {
         if(groupChecker is null) return;

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using CommunityToolkit.WinUI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -9,7 +8,6 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 using Microsoft.UI.Dispatching;
-using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
 
@@ -266,5 +264,15 @@ public class CategoryService : ICategoryService
         _statusCategory[(int)PlayType.Playing] = _statusGroup.Categories[2];
         _statusCategory[(int)PlayType.Shelved] = _statusGroup.Categories[3];
         _statusCategory[(int)PlayType.Abandoned] = _statusGroup.Categories[4];
+    }
+
+    /// <summary>
+    /// 是否在某个type的分类组中
+    /// </summary>
+    /// <param name="category">分类</param>
+    /// <param name="type">type</param>
+    public bool IsInCategoryGroup(Category category, CategoryGroupType type)
+    {
+        return _categoryGroups.Any(g => g.Type == type && g.Categories.Contains(category));
     }
 }
