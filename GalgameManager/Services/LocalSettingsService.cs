@@ -43,6 +43,7 @@ public class LocalSettingsService : ILocalSettingsService
         {
             await _fileService.WaitForWriteFinishAsync();
         };
+        Upgrade().Wait();
     }
 
     /// <summary>
@@ -89,7 +90,7 @@ public class LocalSettingsService : ILocalSettingsService
     /// </summary>
     private void UpgradeSaveFormat()
     {
-        if (!(_settings.TryGetValue(KeyValues.SaveFormatUpgraded, out var isSaveFormatUpgraded) && JsonConvert.DeserializeObject(isSaveFormatUpgraded.ToString()!) is true))
+        if (!_settings.ContainsKey(KeyValues.SaveFormatUpgraded))
         {
             // 原本莫名其妙把数据序列化了两次，弱智了
             // 把被序列化两次的数据恢复过来
@@ -128,7 +129,6 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX && !isLarge)
         {
-            await Upgrade();
             if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
             {
                 return obj is string? JsonConvert.DeserializeObject<T>(obj.ToString()!): default;
@@ -137,7 +137,6 @@ public class LocalSettingsService : ILocalSettingsService
         else
         {
             await InitializeAsync();
-            await Upgrade();
             if (_settings.TryGetValue(key, out var obj))
             {
                 if (obj is JToken json)
@@ -196,13 +195,11 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX && !isLarge)
         {
-            await Upgrade();
             ApplicationData.Current.LocalSettings.Values[key] = JsonConvert.SerializeObject(value);
         }
         else if(value!=null)
         {
             await InitializeAsync();
-            await Upgrade();
             _settings[key] = value;
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
@@ -214,13 +211,11 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX)
         {
-            await Upgrade();
             ApplicationData.Current.LocalSettings.Values.Remove(key);
         }
         else
         {
             await InitializeAsync();
-            await Upgrade();
 
             _settings.Remove(key);
 
