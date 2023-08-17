@@ -56,10 +56,10 @@ public class LocalSettingsService : ILocalSettingsService
         while (true)
         {
             if (retry > 3) throw new ConfigurationErrorsException("配置读取失败");
-            await UpgradeSaveFormatAsync();
 
             _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
                         new Dictionary<string, object>();
+            UpgradeSaveFormat();
 
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
@@ -85,20 +85,19 @@ public class LocalSettingsService : ILocalSettingsService
     }
 
     /// <summary>
-    /// 更新存储格式
+    /// 更新存储格式, 用于大文件
     /// </summary>
-    private async Task UpgradeSaveFormatAsync()
+    private void UpgradeSaveFormat()
     {
-        if (await ReadSettingAsync<bool>(KeyValues.SaveFormatUpgraded) == false)
+        if (!(_settings.TryGetValue(KeyValues.SaveFormatUpgraded, out var isSaveFormatUpgraded) && JsonConvert.DeserializeObject(isSaveFormatUpgraded.ToString()!) is true))
         {
             // 原本莫名其妙把数据序列化了两次，弱智了
             // 把被序列化两次的数据恢复过来
             Dictionary<string, object> tmp = new();
-            _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? new Dictionary<string, object>();
             foreach (var key in _settings.Keys)
                 tmp[key] = JsonConvert.DeserializeObject(_settings[key].ToString()!)!;
+            tmp[KeyValues.SaveFormatUpgraded] = true;
             _fileService.SaveNow(_applicationDataFolder, _localsettingsFile, tmp);
-            await SaveSettingAsync(KeyValues.SaveFormatUpgraded, true);
         }
     }
 
