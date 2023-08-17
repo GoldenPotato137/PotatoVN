@@ -24,6 +24,7 @@ public class LocalSettingsService : ILocalSettingsService
     private IDictionary<string, object> _settings;
 
     private bool _isInitialized;
+    private bool _isUpgrade;
     
     public event ILocalSettingsService.Delegate? OnSettingChanged;
 
@@ -44,6 +45,10 @@ public class LocalSettingsService : ILocalSettingsService
         };
     }
 
+    /// <summary>
+    /// 仅在读大文件时调用
+    /// </summary>
+    /// <exception cref="ConfigurationErrorsException"></exception>
     private async Task InitializeAsync()
     {
         if (_isInitialized) return;
@@ -51,7 +56,7 @@ public class LocalSettingsService : ILocalSettingsService
         while (true)
         {
             if (retry > 3) throw new ConfigurationErrorsException("配置读取失败");
-            await UpgradeAsync();
+            await UpgradeSaveFormatAsync();
 
             _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
                         new Dictionary<string, object>();
@@ -79,7 +84,10 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
-    private async Task UpgradeAsync()
+    /// <summary>
+    /// 更新存储格式
+    /// </summary>
+    private async Task UpgradeSaveFormatAsync()
     {
         if (await ReadSettingAsync<bool>(KeyValues.SaveFormatUpgraded) == false)
         {
@@ -94,10 +102,34 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
+    /// <summary>
+    /// 更新配置
+    /// </summary>
+    private async Task Upgrade()
+    {
+        if (_isUpgrade) return;
+        //public const string SortKey1 = "sortKey1";
+        //public const string SortKey2 = "sortKey2";
+        if (await ReadSettingAsync<bool>(KeyValues.SortKeysUpgraded) == false)
+        {
+            SortKeys? sortKey1 = await ReadSettingAsync<SortKeys?>("sortKey1");
+            SortKeys? sortKey2 = await ReadSettingAsync<SortKeys?>("sortKey2");
+            if (sortKey1 != null && sortKey2 != null)
+            {
+                await SaveSettingAsync(KeyValues.SortKeys, new []{sortKey1.Value, sortKey2.Value});
+                await SaveSettingAsync(KeyValues.SortKeysAscending, new []{false, false});
+            }
+            await SaveSettingAsync(KeyValues.SortKeysUpgraded, true);
+        }
+
+        _isUpgrade = true;
+    }
+
     public async Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false)
     {
         if (RuntimeHelper.IsMSIX && !isLarge)
         {
+            await Upgrade();
             if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
             {
                 return obj is string? JsonConvert.DeserializeObject<T>(obj.ToString()!): default;
@@ -106,6 +138,7 @@ public class LocalSettingsService : ILocalSettingsService
         else
         {
             await InitializeAsync();
+            await Upgrade();
             if (_settings.TryGetValue(key, out var obj))
             {
                 if (obj is JToken json)
@@ -164,11 +197,13 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX && !isLarge)
         {
+            await Upgrade();
             ApplicationData.Current.LocalSettings.Values[key] = JsonConvert.SerializeObject(value);
         }
         else if(value!=null)
         {
             await InitializeAsync();
+            await Upgrade();
             _settings[key] = value;
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
@@ -180,11 +215,13 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX)
         {
+            await Upgrade();
             ApplicationData.Current.LocalSettings.Values.Remove(key);
         }
         else
         {
             await InitializeAsync();
+            await Upgrade();
 
             _settings.Remove(key);
 
