@@ -5,6 +5,10 @@ using GalgameManager.Models;
 
 namespace GalgameManager.Services;
 
+/// <summary>
+/// JumpList 管理
+/// "/j galgamePath"
+/// </summary>
 public class JumpListService : IJumpListService
 {
     private JumpList? _jumpList;
@@ -19,7 +23,7 @@ public class JumpListService : IJumpListService
     public async Task CheckJumpListAsync(List<Galgame> galgames)
     {
         if (_jumpList == null) await Init();
-        List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"\"{gal.Path}\"" != item.Arguments)).ToList();
+        List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"/j \"{gal.Path}\"" != item.Arguments)).ToList();
         foreach (JumpListItem item in toRemove)
         {
             _jumpList.Items.Remove(item);
@@ -31,7 +35,7 @@ public class JumpListService : IJumpListService
     {
         if (_jumpList == null) await Init();
         IList<JumpListItem>? items = _jumpList!.Items;
-        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"\"{galgame.Path}\"");
+        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Path}\"");
         if (item == null)
         {
             item = JumpListItem.CreateWithArguments($"/j \"{galgame.Path}\"", galgame.Name);
@@ -49,7 +53,7 @@ public class JumpListService : IJumpListService
     {
         if (_jumpList == null) await Init();
         IList<JumpListItem>? items = _jumpList!.Items;
-        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"\"{galgame.Path}\"");
+        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Path}\"");
         if (item != null)
         {
             items.Remove(item);
