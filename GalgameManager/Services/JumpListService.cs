@@ -19,10 +19,10 @@ public class JumpListService : IJumpListService
     public async Task CheckJumpListAsync(List<Galgame> galgames)
     {
         if (_jumpList == null) await Init();
-        foreach (JumpListItem? item in _jumpList!.Items)
+        List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"\"{gal.Path}\"" != item.Arguments)).ToList();
+        foreach (JumpListItem item in toRemove)
         {
-            if (galgames.All(gal => $"\"{gal.Path}\"" != item.Arguments))
-                _jumpList.Items.Remove(item);
+            _jumpList.Items.Remove(item);
         }
         await _jumpList!.SaveAsync();
     }
