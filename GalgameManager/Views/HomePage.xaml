@@ -15,7 +15,6 @@
     NavigationCacheMode="Required">
 
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
@@ -69,8 +68,7 @@
                                         IsChecked="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}"/>
                     <AppBarToggleButton x:Uid="HomePage_DisplayPlayType" 
                                         IsChecked="{x:Bind ViewModel.DisplayPlayTypePolygon, Mode=TwoWay}"
-                                        Visibility="{x:Bind ViewModel.FixHorizontalPicture, Mode=OneWay, 
-                                        Converter={StaticResource BoolToVisibilityConverter}}">
+                                        Visibility="{x:Bind ViewModel.FixHorizontalPicture, Mode=OneWay}">
                         <AppBarToggleButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE890;"/>
                         </AppBarToggleButton.Icon>
@@ -140,7 +138,7 @@
         <Grid
             Row="0"
             Background="#00000000"
-            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
             <ProgressRing
                 IsActive="True"
                 Width="100"

@@ -10,7 +10,6 @@
     xmlns:enums="using:GalgameManager.Enums"
     mc:Ignorable="d">
     <Page.Resources>
-        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:RssTypeToVisibilityConverter x:Key="RssTypeToVisibilityConverter"/>
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
@@ -174,7 +173,7 @@
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideNameWithChinese"
                                                                IsOn="{x:Bind ViewModel.OverrideLocalNameWithChinese, Mode=TwoWay}" 
-                                                               Visibility="{x:Bind ViewModel.OverrideLocalName, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                               Visibility="{x:Bind ViewModel.OverrideLocalName, Mode=OneWay}"
                                                                Margin="0, 13, 0, 0"
                                     />
                                     <!-- Magic Number: SettingsPageStackPanelSpacing=13 修复SettingToggleSwitch隐藏时 StackPanel 下侧仍有Spacing 问题 -->
@@ -247,7 +246,7 @@
                                         IsOn="{x:Bind ViewModel.SearchSubFolder, Mode=TwoWay}" />
                                     <RelativePanel Margin="{StaticResource XSmallTopMargin}"
                                                    HorizontalAlignment="Stretch"
-                                                   Visibility="{x:Bind ViewModel.SearchSubFolder, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                   Visibility="{x:Bind ViewModel.SearchSubFolder, Mode=OneWay}">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepth}"
                                                        Style="{ThemeResource BodyTextBlockStyle}" />

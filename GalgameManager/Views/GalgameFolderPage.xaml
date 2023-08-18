@@ -11,7 +11,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
     
     <Grid>
@@ -23,7 +22,7 @@
             </Grid.RowDefinitions>
 
             <RelativePanel Grid.Row="0">
-                <TextBlock Text="{x:Bind ViewModel.Item.Path}"
+                <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}"
                            Style="{ThemeResource TitleTextBlockStyle}" 
                            MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"/>
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
@@ -86,7 +85,7 @@
         <Grid
             Margin ="25 10 25 100 "
             Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
-            Visibility="{x:Bind ViewModel.IsUnpacking, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsUnpacking, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>

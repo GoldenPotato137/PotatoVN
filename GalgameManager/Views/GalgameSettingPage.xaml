@@ -9,7 +9,6 @@
     mc:Ignorable="d">
     
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
     
     <Grid Margin="0 0 0 40">
@@ -120,7 +119,7 @@
         <Grid 
             Grid.Row="0" 
             Background="#00000000" 
-            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
             <ProgressRing 
                 IsActive="True" 
                 Width="100" 
