@@ -16,6 +16,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Security.Credentials.UI;
 using Windows.Security.Credentials;
 using GalgameManager.Views;
+using GalgameManager.Views.Dialog;
 
 namespace GalgameManager.ViewModels;
 
@@ -220,7 +221,26 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         if (_bgmAccount.OAuthed)
             await _bgmOAuthService.QuitLoginBgm();
         else
-            await _bgmOAuthService.StartOAuth();
+        {
+            SelectAuthModeDialog selectAuthModeDialog = new();
+
+            ContentDialogResult result = await selectAuthModeDialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                switch (selectAuthModeDialog.SelectItem)
+                {
+                    case 0:
+                        await _bgmOAuthService.StartOAuth();
+                        break;
+                    case 1:
+                        if (!string.IsNullOrEmpty(selectAuthModeDialog.AccessToken))
+                        {
+                            await _bgmOAuthService.AuthWithAccessToken(selectAuthModeDialog.AccessToken);
+                        }
+                        break;
+                }
+            }
+        }
     }
 
     private async void OnSettingChange(string key, object value)

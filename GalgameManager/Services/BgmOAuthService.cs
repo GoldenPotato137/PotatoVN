@@ -34,7 +34,6 @@ public class BgmOAuthService : IBgmOAuthService
     {
         _isInitialized = true;
         _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
-        //todo:兼容直接获取token的方式
         _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
     }
 
@@ -72,6 +71,13 @@ public class BgmOAuthService : IBgmOAuthService
                 OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message));
             });
         }
+    }
+
+    public async Task AuthWithAccessToken(string accessToken)
+    {
+        _bgmAccount.BangumiAccessToken = accessToken;
+        _bgmAccount.BangumiRefreshToken = string.Empty;
+        await GetBgmAccount();
     }
     
     /// <summary>
