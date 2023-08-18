@@ -50,7 +50,7 @@ public class BgmOAuthService : IBgmOAuthService
     {
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            App.MainWindow.Activate(); //把窗口提到最前面
+            App.MainWindow.BringToFront(); //把窗口提到最前面
             OnAuthResultChange?.Invoke((OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg()));
         });
         WwwFormUrlDecoder decoder = new(uri.Query);
