@@ -161,31 +161,31 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             // rssType
             RssType = RssType.Bangumi,
             // id
-            Id = jsonToken["id"]!.ToObject<string>()!,
+            Id = jsonToken["id"]?.ToObject<string>() ?? "",
             // name
-            Name = jsonToken["name"]!.ToObject<string>()!,
+            Name = jsonToken["name"]?.ToObject<string>() ?? "",
             // Chinese name
-            CnName = jsonToken["name_cn"]!.ToObject<string>() ?? "",
+            CnName = jsonToken["name_cn"]?.ToObject<string>() ?? "",
             // description
             Description = jsonToken["summary"]!.ToObject<string>() ?? "",
             // imageUrl
-            ImageUrl = jsonToken["images"]!["large"]!.ToObject<string>()!,
+            ImageUrl = jsonToken["images"]?["large"]?.ToObject<string>() ?? "",
             // rating
-            Rating = jsonToken["rating"]!["score"]!.ToObject<float>(),
+            Rating = jsonToken["rating"]?["score"]?.ToObject<float>() ?? 0,
             ReleaseDate = (jsonToken["date"] != null
-                ? IGalInfoPhraser.GetDateTimeFromString(jsonToken["date"]!.ToObject<string>()!)
+                ? IGalInfoPhraser.GetDateTimeFromString(jsonToken["date"]?.ToObject<string>())
                 : null) ?? DateTime.MinValue
         };
         // tags
-        List<JToken>? tags = jsonToken["tags"]!.ToObject<List<JToken>>()!;
+        List<JToken>? tags = jsonToken["tags"]?.ToObject<List<JToken>>();
         result.Tags.Value = new ObservableCollection<string>();
-        tags.ForEach(tag => result.Tags.Value.Add(tag["name"]!.ToObject<string>()!));
+        tags?.ForEach(tag => result.Tags.Value.Add(tag["name"]!.ToObject<string>()!));
         // developer
-        List<JToken>? infoBox = jsonToken["infobox"]!.ToObject<List<JToken>>()!;
-        JToken? developerInfoBox = infoBox.Find(x => x["key"]!.ToObject<string>()!.Contains("开发"));
+        List<JToken>? infoBox = jsonToken["infobox"]?.ToObject<List<JToken>>();
+        JToken? developerInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("开发") ?? false);
         if (developerInfoBox?["value"] != null)
         {
-            switch (developerInfoBox["value"]!.Type)
+            switch (developerInfoBox["value"]?.Type)
             {
                 case JTokenType.Array:
                 {

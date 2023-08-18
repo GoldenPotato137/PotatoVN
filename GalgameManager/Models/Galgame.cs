@@ -52,7 +52,17 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论
 
-    public static readonly List<SortKeys> SortKeysList = new ();
+    [JsonIgnore] public static SortKeys[] SortKeysList
+    {
+        get;
+        private set;
+    } = { SortKeys.LastPlay , SortKeys.Developer};
+
+    [JsonIgnore] public static bool[] SortKeysAscending
+    {
+        get;
+        private set;
+    } = {false, false};
 
     [JsonIgnore] public string? Id
     {
@@ -104,7 +114,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
 
     public Galgame(string path)
     {
-        Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
+        Name = SystemPath.GetFileName(SystemPath.GetDirectoryName(path + SystemPath.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
         _releaseDate = DateTime.MinValue;
         Path = path;
@@ -142,48 +152,13 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         new DirectoryInfo(Path).Delete(true);
     }
-
-    public int CompareTo(Galgame? other)
-    {
-        if (other is null) return 1;
-        foreach (SortKeys keyValue in SortKeysList)
-        {
-            var result = 0;
-            var take = -1; //默认降序
-            switch (keyValue)
-            {
-                case SortKeys.Developer:
-                    result = string.Compare(Developer.Value!, other.Developer.Value, StringComparison.Ordinal);
-                    break;
-                case SortKeys.Name:
-                    result = string.Compare(Name.Value!, other.Name.Value, StringComparison.CurrentCultureIgnoreCase);
-                    take = 1;
-                    break;
-                case SortKeys.Rating:
-                    result = Rating.Value.CompareTo(other.Rating.Value);
-                    break;
-                case SortKeys.LastPlay:
-                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(other.LastPlay.Value!));
-                    break;
-                case SortKeys.ReleaseDate:
-                    if (ReleaseDate != null && other.ReleaseDate != null )
-                    {
-                        result = ReleaseDate.Value.CompareTo(other.ReleaseDate);
-                    }
-                    break;
-            }
-            if (result != 0)
-                return take * result; 
-        }
-        return 0;
-    }
-
+    
     /// <summary>
     /// 时间转换
     /// </summary>
     /// <param name="time">年/月/日</param>
     /// <returns></returns>
-    private long GetTime(string time)
+    private static long GetTime(string time)
     {
         if (time == DefaultString)
             return 0;
@@ -196,6 +171,62 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         return 0;
     }
 
+    /// <summary>
+    /// 更新CompareTo参数，可用于Sort
+    /// sortKeysList 和 sortKeysAscending长度相同
+    /// </summary>
+    /// <param name="sortKeysList"></param>
+    /// <param name="sortKeysAscending">升序/降序: true/false</param>
+    public static void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
+    {
+        SortKeysList = sortKeysList;
+        SortKeysAscending = sortKeysAscending;
+    }
+    
+    public static void UpdateSortKeys(SortKeys[] sortKeysList)
+    {
+        SortKeysList = sortKeysList;
+    }
+    
+    public static void UpdateSortKeysAscending(bool[] sortKeysAscending)
+    {
+        SortKeysAscending = sortKeysAscending;
+    }
+
+    public int CompareTo(Galgame? b)
+    {
+        if (b is null ) return 1;
+        for (var i = 0; i < Math.Min(SortKeysList.Length, SortKeysAscending.Length); i++)
+        {
+            var result = 0;
+            var take = SortKeysAscending[i]?-1:1; //true升序, false降序
+            switch (SortKeysList[i])
+            {
+                case SortKeys.Developer:
+                    result = string.Compare(Developer.Value!, b.Developer.Value, StringComparison.Ordinal);
+                    break;
+                case SortKeys.Name:
+                    result = string.Compare(Name.Value!, b.Name.Value, StringComparison.CurrentCultureIgnoreCase);
+                    take *= -1;
+                    break;
+                case SortKeys.Rating:
+                    result = Rating.Value.CompareTo(b.Rating.Value);
+                    break;
+                case SortKeys.LastPlay:
+                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(b.LastPlay.Value!));
+                    break;
+                case SortKeys.ReleaseDate:
+                    if (ReleaseDate != null && b.ReleaseDate != null )
+                    {
+                        result = ReleaseDate.Value.CompareTo(b.ReleaseDate.Value);
+                    }
+                    break;
+            }
+            if (result != 0)
+                return take * result; 
+        }
+        return 0;
+    }
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
     
     // ReSharper disable once NonReadonlyMemberInGetHashCode
@@ -265,7 +296,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     /// <returns></returns>
     public string GetMetaPath()
     {
-        return System.IO.Path.Combine(Path, MetaPath);
+        return SystemPath.Combine(Path, MetaPath);
     }
 
     /// <summary>
@@ -276,7 +307,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         Galgame result = (Galgame)MemberwiseClone();
         if(ExePath != null)
-            result.ExePath = "..\\" + System.IO.Path.GetFileName(ExePath);
+            result.ExePath = "..\\" + SystemPath.GetFileName(ExePath);
         result.Path = "..\\";
 #pragma warning disable MVVMTK0034
         result._imagePath = new LockableProperty<string>();
@@ -284,7 +315,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         if (ImagePath.Value == DefaultImagePath)
             result.ImagePath.Value = DefaultImagePath;
         else
-            result.ImagePath.Value = ".\\" + System.IO.Path.GetFileName(ImagePath);
+            result.ImagePath.Value = ".\\" + SystemPath.GetFileName(ImagePath);
         return result;
     }
 

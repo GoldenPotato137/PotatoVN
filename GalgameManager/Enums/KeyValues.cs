@@ -14,8 +14,8 @@ public static class KeyValues
     public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string RemoteFolder = "remoteFolder";
     public const string QuitStart = "quitStart";
-    public const string SortKey1 = "sortKey1";
-    public const string SortKey2 = "sortKey2";
+    public const string SortKeys = "sortKeys";
+    public const string SortKeysAscending = "sortKeysAscending";
     public const string SearchChildFolder = "searchChildFolder";
     public const string SearchChildFolderDepth = "searchChildFolderDepth";
     public const string IgnoreFetchResult = "ignoreFetchResult";
@@ -46,4 +46,5 @@ public static class KeyValues
     //是否执行过某种升级, bool
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
+    public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
 }

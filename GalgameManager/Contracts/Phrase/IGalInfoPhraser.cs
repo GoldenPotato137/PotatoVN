@@ -61,7 +61,7 @@ public interface IGalInfoPhraser
         return (match / (double)n + match / (double)m + (match - swap / 2.0) / match) / 3.0;
     }
 
-    public static DateTime? GetDateTimeFromString(string date, string format = "yyyy-MM-dd")
+    public static DateTime? GetDateTimeFromString(string? date, string format = "yyyy-MM-dd")
     {
         if (DateTime.TryParseExact(date, format, System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None,
                 out DateTime dateTime))

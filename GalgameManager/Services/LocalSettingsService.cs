@@ -24,6 +24,7 @@ public class LocalSettingsService : ILocalSettingsService
     private IDictionary<string, object> _settings;
 
     private bool _isInitialized;
+    private bool _isUpgrade;
     
     public event ILocalSettingsService.Delegate? OnSettingChanged;
 
@@ -42,8 +43,13 @@ public class LocalSettingsService : ILocalSettingsService
         {
             await _fileService.WaitForWriteFinishAsync();
         };
+        Upgrade().Wait();
     }
 
+    /// <summary>
+    /// 仅在读大文件时调用
+    /// </summary>
+    /// <exception cref="ConfigurationErrorsException"></exception>
     private async Task InitializeAsync()
     {
         if (_isInitialized) return;
@@ -51,10 +57,10 @@ public class LocalSettingsService : ILocalSettingsService
         while (true)
         {
             if (retry > 3) throw new ConfigurationErrorsException("配置读取失败");
-            await UpgradeAsync();
 
             _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
                         new Dictionary<string, object>();
+            UpgradeSaveFormat();
 
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
@@ -79,19 +85,44 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
-    private async Task UpgradeAsync()
+    /// <summary>
+    /// 更新存储格式, 用于大文件
+    /// </summary>
+    private void UpgradeSaveFormat()
     {
-        if (await ReadSettingAsync<bool>(KeyValues.SaveFormatUpgraded) == false)
+        if (!_settings.ContainsKey(KeyValues.SaveFormatUpgraded))
         {
             // 原本莫名其妙把数据序列化了两次，弱智了
             // 把被序列化两次的数据恢复过来
             Dictionary<string, object> tmp = new();
-            _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? new Dictionary<string, object>();
             foreach (var key in _settings.Keys)
                 tmp[key] = JsonConvert.DeserializeObject(_settings[key].ToString()!)!;
+            tmp[KeyValues.SaveFormatUpgraded] = true;
             _fileService.SaveNow(_applicationDataFolder, _localsettingsFile, tmp);
-            await SaveSettingAsync(KeyValues.SaveFormatUpgraded, true);
         }
+    }
+
+    /// <summary>
+    /// 更新配置
+    /// </summary>
+    private async Task Upgrade()
+    {
+        if (_isUpgrade) return;
+        //public const string SortKey1 = "sortKey1";
+        //public const string SortKey2 = "sortKey2";
+        if (await ReadSettingAsync<bool>(KeyValues.SortKeysUpgraded) == false)
+        {
+            SortKeys? sortKey1 = await ReadSettingAsync<SortKeys?>("sortKey1");
+            SortKeys? sortKey2 = await ReadSettingAsync<SortKeys?>("sortKey2");
+            if (sortKey1 != null && sortKey2 != null)
+            {
+                await SaveSettingAsync(KeyValues.SortKeys, new []{sortKey1.Value, sortKey2.Value});
+                await SaveSettingAsync(KeyValues.SortKeysAscending, new []{false, false});
+            }
+            await SaveSettingAsync(KeyValues.SortKeysUpgraded, true);
+        }
+
+        _isUpgrade = true;
     }
 
     public async Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false)
@@ -131,10 +162,10 @@ public class LocalSettingsService : ILocalSettingsService
                 var result = Environment.GetEnvironmentVariable("OneDrive");
                 result = result==null ? null : result + "\\GameSaves";
                 return (T?)(object?)result;
-            case KeyValues.SortKey1:
-                return (T?)(object?)SortKeys.LastPlay;
-            case KeyValues.SortKey2:
-                return (T?)(object?)SortKeys.Developer;
+            case KeyValues.SortKeys:
+                return (T?)(object?)new [] { SortKeys.LastPlay , SortKeys.Developer};
+            case KeyValues.SortKeysAscending:
+                return (T?)(object?)new [] { false , false};
             case KeyValues.SearchChildFolder:
                 return (T?)(object?)false;
             case KeyValues.SearchChildFolderDepth:
