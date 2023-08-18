@@ -25,7 +25,7 @@
         </CommandBar>
         
         <!-- 这里不知道为什么用xbind就会数据转换报错 -->
-        <lvc:CartesianChart Grid.Row="2" Series="{x:Bind ViewModel.Series}" XAxes="{Binding XAxes}"/>
+        <lvc:CartesianChart Grid.Row="2" Series="{x:Bind ViewModel.Series}" XAxes="{x:Bind ViewModel.XAxes}"/>
     </Grid>
     
 </Page>

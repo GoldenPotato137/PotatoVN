@@ -4,6 +4,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Models;
 using LiveChartsCore;
+using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
@@ -50,9 +51,9 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
     };
 
     // ReSharper disable once MemberCanBePrivate.Global
-    public Axis[] XAxes { get; } =
+    public ICartesianAxis[] XAxes { get; } =
     {
-        new()
+        new Axis()
         {
             Labels = Array.Empty<string>(),
             LabelsRotation = 0,
