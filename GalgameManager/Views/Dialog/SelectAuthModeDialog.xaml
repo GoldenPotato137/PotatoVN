@@ -9,12 +9,11 @@
     mc:Ignorable="d">
 
     <StackPanel>
-        <RadioButtons x:Name="RadioButtons" SelectedIndex="{x:Bind SelectItem, Mode=TwoWay}">
+        <RadioButtons SelectedIndex="{x:Bind SelectItem, Mode=TwoWay}">
             <x:String>账号密码登录</x:String>
             <x:String>AccessToken登录</x:String>
         </RadioButtons>
-        <TextBox x:Name="AccessTokenTextBox" 
-                 Header="输入AccessToken" PlaceholderText="AccessToken" 
+        <TextBox Header="输入AccessToken" PlaceholderText="AccessToken" 
                  Text="{x:Bind AccessToken, Mode=TwoWay}"
                  Visibility="{x:Bind SelectItemToVisibility(SelectItem), Mode=OneWay}"/>
     </StackPanel>
