@@ -193,32 +193,21 @@ public class CategoryService : ICategoryService
             Category? old = GetDeveloperCategory(galgame);
             old?.Remove(galgame);
             
-            Category developer;
-            try
+            var developerStrings = galgame.Developer.Value!.Split(',');
+            foreach (var developerStr in developerStrings)
             {
-                Producer producer = ProducerDataHelper.Producers.First(
-                    p => p.Name == galgame.Developer.Value! || 
-                         p.Latin == galgame.Developer.Value! || 
-                         p.Alias.Contains(galgame.Developer.Value!)
-                         );
-                try
+                Producer producer = ProducerDataHelper.Producers.FirstOrDefault(p =>
+                    p.Names.Any(name => name == developerStr)) ?? new Producer(developerStr);
+                Category? developer = _developerGroup!.Categories.FirstOrDefault(c => 
+                        producer.Names.Any(name => name == c.Name));
+                if (developer is null)
                 {
-                    developer = _developerGroup!.Categories.First(c => c.Name.Equals(producer.Name));
-                }
-                catch (InvalidOperationException)
-                {
-                    developer = new Category(producer.Name!);
+                    developer = new Category(producer.Name);
                     _queue.Add(developer);
                     _developerGroup!.Categories.Add(developer);
                 }
+                developer.Add(galgame);
             }
-            catch (InvalidOperationException)
-            {
-                developer = new Category(galgame.Developer.Value!);
-                _queue.Add(developer);
-                _developerGroup!.Categories.Add(developer);
-            }
-            developer.Add(galgame);
         }
         
     }

@@ -66,4 +66,13 @@ public class Producer
         if (!string.IsNullOrEmpty(latin)) Names.Add(latin);
         Names.AddRange(Alias);
     }
+
+    public Producer(string name)
+    {
+        Id = string.Empty;
+        Name = name;
+        Latin = string.Empty;
+        Alias = new List<string>();
+        Names = new List<string> {name};
+    }
 }
