@@ -17,9 +17,13 @@
         <StackPanel Visibility="{x:Bind SelectItemToVisibility(SelectItem), Mode=OneWay}">
             <TextBox Header="输入AccessToken" PlaceholderText="AccessToken" 
                      Text="{x:Bind AccessToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-            <TextBlock Text="通过AccessToken登录, AccessToken可在 https://next.bgm.tv/demo/access-token/create 获取" TextWrapping="Wrap"
-                       Style="{StaticResource DescriptionTextStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
+            <RichTextBlock TextWrapping="Wrap"
+                           Style="{StaticResource DescriptionRichTextStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}">
+                <Paragraph>
+                    通过AccessToken登录, AccessToken可在<Hyperlink NavigateUri="https://next.bgm.tv/demo/access-token/create">这里</Hyperlink>获取
+                </Paragraph>
+            </RichTextBlock>
         </StackPanel>
     </StackPanel>
 </ContentDialog>
