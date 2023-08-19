@@ -6,6 +6,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Views;
 using Windows.Security.Credentials;
 using Windows.Security.Credentials.UI;
+using GalgameManager.Views.Dialog;
 
 namespace GalgameManager.Services;
 

@@ -11,7 +11,6 @@
 
     <Page.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
         <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
     </Page.Resources>
@@ -76,7 +75,6 @@
                     <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"/>
                     <AppBarButton x:Uid="GalgamePage_OpenInBgm" Command="{x:Bind ViewModel.OpenInBgmCommand}" 
                                   Visibility="{x:Bind ViewModel.CanOpenInBgm, 
-                                  Converter={StaticResource BoolToVisibilityConverter}, 
                                   Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
@@ -84,7 +82,6 @@
                     </AppBarButton>
                     <AppBarButton x:Uid="GalgamePage_OpenInVndb" Command="{x:Bind ViewModel.OpenInVndbCommand}" 
                                   Visibility="{x:Bind ViewModel.CanOpenInVndb, 
-                                  Converter={StaticResource BoolToVisibilityConverter}, 
                                   Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
@@ -217,7 +214,7 @@
                             Text="Tags"
                             Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
                         <ItemsRepeater
-                            ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay, FallbackValue={}}"
                             Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
@@ -244,7 +241,7 @@
 
         <Grid
             Background="#00000000"
-            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
             <ProgressRing
                 IsActive="True"
                 Width="100"

@@ -9,6 +9,8 @@ public interface IBgmOAuthService
     Task StartOAuth();
     Task FinishOAuthWithUri(Uri uri);
 
+    Task AuthWithAccessToken(string accessToken);
+
     Task<bool> RefreshOAuthState();
 
     Task<string> GetOAuthStateString(bool forceRefresh=false);

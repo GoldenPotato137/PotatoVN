@@ -34,8 +34,18 @@ public class BgmOAuthService : IBgmOAuthService
     {
         _isInitialized = true;
         _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
-        //todo:兼容直接获取token的方式
         _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
+        
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded) == false && _bgmAccount.OAuthed == false)
+        {
+            var bangumiToken = await _localSettingsService.ReadSettingAsync<string>("bangumiToken");
+            if (!string.IsNullOrEmpty(bangumiToken))
+            {
+                await AuthWithAccessToken(bangumiToken);
+            }
+
+            await _localSettingsService.SaveSettingAsync(KeyValues.OAuthUpgraded, true);
+        }
     }
 
     public async Task StartOAuth()
@@ -50,7 +60,7 @@ public class BgmOAuthService : IBgmOAuthService
     {
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            App.MainWindow.Activate(); //把窗口提到最前面
+            App.MainWindow.BringToFront(); //把窗口提到最前面
             OnAuthResultChange?.Invoke((OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg()));
         });
         WwwFormUrlDecoder decoder = new(uri.Query);
@@ -72,6 +82,14 @@ public class BgmOAuthService : IBgmOAuthService
                 OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message));
             });
         }
+    }
+
+    public async Task AuthWithAccessToken(string accessToken)
+    {
+        if (!_isInitialized) await Init();
+        _bgmAccount.BangumiAccessToken = accessToken;
+        _bgmAccount.BangumiRefreshToken = string.Empty;
+        await GetBgmAccount();
     }
     
     /// <summary>
