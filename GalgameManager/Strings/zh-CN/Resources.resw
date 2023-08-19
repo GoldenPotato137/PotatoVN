@@ -806,4 +806,37 @@
   <data name="CategorySettingPage_CommandBar_DownloadImg.Label" xml:space="preserve">
     <value>下载开发商图</value>
   </data>
+  <data name="GalgameSettingPage_GetInfoFromRss.Label" xml:space="preserve">
+    <value>从数据源更新数据</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameName.Title" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameId.Text" xml:space="preserve">
+    <value>游戏ID</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameRssType.Text" xml:space="preserve">
+    <value>数据源</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameSavePosition.Text" xml:space="preserve">
+    <value>存档位置</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameRating.Title" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameDeveloper.Title" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameExpectedPlayTime.Title" xml:space="preserve">
+    <value>预计游戏时长</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameDescription.Title" xml:space="preserve">
+    <value>游戏简介</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameImagePath.Title" xml:space="preserve">
+    <value>封面图</value>
+  </data>
+  <data name="GalgameSettingPage_PickImage.Content" xml:space="preserve">
+    <value>选择图片</value>
+  </data>
 </root>
