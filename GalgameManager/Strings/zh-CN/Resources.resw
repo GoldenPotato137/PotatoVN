@@ -839,4 +839,19 @@
   <data name="GalgameSettingPage_PickImage.Content" xml:space="preserve">
     <value>选择图片</value>
   </data>
+  <data name="ChangePlayStatusDialog_Status.Text" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Rating.Text" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="ChangePlayStatusDialog_SyncToBgm.Content" xml:space="preserve">
+    <value>同步至bangumi</value>
+  </data>
+  <data name="ChangePlayStatusDialog_SyncToVNDB.Content" xml:space="preserve">
+    <value>同步至VNDB</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Private.Content" xml:space="preserve">
+    <value>私密</value>
+  </data>
 </root>

@@ -21,11 +21,11 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="游玩状态" VerticalAlignment="Center" />
+                <TextBlock x:Uid="ChangePlayStatusDialog_Status" VerticalAlignment="Center" />
                 <ComboBox x:Name="PlayStatusBox" MinWidth="100" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="评分" VerticalAlignment="Center" />
+                <TextBlock x:Uid="ChangePlayStatusDialog_Rating" VerticalAlignment="Center" />
                 <ComboBox x:Name="RateBox" MinWidth="100" />
             </StackPanel>
         </Grid>
@@ -34,9 +34,9 @@
                  MinHeight="50" AcceptsReturn="True" x:Name="CommentBox"/>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="15" Margin="0 20 0 0">
-            <CheckBox x:Name="BgmCheckBox" Content="同步至Bangumi" />
-            <CheckBox x:Name="VndbCheckBox" Content="同步至VNDB" IsEnabled="False"/>
-            <CheckBox x:Name="PrivateCheckBox" Content="私密" />
+            <CheckBox x:Name="BgmCheckBox" x:Uid="ChangePlayStatusDialog_SyncToBgm" />
+            <CheckBox x:Name="VndbCheckBox" x:Uid="ChangePlayStatusDialog_SyncToVNDB" IsEnabled="False"/>
+            <CheckBox x:Name="PrivateCheckBox" x:Uid="ChangePlayStatusDialog_Private" />
         </StackPanel>
     </Grid>
 </ContentDialog>
