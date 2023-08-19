@@ -2,8 +2,6 @@
 
 public static class KeyValues
 {
-    // public const string BangumiAccessToken = "bangumiAccessToken";
-    // public const string BangumiRefreshToken = "bangumiRefreshToken";
     public const string BangumiOAuthState= "bangumiOAuthState";
     public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
     public const string RssType = "rssType";
@@ -48,4 +46,8 @@ public static class KeyValues
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
     public const string OAuthUpgraded = "OAuthUpgraded";
+    
+    
+    //废弃Key，只读，仅用于升级
+    public const string BangumiToken = "bangumiToken";
 }

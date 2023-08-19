@@ -11,7 +11,7 @@
 
     <StackPanel>
         <RadioButtons SelectedIndex="{x:Bind SelectItem, Mode=TwoWay}">
-            <x:String>账号密码登录</x:String>
+            <x:String>OAuth快捷登录</x:String>
             <x:String>AccessToken登录</x:String>
         </RadioButtons>
         <StackPanel Visibility="{x:Bind SelectItemToVisibility(SelectItem), Mode=OneWay}">

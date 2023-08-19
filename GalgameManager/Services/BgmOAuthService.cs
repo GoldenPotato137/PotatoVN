@@ -33,17 +33,29 @@ public class BgmOAuthService : IBgmOAuthService
     private async Task Init()
     {
         _isInitialized = true;
+        await Upgrade();
+        
         _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
         _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
-        
-        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded) == false && _bgmAccount.OAuthed == false)
+    }
+
+    /// <summary>
+    /// 升级旧有设置
+    /// </summary>
+    private async Task Upgrade()
+    {
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded) == false)
         {
-            var bangumiToken = await _localSettingsService.ReadSettingAsync<string>("bangumiToken");
+            var bangumiToken = await _localSettingsService.ReadSettingAsync<string>(KeyValues.BangumiToken);
             if (!string.IsNullOrEmpty(bangumiToken))
             {
-                await AuthWithAccessToken(bangumiToken);
+                await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthState, new BgmAccount
+                {
+                    BangumiAccessToken = bangumiToken
+                });
+                // 升级后强制更新账号状态
+                await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthStateLastUpdate, DateTime.UnixEpoch);
             }
-
             await _localSettingsService.SaveSettingAsync(KeyValues.OAuthUpgraded, true);
         }
     }

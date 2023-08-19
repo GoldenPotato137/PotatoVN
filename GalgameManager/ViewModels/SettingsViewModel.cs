@@ -15,7 +15,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Security.Credentials.UI;
 using Windows.Security.Credentials;
-using GalgameManager.Views;
 using GalgameManager.Views.Dialog;
 
 namespace GalgameManager.ViewModels;
@@ -273,7 +272,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             case OAuthResult.FetchingAccount: 
             case OAuthResult.FetchingToken:
             default:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2, 1000 * 60);
                 break;
         }
     }
