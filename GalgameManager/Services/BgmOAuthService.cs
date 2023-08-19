@@ -36,7 +36,7 @@ public class BgmOAuthService : IBgmOAuthService
         _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
         _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
         
-        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded) == false)
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded) == false && _bgmAccount.OAuthed == false)
         {
             var bangumiToken = await _localSettingsService.ReadSettingAsync<string>("bangumiToken");
             if (!string.IsNullOrEmpty(bangumiToken))
