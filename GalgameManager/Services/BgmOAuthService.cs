@@ -33,7 +33,9 @@ public class BgmOAuthService : IBgmOAuthService
     private async Task Init()
     {
         _isInitialized = true;
-
+        _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
+        _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
+        
         if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded) == false)
         {
             var bangumiToken = await _localSettingsService.ReadSettingAsync<string>("bangumiToken");
@@ -44,8 +46,6 @@ public class BgmOAuthService : IBgmOAuthService
 
             await _localSettingsService.SaveSettingAsync(KeyValues.OAuthUpgraded, true);
         }
-        _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
-        _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
     }
 
     public async Task StartOAuth()
