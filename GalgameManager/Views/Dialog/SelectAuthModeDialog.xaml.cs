@@ -50,4 +50,11 @@ public sealed partial class SelectAuthModeDialog : ContentDialog
         if (selectItem == 1) return Visibility.Visible;
         return Visibility.Collapsed;
     }
+
+    public bool SelectItemToPrimaryButtonEnabled(int selectItem, string accessToken)
+    {
+        if (selectItem == 0) return true;
+        if (selectItem == 1 && !string.IsNullOrEmpty(accessToken)) return true;
+        return false;
+    }
 }

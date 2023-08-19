@@ -6,6 +6,7 @@
     xmlns:local="using:GalgameManager.Views.Control"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Style="{StaticResource DefaultContentDialogStyle}"
+    IsPrimaryButtonEnabled="{x:Bind SelectItemToPrimaryButtonEnabled(SelectItem, AccessToken), Mode=OneWay}"
     mc:Ignorable="d">
 
     <StackPanel>
@@ -13,8 +14,12 @@
             <x:String>账号密码登录</x:String>
             <x:String>AccessToken登录</x:String>
         </RadioButtons>
-        <TextBox Header="输入AccessToken" PlaceholderText="AccessToken" 
-                 Text="{x:Bind AccessToken, Mode=TwoWay}"
-                 Visibility="{x:Bind SelectItemToVisibility(SelectItem), Mode=OneWay}"/>
+        <StackPanel Visibility="{x:Bind SelectItemToVisibility(SelectItem), Mode=OneWay}">
+            <TextBox Header="输入AccessToken" PlaceholderText="AccessToken" 
+                     Text="{x:Bind AccessToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Text="通过AccessToken登录, AccessToken可在 https://next.bgm.tv/demo/access-token/create 获取" TextWrapping="Wrap"
+                       Style="{StaticResource DescriptionTextStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+        </StackPanel>
     </StackPanel>
 </ContentDialog>
