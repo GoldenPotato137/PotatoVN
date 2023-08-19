@@ -854,4 +854,31 @@
   <data name="ChangePlayStatusDialog_Private.Content" xml:space="preserve">
     <value>私密</value>
   </data>
+  <data name="CategoryPage_AddCategoryDialog_Title" xml:space="preserve">
+    <value>新增分类</value>
+  </data>
+  <data name="CategoryPage_AddCategory.Label" xml:space="preserve">
+    <value>新增分类</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroup.Label" xml:space="preserve">
+    <value>新增分类组</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroupDialog_Title" xml:space="preserve">
+    <value>新增分类组</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroupDialog_Msg" xml:space="preserve">
+    <value>分类组名</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroup.Label" xml:space="preserve">
+    <value>删除分类组</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroupDialog_Title" xml:space="preserve">
+    <value>删除分类组</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroupDialog_Msg" xml:space="preserve">
+    <value>确定要删除这个分类组吗？</value>
+  </data>
+  <data name="CategoryPage_AddCategoryDialog_Msg" xml:space="preserve">
+    <value>分类名</value>
+  </data>
 </root>

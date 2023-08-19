@@ -29,11 +29,21 @@
         
         <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
                     Margin="0 -67 0 0">
+            <AppBarButton Icon="Add" x:Uid="CategoryPage_AddCategory" 
+                          Command="{x:Bind ViewModel.AddCategoryCommand}"
+                          IsEnabled="{x:Bind ViewModel.CanAddCategory, Mode=OneWay}"/>
             <AppBarButton Icon="ViewAll" x:Uid="CategoryPage_CategoryGroup" AllowFocusOnInteraction="True">
                 <AppBarButton.Flyout>
                     <MenuFlyout Placement="Bottom" x:Name="CategoryGroupFlyout" Opening="CategoryGroupFlyout_OnOpening"/>
                 </AppBarButton.Flyout>
             </AppBarButton>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Flag" x:Uid="CategoryPage_AddCategoryGroup" 
+                              Command="{x:Bind ViewModel.AddCategoryGroupCommand}"/>
+                <AppBarButton Icon="Delete" x:Uid="CategoryPage_DeleteCategoryGroup"
+                              Command="{x:Bind ViewModel.DeleteCategoryGroupCommand}"
+                              IsEnabled="{x:Bind ViewModel.CanDeleteCategoryGroup, Mode=OneWay}"/>
+            </CommandBar.SecondaryCommands>
         </CommandBar>
         
         <controls:AdaptiveGridView
@@ -60,11 +70,6 @@
                         <Rectangle Grid.Row="1" Fill="Transparent"/>
                         <Rectangle Grid.Row="2" Fill="Transparent"/>
                         
-                        <!-- <FontIcon -->
-                        <!--     Grid.Row="0" Glyph="&#xE8B7;" -->
-                        <!--     FontFamily="Segoe Fluent Icons" -->
-                        <!--     FontSize="50" -->
-                        <!--     VerticalAlignment="Center" HorizontalAlignment="Center" /> -->
                         <Rectangle Grid.Row="0" Height="55" Width="220"
                                    HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Rectangle.Fill>

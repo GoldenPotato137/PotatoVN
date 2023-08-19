@@ -111,6 +111,32 @@ public class CategoryService : ICategoryService
             await Init();
         return _categoryGroups;
     }
+
+    /// <summary>
+    /// 新增分类组
+    /// </summary>
+    /// <param name="name">分类组名</param>
+    /// <returns>创建的分类组</returns>
+    public CategoryGroup AddCategoryGroup(string name)
+    {
+        CategoryGroup newGroup = new(name, CategoryGroupType.Custom);
+        _categoryGroups.Add(newGroup);
+        return newGroup;
+    }
+    
+    /// <summary>
+    /// 删除分类组
+    /// </summary>
+    /// <param name="categoryGroup">分类组</param>
+    public void DeleteCategoryGroup(CategoryGroup categoryGroup)
+    {
+        foreach (Category category in categoryGroup.Categories) // 删除分类组里的分类（如果没有其他分类组在用的话）
+        {
+            if (_categoryGroups.Count(group => group.Categories.Contains(category)) == 1)
+                category.Delete();
+        }
+        _categoryGroups.Remove(categoryGroup);
+    }
     
     /// <summary>
     /// 将源分类合并到目标分类，然后删除源分类 <br/>
