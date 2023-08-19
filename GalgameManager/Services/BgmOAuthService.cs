@@ -39,11 +39,7 @@ public class BgmOAuthService : IBgmOAuthService
             var bangumiToken = await _localSettingsService.ReadSettingAsync<string>("bangumiToken");
             if (!string.IsNullOrEmpty(bangumiToken))
             {
-                _bgmAccount = new BgmAccount
-                {
-                    BangumiAccessToken = bangumiToken
-                };
-                await GetBgmAccount();
+                await AuthWithAccessToken(bangumiToken);
             }
 
             await _localSettingsService.SaveSettingAsync(KeyValues.OAuthUpgraded, true);
@@ -90,6 +86,7 @@ public class BgmOAuthService : IBgmOAuthService
 
     public async Task AuthWithAccessToken(string accessToken)
     {
+        if (!_isInitialized) await Init();
         _bgmAccount.BangumiAccessToken = accessToken;
         _bgmAccount.BangumiRefreshToken = string.Empty;
         await GetBgmAccount();
