@@ -10,18 +10,31 @@ namespace GalgameManager.Views.Dialog;
 
 public sealed partial class SelectAuthModeDialog : ContentDialog
 {
-    public int SelectItem
-    {
-        get;
-        set;
-    } = 0;
-
     public string AccessToken
     {
-        get;
-        set;
-    } = "";
-
+        get => (string)GetValue(AccessTokenProperty);
+        set => SetValue(AccessTokenProperty, value);
+    }
+    
+    public static readonly DependencyProperty AccessTokenProperty = DependencyProperty.Register(
+        nameof(AccessToken),
+        typeof(string),
+        typeof(SelectAuthModeDialog),
+        new PropertyMetadata("")
+    );
+    
+    public int SelectItem
+    {
+        get => (int)GetValue(SelectItemProperty);
+        set => SetValue(SelectItemProperty, value);
+    }
+    
+    public static readonly DependencyProperty SelectItemProperty = DependencyProperty.Register(
+        nameof(SelectItem),
+        typeof(int),
+        typeof(SelectAuthModeDialog),
+        new PropertyMetadata(0)
+    );
     public SelectAuthModeDialog()
     {
         InitializeComponent();
@@ -32,20 +45,9 @@ public sealed partial class SelectAuthModeDialog : ContentDialog
         CloseButtonText = "Cancel".GetLocalized();
     }
 
-    private void OnPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    public Visibility SelectItemToVisibility(int selectItem)
     {
-    }
-
-    private void RadioButtons_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        switch (SelectItem)
-        {
-            case 0:
-                AccessTokenTextBox.Visibility = Visibility.Collapsed;
-                break;
-            case 1:
-                AccessTokenTextBox.Visibility = Visibility.Visible;
-                break;
-        }
+        if (selectItem == 1) return Visibility.Visible;
+        return Visibility.Collapsed;
     }
 }
