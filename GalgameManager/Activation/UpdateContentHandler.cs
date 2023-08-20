@@ -11,7 +11,7 @@ public class UpdateContentHandler : ActivationHandler<AppActivationArguments>
     {
         if(args.Kind != ExtendedActivationKind.Launch || !App.GetService<IUpdateService>().ShouldDisplayUpdateContent()) 
             return false;
-        return (args.Data as LaunchActivatedEventArgs)!.Arguments.Split(' ').Length == 0;
+        return true;
     }
 
     protected override Task HandleInternalAsync(AppActivationArguments args)
