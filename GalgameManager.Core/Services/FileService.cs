@@ -6,7 +6,7 @@ namespace GalgameManager.Core.Services;
 
 public class FileService : IFileService
 {
-    private static readonly BlockingCollection<(string, object)> WritingQueue = new();
+    private static readonly BlockingCollection<(string, string)> WritingQueue = new();
 
     public FileService()
     {
@@ -36,7 +36,7 @@ public class FileService : IFileService
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
         var filePath = Path.Combine(folderPath, fileName);
-        WritingQueue.Add((filePath, content));
+        WritingQueue.Add((filePath, JsonConvert.SerializeObject(content)));
     }
 
     public void SaveNow<T>(string folderPath, string fileName, T content)
@@ -69,7 +69,7 @@ public class FileService : IFileService
     {
         foreach (var (path, content) in WritingQueue.GetConsumingEnumerable())
         {
-            File.WriteAllText(path, JsonConvert.SerializeObject(content));
+            File.WriteAllText(path, content);
         }
     }
 }
