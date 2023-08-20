@@ -43,7 +43,7 @@ public class FaqService : IFaqService
         IsUpdating = true;
         UpdateStatusChangeEvent?.Invoke();
         var local = ResourceExtensions.GetLocal();
-        await DownloadAndSaveFaqs($"https://raw.gitmirror.com/GoldenPotato137/GalgameManager/main/FAQ/{local}.json");
+        await DownloadAndSaveFaqs($"https://raw.gitmirror.com/GoldenPotato137/GalgameManager/main/docs/FAQ/{local}.json");
         await LoadFaqs();
         _lastUpdateDateTime = DateTime.Now;
         await _localSettingsService.SaveSettingAsync(KeyValues.FaqLastUpdate, _lastUpdateDateTime);
