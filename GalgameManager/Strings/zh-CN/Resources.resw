@@ -884,4 +884,7 @@
   <data name="HomePage_DragDrop.Text" xml:space="preserve">
     <value>把游戏可执行文件拖到这里来添加游戏</value>
   </data>
+  <data name="UpdateContentPage_CategoryNow" xml:space="preserve">
+    <value>已按游戏开发商分类所有游戏</value>
+  </data>
 </root>
