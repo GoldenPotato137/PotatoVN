@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Globalization;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -101,13 +100,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public void Sort()
     {
         UpdateDisplay(UpdateType.Sort);
-    }
-
-    public enum AddGalgameResult
-    {
-        Success,
-        AlreadyExists,
-        NotFoundInRss
     }
 
     /// <summary>

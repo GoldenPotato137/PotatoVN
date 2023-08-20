@@ -183,14 +183,14 @@
   <data name="HomePage_Filter" xml:space="preserve">
     <value>过滤</value>
   </data>
-  <data name="HomePage_AddGameSuccess" xml:space="preserve">
+  <data name="AddGalgameResult_Success" xml:space="preserve">
     <value>已成功添加游戏</value>
   </data>
-  <data name="HomePage_AlreadyInLibrary" xml:space="preserve">
+  <data name="AddGalgameResult_AlreadyInLibrary" xml:space="preserve">
     <value>库里已经有这个游戏了</value>
   </data>
-  <data name="HomePage_NoInfo" xml:space="preserve">
-    <value>成功添加游戏，但没有从信息源中找到这个游戏的信息</value>
+  <data name="AddGalgameResult_NotFoundInRss" xml:space="preserve">
+    <value>没有从信息源中找到这个游戏的信息</value>
   </data>
   <data name="HomePage_Remove_Title" xml:space="preserve">
     <value>取消托管</value>
@@ -880,5 +880,8 @@
   </data>
   <data name="CategoryPage_AddCategoryDialog_Msg" xml:space="preserve">
     <value>分类名</value>
+  </data>
+  <data name="HomePage_DragDrop.Text" xml:space="preserve">
+    <value>把游戏可执行文件拖到这里来添加游戏</value>
   </data>
 </root>

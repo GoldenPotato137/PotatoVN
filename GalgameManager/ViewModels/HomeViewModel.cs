@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -21,7 +20,6 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace GalgameManager.ViewModels;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public partial class HomeViewModel : ObservableRecipient, INavigationAware
 {
     private const int SearchDelay = 500;
@@ -32,9 +30,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly IFilterService _filterService;
     private IFilter? _filter; //进入界面时的使用的过滤器，退出界面后移除
     private DateTime _lastSearchTime = DateTime.Now;
-    [ObservableProperty] private bool _isInfoBarOpen;
-    [ObservableProperty] private string _infoBarMessage = string.Empty;
-    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
     [ObservableProperty] private string _searchKey = string.Empty;
@@ -53,9 +48,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     public readonly string UiFilter = ResourceLoader.GetString("HomePage_Filter");
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
 
-    private readonly string _uiAddGameSuccess = ResourceLoader.GetString("HomePage_AddGameSuccess");
-    private readonly string _uiAlreadyInLibrary = ResourceLoader.GetString("HomePage_AlreadyInLibrary");
-    private readonly string _uiNoInfo = ResourceLoader.GetString("HomePage_NoInfo");
     private readonly string _uiRemoveTitle = ResourceLoader.GetString("HomePage_Remove_Title");
     private readonly string _uiRemoveMessage = ResourceLoader.GetString("HomePage_Remove_Message");
     private readonly string _uiYes = ResourceLoader.GetString("Yes");
@@ -121,61 +113,59 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void Grid_DragOver(object sender, DragEventArgs e)
-    {
-        e.AcceptedOperation = DataPackageOperation.Link;
-    }
+    #region DRAG_AND_DROP
 
+    [ObservableProperty] private bool _displayDragArea;
+    
     public async void Grid_Drop(object sender, DragEventArgs e)
     {
         if (e.DataView.Contains(StandardDataFormats.StorageItems))
         {
-            var items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count > 0)
+            IReadOnlyList<IStorageItem>? items = await e.DataView.GetStorageItemsAsync();
+            if (items.Count <= 0) return;
+            foreach (IStorageItem storageItem in items)
             {
-                foreach (StorageFile item in items)
-                {
-                    try
-                    {
-                        if (item != null)
-                        {
-                            var folder = item.Path.Substring(0, item.Path.LastIndexOf('\\'));
-                            IsPhrasing = true;
-                            GalgameCollectionService.AddGalgameResult result = await _galgameService.TryAddGalgameAsync(folder, true);
-                            if (result == GalgameCollectionService.AddGalgameResult.Success)
-                            {
-                                IsInfoBarOpen = true;
-                                InfoBarMessage = _uiAddGameSuccess;
-                                InfoBarSeverity = InfoBarSeverity.Success;
-                                await Task.Delay(3000);
-                                IsInfoBarOpen = false;
-                            }
-                            else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
-                            {
-                                throw new Exception(_uiAlreadyInLibrary);
-                            }
-                            else //NotFoundInRss
-                            {
-                                IsInfoBarOpen = true;
-                                InfoBarMessage = _uiNoInfo;
-                                InfoBarSeverity = InfoBarSeverity.Warning;
-                                await Task.Delay(3000);
-                                IsInfoBarOpen = false;
-                            }
-                        }
-                    }
-                    catch (Exception error)
-                    {
-                        IsPhrasing = false;
-                        IsInfoBarOpen = true;
-                        InfoBarMessage = error.Message;
-                        InfoBarSeverity = InfoBarSeverity.Error;
-                        await Task.Delay(3000);
-                        IsInfoBarOpen = false;
-                    }
-                }
+                StorageFile item = (StorageFile)storageItem;
+                var folder = item.Path.Substring(0, item.Path.LastIndexOf('\\'));
+                _ =  AddGalgameInternal(folder);
             }
         }
+        DisplayDragArea = false;
+    }
+
+    public void Grid_DragEnter(object sender, DragEventArgs e)
+    {
+        e.AcceptedOperation = DataPackageOperation.Link;
+        DisplayDragArea = true;
+    }
+    
+    public void Grid_DragLeave(object sender, DragEventArgs e)
+    {
+        DisplayDragArea = false;
+    }
+
+    #endregion
+    
+    /// <summary>
+    /// 添加Galgame
+    /// </summary>
+    /// <param name="path">游戏文件夹路径</param>
+    private async Task AddGalgameInternal(string path)
+    {
+        IsPhrasing = true;
+        AddGalgameResult result = AddGalgameResult.Other;
+        string msg;
+        try
+        {
+            result = await _galgameService.TryAddGalgameAsync(path, true);
+            msg = result.ToMsg();
+        }
+        catch (Exception e)
+        {
+            msg = e.Message;
+        }
+        IsPhrasing = false;
+        _ = DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
     }
 
     [RelayCommand]
@@ -187,42 +177,18 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".exe");
+            openPicker.FileTypeFilter.Add(".bat");
+            openPicker.FileTypeFilter.Add(".EXE");
             StorageFile? file = await openPicker.PickSingleFileAsync();
-            if (file != null)
+            if (file is not null)
             {
-                var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
-                IsPhrasing = true;
-                GalgameCollectionService.AddGalgameResult result = await _galgameService.TryAddGalgameAsync(folder, true);
-                if (result == GalgameCollectionService.AddGalgameResult.Success)
-                {
-                    IsInfoBarOpen = true;
-                    InfoBarMessage = _uiAddGameSuccess;
-                    InfoBarSeverity = InfoBarSeverity.Success;
-                    await Task.Delay(3000);
-                    IsInfoBarOpen = false;
-                }
-                else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
-                {
-                    throw new Exception(_uiAlreadyInLibrary);
-                }
-                else //NotFoundInRss
-                {
-                    IsInfoBarOpen = true;
-                    InfoBarMessage = _uiNoInfo;
-                    InfoBarSeverity = InfoBarSeverity.Warning;
-                    await Task.Delay(3000);
-                    IsInfoBarOpen = false;
-                }
+                var folder = file.Path[..file.Path.LastIndexOf('\\')];
+                await AddGalgameInternal(folder);
             }
         }
         catch (Exception e)
         {
-            IsPhrasing = false;
-            IsInfoBarOpen = true;
-            InfoBarMessage = e.Message;
-            InfoBarSeverity = InfoBarSeverity.Error;
-            await Task.Delay(3000);
-            IsInfoBarOpen = false;
+            _ = DisplayMsgAsync(InfoBarSeverity.Error, e.Message);
         }
     }
     
@@ -296,4 +262,30 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     partial void OnDisplayPlayTypePolygonChanged(bool value) =>
         _localSettingsService.SaveSettingAsync(KeyValues.DisplayPlayTypePolygon, value);
+
+    #region INFO_BAR_CTRL
+
+    private int _infoBarIndex;
+    [ObservableProperty] private bool _isInfoBarOpen;
+    [ObservableProperty] private string _infoBarMessage = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+
+    /// <summary>
+    /// 使用InfoBar显示信息
+    /// </summary>
+    /// <param name="infoBarSeverity">信息严重程度</param>
+    /// <param name="msg">信息</param>
+    /// <param name="delayMs">显示时长(ms)</param>
+    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
+    {
+        var currentIndex = ++_infoBarIndex;
+        InfoBarSeverity = infoBarSeverity;
+        InfoBarMessage = msg;
+        IsInfoBarOpen = true;
+        await Task.Delay(delayMs);
+        if (currentIndex == _infoBarIndex)
+            IsInfoBarOpen = false;
+    }
+
+    #endregion
 }

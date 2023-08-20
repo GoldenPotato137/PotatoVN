@@ -25,7 +25,9 @@
         </CommandBarFlyout>
     </Page.Resources>
 
-    <Grid AllowDrop="True" Drop="{x:Bind ViewModel.Grid_Drop}" DragOver="{x:Bind ViewModel.Grid_DragOver}">
+    <Grid AllowDrop="True" Drop="{x:Bind ViewModel.Grid_Drop}"
+          DragEnter="{x:Bind ViewModel.Grid_DragEnter}" DragLeave="{x:Bind ViewModel.Grid_DragLeave}"
+          Margin="0 0 0 20">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -130,9 +132,17 @@
             <InfoBar
                 Grid.Row="2"
                 IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-                Margin="0 0 0 20"
                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
+            
+            <!-- Drag&Drop(用于提示的区域) -->
+            <Border Grid.Row="1" CornerRadius="5" 
+                    Background="{ThemeResource AccentAcrylicBackgroundFillColorBaseBrush}" 
+                    Visibility="{x:Bind ViewModel.DisplayDragArea, Mode=OneWay}"
+                    Opacity="0.6">
+                <TextBlock x:Uid="HomePage_DragDrop" Style="{ThemeResource TitleTextBlockStyle}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
         </Grid>
 
         <Grid

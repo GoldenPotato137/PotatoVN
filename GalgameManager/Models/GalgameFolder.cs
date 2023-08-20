@@ -119,9 +119,9 @@ public class GalgameFolder
             ProgressChangedEvent?.Invoke();
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
             {
-                GalgameCollectionService.AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
-                if (result == GalgameCollectionService.AddGalgameResult.Success || 
-                    (ignoreFetchResult && result == GalgameCollectionService.AddGalgameResult.NotFoundInRss)) 
+                AddGalgameResult result = await GalgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
+                if (result == AddGalgameResult.Success || 
+                    (ignoreFetchResult && result == AddGalgameResult.NotFoundInRss)) 
                     cnt++;
             }
             if (currentDepth == maxDepth) continue;

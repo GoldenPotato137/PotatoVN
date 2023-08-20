@@ -136,9 +136,9 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         try
         {
             var result = await _galgameService.TryAddGalgameAsync(folder, true);
-            if (result == GalgameCollectionService.AddGalgameResult.Success)
+            if (result == AddGalgameResult.Success)
                 await ShowSuccessInfoBar();
-            else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
+            else if (result == AddGalgameResult.AlreadyExists)
                 throw new Exception("库里已经有这个游戏了");
             else //NotFoundInRss
                 await ShowNotFoundInfoBar();
