@@ -11,12 +11,12 @@
 
     <RelativePanel HorizontalAlignment="Stretch">
         <StackPanel Orientation="Vertical">
-            <TextBlock Text="{x:Bind Title}"
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}"
                        Style="{ThemeResource BodyTextBlockStyle}" />
-            <TextBlock Text="{x:Bind Description}"
+            <TextBlock Text="{x:Bind Description, Mode=OneWay}"
                        Style="{ThemeResource DescriptionTextStyle}"/>
         </StackPanel>
-        <ContentPresenter x:Name="ContentArea" RelativePanel.AlignRightWithPanel="True"/>
+        <ContentPresenter x:Name="ContentArea" RelativePanel.AlignRightWithPanel="True" VerticalAlignment="Center"/>
     </RelativePanel>
     
 </UserControl>

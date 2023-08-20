@@ -1,0 +1,94 @@
+﻿<Page
+    x:Class="GalgameManager.Views.CategoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:models="using:GalgameManager.Models"
+    xmlns:converters="using:GalgameManager.Helpers.Converter"
+    mc:Ignorable="d">
+    
+    <Page.Resources>
+        <MenuFlyout Placement="Right" x:Key="Flyout">
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Edit" Command="{x:Bind ViewModel.EditCategoryCommand}"
+                            CommandParameter="{Binding}"/>
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Combine" Command="{x:Bind ViewModel.CombineCategoryCommand}"
+                            CommandParameter="{Binding}"/>
+            <MenuFlyoutItem x:Uid="CategoryPage_Category_Delete" Command="{x:Bind ViewModel.DeleteCategoryCommand}" 
+                            CommandParameter="{Binding}"/>
+        </MenuFlyout>
+        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="0 -67 0 0">
+            <AppBarButton Icon="Add" x:Uid="CategoryPage_AddCategory" 
+                          Command="{x:Bind ViewModel.AddCategoryCommand}"
+                          IsEnabled="{x:Bind ViewModel.CanAddCategory, Mode=OneWay}"/>
+            <AppBarButton Icon="ViewAll" x:Uid="CategoryPage_CategoryGroup" AllowFocusOnInteraction="True">
+                <AppBarButton.Flyout>
+                    <MenuFlyout Placement="Bottom" x:Name="CategoryGroupFlyout" Opening="CategoryGroupFlyout_OnOpening"/>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Flag" x:Uid="CategoryPage_AddCategoryGroup" 
+                              Command="{x:Bind ViewModel.AddCategoryGroupCommand}"/>
+                <AppBarButton Icon="Delete" x:Uid="CategoryPage_DeleteCategoryGroup"
+                              Command="{x:Bind ViewModel.DeleteCategoryGroupCommand}"
+                              IsEnabled="{x:Bind ViewModel.CanDeleteCategoryGroup, Mode=OneWay}"/>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+        
+        <controls:AdaptiveGridView
+            Grid.Row="1" 
+            DesiredWidth="220"
+            ItemHeight="160"
+            IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
+            ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
+            SelectionMode="None"
+            StretchContentForSingleRow="False">
+            <controls:AdaptiveGridView.ItemTemplate>
+                <DataTemplate x:DataType="models:Category">
+                    <Grid
+                        x:Name="itemThumbnail"
+                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
+                        ContextFlyout="{StaticResource Flyout}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Rectangle Fill="Transparent"/>
+                        <Rectangle Grid.Row="1" Fill="Transparent"/>
+                        <Rectangle Grid.Row="2" Fill="Transparent"/>
+                        
+                        <Rectangle Grid.Row="0" Height="55" Width="220"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Rectangle.Fill>
+                                <ImageBrush ImageSource="{x:Bind ImagePath , Mode=OneWay, Converter={StaticResource ImagePathConverter}}"
+                                            Stretch="Uniform" />
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <TextBlock
+                            Grid.Row="1" MaxHeight="20"
+                            HorizontalAlignment="Center"
+                            Style="{ThemeResource BodyTextStyle}"
+                            Text="{x:Bind Name}"/>
+                        <Grid Grid.Row="2" Background="{ThemeResource  ControlAltFillColorSecondaryBrush}"
+                              CornerRadius="10" HorizontalAlignment="Right">
+                            <TextBlock Padding="5" Text="{x:Bind DisplayCount()}" />
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </controls:AdaptiveGridView.ItemTemplate>
+        </controls:AdaptiveGridView>
+    </Grid>
+</Page>

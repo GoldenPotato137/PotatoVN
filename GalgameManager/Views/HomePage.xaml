@@ -9,12 +9,15 @@
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     mc:Ignorable="d"
-    x:Name="Page">
+    x:Name="Page"
+    NavigationCacheMode="Required">
 
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
+        <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -22,7 +25,9 @@
         </CommandBarFlyout>
     </Page.Resources>
 
-    <Grid>
+    <Grid AllowDrop="True" Drop="{x:Bind ViewModel.Grid_Drop}"
+          DragEnter="{x:Bind ViewModel.Grid_DragEnter}" DragLeave="{x:Bind ViewModel.Grid_DragLeave}"
+          Margin="0 0 0 20">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -35,7 +40,7 @@
                 <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <TextBox Width="200" Text="{Binding SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <TextBox Width="200" Text="{x:Bind ViewModel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <interactivity:Interaction.Behaviors>
                                     <core:EventTriggerBehavior EventName="TextChanged">
                                         <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchCommand}"/>
@@ -60,6 +65,17 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
+                <CommandBar.SecondaryCommands>
+                    <AppBarToggleButton x:Uid="HomePage_FixHorizontalPicture" Icon="Crop"
+                                        IsChecked="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}"/>
+                    <AppBarToggleButton x:Uid="HomePage_DisplayPlayType" 
+                                        IsChecked="{x:Bind ViewModel.DisplayPlayTypePolygon, Mode=TwoWay}"
+                                        Visibility="{x:Bind ViewModel.FixHorizontalPicture, Mode=OneWay}">
+                        <AppBarToggleButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE890;"/>
+                        </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <controls:AdaptiveGridView
@@ -70,28 +86,43 @@
                 ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
                 ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
                 SelectionMode="None"
-                StretchContentForSingleRow="False">
+                StretchContentForSingleRow="False"
+                animations:Connected.ListItemKey="galgameItem"
+                animations:Connected.ListItemElementName="connectedElement">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
                         <Grid
-                            x:Name="itemThumbnail"
-                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-                            ContextFlyout="{StaticResource GalFlyout}">
+                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
-                                <!-- 裁剪水平图片版 -->
-                                <Rectangle Height="209" Width="150"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Rectangle.Fill>
-                                        <ImageBrush ImageSource="{x:Bind ImagePath.Value}"
-                                                    Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch}" />
-                                    </Rectangle.Fill>
-                                </Rectangle>
+                                <Grid>
+                                    <Rectangle Height="209" Width="150"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               x:Name="connectedElement"
+                                               >
+                                        <Rectangle.Fill>
+                                            <ImageBrush 
+                                                ImageSource="{x:Bind ImagePath.Value, 
+                                                Mode=OneWay, 
+                                                Converter={StaticResource ImagePathConverter}}"
+                                                Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
+                                                />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                    <Polygon x:Name="PlayTypePolygon" HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                             StrokeThickness="2" Points="0,0 0,20 -20,0"
+                                             Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
+                                             Stroke="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
+                                             Fill="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
+                                             />
+                                </Grid>
+            
                                 <TextBlock
                                     MaxHeight="85"
                                     Margin="{StaticResource XXSmallTopMargin}"
                                     HorizontalAlignment="Center"
                                     Style="{ThemeResource BodyTextStyle}"
-                                    Text="{x:Bind Name, Mode=OneWay}" />
+                                    Text="{x:Bind Name.Value, Mode=OneWay}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
@@ -101,15 +132,23 @@
             <InfoBar
                 Grid.Row="2"
                 IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-                Margin="0 0 0 20"
                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
+            
+            <!-- Drag&Drop(用于提示的区域) -->
+            <Border Grid.Row="1" CornerRadius="5" 
+                    Background="{ThemeResource AccentAcrylicBackgroundFillColorBaseBrush}" 
+                    Visibility="{x:Bind ViewModel.DisplayDragArea, Mode=OneWay}"
+                    Opacity="0.6">
+                <TextBlock x:Uid="HomePage_DragDrop" Style="{ThemeResource TitleTextBlockStyle}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
         </Grid>
 
         <Grid
             Row="0"
             Background="#00000000"
-            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
             <ProgressRing
                 IsActive="True"
                 Width="100"

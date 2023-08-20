@@ -5,14 +5,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:GalgameManager.Views"
-    xmlns:xaml="using:Microsoft.UI.Xaml"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:enums="using:GalgameManager.Enums"
     mc:Ignorable="d">
     <Page.Resources>
-        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converter:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-        <converter:RssTypeToBooleanConverter x:Key="RssTypeToBooleanConverter" />
+        <converter:RssTypeToVisibilityConverter x:Key="RssTypeToVisibilityConverter"/>
+        <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
+        <converter:PageToStringConverter x:Key="PageToStringConverter"/>
+        <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
+        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter"/>
+        <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -22,7 +25,12 @@
 
 
     <Grid Margin="0 0 0 40">
-        <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0 10 25 0">
 
                 <!-- 主题 -->
@@ -33,38 +41,23 @@
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <!-- 主题颜色 -->
                             <control:Panel>
-                                <StackPanel>
-                                    <RadioButton
-                                        x:Uid="Settings_Theme_Light"
-                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
-                                        FontSize="15"
-                                        GroupName="AppTheme">
-                                        <RadioButton.CommandParameter>
-                                            <xaml:ElementTheme>Light</xaml:ElementTheme>
-                                        </RadioButton.CommandParameter>
-                                    </RadioButton>
-                                    <RadioButton
-                                        x:Uid="Settings_Theme_Dark"
-                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
-                                        FontSize="15"
-                                        GroupName="AppTheme">
-                                        <RadioButton.CommandParameter>
-                                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                                        </RadioButton.CommandParameter>
-                                    </RadioButton>
-                                    <RadioButton
-                                        x:Uid="Settings_Theme_Default"
-                                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
-                                        FontSize="15"
-                                        GroupName="AppTheme">
-                                        <RadioButton.CommandParameter>
-                                            <xaml:ElementTheme>Default</xaml:ElementTheme>
-                                        </RadioButton.CommandParameter>
-                                    </RadioButton>
-                                </StackPanel>
+                                <RelativePanel>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock x:Uid="SettingsPage_Theme_Color"
+                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                        <TextBlock x:Uid="SettingsPage_Theme_Color_Description"
+                                                   Style="{StaticResource DescriptionTextStyle}" />
+                                    </StackPanel>
+                                    <ComboBox ItemsSource="{x:Bind ViewModel.Themes}"
+                                              SelectedItem="{x:Bind ViewModel.ElementTheme, Mode=TwoWay}"
+                                              RelativePanel.AlignRightWithPanel="True">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="ElementTheme">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource ElementThemeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </RelativePanel> 
                             </control:Panel>
                             <!-- 修复横向图片 -->
                             <control:Panel>
@@ -74,6 +67,41 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
+                
+                <!-- OAuth -->
+                <control:SettingExpander
+                    x:Uid="SettingsPage_OAuth"
+                    SettingIcon="&#xE77b;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- Bangumi账号 -->
+                            <control:Panel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="45" Height="45" CornerRadius="15" Margin="0 0 20 0">
+                                        <Border.Background>
+                                            <ImageBrush
+                                                ImageSource="{x:Bind ViewModel.BgmAvatar, Mode=OneWay, 
+                                                Converter={StaticResource ImagePathConverter}, 
+                                                ConverterParameter=ms-appx:///Assets/Pictures/Akkarin.webp}" />
+                                        </Border.Background>
+                                    </Border>
+                                    <control:Setting Grid.Column="1" 
+                                                     Title="{x:Bind ViewModel.BgmUserName,Mode=OneWay}"
+                                                     Description="{x:Bind ViewModel.BgmStateString, Mode=OneWay}"
+                                                     VerticalAlignment="Center">
+                                        <Button Content="{x:Bind ViewModel.BgmButtonText, Mode=OneWay}"
+                                                Command="{x:Bind ViewModel.ChangeBgmStateCommand}"/>
+                                    </control:Setting>
+                                </Grid>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                    
+                </control:SettingExpander>
 
                 <!-- 信息源 -->
                 <control:SettingExpander
@@ -81,27 +109,52 @@
                     SettingDescription="{x:Bind ViewModel.UiRssDescription}"
                     SettingIcon="&#xE701;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel>
-                            <RadioButton
-                                Content="Bangumi"
-                                GroupName="Info"
-                                Command="{x:Bind ViewModel.RssSelectBangumiCommand}"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Bangumi }" />
-                            <TextBox
-                                Visibility="{x:Bind ViewModel.IsSelectBangumi, Mode=OneWay}"
-                                Text="{x:Bind ViewModel.BangumiToken, Mode=TwoWay}"
-                                PlaceholderText="{x:Bind ViewModel.UiRssBgmPlaceholder}"
-                                Margin="0 5 0 5" />
-                            <RadioButton
-                                Content="VNDB"
-                                GroupName="Info"
-                                Command="{x:Bind ViewModel.RssSelectVndbCommand}"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Vndb }" />
-                            <RadioButton
-                                IsEnabled="False"
-                                Content="Moegirl"
-                                GroupName="Info"
-                                IsChecked="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToBooleanConverter}, ConverterParameter=Moegirl }" />
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <RelativePanel>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="{x:Bind ViewModel.UiRssTitle}"
+                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                        <TextBlock Text="{x:Bind ViewModel.UiRssDescription}"
+                                                   Style="{StaticResource DescriptionTextStyle}" />
+                                    </StackPanel>
+                                    <ComboBox ItemsSource="{x:Bind ViewModel.RssTypes}"
+                                              SelectedItem="{x:Bind ViewModel.RssType, Mode=TwoWay}"
+                                              RelativePanel.AlignRightWithPanel="True"/>
+                                </RelativePanel>
+                            </control:Panel>
+                            <!-- bangumi -->
+                            <control:Panel Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Bangumi}"
+                                           Margin="0 0 0 -26"> <!--这里的margin是显示bug的workaround-->
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_Bangumi" Padding="0"/>
+                                    <TextBlock x:Uid="SettingsPage_Rss_Bangumi_Description" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- VNDB -->
+                            <control:Panel
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Vndb}"
+                                Margin="0 -13 0 -13">
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_VNDB" Padding="0" />
+                                    <TextBlock x:Uid="SettingsPage_Rss_VNDB_Description" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- Mixed -->
+                            <control:Panel
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Mixed}"
+                                Margin="0 -26 0 0">
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_Mixed" Padding="0"/>
+                                    <TextBlock x:Uid="SettingsPage_Rss_Mixed_Description" TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                </StackPanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -112,17 +165,47 @@
                     SettingDescription="{x:Bind ViewModel.UiDownloadDescription}"
                     SettingIcon="&#xE896;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel Orientation="Vertical" Spacing="13">
-                            <local:SettingToggleSwitch
-                                Title="{x:Bind ViewModel.UiDownLoadOverrideNameTitle}"
-                                Description="{x:Bind ViewModel.UiDownLoadOverrideNameDescription}"
-                                IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
-
-                            <!-- <local:SettingToggleSwitch -->
-                            <!--     Title="覆盖名字" -->
-                            <!--     Description="是否将信息源获取到的galgame名字覆盖本地名字" -->
-                            <!--     IsOn="True"> -->
-                            <!-- </local:SettingToggleSwitch> -->
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 覆盖名字 -->
+                            <control:Panel>
+                                <StackPanel>
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
+                                    IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideNameWithChinese"
+                                                               IsOn="{x:Bind ViewModel.OverrideLocalNameWithChinese, Mode=TwoWay}" 
+                                                               Visibility="{x:Bind ViewModel.OverrideLocalName, Mode=OneWay}"
+                                                               Margin="0, 13, 0, 0"
+                                    />
+                                    <!-- Magic Number: SettingsPageStackPanelSpacing=13 修复SettingToggleSwitch隐藏时 StackPanel 下侧仍有Spacing 问题 -->
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- 自动分类 -->
+                            <control:Panel>
+                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
+                                  <local:SettingToggleSwitch x:Uid="SettingsPage_Download_AutoCategory"
+                                                               IsOn="{x:Bind ViewModel.AutoCategory, Mode=TwoWay}"/>
+                                  <control:Setting x:Uid="SettingsPage_Download_CategoryNow">
+                                      <Button Content="Go" Width="75" Command="{x:Bind ViewModel.CategoryNowCommand}">
+                                          <Button.Flyout>
+                                              <Flyout Placement="Bottom">
+                                                  <TextBlock Text="Done!"/>
+                                              </Flyout>
+                                          </Button.Flyout>
+                                      </Button>
+                                  </control:Setting>
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- 游玩状态同步 -->
+                            <control:Panel>
+                                <StackPanel Spacing="{StaticResource SettingsPageStackPanelSpacing}">
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_SyncPlayStatusWhenPhrasing"
+                                                               IsOn="{x:Bind ViewModel.DownloadPlayStatusWhenPhrasing, Mode=TwoWay}"/>
+                                    
+                                    <control:Setting x:Uid="SettingsPage_Download_SyncBgmPlayStatusNow">
+                                        <Button Content="Go" Width="75" Command="{x:Bind ViewModel.DownloadPlayStatusFormBgmNowCommand}"/>
+                                    </control:Setting>
+                                </StackPanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -163,7 +246,7 @@
                                         IsOn="{x:Bind ViewModel.SearchSubFolder, Mode=TwoWay}" />
                                     <RelativePanel Margin="{StaticResource XSmallTopMargin}"
                                                    HorizontalAlignment="Stretch"
-                                                   Visibility="{x:Bind ViewModel.SearchSubFolder, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                   Visibility="{x:Bind ViewModel.SearchSubFolder, Mode=OneWay}">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock Text="{x:Bind ViewModel.UiLibrarySearchSubPathDepth}"
                                                        Style="{ThemeResource BodyTextBlockStyle}" />
@@ -266,17 +349,55 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
-                <!-- 快速启动 -->
+                <!-- 启动 -->
                 <control:SettingExpander
-                    SettingTitle="{x:Bind ViewModel.UiQuickStartTitle}"
-                    SettingDescription="{x:Bind ViewModel.UiQuickStartDescription}"
+                    x:Uid="SettingsPage_Start"
                     SettingIcon="&#xE768;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel Orientation="Vertical" Spacing="13">
-                            <local:SettingToggleSwitch
-                                Title="{x:Bind ViewModel.UiQuickStartAutoStartGameTitle}"
-                                Description="{x:Bind ViewModel.UiQuickStartAutoStartGameDescription}"
-                                IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <control:Panel>
+                                <local:SettingToggleSwitch 
+                                    x:Uid="SettingsPage_Start_AutoStartGame"
+                                    IsOn="{x:Bind ViewModel.QuitStart, Mode=TwoWay}" />
+                            </control:Panel>
+
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Start_AuthenticationType">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.AuthenticationTypes}"
+                                              SelectedItem="{x:Bind ViewModel.AuthenticationType, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:AuthenticationType">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource AuthenticationTypeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                            
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Start_Page">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.StartPages}"
+                                              SelectedItem="{x:Bind ViewModel.StartPage, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:PageEnum">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource PageToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+                
+                <!-- 上传设置 -->
+                <control:SettingExpander x:Uid="SettingsPage_Upload" SettingIcon="&#xE898;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel>
+                            <local:SettingToggleSwitch x:Uid="SettingsPage_Upload_AppCenter"
+                                                       IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -294,10 +415,15 @@
                         <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink"
                                          Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
                         <HyperlinkButton x:Uid="SettingsPage_RepositoryLink" />
+                        <HyperlinkButton x:Uid="SettingsPage_UpdateContent" Command="{x:Bind ViewModel.UpdateContentCommand}"/>
                         <HyperlinkButton x:Uid="SettingsPage_RateLink" Command="{x:Bind ViewModel.RateCommand}" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
+        
+        <InfoBar Grid.Row="1" IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}"/>
     </Grid>
 </Page>

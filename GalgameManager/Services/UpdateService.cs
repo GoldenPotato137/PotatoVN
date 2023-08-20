@@ -57,9 +57,9 @@ public class UpdateService : IUpdateService
 
     public bool ShouldDisplayUpdateContent() => _firstUpdate;
 
-    public async Task<string> GetUpdateContentAsync()
+    public async Task<string> GetUpdateContentAsync(bool download = false)
     {
-        if (_firstUpdate || File.Exists(FilePath) == false)
+        if (_firstUpdate || File.Exists(FilePath) == false || download)
             await DownloadUpdateContentAsync();
         await _localSettingsService.SaveSettingAsync(KeyValues.DisplayedUpdateVersion, RuntimeHelper.GetVersion());
         var result = string.Empty;

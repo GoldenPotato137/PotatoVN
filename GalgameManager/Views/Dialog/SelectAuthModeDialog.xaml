@@ -1,0 +1,29 @@
+﻿<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.SelectAuthModeDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:GalgameManager.Views.Control"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    IsPrimaryButtonEnabled="{x:Bind SelectItemToPrimaryButtonEnabled(SelectItem, AccessToken), Mode=OneWay}"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <RadioButtons SelectedIndex="{x:Bind SelectItem, Mode=TwoWay}">
+            <x:String>OAuth快捷登录</x:String>
+            <x:String>AccessToken登录</x:String>
+        </RadioButtons>
+        <StackPanel Visibility="{x:Bind SelectItemToVisibility(SelectItem), Mode=OneWay}">
+            <TextBox Header="输入AccessToken" PlaceholderText="AccessToken" 
+                     Text="{x:Bind AccessToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <RichTextBlock TextWrapping="Wrap"
+                           Style="{StaticResource DescriptionRichTextStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}">
+                <Paragraph>
+                    通过AccessToken登录, AccessToken可在<Hyperlink NavigateUri="https://next.bgm.tv/demo/access-token/create">这里</Hyperlink>获取
+                </Paragraph>
+            </RichTextBlock>
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

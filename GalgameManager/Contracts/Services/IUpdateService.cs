@@ -12,8 +12,9 @@ public interface IUpdateService
     /// <summary>
     /// 获取更新内容
     /// </summary>
+    /// <param name="download">是否强制更新</param>
     /// <returns>更新内容</returns>
-    public Task<string> GetUpdateContentAsync();
+    public Task<string> GetUpdateContentAsync(bool download=false);
     
     /// <summary>
     /// 检查更新

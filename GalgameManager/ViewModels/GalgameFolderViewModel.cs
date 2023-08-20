@@ -23,7 +23,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private GalgameFolder? _item;
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
-    public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb };
+    public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
 
     [ObservableProperty] private bool _isInfoBarOpen;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
@@ -108,7 +108,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async void AddGalgame()
+    private async Task AddGalgame()
     {
         var openPicker = new FileOpenPicker();
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
@@ -136,9 +136,9 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         try
         {
             var result = await _galgameService.TryAddGalgameAsync(folder, true);
-            if (result == GalgameCollectionService.AddGalgameResult.Success)
+            if (result == AddGalgameResult.Success)
                 await ShowSuccessInfoBar();
-            else if (result == GalgameCollectionService.AddGalgameResult.AlreadyExists)
+            else if (result == AddGalgameResult.AlreadyExists)
                 throw new Exception("库里已经有这个游戏了");
             else //NotFoundInRss
                 await ShowNotFoundInfoBar();
@@ -176,7 +176,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async void GetInfoFromRss()
+    private async Task GetInfoFromRss()
     {
         if (Item == null) return;
         if (_selectedGalgames.Count == 0)
@@ -186,14 +186,14 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async void GetGalInFolder()
+    private async Task GetGalInFolder()
     {
         if (_item == null) return;
         await _item.GetGalgameInFolder(_localSettingsService);
     }
     
     [RelayCommand]
-    private async void AddGalFromZip()
+    private async Task AddGalFromZip()
     {
         var openPicker = new FileOpenPicker
         {

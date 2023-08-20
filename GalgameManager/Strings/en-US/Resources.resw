@@ -60,45 +60,45 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string"/>
-              <xsd:attribute name="type" type="xsd:string"/>
-              <xsd:attribute name="mimetype" type="xsd:string"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string"/>
-              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -183,13 +183,13 @@
   <data name="HomePage_Filter" xml:space="preserve">
     <value>Filter</value>
   </data>
-  <data name="HomePage_AddGameSuccess" xml:space="preserve">
+  <data name="AddGalgameResult_Success" xml:space="preserve">
     <value>Game added successfully</value>
   </data>
-  <data name="HomePage_AlreadyInLibrary" xml:space="preserve">
+  <data name="AddGalgameResult_AlreadyInLibrary" xml:space="preserve">
     <value>This game already exists in the library</value>
   </data>
-  <data name="HomePage_NoInfo" xml:space="preserve">
+  <data name="AddGalgameResult_NotFoundInRss" xml:space="preserve">
     <value>Game was successfully added, but no information was found on this game from the source</value>
   </data>
   <data name="HomePage_Remove_Title" xml:space="preserve">
@@ -231,10 +231,10 @@
   <data name="SettingsPage_DownloadDescription" xml:space="preserve">
     <value>Retrieving information related settings from sources</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameTitle" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Title" xml:space="preserve">
     <value>Overwrite Local Name</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameDescription" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Description" xml:space="preserve">
     <value>Whether to overwrite the local name of visual novel's name from the source</value>
   </data>
   <data name="SettingsPage_CloudSyncTitle" xml:space="preserve">
@@ -308,16 +308,10 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
     <value>Reset EXE path?</value>
   </data>
-  <data name="SettingsPage_QuickStartTitle" xml:space="preserve">
-    <value>Quick launch</value>
-  </data>
-  <data name="SettingsPage_QuickStartDescription" xml:space="preserve">
-    <value>Settings related to Quick Start in Taskbar</value>
-  </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameTitle" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
     <value>Launch Game</value>
   </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Description" xml:space="preserve">
     <value>Whether to start the game directly when right-clicking icon in the taskbar</value>
   </data>
   <data name="SettingsPage_LibraryTitle" xml:space="preserve">
@@ -377,5 +371,44 @@ Users who do not know the regular expression can understand：The name of the ga
   </data>
   <data name="SettingsPage_RepositoryLink.NavigateUri" xml:space="preserve">
     <value>https://github.com/GoldenPotato137/GalgameManager</value>
+  </data>
+  <data name="Shell_Category.Content" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="SettingsPage_Start_AuthenticationType.Title" xml:space="preserve">
+    <value>Authentication type</value>
+  </data>
+  <data name="SettingsPage_Start_AuthenticationType.Description" xml:space="preserve">
+    <value>Set the authentication type on application startup</value>
+  </data>
+  <data name="AuthenticateUserMessage" xml:space="preserve">
+    <value>For security, PotatoVN needs to verify your identity</value>
+  </data>
+  <data name="NoAuthentication" xml:space="preserve">
+    <value>No authentication</value>
+  </data>
+  <data name="WindowsHello" xml:space="preserve">
+    <value>Windows Hello (Suggested)</value>
+  </data>
+  <data name="CustomPassword" xml:space="preserve">
+    <value>Login by custom password</value>
+  </data>
+  <data name="EnterYourPasswordLiteral" xml:space="preserve">
+    <value>Please enter your password</value>
+  </data>
+  <data name="PasswordLiteral" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="ConfirmLiteral" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="SetYourPasswordLiteral" xml:space="preserve">
+    <value>Set your password</value>
+  </data>
+  <data name="SaveYourPasswordCarefullyLiteral" xml:space="preserve">
+    <value>Take care of your password.</value>
+  </data>
+  <data name="ForgetPasswordMessage" xml:space="preserve">
+    <value>If you forget your password, go to Credential Manager to access your password.</value>
   </data>
 </root>

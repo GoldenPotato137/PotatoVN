@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Helpers;
 
 namespace GalgameManager.Models;
 
 public partial class LockableProperty<T> : ObservableObject
 {
+    public event GenericDelegate<T?>? OnValueChanged;
+    
     private T? _value;
 
     public T? Value
@@ -11,10 +14,9 @@ public partial class LockableProperty<T> : ObservableObject
         get => _value;
         set
         {
-            if (!_isLock)
-            {
-                SetProperty(ref _value, value);
-            }
+            if (IsLock) return;
+            SetProperty(ref _value, value);
+            OnValueChanged?.Invoke(value);
         }
     }
         

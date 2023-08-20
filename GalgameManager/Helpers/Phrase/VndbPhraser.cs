@@ -1,89 +1,143 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
+using GalgameManager.Helpers.API;
 using GalgameManager.Models;
-using GalgameManager.Services;
 using Newtonsoft.Json.Linq;
 using SharpCompress;
-using VndbSharp;
-using VndbSharp.Models;
-using VndbSharp.Models.Errors;
-using VndbSharp.Models.VisualNovel;
 
 namespace GalgameManager.Helpers.Phrase;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public class VndbPhraser : IGalInfoPhraser
 {
-    private readonly Vndb _vndb;
+    private readonly VndbApi _vndb = new();
     private readonly Dictionary<int, JToken> _tagDb = new();
     private bool _init;
     private const string TagDbFile = @"Assets\Data\vndb-tags-2023-04-15.json";
-    
-    public VndbPhraser()
-    {
-        _vndb = new Vndb(true).WithClientDetails("GalgameManager", "1.0-dev").WithFlagsCheck(true);
-    }
+    /// <summary>
+    /// id eg:g530[1..]=530=(int)530
+    /// </summary>
+    private const string VndbFields = "title, titles.title, titles.lang, description, image.url, id, rating, length, " +
+                                      "length_minutes, tags.id, tags.rating, developers.original, developers.name, released";
 
     private async Task Init()
     {
         _init = true;
-        var assembly = Assembly.GetExecutingAssembly();
+        Assembly assembly = Assembly.GetExecutingAssembly();
         var file = Path.Combine(Path.GetDirectoryName(assembly.Location)!, TagDbFile);
         if (!File.Exists(file)) return;
 
-        var json = JToken.Parse(await File.ReadAllTextAsync(file));
-        var tags = json.ToObject<List<JToken>>();
+        JToken json = JToken.Parse(await File.ReadAllTextAsync(file));
+        List<JToken>? tags = json.ToObject<List<JToken>>();
         tags!.ForEach(tag => _tagDb.Add(int.Parse(tag["id"]!.ToString()), tag));
+    }
+
+    private static async Task TryGetId(Galgame galgame)
+    {
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Vndb]))
+        {
+            var id = await PhraseHelper.TryGetVndbIdAsync(galgame.Name!);
+            if (id is not null)
+            {
+                galgame.Ids[(int)RssType.Vndb] = id.ToString();
+            }
+        }
     }
     
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (!_init) await Init();
-        var result = new Galgame();
+        Galgame result = new();
         try
         {
-            VndbResponse<VisualNovel> visualNovels;
+            // 试图离线获取ID
+            await TryGetId(galgame);
+
+            VndbResponse<VndbVn> vndbResponse;
             try
             {
-                if(galgame.RssType != RssType.Vndb) throw new Exception();
-                var idString = galgame.Id;
-                if(!string.IsNullOrEmpty(idString) && idString[0]=='v')
-                    idString = idString[1..];
-                var id = Convert.ToUInt32(idString);
-                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Id.Equals(id), VndbFlags.FullVisualNovel);
+                // with v
+                var idString = galgame.Ids[(int)RssType.Vndb];
+                if (string.IsNullOrEmpty(idString))
+                {
+                    vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value!)
+                    });
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(idString) && idString[0] != 'v')
+                        idString = "v"+idString;
+                    vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("id", idString)
+                    });
+                    if (vndbResponse.Results is null || vndbResponse.Results.Count == 0)
+                    {
+                        vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                        {
+                            Fields = VndbFields,
+                            Filters = VndbFilters.Equal("search", galgame.Name.Value!)
+                        });
+                    }
+                }
+            }
+            catch (VndbApi.ThrottledException)
+            {
+                await Task.Delay(60 * 1000); // 1 minute
+                vndbResponse = await _vndb.GetVisualNovelAsync(new VndbQuery
+                    {
+                        Fields = VndbFields,
+                        Filters = VndbFilters.Equal("search", galgame.Name.Value!)
+                    });
             }
             catch (Exception)
             {
-                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
+                return null;
             }
             
-            if (visualNovels == null || visualNovels.Count == 0)
-            {
-                var error = _vndb.GetLastError();
-                if (error is not { Type: ErrorType.Throttled }) return null;
-                await Task.Delay(60 * 1000); // 1 minute
-                visualNovels = await _vndb.GetVisualNovelAsync(VndbFilters.Search.Fuzzy(galgame.Name), VndbFlags.FullVisualNovel);
-                if (visualNovels == null) return null;
-            }
-            var rssItem = visualNovels.Items[0];
-            result.Name = rssItem.OriginalName;
-            result.Description = rssItem.Description;
+            if (vndbResponse.Results is null || vndbResponse.Results.Count == 0) return null;
+            VndbVn rssItem = vndbResponse.Results[0];
+            result.Name = rssItem.Title ?? "";
+            result.CnName = GetChineseName(rssItem.Titles);
+            result.Description = rssItem.Description ?? Galgame.DefaultString;
             result.RssType = GetPhraseType();
-            result.Id = rssItem.Id.ToString();
-            result.Rating = (float)rssItem.Rating;
-            result.ExpectedPlayTime = rssItem.Length.ToString() ?? Galgame.DefaultString;
-            result.ImageUrl = rssItem.Image;
-            //Tags
-            result.Tags.Value = new ObservableCollection<string>();
-            var tmpTags = new List<TagMetadata>(rssItem.Tags).OrderByDescending(t => t.Score);
-            tmpTags.ForEach(tag =>
+            // id eg: v16044 -> 16044
+            var id = rssItem.Id! ;
+            result.Id = id.StartsWith("v")?id[1..]:id;
+            result.Rating = rssItem.Rating / 10 ?? 0;
+            result.ExpectedPlayTime = GetLength(rssItem.Lenth,rssItem.LengthMinutes);
+            result.ImageUrl = rssItem.Image != null ? rssItem.Image.Url! :"";
+            // Developers
+            if (rssItem.Developers?.Count > 0)
             {
-                if (_tagDb.TryGetValue((int)tag.Id, out var tagInfo))
-                    result.Tags.Value.Add(tagInfo["name"]!.ToString());
-            });
+                IEnumerable<string> developers = rssItem.Developers.Select<VndbProducer, string>(d =>
+                    d.Original ?? d.Name ?? "");
+                result.Developer = string.Join(",", developers);
+            }else
+            {
+                result.Developer = Galgame.DefaultString;
+            }
+
+            result.ReleaseDate = (rssItem.Released != null
+                ? IGalInfoPhraser.GetDateTimeFromString(rssItem.Released)
+                : null) ?? DateTime.MinValue;
+            // Tags
+            result.Tags.Value = new ObservableCollection<string>();
+            if (rssItem.Tags != null)
+            {
+                IOrderedEnumerable<VndbTag> tmpTags = rssItem.Tags.OrderByDescending(t => t.Rating);
+                tmpTags.ForEach(tag =>
+                {
+                    if (!int.TryParse(tag.Id![1..], out var i)) return;
+                    if (_tagDb.TryGetValue(i, out JToken? tagInfo))
+                        result.Tags.Value.Add(tagInfo["name"]!.ToString() ?? "");
+                });
+            }
         }
         catch (Exception)
         {
@@ -93,4 +147,38 @@ public class VndbPhraser : IGalInfoPhraser
     }
 
     public RssType GetPhraseType() => RssType.Vndb;
+
+    private static string GetChineseName(List<VndbTitle>? titles)
+    {
+        if (titles == null) return "";
+        VndbTitle? title = titles.FirstOrDefault(t => t.Lang == "zh-Hans") ??
+                           titles.FirstOrDefault(t => t.Lang == "zh-Hant");
+        return title?.Title!;
+    }
+    private static string GetLength(VndbVn.VnLenth? length, int? lengthMinutes)
+    {
+        if (lengthMinutes != null)
+        {
+            return (lengthMinutes > 60?lengthMinutes / 60 + "h":"") + (lengthMinutes%60 != 0?lengthMinutes % 60 + "m":"");
+        }
+
+        if (length != null)
+        {
+            switch (length)
+            {
+                case VndbVn.VnLenth.VeryShort:
+                    return "very short";
+                case VndbVn.VnLenth.Short:
+                    return "short";
+                case VndbVn.VnLenth.Medium:
+                    return "medium";
+                case VndbVn.VnLenth.Long:
+                    return "long";
+                case VndbVn.VnLenth.VeryLong:
+                    return "very long";
+            }
+        }
+
+        return Galgame.DefaultString;
+    }
 }

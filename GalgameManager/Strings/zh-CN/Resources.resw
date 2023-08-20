@@ -124,7 +124,7 @@
     <value>PotatoVN是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。</value>
   </data>
   <data name="Shell_Home.Content" xml:space="preserve">
-    <value>Home</value>
+    <value>游戏</value>
   </data>
   <data name="Settings_Main.Text" xml:space="preserve">
     <value>Main</value>
@@ -157,7 +157,7 @@
     <value>https://github.com/GoldenPotato137/GalgameManager/blob/main/PrivacyPolicy.md</value>
   </data>
   <data name="Shell_Library.Content" xml:space="preserve">
-    <value>Library</value>
+    <value>游戏库</value>
   </data>
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
     <value>GalgameSetting</value>
@@ -183,14 +183,14 @@
   <data name="HomePage_Filter" xml:space="preserve">
     <value>过滤</value>
   </data>
-  <data name="HomePage_AddGameSuccess" xml:space="preserve">
+  <data name="AddGalgameResult_Success" xml:space="preserve">
     <value>已成功添加游戏</value>
   </data>
-  <data name="HomePage_AlreadyInLibrary" xml:space="preserve">
+  <data name="AddGalgameResult_AlreadyInLibrary" xml:space="preserve">
     <value>库里已经有这个游戏了</value>
   </data>
-  <data name="HomePage_NoInfo" xml:space="preserve">
-    <value>成功添加游戏，但没有从信息源中找到这个游戏的信息</value>
+  <data name="AddGalgameResult_NotFoundInRss" xml:space="preserve">
+    <value>没有从信息源中找到这个游戏的信息</value>
   </data>
   <data name="HomePage_Remove_Title" xml:space="preserve">
     <value>取消托管</value>
@@ -216,6 +216,30 @@
   <data name="SettingsPage_ThemeDescription" xml:space="preserve">
     <value>与显示有关的设置</value>
   </data>
+  <data name="SettingsPage_OAuth.SettingTitle" xml:space="preserve">
+    <value>第三方账户</value>
+  </data>
+  <data name="SettingsPage_OAuth.SettingDescription" xml:space="preserve">
+    <value>管理第三方账户</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Title" xml:space="preserve">
+    <value>登录Bangumi</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Description" xml:space="preserve">
+    <value>通过OAuth登录Bangumi</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm.Title" xml:space="preserve">
+    <value>退出Bangumi登录</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm.Description" xml:space="preserve">
+    <value>退出Bangumi OAuth登录</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>退出登录</value>
+  </data>
   <data name="SettingsPage_RssTitle" xml:space="preserve">
     <value>信息源</value>
   </data>
@@ -231,10 +255,10 @@
   <data name="SettingsPage_DownloadDescription" xml:space="preserve">
     <value>从信息源获取信息有关的设置</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameTitle" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Title" xml:space="preserve">
     <value>覆盖名字</value>
   </data>
-  <data name="SettingsPage_Download_OverrideNameDescription" xml:space="preserve">
+  <data name="SettingsPage_Download_OverrideName.Description" xml:space="preserve">
     <value>是否将信息源获取到的galgame名字覆盖本地名字</value>
   </data>
   <data name="SettingsPage_CloudSyncTitle" xml:space="preserve">
@@ -308,16 +332,10 @@
   <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
     <value>重置exe路径？</value>
   </data>
-  <data name="SettingsPage_QuickStartTitle" xml:space="preserve">
-    <value>快速启动</value>
-  </data>
-  <data name="SettingsPage_QuickStartDescription" xml:space="preserve">
-    <value>与任务栏快捷启动相关的设置</value>
-  </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameTitle" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
     <value>启动游戏</value>
   </data>
-  <data name="SettingsPage_QuickStart_AutoStartGameDescription" xml:space="preserve">
+  <data name="SettingsPage_Start_AutoStartGame.Description" xml:space="preserve">
     <value>在任务栏右键图标选中游戏时是否直接启动游戏</value>
   </data>
   <data name="SettingsPage_LibraryTitle" xml:space="preserve">
@@ -466,6 +484,12 @@
   <data name="GalgamePage_OpenInExplorer.Label" xml:space="preserve">
     <value>在文件管理器中打开</value>
   </data>
+  <data name="GalgamePage_OpenInBgm.Label" xml:space="preserve">
+    <value>在Bangumi中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInVndb.Label" xml:space="preserve">
+    <value>在Vndb中打开</value>
+  </data>
   <data name="SettingsPage_Library_IgnoreFetchResult.Title" xml:space="preserve">
     <value>忽略游戏查询结果</value>
   </data>
@@ -498,5 +522,369 @@
   </data>
   <data name="GalgamePage_RunAsAdmin.Label" xml:space="preserve">
     <value>以管理员身份运行游戏</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi.Content" xml:space="preserve">
+    <value>Bangumi 番组计划</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#bangumi-%E7%95%AA%E7%BB%84%E8%AE%A1%E5%88%92</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB.Content" xml:space="preserve">
+    <value>VNDB</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#vndb</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#mixed</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed.Content" xml:space="preserve">
+    <value>混合信息源</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi_Description.Text" xml:space="preserve">
+    <value>Bangumi 番组计划是一个中文ACGN互联网分享与交流项目，基于CC BY-SA协议，保存由用户提供的各类ACG相关事物和人物、电影、电视剧等的相关资料，可以让用户查阅，并提供BBS论坛和留言版供交流探讨。</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB_Description.Text" xml:space="preserve">
+    <value>视觉小说数据库（英语：Visual Novel Database，简称VNDB）是一个面向视觉小说的网络数据库、wiki和网络英语论坛。截至2021年5月，视觉小说数据库一共收录了约29,000部视觉小说，其论坛部分也有约19万名注册用户。</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Description.Text" xml:space="preserve">
+    <value>Mixed为一个混合搜刮器，结合多个数据源的数据并取用最优值。目前结合了VNDB和Bangumi的数据。
+因为本搜刮器混合了多个数据源的数据，因此你需要为每个源配置相关的设置。</value>
+  </data>
+  <data name="SettingsPage_Theme_Color.Text" xml:space="preserve">
+    <value>应用主题</value>
+  </data>
+  <data name="SettingsPage_Theme_Color_Description.Text" xml:space="preserve">
+    <value>选择你喜欢的应用主题吧</value>
+  </data>
+  <data name="SettingsPage_Upload.SettingTitle" xml:space="preserve">
+    <value>上传设置</value>
+  </data>
+  <data name="SettingsPage_Upload.SettingDescription" xml:space="preserve">
+    <value>与上传数据有关的设置</value>
+  </data>
+  <data name="SettingsPage_Upload_AppCenter.Title" xml:space="preserve">
+    <value>上传匿名事件日志</value>
+  </data>
+  <data name="SettingsPage_Upload_AppCenter.Description" xml:space="preserve">
+    <value>上传的内容不包含任何个人数据，且仅用于统计各功能使用情况以及报错跟踪</value>
+  </data>
+  <data name="SettingsPage_UpdateContent.Content" xml:space="preserve">
+    <value>更新记录</value>
+  </data>
+  <data name="UpdateContentPage_AppCenterSuccess" xml:space="preserve">
+    <value>已成功开启匿名日志上传功能，感谢您的贡献！</value>
+  </data>
+  <data name="EditableCategory_Add_AlreadyExist" xml:space="preserve">
+    <value>该游戏已经存在于该分类中</value>
+  </data>
+  <data name="EditableCategory_Remove_NotExist" xml:space="preserve">
+    <value>该游戏不在该分类中</value>
+  </data>
+  <data name="CategoryService_Developer" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="CategoryService_Status" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="Shell_Category.Content" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="CategoryPage_Category_Edit.Text" xml:space="preserve">
+    <value>编辑分类</value>
+  </data>
+  <data name="CategoryPage_Category_Delete.Text" xml:space="preserve">
+    <value>删除分类</value>
+  </data>
+  <data name="CategoryPage_Category_Combine.Text" xml:space="preserve">
+    <value>合并分类</value>
+  </data>
+  <data name="CategoryPage_DeleteCategory_Title" xml:space="preserve">
+    <value>删除分类</value>
+  </data>
+  <data name="CategoryPage_DeleteCategory_Msg" xml:space="preserve">
+    <value>确认要删除这个分类吗？</value>
+  </data>
+  <data name="CategoryPage_CombineCategory_Title" xml:space="preserve">
+    <value>合并分类</value>
+  </data>
+  <data name="CategoryPage_CombineCategory_Msg" xml:space="preserve">
+    <value>这个操作会将目前选定的分类合并到下面选中的分类中（本分类会被删除）</value>
+  </data>
+  <data name="SettingsPage_Download_AutoCategory.Title" xml:space="preserve">
+    <value>自动分类</value>
+  </data>
+  <data name="SettingsPage_Download_AutoCategory.Description" xml:space="preserve">
+    <value>是否自动将游戏分类按照开发商及游玩状态分类</value>
+  </data>
+  <data name="SettingsPage_Download_CategoryNow.Title" xml:space="preserve">
+    <value>分类所有游戏</value>
+  </data>
+  <data name="SettingsPage_Download_CategoryNow.Description" xml:space="preserve">
+    <value>开启分类后旧有游戏需要点击按钮手动分类一次，之后添加游戏会自动分类</value>
+  </data>
+  <data name="SettingsPage_Start.SettingTitle" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="SettingsPage_Start.SettingDescription" xml:space="preserve">
+    <value>与应用启动行为有关的设置</value>
+  </data>
+  <data name="SettingsPage_Start_Page.Description" xml:space="preserve">
+    <value>设置打开应用后显示的界面</value>
+  </data>
+  <data name="SettingsPage_Start_Page.Title" xml:space="preserve">
+    <value>启动页</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="PlayType_None" xml:space="preserve">
+    <value>未设置</value>
+  </data>
+  <data name="PlayType_Playing" xml:space="preserve">
+    <value>在玩</value>
+  </data>
+  <data name="PlayType_Played" xml:space="preserve">
+    <value>玩过</value>
+  </data>
+  <data name="PlayType_Shelved" xml:space="preserve">
+    <value>搁置</value>
+  </data>
+  <data name="PlayType_Abandoned" xml:space="preserve">
+    <value>抛弃</value>
+  </data>
+  <data name="GalgamePage_PlayStatus.Label" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="CategoryPage_CategoryGroup.Label" xml:space="preserve">
+    <value>分类组</value>
+  </data>
+  <data name="SettingsPage_Start_AuthenticationType.Title" xml:space="preserve">
+    <value>身份验证类型</value>
+  </data>
+  <data name="SettingsPage_Start_AuthenticationType.Description" xml:space="preserve">
+    <value>设置应用启动时的身份验证类型</value>
+  </data>
+  <data name="AuthenticateUserMessage" xml:space="preserve">
+    <value>为安全起见，PotatoVN 需要验证你的身份</value>
+  </data>
+  <data name="NoAuthentication" xml:space="preserve">
+    <value>无身份验证</value>
+  </data>
+  <data name="WindowsHello" xml:space="preserve">
+    <value>Windows Hello（推荐）</value>
+  </data>
+  <data name="CustomPassword" xml:space="preserve">
+    <value>自定义密码登录</value>
+  </data>
+  <data name="EnterYourPasswordLiteral" xml:space="preserve">
+    <value>输入你的密码</value>
+  </data>
+  <data name="PasswordLiteral" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="ConfirmLiteral" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="SetYourPasswordLiteral" xml:space="preserve">
+    <value>设置你的密码</value>
+  </data>
+  <data name="SaveYourPasswordCarefullyLiteral" xml:space="preserve">
+    <value>请妥善保存你的密码。</value>
+  </data>
+  <data name="ForgetPasswordMessage" xml:space="preserve">
+    <value>如果你忘记了密码，请在系统的凭据管理器中查看密码。</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithChinese.Description" xml:space="preserve">
+    <value>是否优先使用获取到的galgame中文名覆盖本地名字</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithChinese.Title" xml:space="preserve">
+    <value>用中文名覆盖名字</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
+    <value>尚未登录，需要在设置中登录Bangumi账号</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_NoId" xml:space="preserve">
+    <value>这个游戏目前没有bangumi id，请在编辑界面手动设置一个</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_Success" xml:space="preserve">
+    <value>已成功同步游玩状态到bangumi</value>
+  </data>
+  <data name="HomePage_UploadingToBgm" xml:space="preserve">
+    <value>将游玩信息同步到bangumi中</value>
+  </data>
+  <data name="HomePage_FixHorizontalPicture.Label" xml:space="preserve">
+    <value>裁剪水平封面图</value>
+  </data>
+  <data name="HomePage_DisplayPlayType.Label" xml:space="preserve">
+    <value>游玩状态标记</value>
+  </data>
+  <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Title" xml:space="preserve">
+    <value>下载游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Description" xml:space="preserve">
+    <value>是否在获取信息时下载游玩状态（需登录第三方账号）</value>
+  </data>
+  <data name="BgmAccount_NoName" xml:space="preserve">
+    <value>阿~卡~林~</value>
+  </data>
+  <data name="BgmOAuthService_NoLogin" xml:space="preserve">
+    <value>还没登录Bangumi账号呢~</value>
+  </data>
+  <data name="BgmOAuthService_Id" xml:space="preserve">
+    <value>用户ID:</value>
+  </data>
+  <data name="BgmOAuthService_AuthLimit" xml:space="preserve">
+    <value>, 授权至:</value>
+  </data>
+  <data name="OAuthResult_Done" xml:space="preserve">
+    <value>登录成功</value>
+  </data>
+  <data name="OAuthResult_Failed" xml:space="preserve">
+    <value>因为以下原因登录失败：</value>
+  </data>
+  <data name="OAuthResult_FetchingToken" xml:space="preserve">
+    <value>获取Token中，请稍后</value>
+  </data>
+  <data name="OAuthResult_FetchingAccount" xml:space="preserve">
+    <value>获取账号信息中，请稍后</value>
+  </data>
+  <data name="GalgamePage_SyncStatus.Label" xml:space="preserve">
+    <value>同步状态</value>
+  </data>
+  <data name="GalgamePage_SyncStatus_Bangumi.Text" xml:space="preserve">
+    <value>从Bgm同步游玩状态</value>
+  </data>
+  <data name="BgmPhraser_DownloadAsync_Success" xml:space="preserve">
+    <value>已成功同步游玩状态</value>
+  </data>
+  <data name="HomePage_Downloading" xml:space="preserve">
+    <value>正在同步游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Title" xml:space="preserve">
+    <value>从Bgm获取游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Description" xml:space="preserve">
+    <value>立刻从Bangumi获取游玩状态，需登录Bangumi账号</value>
+  </data>
+  <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
+    <value>已成功下载{0}个游戏的游玩状态</value>
+  </data>
+  <data name="GalgamePage_ReleaseDate" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
+  <data name="CategorySettingPage_CategoryName.Text" xml:space="preserve">
+    <value>分类名</value>
+  </data>
+  <data name="SelectImage.Content" xml:space="preserve">
+    <value>选择图片</value>
+  </data>
+  <data name="CategorySettingPage_CategoryImage.Text" xml:space="preserve">
+    <value>分类图片</value>
+  </data>
+  <data name="CategorySettingPage_CategoryGroups.Text" xml:space="preserve">
+    <value>归属分类组</value>
+  </data>
+  <data name="CategorySettingPage_Games.Text" xml:space="preserve">
+    <value>包含游戏</value>
+  </data>
+  <data name="CategorySettingPage_AtLeastOnCategoryGroup" xml:space="preserve">
+    <value>至少选择一个分类组，否则你就再也找不到它啦</value>
+  </data>
+  <data name="CategorySettingPage_StatusGroupCannotSelect" xml:space="preserve">
+    <value>游玩状态组是动态生成的，这个设置将在重启软件后失效</value>
+  </data>
+  <data name="CategorySettingPage_HavePutInQueue" xml:space="preserve">
+    <value>已添加入解析队列</value>
+  </data>
+  <data name="CategorySettingPage_CommandBar_DownloadImg.Label" xml:space="preserve">
+    <value>下载开发商图</value>
+  </data>
+  <data name="GalgameSettingPage_GetInfoFromRss.Label" xml:space="preserve">
+    <value>从数据源更新数据</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameName.Title" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameId.Text" xml:space="preserve">
+    <value>游戏ID</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameRssType.Text" xml:space="preserve">
+    <value>数据源</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameSavePosition.Text" xml:space="preserve">
+    <value>存档位置</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameRating.Title" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameDeveloper.Title" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameExpectedPlayTime.Title" xml:space="preserve">
+    <value>预计游戏时长</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameDescription.Title" xml:space="preserve">
+    <value>游戏简介</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameImagePath.Title" xml:space="preserve">
+    <value>封面图</value>
+  </data>
+  <data name="GalgameSettingPage_PickImage.Content" xml:space="preserve">
+    <value>选择图片</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Status.Text" xml:space="preserve">
+    <value>游玩状态</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Rating.Text" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="ChangePlayStatusDialog_SyncToBgm.Content" xml:space="preserve">
+    <value>同步至bangumi</value>
+  </data>
+  <data name="ChangePlayStatusDialog_SyncToVNDB.Content" xml:space="preserve">
+    <value>同步至VNDB</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Private.Content" xml:space="preserve">
+    <value>私密</value>
+  </data>
+  <data name="CategoryPage_AddCategoryDialog_Title" xml:space="preserve">
+    <value>新增分类</value>
+  </data>
+  <data name="CategoryPage_AddCategory.Label" xml:space="preserve">
+    <value>新增分类</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroup.Label" xml:space="preserve">
+    <value>新增分类组</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroupDialog_Title" xml:space="preserve">
+    <value>新增分类组</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroupDialog_Msg" xml:space="preserve">
+    <value>分类组名</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroup.Label" xml:space="preserve">
+    <value>删除分类组</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroupDialog_Title" xml:space="preserve">
+    <value>删除分类组</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroupDialog_Msg" xml:space="preserve">
+    <value>确定要删除这个分类组吗？</value>
+  </data>
+  <data name="CategoryPage_AddCategoryDialog_Msg" xml:space="preserve">
+    <value>分类名</value>
+  </data>
+  <data name="HomePage_DragDrop.Text" xml:space="preserve">
+    <value>把游戏可执行文件拖到这里来添加游戏</value>
+  </data>
+  <data name="UpdateContentPage_CategoryNow" xml:space="preserve">
+    <value>已按游戏开发商分类所有游戏</value>
   </data>
 </root>

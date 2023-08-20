@@ -10,6 +10,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -27,7 +28,14 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
+    [ObservableProperty] private bool _canOpenInBgm;
+    [ObservableProperty] private bool _canOpenInVndb;
 
+    [ObservableProperty] private bool _infoBarOpen;
+    [ObservableProperty] private string _infoBarMsg = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    private int _msgIndex;
+    
     #region UI_STRINGS
 
     public readonly string UiPlay ="GalgamePage_Play".GetLocalized();
@@ -35,6 +43,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     public readonly string UiChangeSavePosition = "GalgamePage_ChangeSavePosition".GetLocalized();
     public readonly string UiDevelopers = "GalgamePage_Developers".GetLocalized();
     public readonly string UiExpectedPlayTime = "GalgamePage_ExpectedPlayTime".GetLocalized();
+    public readonly string UiReleaseDate = "GalgamePage_ReleaseDate".GetLocalized();
     public readonly string UiSavePosition = "GalgamePage_SavePosition".GetLocalized();
     public readonly string UiLastPlayTime = "GalgamePage_LastPlayTime".GetLocalized();
     public readonly string UiDescription = "GalgamePage_Description".GetLocalized();
@@ -94,6 +103,33 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
+        CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
+        CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
+    }
+
+    [RelayCommand]
+    private async Task OpenInBgm()
+    {
+        if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Bangumi])) return;
+        await Launcher.LaunchUriAsync(new Uri("https://bgm.tv/subject/"+Item!.Ids[(int)RssType.Bangumi]));
+    }
+    
+    [RelayCommand]
+    private async Task OpenInVndb()
+    {
+        if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Vndb])) return;
+        await Launcher.LaunchUriAsync(new Uri("https://vndb.org/v"+Item!.Ids[(int)RssType.Vndb]));
+    }
+
+    private async Task DisplayMsg(InfoBarSeverity severity, string msg, int displayTimeMs = 3000)
+    {
+        var myIndex = ++_msgIndex;
+        InfoBarOpen = true;
+        InfoBarMsg = msg;
+        InfoBarSeverity = severity;
+        await Task.Delay(displayTimeMs);
+        if (myIndex == _msgIndex)
+            InfoBarOpen = false;
     }
 
     [RelayCommand]
@@ -125,8 +161,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             await _jumpListService.AddToJumpListAsync(Item);
 
             await process.WaitForExitAsync();
-            Item.TotalPlayTime--;
-            Item.TotalPlayTime++; //手动刷新一下时间显示
             ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
             await SaveAsync(); //保存游戏信息(更新时长)
         }
@@ -137,7 +171,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void GetInfoFromRss()
+    private async Task GetInfoFromRss()
     {
         if (Item == null) return;
         IsPhrasing = true;
@@ -153,7 +187,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async void ChangeSavePosition()
+    private async Task ChangeSavePosition()
     {
         if(Item == null) return;
         await _galgameService.ChangeGalgameSavePosition(Item);
@@ -168,7 +202,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
     
     [RelayCommand]
-    private async void DeleteFromDisk()
+    private async Task DeleteFromDisk()
     {
         if(Item == null) return;
         ContentDialog dialog = new()
@@ -188,7 +222,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     }
     
     [RelayCommand]
-    private async void OpenInExplorer()
+    private async Task OpenInExplorer()
     {
         if(Item == null) return;
         await Launcher.LaunchUriAsync(new Uri(Item.Path));
@@ -204,5 +238,34 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private async Task SaveAsync()
     {
         await _galgameService.SaveGalgamesAsync(Item);
+    }
+
+    [RelayCommand]
+    private async Task ChangePlayStatus()
+    {
+        if (Item == null) return;
+        ChangePlayStatusDialog dialog = new(Item)
+        {
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+        };
+        await dialog.ShowAsync();
+        if (dialog.Canceled) return;
+        if (dialog.UploadToBgm)
+        {
+            _ = DisplayMsg(InfoBarSeverity.Informational, "HomePage_UploadingToBgm".GetLocalized(), 1000 * 10);
+            (GalStatusSyncResult, string) result = await _galgameService.UploadPlayStatusAsync(Item, RssType.Bangumi);
+            await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
+        }
+        if (dialog.UploadToVndb)
+            throw new NotImplementedException();
+    }
+
+    [RelayCommand]
+    private async Task SyncFromBgm()
+    {
+        if (Item == null) return;
+        _ =  DisplayMsg(InfoBarSeverity.Informational, "HomePage_Downloading".GetLocalized(), 1000 * 100);
+        (GalStatusSyncResult, string) result = await _galgameService.DownLoadPlayStatusAsync(Item, RssType.Bangumi);
+        await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
     }
 }

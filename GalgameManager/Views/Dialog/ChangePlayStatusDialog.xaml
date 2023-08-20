@@ -1,0 +1,42 @@
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.ChangePlayStatusDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                <TextBlock x:Uid="ChangePlayStatusDialog_Status" VerticalAlignment="Center" />
+                <ComboBox x:Name="PlayStatusBox" MinWidth="100" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <TextBlock x:Uid="ChangePlayStatusDialog_Rating" VerticalAlignment="Center" />
+                <ComboBox x:Name="RateBox" MinWidth="100" />
+            </StackPanel>
+        </Grid>
+
+        <TextBox Grid.Row="1" Margin="{StaticResource SmallTopMargin}" TextWrapping="Wrap"
+                 MinHeight="50" AcceptsReturn="True" x:Name="CommentBox"/>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="15" Margin="0 20 0 0">
+            <CheckBox x:Name="BgmCheckBox" x:Uid="ChangePlayStatusDialog_SyncToBgm" />
+            <CheckBox x:Name="VndbCheckBox" x:Uid="ChangePlayStatusDialog_SyncToVNDB" IsEnabled="False"/>
+            <CheckBox x:Name="PrivateCheckBox" x:Uid="ChangePlayStatusDialog_Private" />
+        </StackPanel>
+    </Grid>
+</ContentDialog>

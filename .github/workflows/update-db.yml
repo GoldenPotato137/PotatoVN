@@ -1,0 +1,28 @@
+﻿name: Update DB
+
+on:
+  schedule:
+    - cron: '30 15 * * 2' # Every Tuesday at 15:30 UTC
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Fetch id mapper
+        run: bash ./GalgameManager/Assets/Data/fetch_data.sh
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update data" -a || true
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

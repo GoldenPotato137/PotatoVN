@@ -48,8 +48,9 @@
                       VerticalAlignment="Center" HorizontalAlignment="Center"
                       Width="100" Height="100" />
 
-        <InfoBar Grid.Row="4" IsOpen="{x:Bind ViewModel.ErrorVisibility, Mode= OneWay}" Severity="Error"
-                 Message="{x:Bind ViewModel.ErrorMsg, Mode=OneWay}" />
+        <InfoBar Grid.Row="4" IsOpen="{x:Bind ViewModel.InfoBarOpen, Mode= OneWay}" 
+                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}" />
     </Grid>
 
 </Page>

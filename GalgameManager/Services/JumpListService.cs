@@ -1,13 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Windows.UI.StartScreen;
+﻿using Windows.UI.StartScreen;
 
 using GalgameManager.Contracts.Services;
 using GalgameManager.Models;
 
 namespace GalgameManager.Services;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
+/// <summary>
+/// JumpList 管理
+/// "/j galgamePath"
+/// </summary>
 public class JumpListService : IJumpListService
 {
     private JumpList? _jumpList;
@@ -16,19 +17,14 @@ public class JumpListService : IJumpListService
     private async Task Init()
     {
         _jumpList = await JumpList.LoadCurrentAsync();
+        _jumpList.SystemGroupKind = JumpListSystemGroupKind.None;
     }
 
     public async Task CheckJumpListAsync(List<Galgame> galgames)
     {
         if (_jumpList == null) await Init();
-        var toRemove = new List<JumpListItem>();
-        foreach (var item in _jumpList!.Items)
-        {
-            var isFind = galgames.Any(gal => $"\"{gal.Path}\"" == item.Arguments);
-            if(!isFind)
-                toRemove.Add(item);
-        }
-        foreach (var item in toRemove)
+        List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"/j \"{gal.Path}\"" != item.Arguments)).ToList();
+        foreach (JumpListItem item in toRemove)
         {
             _jumpList.Items.Remove(item);
         }
@@ -38,11 +34,11 @@ public class JumpListService : IJumpListService
     public async Task AddToJumpListAsync(Galgame galgame)
     {
         if (_jumpList == null) await Init();
-        var items = _jumpList!.Items;
-        var item = items.FirstOrDefault(i => i.Arguments == $"\"{galgame.Path}\"");
+        IList<JumpListItem>? items = _jumpList!.Items;
+        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Path}\"");
         if (item == null)
         {
-            item = JumpListItem.CreateWithArguments($"\"{galgame.Path}\"", galgame.Name);
+            item = JumpListItem.CreateWithArguments($"/j \"{galgame.Path}\"", galgame.Name);
             item.Logo = new Uri("ms-appx:///Assets/heart.png");
         }
         else
@@ -56,8 +52,8 @@ public class JumpListService : IJumpListService
     public async Task RemoveFromJumpListAsync(Galgame galgame)
     {
         if (_jumpList == null) await Init();
-        var items = _jumpList!.Items;
-        var item = items.FirstOrDefault(i => i.Arguments == $"\"{galgame.Path}\"");
+        IList<JumpListItem>? items = _jumpList!.Items;
+        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Path}\"");
         if (item != null)
         {
             items.Remove(item);

@@ -33,8 +33,10 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
         _navigationService = navigationService;
         RssTypes.Add(RssType.Bangumi);
         RssTypes.Add(RssType.Vndb);
+        RssTypes.Add(RssType.Mixed);
         _searchUrlList[(int)RssType.Bangumi] = "https://bgm.tv/subject_search/";
         _searchUrlList[(int)RssType.Vndb] = "https://vndb.org/v/all?sq=";
+        _searchUrlList[(int)RssType.Mixed] = "https://bgm.tv/subject_search/";
         SearchUri = _searchUrlList[(int)RssType.Vndb]; // default
     }
 
@@ -71,7 +73,7 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
     }
 
     [RelayCommand]
-    private async void OnGetInfoFromRss()
+    private async Task OnGetInfoFromRss()
     {
         IsPhrasing = true;
         await _galService.PhraseGalInfoAsync(Gal);

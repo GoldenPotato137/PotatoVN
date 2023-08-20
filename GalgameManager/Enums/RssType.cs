@@ -4,6 +4,6 @@ public enum RssType
 {
     Vndb,
     Bangumi,
-    Moegirl,
+    Mixed,
     None
 }

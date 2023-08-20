@@ -9,7 +9,6 @@
     mc:Ignorable="d">
     
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
     
     <Grid Margin="0 0 0 40">
@@ -22,12 +21,12 @@
                 </Grid.RowDefinitions>
 
                 <CommandBar  Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                    <AppBarButton Label="回到上个界面" Command="{x:Bind ViewModel.BackCommand}">
+                    <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
                         </AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Label="从数据源更新数据" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
+                    <AppBarButton x:Uid="GalgameSettingPage_GetInfoFromRss" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE896;"/>
                         </AppBarButton.Icon>
@@ -36,7 +35,7 @@
 
                 <StackPanel Grid.Row="1" Spacing="25" Margin="{StaticResource MediumTopMargin}">
                     <control:LockableSetting
-                        Title="游戏名"
+                        x:Uid="GalgameSettingPage_GalgameName"
                         Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay}"
                         IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}" />
 
@@ -49,7 +48,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Orientation="Horizontal" Grid.Column="0">
-                            <TextBlock Text="id" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <TextBlock x:Uid = "GalgameSettingPage_GalgameId" Margin="0 0 15 0" VerticalAlignment="Center"/>
                             <TextBox Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}"/>
                         </StackPanel>
 
@@ -59,7 +58,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="数据源" VerticalAlignment="Center" Margin="0 0 15 0"/>
+                            <TextBlock x:Uid="GalgameSettingPage_GalgameRssType" VerticalAlignment="Center" Margin="0 0 15 0"/>
                             <ComboBox 
                                 Grid.Column="1" 
                                 ItemsSource="{x:Bind ViewModel.RssTypes}"
@@ -73,30 +72,30 @@
                         </Grid>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">
-                            <TextBlock Text="存档位置" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <TextBlock x:Uid="GalgameSettingPage_GalgameSavePosition" Margin="0 0 15 0" VerticalAlignment="Center"/>
                             <TextBox Text="{x:Bind ViewModel.Gal.SavePosition}" IsEnabled="False"/>
                         </StackPanel>
 
                         <control:LockableSetting 
                             Grid.Column="3" 
-                            Title="评分"
+                            x:Uid="GalgameSettingPage_GalgameRating"
                             Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
                             Margin="50 0 0 0" />
                     </Grid>
 
                     <control:LockableSetting 
-                        Title="开发商"
+                        x:Uid="GalgameSettingPage_GalgameDeveloper"
                         Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay}"
                         IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" />
 
                     <control:LockableSetting 
-                        Title="预计游戏时长"
+                        x:Uid="GalgameSettingPage_GalgameExpectedPlayTime"
                         Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay}"
                         IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" />
 
                     <control:LockableSetting
-                        Title="游戏简介"
+                        x:Uid="GalgameSettingPage_GalgameDescription"
                         Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay}"
                         IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}" />
 
@@ -107,11 +106,11 @@
                         </Grid.ColumnDefinitions>
                         <control:LockableSetting 
                             Grid.Column="0"
-                            Title="封面图"
+                            x:Uid="GalgameSettingPage_GalgameImagePath"
                             Value="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}"
                             Readonly="True" />
-                        <Button Grid.Column="1" Content="选择图片" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
+                        <Button Grid.Column="1" x:Uid="GalgameSettingPage_PickImage" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
                     </Grid>
                 </StackPanel>
             </Grid>
@@ -120,7 +119,7 @@
         <Grid 
             Grid.Row="0" 
             Background="#00000000" 
-            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
             <ProgressRing 
                 IsActive="True" 
                 Width="100" 

@@ -11,8 +11,8 @@
 
     <Page.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
+        <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -25,13 +25,13 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="GameInfoBlock.(RelativePanel.RightOf)" Value="ImageBlock" />
-                        <Setter Target="GameInfoBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="GameInfoBlock.(RelativePanel.Below)" Value="TitleBlock" />
                         <Setter Target="GameInfoBlock.Width" Value="180" />
                         <Setter Target="PlayInfoBlock.(RelativePanel.RightOf)" Value="GameInfoBlock" />
-                        <Setter Target="PlayInfoBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="PlayInfoBlock.(RelativePanel.Below)" Value="TitleBlock" />
                         <Setter Target="PlayInfoBlock.Width" Value="180" />
                         <Setter Target="RatingBlock.(RelativePanel.RightOf)" Value="PlayInfoBlock" />
-                        <Setter Target="RatingBlock.(RelativePanel.Below)" Value="Title" />
+                        <Setter Target="RatingBlock.(RelativePanel.Below)" Value="TitleBlock" />
                         <Setter Target="RatingBlock.Width" Value="180" />
                     </VisualState.Setters>
                 </VisualState>
@@ -42,6 +42,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
@@ -64,25 +65,46 @@
                     </AppBarButton.ContextFlyout>
                 </AppBarButton>
                 <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
-                <AppBarButton
-                    Label="{x:Bind ViewModel.UiChangeSavePosition}"
-                    Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
+                <!-- 游玩状态 -->
+                <AppBarButton x:Uid="GalgamePage_PlayStatus" Command="{x:Bind ViewModel.ChangePlayStatusCommand}">
                     <AppBarButton.Icon>
-                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74C;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"/>
+                    <AppBarButton x:Uid="GalgamePage_OpenInBgm" Command="{x:Bind ViewModel.OpenInBgmCommand}" 
+                                  Visibility="{x:Bind ViewModel.CanOpenInBgm, 
+                                  Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton x:Uid="GalgamePage_OpenInVndb" Command="{x:Bind ViewModel.OpenInVndbCommand}" 
+                                  Visibility="{x:Bind ViewModel.CanOpenInVndb, 
+                                  Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" />
+                    <AppBarSeparator/>
+                    <AppBarButton
+                        Label="{x:Bind ViewModel.UiChangeSavePosition}"
+                        Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarSeparator/>
                     <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"/>
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
-            <ScrollViewer Grid.Row="1" IsTabStop="True" Margin="0 0 0 40">
+            <ScrollViewer Grid.Row="1" IsTabStop="True">
                 <StackPanel>
-                    <RelativePanel>
+                    <RelativePanel x:Name="InfoPanel">
                         <Grid
                             x:Name="ImageBlock"
                             Height="250"
@@ -97,16 +119,18 @@
                                 VerticalAlignment="Center"
                                 MaxWidth="250"
                                 MaxHeight="250"
-                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" />
+                                Source="{x:Bind ViewModel.Item.ImagePath.Value, Mode=OneWay, FallbackValue={}}" 
+                                x:Name="DetailImage"/>
                         </Grid>
 
                         <TextBlock
-                            x:Name="Title"
+                            x:Name="TitleBlock"
                             Margin="{StaticResource XXSmallTopMargin}"
                             RelativePanel.AlignTopWithPanel="True"
                             RelativePanel.RightOf="ImageBlock"
                             Style="{ThemeResource TitleTextBlockStyle}"
-                            Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay, FallbackValue={}}" />
+                            Text="{x:Bind ViewModel.Item.Name.Value, Mode=OneWay, FallbackValue={}}" 
+                            />
 
                         <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
@@ -147,6 +171,15 @@
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
+                            
+                            <!-- 发布日期 -->
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.UiReleaseDate}" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Item.ReleaseDate.Value, Mode=OneWay, FallbackValue={}, 
+                                           Converter={StaticResource DateTimeToStringConverter}}" />
+                            </StackPanel>
                         </StackPanel>
 
                         <StackPanel x:Name="RatingBlock" RelativePanel.Below="PlayInfoBlock">
@@ -158,43 +191,57 @@
 
                     </RelativePanel>
 
-                    <TextBlock
-                        Margin="{StaticResource SmallTopBottomMargin}"
-                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.UiDescription}"
-                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
-                    <TextBlock
-                        Style="{ThemeResource BodyTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}"
-                        Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
+                    <StackPanel>
+                        <StackPanel.ChildrenTransitions>
+                            <TransitionCollection>
+                                <EntranceThemeTransition FromVerticalOffset="200"/>
+                            </TransitionCollection>
+                        </StackPanel.ChildrenTransitions>
+                        <TextBlock
+                            Margin="{StaticResource SmallTopBottomMargin}"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.UiDescription}"
+                            Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
+                        <TextBlock
+                            Style="{ThemeResource BodyTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Item.Description.Value, Mode=OneWay, FallbackValue={}}"
+                            IsTextSelectionEnabled="True"
+                            Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
 
-                    <TextBlock
-                        Margin="{StaticResource SmallTopBottomMargin}"
-                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="Tags"
-                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
-                    <ItemsRepeater
-                        ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10"
-                                      Margin="5 7 5 7">
-                                    <TextBlock Padding="5" Text="{x:Bind}" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                        <ItemsRepeater.Layout>
-                            <controls1:WrapLayout Orientation="Horizontal" />
-                        </ItemsRepeater.Layout>
-                    </ItemsRepeater>
+                        <TextBlock
+                            Margin="{StaticResource SmallTopBottomMargin}"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="Tags"
+                            Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
+                        <ItemsRepeater
+                            ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay, FallbackValue={}}"
+                            Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10"
+                                          Margin="5 7 5 7">
+                                        <TextBlock Padding="5" Text="{x:Bind}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                            <ItemsRepeater.Layout>
+                                <controls1:WrapLayout Orientation="Horizontal" />
+                            </ItemsRepeater.Layout>
+                        </ItemsRepeater>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
+
+            <InfoBar Grid.Row="2"
+                     Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                     Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}" 
+                     IsOpen="{x:Bind ViewModel.InfoBarOpen, Mode=OneWay}"
+                     Margin="0 0 0 40"/>
         </Grid>
 
         <Grid
             Background="#00000000"
-            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
             <ProgressRing
                 IsActive="True"
                 Width="100"

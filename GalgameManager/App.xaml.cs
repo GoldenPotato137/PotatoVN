@@ -12,6 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.AppLifecycle;
+using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
+using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
 namespace GalgameManager;
 
@@ -31,7 +34,7 @@ public partial class App : Application
     public static T GetService<T>()
         where T : class
     {
-        if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+        if ((Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
         {
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
         }
@@ -52,10 +55,15 @@ public partial class App : Application
         UseContentRoot(AppContext.BaseDirectory).
         ConfigureServices((context, services) =>
         {
-            // Default Activation Handler
-            services.AddTransient<ActivationHandler<List<string>>, DefaultActivationHandler>();
-
-            // Other Activation Handlers
+            // 启动跳转处理
+            // 从前往后依次处理，直到找到能处理的处理器
+            // Launch Activation Handlers
+            services.AddTransient<IActivationHandler, JumpListActivationHandler>();     // JumpList
+            services.AddTransient<IActivationHandler, UpdateContentHandler>();          // 更新内容
+            // Protocol Activation Handlers
+            services.AddTransient<IActivationHandler, BgmOAuthActivationHandler>();     // BgmOAuth
+            // Default Handler
+            services.AddTransient<IActivationHandler, DefaultActivationHandler>();      // 启动页
 
             // Services
             services.AddTransient<INavigationViewService, NavigationViewService>();
@@ -69,12 +77,20 @@ public partial class App : Application
             services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
+            services.AddSingleton<ICategoryService, CategoryService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IAppCenterService, AppCenterService>();
+            services.AddSingleton<IAuthenticationService, AuthenticationService>();
+            services.AddSingleton<IBgmOAuthService, BgmOAuthService>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<CategoryViewModel>();
+            services.AddTransient<CategoryPage>();
+            services.AddTransient<CategorySettingViewModel>();
+            services.AddTransient<CategorySettingPage>();
             services.AddTransient<HelpViewModel>();
             services.AddTransient<HelpPage>();
             services.AddTransient<GalgameSettingViewModel>();
@@ -102,9 +118,10 @@ public partial class App : Application
         Build();
 
         UnhandledException += App_UnhandledException;
+        AppInstance.GetCurrent().Activated += OnActivated;
     }
 
-    private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    private async void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
         ContentDialog dialog = new()
@@ -116,7 +133,7 @@ public partial class App : Application
             DefaultButton = ContentDialogButton.Primary
         };
         StackPanel stackPanel = new();
-        stackPanel.Children.Add(new TextBlock()
+        stackPanel.Children.Add(new TextBlock
         {
             Text = e.Exception.ToString(),
             TextWrapping = TextWrapping.WrapWholeWords
@@ -142,13 +159,22 @@ public partial class App : Application
         e.Handled = true;
         await dialog.ShowAsync();
     }
-
+    
+    /// <summary>
+    /// 应用启动入口
+    /// </summary>
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
 
-        //已知bug：args的参数永远是空string
-        //见：https://github.com/microsoft/microsoft-ui-xaml/issues/3368
-        await App.GetService<IActivationService>().ActivateAsync(Environment.GetCommandLineArgs().ToList());
+        await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
+    }
+
+    private async void OnActivated(object?_, AppActivationArguments arguments)
+    {
+        await UiThreadInvokeHelper.InvokeAsync(async Task() =>
+        {
+            await GetService<IActivationService>().HandleActivationAsync(arguments);
+        });
     }
 }

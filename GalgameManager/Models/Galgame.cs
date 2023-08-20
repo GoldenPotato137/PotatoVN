@@ -1,9 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
+using GalgameManager.Helpers.Phrase;
+using Newtonsoft.Json;
 using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
@@ -24,13 +27,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
 
     public string? ImageUrl;
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    [JsonInclude] public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
+    public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
+    [ObservableProperty] private string _cnName = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
+    [ObservableProperty] private LockableProperty<DateTime> _releaseDate;
     [JsonIgnore][ObservableProperty] private string _savePosition = "本地";
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
@@ -38,13 +43,28 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
     private bool _isSaveInCloud;
     private RssType _rssType = RssType.None;
+    [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    [JsonInclude] public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    [JsonIgnore] public ObservableCollection<Category> Categories = new();
+    [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
+    [ObservableProperty] private int _myRate; //我的评分
+    [ObservableProperty] private bool _privateComment; //是否私密评论
 
-    public static readonly List<SortKeys> SortKeysList = new ();
+    [JsonIgnore] public static SortKeys[] SortKeysList
+    {
+        get;
+        private set;
+    } = { SortKeys.LastPlay , SortKeys.Developer};
 
-    [Newtonsoft.Json.JsonIgnore] public string? Id
+    [JsonIgnore] public static bool[] SortKeysAscending
+    {
+        get;
+        private set;
+    } = {false, false};
+
+    [JsonIgnore] public string? Id
     {
         get => Ids[(int)RssType];
 
@@ -53,11 +73,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             if (Ids[(int)RssType] != value)
             {
                Ids[(int)RssType] = value;
-               OnPropertyChanged(); 
+               OnPropertyChanged();
+               if (_rssType == RssType.Mixed)
+                   UpdateIdFromMixed();
             }
         }
     }
-    
+
+    public event GenericDelegate<(Galgame, string)>? GalPropertyChanged;
+
     public RssType RssType
     {
         get => _rssType;
@@ -84,13 +108,17 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public Galgame()
     {
         _tags.Value = new ObservableCollection<string>();
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
+        _releaseDate = DateTime.MinValue;
     }
 
     public Galgame(string path)
     {
-        Name = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar)) ?? "";
+        Name = SystemPath.GetFileName(SystemPath.GetDirectoryName(path + SystemPath.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
+        _releaseDate = DateTime.MinValue;
         Path = path;
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
     
     /// <summary>
@@ -124,28 +152,74 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         new DirectoryInfo(Path).Delete(true);
     }
-
-    public int CompareTo(Galgame? other)
+    
+    /// <summary>
+    /// 时间转换
+    /// </summary>
+    /// <param name="time">年/月/日</param>
+    /// <returns></returns>
+    private static long GetTime(string time)
     {
-        if (other is null) return 1;
-        foreach (SortKeys keyValue in SortKeysList)
+        if (time == DefaultString)
+            return 0;
+        if (DateTime.TryParseExact(time, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out DateTime dateTime))
+        {
+            return (long)(dateTime - DateTime.MinValue).TotalDays;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// 更新CompareTo参数，可用于Sort
+    /// sortKeysList 和 sortKeysAscending长度相同
+    /// </summary>
+    /// <param name="sortKeysList"></param>
+    /// <param name="sortKeysAscending">升序/降序: true/false</param>
+    public static void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
+    {
+        SortKeysList = sortKeysList;
+        SortKeysAscending = sortKeysAscending;
+    }
+    
+    public static void UpdateSortKeys(SortKeys[] sortKeysList)
+    {
+        SortKeysList = sortKeysList;
+    }
+    
+    public static void UpdateSortKeysAscending(bool[] sortKeysAscending)
+    {
+        SortKeysAscending = sortKeysAscending;
+    }
+
+    public int CompareTo(Galgame? b)
+    {
+        if (b is null ) return 1;
+        for (var i = 0; i < Math.Min(SortKeysList.Length, SortKeysAscending.Length); i++)
         {
             var result = 0;
-            var take = -1; //默认降序
-            switch (keyValue)
+            var take = SortKeysAscending[i]?-1:1; //true升序, false降序
+            switch (SortKeysList[i])
             {
                 case SortKeys.Developer:
-                    result = string.Compare(_developer.Value!, other._developer.Value, StringComparison.Ordinal);
+                    result = string.Compare(Developer.Value!, b.Developer.Value, StringComparison.Ordinal);
                     break;
                 case SortKeys.Name:
-                    result = string.Compare(_name.Value!, other._name.Value, StringComparison.CurrentCultureIgnoreCase);
-                    take = 1;
+                    result = string.Compare(Name.Value!, b.Name.Value, StringComparison.CurrentCultureIgnoreCase);
+                    take *= -1;
                     break;
                 case SortKeys.Rating:
-                    result = _rating.Value.CompareTo(other._rating.Value);
+                    result = Rating.Value.CompareTo(b.Rating.Value);
                     break;
                 case SortKeys.LastPlay:
-                    result = GetTime(_lastPlay.Value!).CompareTo(GetTime(other._lastPlay.Value!));
+                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(b.LastPlay.Value!));
+                    break;
+                case SortKeys.ReleaseDate:
+                    if (ReleaseDate != null && b.ReleaseDate != null )
+                    {
+                        result = ReleaseDate.Value.CompareTo(b.ReleaseDate.Value);
+                    }
                     break;
             }
             if (result != 0)
@@ -153,15 +227,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         }
         return 0;
     }
-
-    private long GetTime(string time)
-    {
-        if (time == DefaultString)
-            return 0;
-        var tmp = time.Split('/');
-        return Convert.ToInt64(tmp[2])+Convert.ToInt64(tmp[1])*31+Convert.ToInt64(tmp[0])*30*12;
-    }
-
     public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
     
     // ReSharper disable once NonReadonlyMemberInGetHashCode
@@ -211,8 +276,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                 Thread.Sleep(1000 * 60);
                 if (!process.HasExited)
                 {
-                    _totalPlayTime++;
-                    var now = DateTime.Now.ToShortDateString();
+                    UiThreadInvokeHelper.Invoke(() =>
+                    {
+                        TotalPlayTime++;
+                    });
+                    var now = DateTime.Now.ToString("yyyy/M/d");
                     if (PlayedTime.ContainsKey(now))
                         PlayedTime[now]++;
                     else
@@ -228,7 +296,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     /// <returns></returns>
     public string GetMetaPath()
     {
-        return System.IO.Path.Combine(Path, MetaPath);
+        return SystemPath.Combine(Path, MetaPath);
     }
 
     /// <summary>
@@ -239,13 +307,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         Galgame result = (Galgame)MemberwiseClone();
         if(ExePath != null)
-            result.ExePath = "..\\" + System.IO.Path.GetFileName(ExePath);
+            result.ExePath = "..\\" + SystemPath.GetFileName(ExePath);
         result.Path = "..\\";
+#pragma warning disable MVVMTK0034
         result._imagePath = new LockableProperty<string>();
+#pragma warning restore MVVMTK0034
         if (ImagePath.Value == DefaultImagePath)
             result.ImagePath.Value = DefaultImagePath;
         else
-            result.ImagePath.Value = ".\\" + System.IO.Path.GetFileName(ImagePath);
+            result.ImagePath.Value = ".\\" + SystemPath.GetFileName(ImagePath);
         return result;
     }
 
@@ -263,7 +333,26 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             meta.ImagePath.Value = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ImagePath.Value!));
         if (meta.ExePath != null)
             meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
+        meta.UpdateIdFromMixed();
         return meta;
+    }
+
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnPlayTypeChanged(PlayType value)
+    {
+        GalPropertyChanged?.Invoke((this, "playType"));
+    }
+
+    /// <summary>
+    /// 从混合数据源的id更新其他数据源的id
+    /// </summary>
+    public void UpdateIdFromMixed()
+    {
+        (string? bgmId, string? vndbId) tmp = MixedPhraser.TryGetId(Ids[(int)RssType.Mixed]);
+        if (tmp.bgmId != null) 
+            Ids[(int)RssType.Bangumi] = tmp.bgmId;
+        if (tmp.vndbId != null) 
+            Ids[(int)RssType.Vndb] = tmp.vndbId;
     }
 }
 
@@ -273,5 +362,6 @@ public enum SortKeys
     Name,
     LastPlay,
     Developer,
-    Rating
+    Rating,
+    ReleaseDate
 }

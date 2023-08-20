@@ -1,11 +1,9 @@
-﻿using System.Text.Json.Serialization;
-
-namespace GalgameManager.Models;
+﻿namespace GalgameManager.Models;
 
 public class Faq
 {
-    [JsonInclude] public string Title;
-    [JsonInclude] public string Content;
+    public string Title {get;set;}
+    public string Content {get;set;}
 
     public Faq(string title, string content)
     {
