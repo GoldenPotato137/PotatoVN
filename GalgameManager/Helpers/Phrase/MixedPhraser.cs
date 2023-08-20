@@ -86,7 +86,7 @@ public class MixedPhraser : IGalInfoPhraser
             RssType = RssType.Mixed,
             Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}",
             // name
-            Name = vndb != null ? vndb.Name : bgm!.Name,
+            Name = bgm != null ? bgm.Name : vndb!.Name,
             // description
             Description = bgm != null ? bgm.Description : vndb!.Description,
             // expectedPlayTime

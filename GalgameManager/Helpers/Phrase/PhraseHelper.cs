@@ -35,7 +35,7 @@ public static class PhraseHelper
                     if (minDis == 0) break;
                 }
         });
-        return result;
+        return minDis < 1 ? result : null;
     }
 
     public static async Task<int?> TryGetBgmIdAsync(string name)

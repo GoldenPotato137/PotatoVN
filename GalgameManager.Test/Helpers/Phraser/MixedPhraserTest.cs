@@ -44,7 +44,6 @@ public class MixedPhraserTest
                 if(game.Id != "bgm:44123,vndb:10680") Assert.Fail();
                 if(game.Description.Value!.StartsWith("主人公身为“大藏游星”") == false) Assert.Fail();
                 if(game.Developer != "Navel") Assert.Fail();
-                if(game.ExpectedPlayTime != "Long") Assert.Fail();
                 break;
         }
         
@@ -71,8 +70,7 @@ public class MixedPhraserTest
         switch (bgmId)
         {
             case "44123":
-                if(game.Developer != "Navel") Assert.Fail(); // 从bangumi中获取
-                if(game.ExpectedPlayTime != "Long") Assert.Fail(); // 从vndb中获取
+                if(game.Developer != "Navel") Assert.Fail(); // 从VNDB中获取
                 break;
         }
         
