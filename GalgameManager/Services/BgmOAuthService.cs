@@ -172,7 +172,8 @@ public class BgmOAuthService : IBgmOAuthService
             _bgmAccount.Name = userJson["nickname"]!.ToString();
             //头像
             var avatarUrl = userJson["avatar"]!["large"]!.ToString();
-            avatarUrl = avatarUrl[..avatarUrl.LastIndexOf('?')]; //xx.jpg?r=1684973055&hd=1 => xx.jpg
+            if(avatarUrl.Contains('?'))
+                avatarUrl = avatarUrl[..avatarUrl.LastIndexOf('?')]; //xx.jpg?r=1684973055&hd=1 => xx.jpg
             var path = await DownloadHelper.DownloadAndSaveImageAsync(avatarUrl);
             if (path != null)
                 _bgmAccount.Avatar = path;
