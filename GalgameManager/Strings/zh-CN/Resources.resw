@@ -887,4 +887,7 @@
   <data name="UpdateContentPage_CategoryNow" xml:space="preserve">
     <value>已按游戏开发商分类所有游戏</value>
   </data>
+  <data name="Shell_UpdateContent.Content" xml:space="preserve">
+    <value>更新记录</value>
+  </data>
 </root>

@@ -11,31 +11,21 @@
 
     <Grid Margin="{ThemeResource PageButtonMargin}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <!-- <TextBlock Grid.Row="0" x:Uid="UpdateContentPage_MainTitle" Style="{ThemeResource TitleTextBlockStyle}"  -->
-        <!--            Visibility="{x:Bind ViewModel.DisplayTitle, Mode=OneWay}"/> -->
-
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="20">
-            <TextBlock VerticalAlignment="Center" x:Uid="UpdateContentPage_Title"
-                       Style="{ThemeResource SubtitleTextBlockStyle}" />
-            <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.CurrentVersion}"
-                       Margin="0 5 0 0" />
-        </StackPanel>
-
-        <CommandBar Grid.Row="2" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
-                    Margin="0 -40 0 0">
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="0 -70 0 0">
+            <AppBarButton Icon="Flag" Label="{x:Bind ViewModel.CurrentVersion, Mode=OneWay}"/>
             <AppBarButton Icon="Refresh" x:Uid="UpdateContentPage_Refresh"
                           Command="{x:Bind ViewModel.DownloadClickCommand}" />
         </CommandBar>
 
-        <ScrollViewer Grid.Row="3" Margin="{StaticResource MediumTopMargin}">
-            <controls:MarkdownTextBlock Text="{x:Bind ViewModel.UpdateContent, Mode=OneWay}">
+        <ScrollViewer Grid.Row="1" Margin="{StaticResource MediumTopMargin}">
+            <controls:MarkdownTextBlock Text="{x:Bind ViewModel.UpdateContent, Mode=OneWay}"
+                                        Background="Transparent">
                 <interactivity:Interaction.Behaviors>
                     <core:EventTriggerBehavior EventName="LinkClicked">
                         <core:InvokeCommandAction Command="{x:Bind ViewModel.LinkClickCommand}" />
@@ -44,11 +34,11 @@
             </controls:MarkdownTextBlock>
         </ScrollViewer>
 
-        <ProgressRing Grid.Row="3" Visibility="{x:Bind ViewModel.IsDownloading, Mode=OneWay}"
+        <ProgressRing Grid.Row="1" Visibility="{x:Bind ViewModel.IsDownloading, Mode=OneWay}"
                       VerticalAlignment="Center" HorizontalAlignment="Center"
                       Width="100" Height="100" />
 
-        <InfoBar Grid.Row="4" IsOpen="{x:Bind ViewModel.InfoBarOpen, Mode= OneWay}" 
+        <InfoBar Grid.Row="2" IsOpen="{x:Bind ViewModel.InfoBarOpen, Mode= OneWay}" 
                  Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
                  Message="{x:Bind ViewModel.InfoBarMsg, Mode=OneWay}" />
     </Grid>
