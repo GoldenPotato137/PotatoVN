@@ -169,7 +169,7 @@ public class BgmOAuthService : IBgmOAuthService
             //用户名
             responseMessage = await httpClient.GetAsync($"https://api.bgm.tv/v0/users/{_bgmAccount.UserId}");
             JToken userJson = JToken.Parse(await responseMessage.Content.ReadAsStringAsync());
-            _bgmAccount.Name = userJson["nickname"]?.ToString() ?? string.Empty;
+            _bgmAccount.Name = userJson["nickname"]?.ToString() ?? "BgmAccount_NoName".GetLocalized();
             //头像
             if (userJson["avatar"]?["large"] != null)
             {
