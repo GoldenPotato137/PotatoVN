@@ -1,6 +1,10 @@
-﻿using GalgameManager.Activation;
+﻿using System.Diagnostics;
+using Windows.Storage;
+using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Views;
 using Microsoft.UI.Xaml;
@@ -20,6 +24,7 @@ public class ActivationService : IActivationService
     private readonly ICategoryService _categoryService;
     private readonly IAuthenticationService _authenticationService;
     private readonly IBgmOAuthService _bgmOAuthService;
+    private readonly ILocalSettingsService _localSettingsService;
     private UIElement? _shell;
 
     public ActivationService(
@@ -28,7 +33,7 @@ public class ActivationService : IActivationService
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
-        IAuthenticationService authenticationService)
+        IAuthenticationService authenticationService, ILocalSettingsService localSettingsService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -39,6 +44,7 @@ public class ActivationService : IActivationService
         _categoryService = categoryService;
         _bgmOAuthService = bgmOAuthService;
         _authenticationService = authenticationService;
+        _localSettingsService = localSettingsService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -116,5 +122,61 @@ public class ActivationService : IActivationService
         await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
+        await CheckFont();
+    }
+
+    /// <summary>
+    /// 检查字体是否安装，如果没有安装，弹出提示框
+    /// </summary>
+    private async Task CheckFont()
+    {
+        if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FontInstalled) == false)
+        {
+            if (Utils.IsFontInstalled("Segoe Fluent Icons") == false)
+            {
+                ContentDialog dialog = new()
+                {
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    Title = "ActivationService_FontPopup_Title".GetLocalized(),
+                    PrimaryButtonText = "Yes".GetLocalized(),
+                    CloseButtonText = "Cancel".GetLocalized(),
+                    DefaultButton = ContentDialogButton.Primary
+                };
+                StackPanel stackPanel = new()
+                {
+                    Spacing = 20
+                };
+                TextBlock textBlock = new()
+                {
+                    Text = "ActivationService_FontPopup_Msg".GetLocalized()
+                };
+                CheckBox checkBox = new()
+                {
+                    Content = "ActivationService_FontPopup_NoLongerDisplay".GetLocalized()
+                };
+                stackPanel.Children.Add(textBlock);
+                stackPanel.Children.Add(checkBox);
+                dialog.Content = stackPanel;
+                dialog.PrimaryButtonClick += async (_, _) =>
+                {
+                    StorageFile? file = await StorageFile.GetFileFromApplicationUriAsync
+                        (new Uri("ms-appx:///Assets/Fonts/Segoe Fluent Icons.ttf"));
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = file.Path,
+                        UseShellExecute = true,
+                    });
+                };
+                dialog.CloseButtonClick += async (_, _) =>
+                {
+                    await _localSettingsService.SaveSettingAsync(KeyValues.FontInstalled, checkBox.IsChecked);
+                };
+                
+                await dialog.ShowAsync();
+            }
+            
+            if (Utils.IsFontInstalled("Segoe Fluent Icons"))
+                await _localSettingsService.SaveSettingAsync(KeyValues.FontInstalled, true);
+        }
     }
 }

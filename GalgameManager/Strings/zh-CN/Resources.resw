@@ -890,4 +890,13 @@
   <data name="Shell_UpdateContent.Content" xml:space="preserve">
     <value>更新记录</value>
   </data>
+  <data name="ActivationService_FontPopup_Msg" xml:space="preserve">
+    <value>本应用需要安装字体“Segoe Fluent Icons”才能正常显示图标，是否立即安装？</value>
+  </data>
+  <data name="ActivationService_FontPopup_Title" xml:space="preserve">
+    <value>字体未安装</value>
+  </data>
+  <data name="ActivationService_FontPopup_NoLongerDisplay" xml:space="preserve">
+    <value>不再显示此弹窗</value>
+  </data>
 </root>
