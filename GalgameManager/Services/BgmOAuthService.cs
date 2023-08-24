@@ -162,21 +162,25 @@ public class BgmOAuthService : IBgmOAuthService
             if (!responseMessage.IsSuccessStatusCode) return;
             JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
             if (!int.TryParse(json["expires"]!.ToString(), out var expires)) return;
-            _bgmAccount.UserId = json["user_id"]!.ToString();
+            _bgmAccount.UserId = json["user_id"]?.ToString() ?? "-1";
             _bgmAccount.Expires = IBgmOAuthService.UnixTimeStampToDateTime(expires);
             _lastUpdateDateTime = DateTime.Now;
             //下载用户数据
             //用户名
             responseMessage = await httpClient.GetAsync($"https://api.bgm.tv/v0/users/{_bgmAccount.UserId}");
             JToken userJson = JToken.Parse(await responseMessage.Content.ReadAsStringAsync());
-            _bgmAccount.Name = userJson["nickname"]!.ToString();
+            _bgmAccount.Name = userJson["nickname"]?.ToString() ?? string.Empty;
             //头像
-            var avatarUrl = userJson["avatar"]!["large"]!.ToString();
-            if(avatarUrl.Contains('?'))
-                avatarUrl = avatarUrl[..avatarUrl.LastIndexOf('?')]; //xx.jpg?r=1684973055&hd=1 => xx.jpg
-            var path = await DownloadHelper.DownloadAndSaveImageAsync(avatarUrl);
-            if (path != null)
-                _bgmAccount.Avatar = path;
+            if (userJson["avatar"]?["large"] != null)
+            {
+                var avatarUrl = userJson["avatar"]!["large"]!.ToString();
+                if (avatarUrl.Contains('?'))
+                    avatarUrl = avatarUrl[..avatarUrl.LastIndexOf('?')]; //xx.jpg?r=1684973055&hd=1 => xx.jpg
+                var path = await DownloadHelper.DownloadAndSaveImageAsync(avatarUrl);
+                if (path != null)
+                    _bgmAccount.Avatar = path;
+            }
+
             await SaveLastUpdateTime();
             await SaveOAuthState();
             await UiThreadInvokeHelper.InvokeAsync(() =>
