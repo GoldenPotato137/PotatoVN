@@ -10,9 +10,9 @@ using Microsoft.UI.Xaml;
 
 namespace GalgameManager.Views.Control;
 
-public sealed partial class LockableSetting : INotifyPropertyChanged
+public sealed partial class LockableTextBox : INotifyPropertyChanged
 {
-    public LockableSetting()
+    public LockableTextBox()
     {
         this.InitializeComponent();
     }
@@ -24,7 +24,7 @@ public sealed partial class LockableSetting : INotifyPropertyChanged
     }
 
     public static readonly DependencyProperty TitleProperty =
-        DependencyProperty.Register(nameof(Title), typeof(string), typeof(LockableSetting), new PropertyMetadata(string.Empty));
+        DependencyProperty.Register(nameof(Title), typeof(string), typeof(LockableTextBox), new PropertyMetadata(string.Empty));
 
     public string Value
     {
@@ -33,7 +33,7 @@ public sealed partial class LockableSetting : INotifyPropertyChanged
     }
 
     public static readonly DependencyProperty ValueProperty =
-        DependencyProperty.Register(nameof(Value), typeof(string), typeof(LockableSetting), new PropertyMetadata(string.Empty));
+        DependencyProperty.Register(nameof(Value), typeof(string), typeof(LockableTextBox), new PropertyMetadata(string.Empty));
     
     public bool Readonly
     {
@@ -42,7 +42,7 @@ public sealed partial class LockableSetting : INotifyPropertyChanged
     }
 
     public static readonly DependencyProperty ReadonlyProperty =
-        DependencyProperty.Register(nameof(Readonly), typeof(bool), typeof(LockableSetting), new PropertyMetadata(false));
+        DependencyProperty.Register(nameof(Readonly), typeof(bool), typeof(LockableTextBox), new PropertyMetadata(false));
 
     public bool IsLock
     {
@@ -56,7 +56,21 @@ public sealed partial class LockableSetting : INotifyPropertyChanged
     }
 
     public static readonly DependencyProperty IsLockProperty =
-        DependencyProperty.Register(nameof(IsLock), typeof(bool), typeof(LockableSetting), new PropertyMetadata(false));
+        DependencyProperty.Register(nameof(IsLock), typeof(bool), typeof(LockableTextBox), new PropertyMetadata(false));
+    
+    public bool AcceptsReturn
+    {
+        get => (bool)GetValue(AcceptsReturnProperty);
+
+        set
+        {
+            SetValue(AcceptsReturnProperty, value);
+            OnPropertyChanged(nameof(IsEditable));
+        }
+    }
+
+    public static readonly DependencyProperty AcceptsReturnProperty =
+        DependencyProperty.Register(nameof(AcceptsReturn), typeof(bool), typeof(LockableTextBox), new PropertyMetadata(false));
 
     public bool IsEditable => !IsLock & !Readonly;
         
