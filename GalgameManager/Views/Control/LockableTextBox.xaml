@@ -2,7 +2,7 @@
 <!-- Licensed under the MIT License. -->
 
 <UserControl
-    x:Class="GalgameManager.Views.Control.LockableSetting"
+    x:Class="GalgameManager.Views.Control.LockableTextBox"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -26,7 +26,8 @@
         <TextBox Grid.Column="1"
                  Text="{x:Bind Value, Mode=TwoWay}"
                  IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
-                 AcceptsReturn="True"
+                 AcceptsReturn="{x:Bind AcceptsReturn, Mode=OneWay}"
+                 VerticalAlignment="Center"
                  TextWrapping="Wrap"
                  IsSpellCheckEnabled="False">
         </TextBox>

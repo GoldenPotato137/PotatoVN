@@ -34,10 +34,11 @@
                 </CommandBar>
 
                 <StackPanel Grid.Row="1" Spacing="25" Margin="{StaticResource MediumTopMargin}">
-                    <control:LockableSetting
+                    <control:LockableTextBox
                         x:Uid="GalgameSettingPage_GalgameName"
                         Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}" />
+                        IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}" 
+                        AcceptsReturn="False"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -49,7 +50,7 @@
 
                         <StackPanel Orientation="Horizontal" Grid.Column="0">
                             <TextBlock x:Uid = "GalgameSettingPage_GalgameId" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBox Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}"/>
+                            <TextBox Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}" VerticalAlignment="Center" AcceptsReturn="False"/>
                         </StackPanel>
 
                         <Grid Grid.Column="1" Margin="50 0 0 0">
@@ -73,43 +74,47 @@
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">
                             <TextBlock x:Uid="GalgameSettingPage_GalgameSavePosition" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBox Text="{x:Bind ViewModel.Gal.SavePosition}" IsEnabled="False"/>
+                            <TextBox Text="{x:Bind ViewModel.Gal.SavePosition}" IsEnabled="False" VerticalAlignment="Center" AcceptsReturn="False"/>
                         </StackPanel>
 
-                        <control:LockableSetting 
+                        <control:LockableNumberBox 
                             Grid.Column="3" 
                             x:Uid="GalgameSettingPage_GalgameRating"
                             Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
-                            Margin="50 0 0 0" />
+                            Margin="50 0 0 0"/>
                     </Grid>
 
-                    <control:LockableSetting 
+                    <control:LockableTextBox 
                         x:Uid="GalgameSettingPage_GalgameDeveloper"
                         Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" />
+                        IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" 
+                        AcceptsReturn="False"/>
 
-                    <control:LockableSetting 
+                    <control:LockableTextBox 
                         x:Uid="GalgameSettingPage_GalgameExpectedPlayTime"
                         Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" />
+                        IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" 
+                        AcceptsReturn="False"/>
 
-                    <control:LockableSetting
+                    <control:LockableTextBox
                         x:Uid="GalgameSettingPage_GalgameDescription"
                         Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay}"
-                        IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}" />
+                        IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}" 
+                        AcceptsReturn="True"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <control:LockableSetting 
+                        <control:LockableTextBox 
                             Grid.Column="0"
                             x:Uid="GalgameSettingPage_GalgameImagePath"
                             Value="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}"
-                            Readonly="True" />
+                            Readonly="True" 
+                            AcceptsReturn="False"/>
                         <Button Grid.Column="1" x:Uid="GalgameSettingPage_PickImage" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
                     </Grid>
                 </StackPanel>
