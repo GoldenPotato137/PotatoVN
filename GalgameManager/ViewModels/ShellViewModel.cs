@@ -9,6 +9,7 @@ public partial class ShellViewModel : ObservableRecipient
     private bool _isBackEnabled;
     private object? _selected;
     [ObservableProperty] private bool _updateBadgeVisibility;
+    [ObservableProperty] private string? _title;
 
     public INavigationService NavigationService
     {
@@ -44,12 +45,6 @@ public partial class ShellViewModel : ObservableRecipient
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
         IsBackEnabled = NavigationService.CanGoBack;
-
-        // if (e.SourcePageType == typeof(SettingsPage))
-        // {
-        //     Selected = NavigationViewService.SettingsItem;
-        //     return;
-        // }
 
         var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)

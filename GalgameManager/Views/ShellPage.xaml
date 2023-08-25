@@ -3,8 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:GalgameManager.Helpers"
-    xmlns:behaviors="using:GalgameManager.Behaviors"
-    xmlns:i="using:Microsoft.Xaml.Interactivity"
     Loaded="OnLoaded">
 
     <Grid>
@@ -23,6 +21,7 @@
                        Style="{StaticResource CaptionTextBlockStyle}"
                        Margin="28,0,0,0"/>
         </Grid>
+        
         <NavigationView
             x:Name="NavigationViewControl"
             Canvas.ZIndex="0"
@@ -34,13 +33,6 @@
             DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay, FallbackValue={}}">
             <NavigationView.MenuItems>
-                <!--
-                TODO: Update item titles by updating <x:Uid>.Content entries in Strings/en-us/Resources.resw.
-                https://docs.microsoft.com/windows/uwp/app-resources/localize-strings-ui-manifest#refer-to-a-string-resource-identifier-from-xaml
-            
-                TODO: Update item icons by updating FontIcon.Glyph properties.
-                https://docs.microsoft.com/windows/apps/design/style/segoe-fluent-icons-font#icon-list
-                -->
                 <NavigationViewItem x:Uid="Shell_Home" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.HomeViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xf0e2;"/>
@@ -56,6 +48,10 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7C1;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                
+                <!-- 这里的导航项是隐藏的，只是为了让导航项的命令能够被触发 -->
+                <NavigationViewItem x:Uid="Shell_UpdateContent" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.UpdateContentViewModel"
+                                    Visibility="Collapsed"/>
             </NavigationView.MenuItems>
             
             <NavigationView.FooterMenuItems>
@@ -84,20 +80,7 @@
                     </Grid>
                 </DataTemplate>
             </NavigationView.HeaderTemplate>
-            <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior
-                    DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay, FallbackValue={}}">
-                    <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <TextBlock
-                                    Text="{Binding}"
-                                    Style="{ThemeResource TitleTextBlockStyle}" />
-                            </Grid>
-                        </DataTemplate>
-                    </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                </behaviors:NavigationViewHeaderBehavior>
-            </i:Interaction.Behaviors>
+            
             <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
                 <Frame x:Name="NavigationFrame" />
             </Grid>
