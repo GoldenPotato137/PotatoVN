@@ -167,9 +167,10 @@ public class BgmOAuthService : IBgmOAuthService
             _lastUpdateDateTime = DateTime.Now;
             //下载用户数据
             //用户名
-            responseMessage = await httpClient.GetAsync($"https://api.bgm.tv/v0/users/{_bgmAccount.UserId}");
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + _bgmAccount.BangumiAccessToken);
+            responseMessage = await httpClient.GetAsync($"https://api.bgm.tv/v0/me");
             JToken userJson = JToken.Parse(await responseMessage.Content.ReadAsStringAsync());
-            _bgmAccount.Name = userJson["nickname"]?.ToString() ?? "BgmAccount_NoName".GetLocalized();
+            _bgmAccount.Name = userJson["nickname"]?.ToString() ?? userJson["username"]?.ToString() ?? "BgmAccount_NoName".GetLocalized();
             //头像
             if (userJson["avatar"]?["large"] != null)
             {
