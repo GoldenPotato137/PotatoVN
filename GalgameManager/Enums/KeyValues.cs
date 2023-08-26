@@ -46,7 +46,8 @@ public static class KeyValues
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
-    public const string OAuthUpgraded = "OAuthUpgraded";
+    public const string OAuthUpgraded = "OAuthUpgraded"; //OAuth升级
+    public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     
     
     //废弃Key，只读，仅用于升级

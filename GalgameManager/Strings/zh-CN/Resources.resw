@@ -899,4 +899,10 @@
   <data name="ActivationService_FontPopup_NoLongerDisplay" xml:space="preserve">
     <value>不再显示此弹窗</value>
   </data>
+  <data name="Galgame_SavePath_Local" xml:space="preserve">
+    <value>本地</value>
+  </data>
+  <data name="Galgame_SavePath_Remote" xml:space="preserve">
+    <value>云端</value>
+  </data>
 </root>

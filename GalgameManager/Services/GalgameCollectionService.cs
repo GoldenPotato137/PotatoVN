@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -21,6 +23,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private readonly IJumpListService _jumpListService;
     private readonly IFileService _fileService;
     private readonly IFilterService _filterService;
+    private readonly IInfoService _infoService;
     private string _searchKey = string.Empty;
     public delegate void GalgameDelegate(Galgame galgame);
     public event GalgameDelegate? GalgameAddedEvent; //当有galgame添加时触发
@@ -37,7 +40,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     } = new IGalInfoPhraser[5];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
-        IFileService fileService, IFilterService filterService)
+        IFileService fileService, IFilterService filterService, IInfoService infoService)
     {
         LocalSettingsService = localSettingsService;
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
@@ -45,6 +48,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _fileService = fileService;
         _filterService = filterService;
         _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
+        _infoService = infoService;
+        
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new();
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
@@ -76,7 +81,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         List<Galgame> toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
         foreach (Galgame galgame in toRemove)
             _galgames.Remove(galgame);
-        _galgames.ForEach(g => _galgameMap.Add(g.Path, g));
+        foreach (Galgame g in _galgames)
+        {
+            _galgameMap.Add(g.Path, g);
+            g.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+        }
         GalgameLoadedEvent?.Invoke();
         UpdateDisplay(UpdateType.Init);
     }
@@ -91,6 +100,12 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             foreach (Galgame galgame in _galgames)
                 galgame.UpdateIdFromMixed();
             await LocalSettingsService.SaveSettingAsync(KeyValues.IdFromMixedUpgraded, true);
+        }
+
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SavePathUpgraded) == false)
+        {
+            _galgames.ForEach(galgame => galgame.FindSaveInPath());
+            await LocalSettingsService.SaveSettingAsync(KeyValues.SavePathUpgraded, true);
         }
     }
 
@@ -149,12 +164,14 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             if (!isForce && galgame.RssType == RssType.None)
                 return AddGalgameResult.NotFoundInRss;
         }
+        galgame.FindSaveInPath();
         
         _galgames.Add(galgame);
         _galgameMap.Add(galgame.Path, galgame);
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
         UpdateDisplay(UpdateType.Add, galgame);
+        galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
     
@@ -212,7 +229,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.Tags.Value = tmp.Tags.Value;
         galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.ReleaseDate = tmp.ReleaseDate.Value;
-        galgame.CheckSavePosition();
         return galgame;
     }
     
@@ -407,11 +423,15 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="galgame">galgame</param>
     public async Task ChangeGalgameSavePosition(Galgame galgame)
     {
-        if (galgame.CheckSavePosition()) //目前在云端
+        if (galgame.SavePath is not null && new DirectoryInfo(galgame.SavePath).Exists == false)
+            galgame.SavePath = null;
+            
+        if (galgame.SavePath is not null) //目前在云端
         {
             await Task.Run(() =>
             {
-                FolderOperations.ConvertSymbolicLinksToActual(galgame.Path);
+                FolderOperations.ConvertSymbolicLinkToActual(galgame.SavePath);
+                galgame.SavePath = null;
             });
         }
         else //目前在本地
@@ -465,6 +485,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 }
                 else
                     FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                galgame.SavePath = localSavePath;
             }
             catch (Exception e) //创建符号链接失败，把存档复制回去
             {
@@ -663,25 +684,24 @@ public class FolderPickerDialog : ContentDialog
         Title = title;
         Content = CreateContent(files);
         PrimaryButtonText = "Yes".GetLocalized();
-        //todo: 自定义文件夹需要保存存档位置，暂时关闭这个功能
-        // SecondaryButtonText = "GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder".GetLocalized();
+        SecondaryButtonText = "GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
         IsPrimaryButtonEnabled = false;
         PrimaryButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(_selectedFolder); };
-        // SecondaryButtonClick += async (_, _) =>
-        // {
-        //     var folderPicker = new FolderPicker();
-        //     folderPicker.FileTypeFilter.Add("*");
-        //     WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
-        //     var folder = await folderPicker.PickSingleFolderAsync();
-        //     if (folder != null)
-        //     {
-        //         _selectedFolder = folder.Path;
-        //         _folderSelectedTcs.TrySetResult(folder.Path);
-        //     }
-        //     else
-        //         _folderSelectedTcs.TrySetResult(null);
-        // };
+        SecondaryButtonClick += async (_, _) =>
+        {
+            FolderPicker folderPicker = new();
+            folderPicker.FileTypeFilter.Add("*");
+            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
+            StorageFolder? folder = await folderPicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                _selectedFolder = folder.Path;
+                _folderSelectedTcs.TrySetResult(folder.Path);
+            }
+            else
+                _folderSelectedTcs.TrySetResult(null);
+        };
         CloseButtonClick += (_, _) => { _folderSelectedTcs.TrySetResult(null); };
     }
     private UIElement CreateContent(List<string> files)

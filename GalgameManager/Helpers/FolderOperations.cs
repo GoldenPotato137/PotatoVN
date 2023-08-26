@@ -21,25 +21,28 @@ public static class FolderOperations
         }
 
         foreach (var subDir in Directory.GetDirectories(folderPath))
-        {
-            if (new DirectoryInfo(subDir).LinkTarget is { } linkTarget)
-            {
-                // 创建临时目录
-                var tempPath = Path.Combine(folderPath, Path.GetRandomFileName());
-                Directory.CreateDirectory(tempPath);
-                // 将目标路径的内容复制到临时目录
-                foreach (var file in Directory.GetFiles(linkTarget))
-                {
-                    File.Copy(file, Path.Combine(tempPath, Path.GetFileName(file)), true);
-                }
-                // 删除符号链接
-                Directory.Delete(subDir, true);
-                // 将临时目录的内容复制到实际路径，并删除临时目录
-                Directory.Move(tempPath, subDir);
-            }
-        }
+            ConvertSymbolicLinkToActual(subDir);
     }
-    
+
+    /// <summary>
+    /// 将符号链接转换为实际文件夹
+    /// </summary>
+    public static void ConvertSymbolicLinkToActual(string path)
+    {
+        if (Directory.Exists(path) == false) return;
+        if (new DirectoryInfo(path).Parent is null) return;
+        if (new DirectoryInfo(path).LinkTarget is not { } linkTarget) return;
+        // 创建临时目录
+        var tempPath = Path.Combine(new DirectoryInfo(path).Parent!.FullName, Path.GetRandomFileName());
+        Directory.CreateDirectory(tempPath);
+        // 将目标路径的内容复制到临时目录
+        Copy(linkTarget, tempPath);
+        // 删除符号链接
+        Directory.Delete(path, true);
+        // 将临时目录的内容复制到实际路径，并删除临时目录
+        Directory.Move(tempPath, path);
+    }
+
     /// <summary>
     /// 将文件夹转换为符号链接
     /// </summary>
@@ -60,10 +63,7 @@ public static class FolderOperations
         // 创建目标文件夹（如果不存在）
         Directory.CreateDirectory(targetFolderPath);
         // 将源文件夹内容移动到目标文件夹
-        foreach (var file in Directory.GetFiles(sourceFolderPath))
-        {
-            File.Move(file, Path.Combine(targetFolderPath, Path.GetFileName(file)), true);
-        }
+        Copy(sourceFolderPath, targetFolderPath);
         // 删除原始文件夹
         Directory.Delete(sourceFolderPath, true);
         // 创建符号链接
@@ -83,5 +83,17 @@ public static class FolderOperations
         {
             File.Copy(file, Path.Combine(targetPath, Path.GetFileName(file)), true);
         }
+        foreach(var subDir in Directory.GetDirectories(sourcePath))
+        {
+            Copy(subDir, Path.Combine(targetPath, Path.GetFileName(subDir)));
+        }
+    }
+    
+    /// <summary>
+    /// 判断文件夹是否为符号链接
+    /// </summary>
+    public static bool IsSymbolicLink(string path)
+    {
+        return new DirectoryInfo(path).LinkTarget is not null;
     }
 }
