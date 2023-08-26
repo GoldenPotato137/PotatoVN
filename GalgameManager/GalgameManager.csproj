@@ -33,9 +33,6 @@
     <Content Remove="Assets\Potato.altform-unplated_targetsize-256.png" />
     <Content Remove="Assets\Potato.altform-unplated_targetsize-32.png" />
     <Content Remove="Assets\Potato.altform-unplated_targetsize-48.png" />
-    <Content Update="Assets\Data\vndb-tags-2023-04-15.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Update="Assets\Data\vn_mapper.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
