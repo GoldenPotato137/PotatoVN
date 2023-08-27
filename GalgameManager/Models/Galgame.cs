@@ -10,7 +10,7 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject, IComparable<Galgame>
+public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneable
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -27,7 +27,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
-    public string? ImageUrl;
+    [JsonIgnore] public string? ImageUrl;
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
@@ -220,6 +220,40 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once NonReadonlyMemberInGetHashCode
     public override int GetHashCode() => Path.GetHashCode();
 
+    public object Clone()
+    {
+        Dictionary<string, int> playTime = new();
+        foreach (var (key, value) in PlayedTime)
+            playTime.Add(key, value);
+        Galgame result = new()
+        {
+            Path = "..\\",
+            ImagePath = ImagePath.Value is null or DefaultImagePath ? DefaultImagePath :
+                ".\\" + SystemPath.GetFileName(ImagePath),
+            PlayedTime = playTime,
+            Name = Name.Value ?? string.Empty,
+            CnName = CnName,
+            Description = Description.Value ?? string.Empty,
+            Developer = Developer.Value ?? DefaultString,
+            LastPlay = LastPlay.Value ?? DefaultString,
+            ExpectedPlayTime = ExpectedPlayTime.Value ?? DefaultString,
+            Rating = Rating.Value,
+            ReleaseDate = ReleaseDate.Value,
+            ExePath = "..\\" + SystemPath.GetFileName(ExePath),
+            Tags = new ObservableCollection<string>(Tags.Value!.ToList()),
+            TotalPlayTime = TotalPlayTime,
+            RunAsAdmin = RunAsAdmin,
+            PlayType = PlayType,
+            Ids = (string[])Ids.Clone(),
+            RssType = RssType,
+            Comment = Comment,
+            MyRate = MyRate,
+            PrivateComment = PrivateComment,
+            SavePath = SavePath
+        };
+        return result;
+    }
+
     /// <summary>
     /// 获取游戏文件夹下的所有exe以及bat文件
     /// </summary>
@@ -283,19 +317,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     /// <returns></returns>
     public Galgame GetMetaCopy()
     {
-        Galgame result = (Galgame)MemberwiseClone();
-        if(ExePath != null)
-            result.ExePath = "..\\" + SystemPath.GetFileName(ExePath);
-        result.Path = "..\\";
-#pragma warning disable MVVMTK0034
-        result._imagePath = new LockableProperty<string>();
-#pragma warning restore MVVMTK0034
-        if (ImagePath.Value == DefaultImagePath)
-            result.ImagePath.Value = DefaultImagePath;
-        else
-            result.ImagePath.Value = ".\\" + SystemPath.GetFileName(ImagePath);
-        result.SavePath = null;
-        return result;
+        return (Galgame) Clone();
     }
 
     /// <summary>
@@ -310,8 +332,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)
             meta.ImagePath.Value = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ImagePath.Value!));
+        if (File.Exists(meta.ImagePath) == false)
+            meta.ImagePath.Value = DefaultImagePath;
         if (meta.ExePath != null)
             meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
+        meta.SavePath = Directory.Exists(meta.SavePath) ? meta.SavePath : null; //检查存档路径是否存在并设置SavePosition字段
         meta.UpdateIdFromMixed();
         meta.FindSaveInPath();
         return meta;
