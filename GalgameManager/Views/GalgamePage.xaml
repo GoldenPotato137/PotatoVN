@@ -46,7 +46,7 @@
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                <AppBarButton Label="{x:Bind ViewModel.UiPlay}" Command="{x:Bind ViewModel.PlayCommand}">
+                <AppBarButton x:Uid="GalgamePage_Play" Command="{x:Bind ViewModel.PlayCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;" />
                     </AppBarButton.Icon>
@@ -54,17 +54,17 @@
                         <Flyout Placement="Bottom" x:Name="ClearExeFlyout">
                             <StackPanel>
                                 <TextBlock Style="{ThemeResource BaseTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.UiPlayFlyOutTitle}" />
+                                           x:Uid="GalgamePage_UiPlayFlyOutTitle" />
                                 <Button Command="{x:Bind ViewModel.ResetExePathCommand}"
                                         local:FlyoutHelper.CloseFlyoutOnClick="True"
-                                        Content="{x:Bind ViewModel.UiYes}"
+                                        x:Uid="YesButton"
                                         Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center" 
                                         Flyout="{x:Bind ClearExeFlyout}"/>
                             </StackPanel>
                         </Flyout>
                     </AppBarButton.ContextFlyout>
                 </AppBarButton>
-                <AppBarButton Icon="Edit" Label="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.SettingCommand}" />
+                <AppBarButton Icon="Edit" x:Uid="GalgamePage_Edit" Command="{x:Bind ViewModel.SettingCommand}" />
                 <!-- 游玩状态 -->
                 <AppBarButton x:Uid="GalgamePage_PlayStatus" Command="{x:Bind ViewModel.ChangePlayStatusCommand}">
                     <AppBarButton.Icon>
@@ -91,7 +91,7 @@
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" />
                     <AppBarSeparator/>
                     <AppBarButton
-                        Label="{x:Bind ViewModel.UiChangeSavePosition}"
+                        x:Uid="GalgamePage_ChangeSavePosition"
                         Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
@@ -135,14 +135,14 @@
                         <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.UiDevelopers}" />
+                                           x:Uid="GalgamePage_Developers" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.UiLastPlayTime}" />
+                                           x:Uid="GalgamePage_LastPlayTime" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
@@ -160,14 +160,14 @@
                         <StackPanel x:Name="PlayInfoBlock" RelativePanel.Below="GameInfoBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.UiSavePosition}" />
+                                           x:Uid="GalgamePage_SavePosition" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.SavePosition, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.UiExpectedPlayTime}" />
+                                           x:Uid="GalgamePage_ExpectedPlayTime" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.ExpectedPlayTime, Mode=OneWay, FallbackValue={}}" />
                             </StackPanel>
@@ -175,7 +175,7 @@
                             <!-- 发布日期 -->
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.UiReleaseDate}" />
+                                           x:Uid="GalgamePage_ReleaseDate" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                            Text="{x:Bind ViewModel.Item.ReleaseDate.Value, Mode=OneWay, FallbackValue={}, 
                                            Converter={StaticResource DateTimeToStringConverter}}" />
@@ -200,7 +200,7 @@
                         <TextBlock
                             Margin="{StaticResource SmallTopBottomMargin}"
                             Style="{ThemeResource SubtitleTextBlockStyle}"
-                            Text="{x:Bind ViewModel.UiDescription}"
+                            x:Uid="GalgamePage_Description"
                             Visibility="{x:Bind ViewModel.IsDescriptionVisible, Mode=OneWay}" />
                         <TextBlock
                             Style="{ThemeResource BodyTextBlockStyle}"
