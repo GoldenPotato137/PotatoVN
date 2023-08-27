@@ -35,7 +35,7 @@ public class VndbVn
     public string? Title { get; set; }
     // Alternative title
     public string? Alttitle { get; set; }
-    public List<VndbTitle>? Titles;
+    public List<VndbTitle>? Titles { get; set; }
     public List<string>? Aliases { get; set; }
     // language the VN has originally been written in. 
     public string? Olang { get; set; }

@@ -14,7 +14,7 @@ public class VndbPhraser : IGalInfoPhraser
     private readonly VndbApi _vndb = new();
     private readonly Dictionary<int, JToken> _tagDb = new();
     private bool _init;
-    private const string TagDbFile = @"Assets\Data\vndb-tags-2023-04-15.json";
+    private const string TagDbFile = @"Assets\Data\vndb-tags-latest.json";
     /// <summary>
     /// id eg:g530[1..]=530=(int)530
     /// </summary>

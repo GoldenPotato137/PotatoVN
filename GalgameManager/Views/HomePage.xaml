@@ -88,17 +88,16 @@
                 SelectionMode="None"
                 StretchContentForSingleRow="False"
                 animations:Connected.ListItemKey="galgameItem"
-                animations:Connected.ListItemElementName="connectedElement">
+                animations:Connected.ListItemElementName="ConnectedElement">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
                         <Grid
                             Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
-                                <Grid>
+                                <Grid x:Name="ConnectedElement">
                                     <Rectangle Height="209" Width="150"
                                                HorizontalAlignment="Center" 
                                                VerticalAlignment="Center"
-                                               x:Name="connectedElement"
                                                >
                                         <Rectangle.Fill>
                                             <ImageBrush 
