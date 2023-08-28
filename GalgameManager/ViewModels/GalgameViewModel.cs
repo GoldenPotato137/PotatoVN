@@ -70,6 +70,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         try
         {
             Item = data.First(i => i.Path == path);
+            Item.SavePath = Item.SavePath; //更新存档位置显示
             UpdateVisibility();
             if (startGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
                 await Play();

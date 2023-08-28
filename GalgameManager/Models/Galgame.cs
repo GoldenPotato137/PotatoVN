@@ -38,7 +38,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private LockableProperty<DateTime> _releaseDate;
-    [JsonIgnore][ObservableProperty] private string _savePosition = "Galgame_SavePath_Local".GetLocalized();
+    [JsonIgnore][ObservableProperty] private string _savePosition = string.Empty;
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
