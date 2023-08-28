@@ -53,6 +53,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论
     private string? _savePath; //云端存档本地路径
+    public string? ProcessName; //手动指定的进程名，用于正确获取游戏进程
 
     [JsonIgnore] public static SortKeys[] SortKeysList
     {
@@ -249,7 +250,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             Comment = Comment,
             MyRate = MyRate,
             PrivateComment = PrivateComment,
-            SavePath = SavePath
+            SavePath = SavePath,
+            ProcessName = ProcessName
         };
         return result;
     }

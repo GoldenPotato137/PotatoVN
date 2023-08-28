@@ -908,4 +908,16 @@
   <data name="YesButton.Content" xml:space="preserve">
     <value>确定</value>
   </data>
+  <data name="SelectProcessDialog_Title" xml:space="preserve">
+    <value>选择游戏进程</value>
+  </data>
+  <data name="SelectProcessDialog_Msg.Text" xml:space="preserve">
+    <value>oops!好像自动检测游戏进程失败了
+如果游戏尚未关闭，请手动指定游戏进程以正确统计游玩时长
+如果这个游戏游玩时长能正常记录，取消这个选择框即可
+</value>
+  </data>
+  <data name="HomePage_ProcessNameSet" xml:space="preserve">
+    <value>已成功指定游戏进程，重启游戏后生效</value>
+  </data>
 </root>

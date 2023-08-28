@@ -19,6 +19,8 @@ namespace GalgameManager.ViewModels;
 
 public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 {
+    private const int ProcessMaxWaitSec = 60; //(手动指定游戏进程)等待游戏进程启动的最大时间
+    private const int ManuallySelectProcessSec = 20; //认定为需要手动选择游戏进程的时间阈值
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly INavigationService _navigationService;
@@ -89,6 +91,39 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
         CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
     }
+    
+    /// <summary>
+    /// 等待游戏进程启动，若超时则返回null
+    /// </summary>
+    /// <param name="processName">进程名</param>
+    private static async Task<Process?> WaitForProcessStartAsync(string processName)
+    {
+        Process[] processes = Process.GetProcessesByName(processName);
+        var waitSec = 0;
+        while (processes.Length == 0)
+        {
+            await Task.Delay(100);
+            processes = Process.GetProcessesByName(processName);
+            if (++waitSec > ProcessMaxWaitSec)
+                return null;
+        }
+        return processes[0];
+    }
+
+    #region INFOBAR_CTRL
+
+    private async Task DisplayMsg(InfoBarSeverity severity, string msg, int displayTimeMs = 3000)
+    {
+        var myIndex = ++_msgIndex;
+        InfoBarOpen = true;
+        InfoBarMsg = msg;
+        InfoBarSeverity = severity;
+        await Task.Delay(displayTimeMs);
+        if (myIndex == _msgIndex)
+            InfoBarOpen = false;
+    }
+
+    #endregion
 
     [RelayCommand]
     private async Task OpenInBgm()
@@ -103,18 +138,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Vndb])) return;
         await Launcher.LaunchUriAsync(new Uri("https://vndb.org/v"+Item!.Ids[(int)RssType.Vndb]));
     }
-
-    private async Task DisplayMsg(InfoBarSeverity severity, string msg, int displayTimeMs = 3000)
-    {
-        var myIndex = ++_msgIndex;
-        InfoBarOpen = true;
-        InfoBarMsg = msg;
-        InfoBarSeverity = severity;
-        await Task.Delay(displayTimeMs);
-        if (myIndex == _msgIndex)
-            InfoBarOpen = false;
-    }
-
+    
     [RelayCommand]
     private async Task Play()
     {
@@ -136,15 +160,35 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         };
         try
         {
+            DateTime startTime = DateTime.Now;
             process.Start();
             _galgameService.Sort();
+            if (Item.ProcessName is not null)
+            {
+                await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出
+                process = await WaitForProcessStartAsync(Item.ProcessName) ?? process;
+            }
+
             await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
+            Process.GetProcessesByName(string.Empty);
             Item.RecordPlayTime(process);
             ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
             await _jumpListService.AddToJumpListAsync(Item);
 
             await process.WaitForExitAsync();
+
             ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
+            if (DateTime.Now - startTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) && Item.ProcessName is null 
+                && Item.TotalPlayTime == 0)
+            {
+                SelectProcessDialog dialog = new();
+                await dialog.ShowAsync();
+                if (dialog.SelectedProcessName is not null)
+                {
+                    Item.ProcessName = dialog.SelectedProcessName;
+                    await DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
+                }
+            }
             await SaveAsync(); //保存游戏信息(更新时长)
         }
         catch
