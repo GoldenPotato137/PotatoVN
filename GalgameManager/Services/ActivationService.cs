@@ -123,6 +123,7 @@ public class ActivationService : IActivationService
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
         await CheckFont();
+        await ((GalgameCollectionService)_galgameCollectionService).SyncUpgrade();
     }
 
     /// <summary>

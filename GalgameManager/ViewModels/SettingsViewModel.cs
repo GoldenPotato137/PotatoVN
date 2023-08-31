@@ -128,6 +128,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _gameFolderShouldContain = _localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain).Result ?? "";
         //CLOUD
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
+        SyncGames = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result;
         //QUICK_START
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
@@ -376,6 +377,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region CLOUD
 
     [ObservableProperty] private string? _remoteFolder;
+    [ObservableProperty] private bool _syncGames;
     partial void OnRemoteFolderChanged(string? value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
@@ -388,8 +390,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
         openPicker.FileTypeFilter.Add("*");
         StorageFolder? folder = await openPicker.PickSingleFolderAsync();
-        RemoteFolder = folder?.Path;
+        RemoteFolder = folder?.Path ?? RemoteFolder;
     }
+    
+    partial void OnSyncGamesChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SyncGames, value);
 
     #endregion
 

@@ -329,23 +329,35 @@
                     SettingDescription="{x:Bind ViewModel.UiCloudSyncDescription}"
                     SettingIcon="&#xE753;">
                     <control:SettingExpander.SettingContent>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.UiCloudSyncRoot}" Margin="0 0 25 0"
-                                       VerticalAlignment="Center" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="{x:Bind ViewModel.RemoteFolder, Mode=OneWay}"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                Margin="0 0 25 0" />
-                            <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}"
-                                    Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
-                        </Grid>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 云同步根目录 -->
+                            <control:Panel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.UiCloudSyncRoot}" Margin="0 0 25 0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{x:Bind ViewModel.RemoteFolder, Mode=OneWay}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
+                                        Margin="0 0 25 0" />
+                                    <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}" MinWidth="75"
+                                            Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
+                                </Grid>
+                            </control:Panel>
+                            
+                            <!-- 同步游戏 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch 
+                                    x:Uid="SettingsPage_CloudSync_SyncGame" 
+                                    IsOn="{x:Bind ViewModel.SyncGames, Mode=TwoWay}"/>
+                            </control:Panel>
+                        </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 

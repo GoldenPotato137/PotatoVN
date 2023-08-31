@@ -40,6 +40,7 @@ public static class KeyValues
     public const string AuthenticationType = "authenticationType"; // AuthenticationType,身份验证类型
     public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 主页是否显示游玩状态的小三角形
     public const string FontInstalled = "fontInstalled"; //bool, 是否安装了Segoe Fluent Icons字体
+    public const string SyncGames = "syncGames"; //bool, 是否同步游戏（游玩时长/状态/列表）
     
     
     //是否执行过某种升级, bool
@@ -48,6 +49,7 @@ public static class KeyValues
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
     public const string OAuthUpgraded = "OAuthUpgraded"; //OAuth升级
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
+    public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
     
     
     //废弃Key，只读，仅用于升级

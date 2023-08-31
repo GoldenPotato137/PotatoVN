@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Text;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 using Windows.Foundation;
 
 namespace GalgameManager.Helpers;
@@ -49,5 +50,19 @@ public static class Utils
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         return client;
+    }
+
+    /// <summary>
+    /// 获取本机Mac地址
+    /// </summary>
+    /// <returns>若没有则返回空string</returns>
+    public static string GetMacAddress()
+    {
+        foreach(NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (nic.OperationalStatus == OperationalStatus.Up)
+                return nic.GetPhysicalAddress().ToString();
+        }
+        return string.Empty;
     }
 }
