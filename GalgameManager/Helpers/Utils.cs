@@ -65,4 +65,20 @@ public static class Utils
         }
         return string.Empty;
     }
+
+    /// <summary>
+    /// 检查能否访问互联网
+    /// </summary>
+    public static async Task<bool> CheckInternetConnection()
+    {
+        try
+        {
+            HttpResponseMessage tmp = await GetDefaultHttpClient().GetAsync("https://www.baidu.com");
+            return tmp.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
