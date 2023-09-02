@@ -41,6 +41,7 @@ public static class KeyValues
     public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 主页是否显示游玩状态的小三角形
     public const string FontInstalled = "fontInstalled"; //bool, 是否安装了Segoe Fluent Icons字体
     public const string SyncGames = "syncGames"; //bool, 是否同步游戏（游玩时长/状态/列表）
+    public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
     
     
     //是否执行过某种升级, bool
