@@ -8,6 +8,7 @@ public partial class GalgameCollectionService
     {
         Add,
         Remove,
+        Update,
         Play,
         ApplyFilter,
         ApplySearch,
@@ -30,6 +31,7 @@ public partial class GalgameCollectionService
             case UpdateType.Remove:
                 TryRemoveFromDisplay(galgame!);
                 break;
+            case UpdateType.Update:
             case UpdateType.Play:
                 TryRemoveFromDisplay(galgame!);
                 TryAddToDisplay(galgame!);

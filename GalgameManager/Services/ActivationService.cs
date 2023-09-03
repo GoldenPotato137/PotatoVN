@@ -25,6 +25,7 @@ public class ActivationService : IActivationService
     private readonly IAuthenticationService _authenticationService;
     private readonly IBgmOAuthService _bgmOAuthService;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IFilterService _filterService;
     private UIElement? _shell;
 
     public ActivationService(
@@ -33,7 +34,8 @@ public class ActivationService : IActivationService
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
-        IAuthenticationService authenticationService, ILocalSettingsService localSettingsService)
+        IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
+        IFilterService filterService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -45,6 +47,7 @@ public class ActivationService : IActivationService
         _bgmOAuthService = bgmOAuthService;
         _authenticationService = authenticationService;
         _localSettingsService = localSettingsService;
+        _filterService = filterService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -84,6 +87,7 @@ public class ActivationService : IActivationService
             return;
         }
 
+        await _filterService.InitAsync();
         await _galgameCollectionService.InitAsync();
         await _galgameFolderCollectionService.InitAsync();
         await _categoryService.Init();

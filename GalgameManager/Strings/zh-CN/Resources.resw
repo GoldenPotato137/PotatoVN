@@ -926,4 +926,19 @@
   <data name="SettingsPage_CloudSync_SyncGame.Description" xml:space="preserve">
     <value>NOT IMPLEMENT YET</value>
   </data>
+  <data name="HomePage_Filter_DisplayVirtualGames.Content" xml:space="preserve">
+    <value>显示非本机游戏</value>
+  </data>
+  <data name="HomePage_SpecialDisplayVirtualGame.Label" xml:space="preserve">
+    <value>特殊显示非本地游戏</value>
+  </data>
+  <data name="GalgamePage_PathAlreadyExist" xml:space="preserve">
+    <value>这个路径的游戏已经被绑定到其他游戏上了</value>
+  </data>
+  <data name="GalgamePage_PathSet" xml:space="preserve">
+    <value>成功设置本游戏本地路径</value>
+  </data>
+  <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
+    <value>设置本地路径</value>
+  </data>
 </root>

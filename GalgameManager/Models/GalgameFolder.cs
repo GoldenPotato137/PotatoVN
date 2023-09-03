@@ -71,7 +71,9 @@ public class GalgameFolder
     /// <returns></returns>
     public bool IsInFolder(Galgame galgame)
     {
-        return IsInFolder(galgame.Path);
+        if (galgame.CheckExist() == false)
+            return false;
+        return !string.IsNullOrEmpty(galgame.Path) && IsInFolder(galgame.Path);
     }
 
     /// <summary>

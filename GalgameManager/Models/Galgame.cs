@@ -216,11 +216,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         }
         return 0;
     }
-    public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
     
-    // ReSharper disable once NonReadonlyMemberInGetHashCode
-    public override int GetHashCode() => Path.GetHashCode();
-
     public object Clone()
     {
         Dictionary<string, int> playTime = new();
@@ -333,11 +329,17 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)
+        {
             meta.ImagePath.Value = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ImagePath.Value!));
-        if (File.Exists(meta.ImagePath) == false)
-            meta.ImagePath.Value = DefaultImagePath;
+            if(File.Exists(meta.ImagePath) == false)
+                meta.ImagePath.Value = DefaultImagePath;
+        }
         if (meta.ExePath != null)
+        {
             meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
+            if (File.Exists(meta.ExePath) == false)
+                meta.ExePath = null;
+        }
         meta.SavePath = Directory.Exists(meta.SavePath) ? meta.SavePath : null; //检查存档路径是否存在并设置SavePosition字段
         meta.UpdateIdFromMixed();
         meta.FindSaveInPath();

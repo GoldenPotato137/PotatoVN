@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,7 +28,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly JumpListService _jumpListService;
-    private Galgame? _item;
+    [ObservableProperty] private Galgame? _item;
+    [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
@@ -37,12 +40,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _infoBarMsg = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
-    
-    public Galgame? Item
-    {
-        get => _item;
-        private set => SetProperty(ref _item, value);
-    }
 
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, IJumpListService jumpListService, ILocalSettingsService localSettingsService)
     {
@@ -52,7 +49,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
         _jumpListService = (JumpListService)jumpListService;
         _localSettingsService = localSettingsService;
-        Item = new Galgame();
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -67,18 +63,18 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
 
         ObservableCollection<Galgame>? data = await _dataCollectionService.GetContentGridDataAsync();
-        try
-        {
-            Item = data.First(i => i.Path == path);
-            Item.SavePath = Item.SavePath; //更新存档位置显示
-            UpdateVisibility();
-            if (startGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
-                await Play();
-        }
-        catch (Exception) //找不到这个游戏，回到主界面
+        Item = parameter as Galgame ?? data.FirstOrDefault(g => g.Path == path);
+        if (Item is null) //找不到这个游戏，回到主界面
         {
             _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+            return;
         }
+
+        IsLocalGame = Item.CheckExist();
+        Item.SavePath = Item.SavePath; //更新存档位置显示
+        UpdateVisibility();
+        if (startGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
+            await Play();
     }
 
     public void OnNavigatedFrom()
@@ -293,5 +289,39 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _ =  DisplayMsg(InfoBarSeverity.Informational, "HomePage_Downloading".GetLocalized(), 1000 * 100);
         (GalStatusSyncResult, string) result = await _galgameService.DownLoadPlayStatusAsync(Item, RssType.Bangumi);
         await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
+    }
+
+    [RelayCommand]
+    private async Task SetLocalPath()
+    {
+        try
+        {
+            FileOpenPicker openPicker = new();
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.FileTypeFilter.Add(".exe");
+            openPicker.FileTypeFilter.Add(".bat");
+            openPicker.FileTypeFilter.Add(".EXE");
+            StorageFile? file = await openPicker.PickSingleFileAsync();
+            if (file is not null)
+            {
+                var folder = file.Path[..file.Path.LastIndexOf('\\')];
+                if (_galgameService.GetGalgameFromPath(folder) is not null)
+                {
+                    _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
+                    return;
+                }
+                Item!.Path = folder;
+                Item!.ExePath = file.Path;
+                IsLocalGame = Item!.CheckExist();
+                await SaveAsync();
+                _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());
+                _galgameService.RefreshDisplay(); //重新构造显示列表以刷新特殊显示非本地游戏（因为GameToOpacityConverter只会在构造列表的时候被调用）
+            }
+        }
+        catch (Exception e)
+        {
+            _ = DisplayMsg(InfoBarSeverity.Error, e.Message);
+        }
     }
 }

@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
+using GalgameManager.Helpers.Converter;
 
 namespace GalgameManager.ViewModels;
 
@@ -36,6 +37,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _searchTitle = string.Empty;
     [ObservableProperty] private bool _fixHorizontalPicture; // 是否修复横向图片（截断为标准的长方形）
     [ObservableProperty] private bool _displayPlayTypePolygon = true; // 是否显示游玩状态的小三角形
+    [ObservableProperty] private bool _displayVirtualGame; //是否显示虚拟游戏
+    [ObservableProperty] private bool _specialDisplayVirtualGame; //是否特殊显示虚拟游戏（降低透明度）
 
     #region UI
 
@@ -79,6 +82,9 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             ? Stretch.UniformToFill : Stretch.Uniform;
         _fixHorizontalPicture = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         DisplayPlayTypePolygon = localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayPlayTypePolygon).Result;
+        DisplayVirtualGame = localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayVirtualGame).Result;
+        SpecialDisplayVirtualGame = localSettingsService.ReadSettingAsync<bool>(KeyValues.SpecialDisplayVirtualGame).Result;
+        GameToOpacityConverter.SpecialDisplayVirtualGame = SpecialDisplayVirtualGame;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
@@ -109,7 +115,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         if (clickedItem != null)
         {
             _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, clickedItem.Path);
+            object param = string.IsNullOrEmpty(clickedItem.Path) ? clickedItem : clickedItem.Path;
+            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, param);
         }
     }
 
@@ -262,6 +269,16 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     partial void OnDisplayPlayTypePolygonChanged(bool value) =>
         _localSettingsService.SaveSettingAsync(KeyValues.DisplayPlayTypePolygon, value);
+    
+    partial void OnDisplayVirtualGameChanged(bool value) =>
+        _localSettingsService.SaveSettingAsync(KeyValues.DisplayVirtualGame, value);
+    
+    partial void OnSpecialDisplayVirtualGameChanged(bool value)
+    {
+        _localSettingsService.SaveSettingAsync(KeyValues.SpecialDisplayVirtualGame, value);
+        GameToOpacityConverter.SpecialDisplayVirtualGame = value;
+        _galgameService.RefreshDisplay();
+    }
 
     #region INFO_BAR_CTRL
 

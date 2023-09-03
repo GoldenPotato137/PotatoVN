@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
         <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
     </Page.Resources>
@@ -46,7 +46,9 @@
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                <AppBarButton x:Uid="GalgamePage_Play" Command="{x:Bind ViewModel.PlayCommand}">
+                <!-- 开始游戏 -->
+                <AppBarButton x:Uid="GalgamePage_Play" Command="{x:Bind ViewModel.PlayCommand}"
+                              IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE768;" />
                     </AppBarButton.Icon>
@@ -64,6 +66,14 @@
                         </Flyout>
                     </AppBarButton.ContextFlyout>
                 </AppBarButton>
+                <!-- 设置本地路径 -->
+                <AppBarButton x:Uid="GalgamePage_SetLocalPath" Command="{x:Bind ViewModel.SetLocalPathCommand}"
+                              Visibility="{x:Bind ViewModel.IsLocalGame, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter = True, Mode=OneWay}">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE723;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <!-- 编辑 -->
                 <AppBarButton Icon="Edit" x:Uid="GalgamePage_Edit" Command="{x:Bind ViewModel.SettingCommand}" />
                 <!-- 游玩状态 -->
                 <AppBarButton x:Uid="GalgamePage_PlayStatus" Command="{x:Bind ViewModel.ChangePlayStatusCommand}">
@@ -72,7 +82,8 @@
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"/>
+                    <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"
+                                  IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                     <AppBarButton x:Uid="GalgamePage_OpenInBgm" Command="{x:Bind ViewModel.OpenInBgmCommand}" 
                                   Visibility="{x:Bind ViewModel.CanOpenInBgm, 
                                   Mode=OneWay}">
@@ -88,17 +99,20 @@
                         </AppBarButton.Icon>
                     </AppBarButton>
                     <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
-                                        IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" />
+                                        IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" 
+                                        IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                     <AppBarSeparator/>
                     <AppBarButton
                         x:Uid="GalgamePage_ChangeSavePosition"
-                        Command="{x:Bind ViewModel.ChangeSavePositionCommand}">
+                        Command="{x:Bind ViewModel.ChangeSavePositionCommand}"
+                        IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
                     <AppBarSeparator/>
-                    <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"/>
+                    <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"
+                                  IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 

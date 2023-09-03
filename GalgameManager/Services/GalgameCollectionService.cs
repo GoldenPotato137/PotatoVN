@@ -78,12 +78,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private async Task GetGalgames()
     {
         _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
-        List<Galgame> toRemove = _galgames.Where(galgame => !galgame.CheckExist()).ToList();
-        foreach (Galgame galgame in toRemove)
-            _galgames.Remove(galgame);
         foreach (Galgame g in _galgames)
         {
-            _galgameMap.Add(g.Path, g);
+            if (g.CheckExist() == false)
+                g.Path = string.Empty;
+            _galgameMap[g.Path] = g;
             g.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
         }
         GalgameLoadedEvent?.Invoke();
@@ -125,7 +124,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
-        _galgameMap.Remove(galgame.Path);
+        if(galgame.CheckExist())
+            _galgameMap.Remove(galgame.Path);
         UpdateDisplay(UpdateType.Remove, galgame);
         if (removeFromDisk)
             galgame.Delete();
@@ -164,13 +164,24 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             if (!isForce && galgame.RssType == RssType.None)
                 return AddGalgameResult.NotFoundInRss;
         }
+
+        Galgame? virtualGame = _galgames.FirstOrDefault(g =>
+            string.IsNullOrEmpty(g.Ids[(int)RssType.Bangumi]) == false
+            && g.Ids[(int)RssType.Bangumi] == galgame.Ids[(int)RssType.Bangumi]
+            && g.CheckExist() == false);
+        if (virtualGame is not null)
+        {
+            virtualGame.Path = galgame.Path;
+            galgame = virtualGame;
+        }
         galgame.FindSaveInPath();
         
-        _galgames.Add(galgame);
-        _galgameMap.Add(galgame.Path, galgame);
+        if(virtualGame is null)
+            _galgames.Add(galgame);
+        _galgameMap[galgame.Path] = galgame;
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
-        UpdateDisplay(UpdateType.Add, galgame);
+        UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
         galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
@@ -270,6 +281,14 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     }
 
     /// <summary>
+    /// 刷新显示列表
+    /// </summary>
+    public void RefreshDisplay()
+    {
+        UpdateDisplay(UpdateType.Init);
+    }
+
+    /// <summary>
     /// 向信息源上传游玩状态
     /// </summary>
     /// <param name="galgame">要同步的游戏</param>
@@ -337,6 +356,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </param>
     public async Task SaveGalgamesAsync(Galgame? galgame = null)
     {
+        if(galgame?.CheckExist() == false) return;
         if (galgame != null && await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
             await SaveMetaAsync(galgame);
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
