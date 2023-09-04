@@ -133,6 +133,14 @@ public class MixedPhraser : IGalInfoPhraser
         return (bgmId, vndbId);
     }
 
+    public static string TrySetId(string str, string? bgmId, string? vndbId)
+    {
+        (string? bgmId, string? vndbId) lastId = TryGetId(str);
+        bgmId = bgmId ?? lastId.bgmId;
+        vndbId = vndbId ?? lastId.vndbId;
+        return $"bgm:{bgmId},vndb:{vndbId}";
+    }
+
     public RssType GetPhraseType() => RssType.Mixed;
 }
 

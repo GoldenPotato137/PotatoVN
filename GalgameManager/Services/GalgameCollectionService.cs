@@ -185,6 +185,21 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
+
+    private async Task TryAddGalgameAsync(AddCommit commit, string bgmId)
+    {
+        if (GetGalgameFromId(bgmId, RssType.Bangumi) is not null) return;
+        Galgame galgame = new()
+        {
+            Name = {Value = commit.Name},
+            Ids = {[(int)RssType.Mixed] = MixedPhraser.TrySetId(string.Empty, bgmId, null)}
+        };
+        await PhraseGalInfoAsync(galgame);
+        _galgames.Add(galgame);
+        GalgameAddedEvent?.Invoke(galgame);
+        UpdateDisplay(UpdateType.Add, galgame);
+        galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+    }
     
     /// <summary>
     /// 从下载源获取这个galgame的信息，并获取游玩状态（若设置里开启）

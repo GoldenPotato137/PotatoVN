@@ -52,29 +52,37 @@ public partial class GalgameCollectionService
         dbFiles.Remove(GetSyncDbFile());
         Dictionary<string, int> syncTo = await LocalSettingsService.ReadSettingAsync<Dictionary<string, int>>(KeyValues.SyncTo) 
                                          ?? new Dictionary<string, int>();
+        
         List<SyncCommit> commits = new();
+        Dictionary<SyncCommit, string> commitMacMap = new();
         foreach (var dbFile in dbFiles)
         {
             SQLiteAsyncConnection conn = new(dbFile);
             var mac = new FileInfo(dbFile).Name[..^3]; //去掉.db
             syncTo.TryGetValue(mac, out var lastId);
             List<SyncCommit> commit = await conn.Table<SyncCommit>().Where(c => c.Id > lastId).ToListAsync();
+            foreach (SyncCommit c in commit)
+                commitMacMap[c] = mac;
             commits.AddRange(commit);
             syncTo[mac] = commit.Max(c => c.Id);
         }
-        // await LocalSettingsService.SaveSettingAsync(KeyValues.SyncTo, syncTo); //todo: TEST ONLY
         commits.Sort((a, b) => a.Timestamp.CompareTo(b.Timestamp));
 
         foreach (SyncCommit commit in commits)
         {
             Galgame? game = GetGalgameFromId(commit.BgmId, RssType.Bangumi);
+            if(game is not null && game.SyncTo.TryGetValue(commitMacMap[commit], out var lastId) && commit.Id <= lastId) 
+                continue;
             try
             {
                 switch (commit.Type)
                 {
                     case CommitType.Add:
                         if (game is not null) continue;
-                        //TODO:支持虚拟游戏（本地硬盘不存在的游戏）
+                        if (commits.Any(c => c.Type == CommitType.Delete && c.Id == commit.Id)) continue;
+                        AddCommit? addCommit = JsonConvert.DeserializeObject<AddCommit>(commit.Content);
+                        if (addCommit is null) continue;
+                        await TryAddGalgameAsync(addCommit, commit.Id.ToString());
                         break;
                     case CommitType.Play:
                         if (game is null) continue;
@@ -89,12 +97,18 @@ public partial class GalgameCollectionService
                     case CommitType.ChangePlayType:
                         break;
                 }
+                
+                if(game is not null)
+                    game.SyncTo[commitMacMap[commit]] = commit.Id;
             }
             catch
             {
                 //ignore
             }
         }
+
+        // await LocalSettingsService.SaveSettingAsync(KeyValues.SyncTo, syncTo); //todo: TEST ONLY
+        await SaveGalgamesAsync();
     }
 
     /// <summary>
