@@ -186,9 +186,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
-    private async Task TryAddGalgameAsync(AddCommit commit, string bgmId)
+    private async Task<Galgame?> TryAddGalgameAsync(AddCommit commit, string bgmId)
     {
-        if (GetGalgameFromId(bgmId, RssType.Bangumi) is not null) return;
+        if (GetGalgameFromId(bgmId, RssType.Bangumi) is not null) return null;
         Galgame galgame = new()
         {
             Name = {Value = commit.Name},
@@ -199,6 +199,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         GalgameAddedEvent?.Invoke(galgame);
         UpdateDisplay(UpdateType.Add, galgame);
         galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+        return galgame;
     }
     
     /// <summary>

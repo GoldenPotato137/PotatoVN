@@ -66,7 +66,20 @@ public partial class GalgameCollectionService
             commits.AddRange(commit);
             syncTo[mac] = commit.Max(c => c.Id);
         }
-        commits.Sort((a, b) => a.Timestamp.CompareTo(b.Timestamp));
+        commits.Sort((a, b) =>
+        {
+            if (a.Timestamp == b.Timestamp)
+            {
+                if (a.BgmId == b.BgmId)
+                {
+                    if(a.Type == b.Type)
+                        return a.Id.CompareTo(b.Id);
+                    return a.Type.CompareTo(b.Type);
+                }
+                return string.Compare(a.BgmId, b.BgmId, StringComparison.Ordinal);
+            }
+            return a.Timestamp.CompareTo(b.Timestamp);
+        });
 
         foreach (SyncCommit commit in commits)
         {
@@ -82,7 +95,7 @@ public partial class GalgameCollectionService
                         if (commits.Any(c => c.Type == CommitType.Delete && c.Id == commit.Id)) continue;
                         AddCommit? addCommit = JsonConvert.DeserializeObject<AddCommit>(commit.Content);
                         if (addCommit is null) continue;
-                        await TryAddGalgameAsync(addCommit, commit.Id.ToString());
+                        game = await TryAddGalgameAsync(addCommit, commit.BgmId);
                         break;
                     case CommitType.Play:
                         if (game is null) continue;

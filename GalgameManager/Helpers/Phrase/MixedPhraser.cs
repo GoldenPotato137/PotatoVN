@@ -58,13 +58,13 @@ public class MixedPhraser : IGalInfoPhraser
         // 试图从Id中获取bgmId和vndbId
         try
         {
-            (string? bgmId, string ? vndbId) tmp = TryGetId(galgame.Id);
-            if (tmp.bgmId != null)
+            (string? bgmId, string ? vndbId) tmp = TryGetId(galgame.Ids[(int)RssType.Mixed]);
+            if (string.IsNullOrEmpty(tmp.bgmId) == false)
             {
                 bgm.RssType = RssType.Bangumi;
                 bgm.Id = tmp.bgmId;
             }
-            if (tmp.vndbId != null)
+            if (string.IsNullOrEmpty(tmp.vndbId) == false)
             {
                 vndb.RssType = RssType.Vndb;
                 vndb.Id = tmp.vndbId;
