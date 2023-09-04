@@ -109,7 +109,7 @@ public class VndbPhraser : IGalInfoPhraser
             // id eg: v16044 -> 16044
             var id = rssItem.Id! ;
             result.Id = id.StartsWith("v")?id[1..]:id;
-            result.Rating = rssItem.Rating / 10 ?? 0;
+            result.Rating =(float)Math.Round(rssItem.Rating / 10 ?? 0.0D, 1);
             result.ExpectedPlayTime = GetLength(rssItem.Lenth,rssItem.LengthMinutes);
             result.ImageUrl = rssItem.Image != null ? rssItem.Image.Url! :"";
             // Developers
