@@ -8,7 +8,10 @@ namespace GalgameManager.Services;
 
 public partial class GalgameCollectionService
 {
+    /// 同步状态改变事件， 当前进度/总commit数
+    public event GenericDelegate<(int, int)>? SyncProgressChanged;
     private bool _readyForSync;
+    private SQLiteAsyncConnection? _localDb;
     
     public async Task SyncUpgrade()
     {
@@ -21,9 +24,12 @@ public partial class GalgameCollectionService
             SQLiteAsyncConnection? conn = GetConnection();
             if (conn is null) return;
             await conn.CreateTableAsync<SyncCommit>();
+            List<SyncCommit> oldTable = await conn.Table<SyncCommit>().ToListAsync();
             foreach (Galgame galgame in _galgames)
             {
                 if(string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi])) continue;
+                if (oldTable.Any(commit => commit.Type == CommitType.Add && commit.BgmId == galgame.Ids[(int)RssType.Bangumi]))
+                    continue; //防止重装软件后重复添加
                 await conn.InsertAsync(new SyncCommit(CommitType.Add,galgame.Ids[(int)RssType.Bangumi]!, 
                     new AddCommit
                 {
@@ -45,9 +51,13 @@ public partial class GalgameCollectionService
         }
     }
 
+    /// <summary>
+    /// 从同步盘中同步游戏数据，如果设置中没有打开同步游戏则什么都不做
+    /// </summary>
     public async Task SyncGames()
     {
         if (_readyForSync == false) return;
+        
         List<string> dbFiles = GetSyncDbFiles();
         dbFiles.Remove(GetSyncDbFile());
         Dictionary<string, int> syncTo = await LocalSettingsService.ReadSettingAsync<Dictionary<string, int>>(KeyValues.SyncTo) 
@@ -65,24 +75,20 @@ public partial class GalgameCollectionService
                 commitMacMap[c] = mac;
             commits.AddRange(commit);
             syncTo[mac] = commit.Max(c => c.Id);
+            await conn.CloseAsync();
         }
         commits.Sort((a, b) =>
         {
-            if (a.Timestamp == b.Timestamp)
-            {
-                if (a.BgmId == b.BgmId)
-                {
-                    if(a.Type == b.Type)
-                        return a.Id.CompareTo(b.Id);
-                    return a.Type.CompareTo(b.Type);
-                }
-                return string.Compare(a.BgmId, b.BgmId, StringComparison.Ordinal);
-            }
-            return a.Timestamp.CompareTo(b.Timestamp);
+            if (a.Timestamp != b.Timestamp) return a.Timestamp.CompareTo(b.Timestamp);
+            if (a.BgmId != b.BgmId) return string.Compare(a.BgmId, b.BgmId, StringComparison.Ordinal);
+            if(a.Type == b.Type) return a.Id.CompareTo(b.Id);
+            return a.Type.CompareTo(b.Type);
         });
 
+        var syncCnt = 0;
         foreach (SyncCommit commit in commits)
         {
+            SyncProgressChanged?.Invoke((syncCnt++, commits.Count));
             Galgame? game = GetGalgameFromId(commit.BgmId, RssType.Bangumi);
             if(game is not null && game.SyncTo.TryGetValue(commitMacMap[commit], out var lastId) && commit.Id <= lastId) 
                 continue;
@@ -92,7 +98,8 @@ public partial class GalgameCollectionService
                 {
                     case CommitType.Add:
                         if (game is not null) continue;
-                        if (commits.Any(c => c.Type == CommitType.Delete && c.Id == commit.Id)) continue;
+                        if (commits.Any(c => c.Timestamp >= commit.Timestamp && 
+                                             c.Type == CommitType.Delete && c.Id == commit.Id)) continue;
                         AddCommit? addCommit = JsonConvert.DeserializeObject<AddCommit>(commit.Content);
                         if (addCommit is null) continue;
                         game = await TryAddGalgameAsync(addCommit, commit.BgmId);
@@ -106,13 +113,18 @@ public partial class GalgameCollectionService
                         game.TotalPlayTime += playCommit.Time;
                         break;
                     case CommitType.Delete:
+                        if (game is null) continue;
+                        await RemoveGalgame(game, false);
                         break;
                     case CommitType.ChangePlayType:
                         break;
                 }
-                
-                if(game is not null)
+
+                if (game is not null)
+                {
                     game.SyncTo[commitMacMap[commit]] = commit.Id;
+                    await SaveGalgamesAsync(); //在这里保存是为了防止同步到一半软件关闭导致同步到的id错误
+                }
             }
             catch
             {
@@ -121,7 +133,51 @@ public partial class GalgameCollectionService
         }
 
         // await LocalSettingsService.SaveSettingAsync(KeyValues.SyncTo, syncTo); //todo: TEST ONLY
-        await SaveGalgamesAsync();
+        SyncProgressChanged?.Invoke((commits.Count, commits.Count));
+
+        _localDb = GetConnection();
+        App.MainWindow.AppWindow.Closing += async (_, _) =>
+        {
+            if (_localDb is not null)
+                await _localDb.CloseAsync();
+        };
+    }
+
+    /// <summary>
+    /// 提交同步更改，如果设置中没有打开同步游戏则什么都不做
+    /// </summary>
+    /// <param name="type">更改类型</param>
+    /// <param name="galgame">更改游戏</param>
+    /// <param name="content">内容<br/>
+    /// 对于play (string, int) => (日期, 时间)<br/>
+    /// </param>
+    public async Task CommitChange(CommitType type, Galgame galgame, object? content)
+    {
+        if (_readyForSync == false || _localDb is null) return;
+        if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi])) return;
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames) == false) return;
+        switch (type)
+        {
+            case CommitType.Add:
+                await _localDb.InsertAsync(new SyncCommit(CommitType.Add, galgame.Ids[(int)RssType.Bangumi]!, new AddCommit
+                {
+                    Name = galgame.Name.Value ?? string.Empty
+                }));
+                break;
+            case CommitType.Delete:
+                await _localDb.InsertAsync(new SyncCommit(CommitType.Delete, galgame.Ids[(int)RssType.Bangumi]!, new DeleteCommit()));
+                break;
+            case CommitType.Play:
+                if (content is not (string date, int time)) return;
+                await _localDb.InsertAsync(new SyncCommit(CommitType.Play, galgame.Ids[(int)RssType.Bangumi]!, new PlayCommit
+                {
+                    Date = date,
+                    Time = time
+                }));
+                break;
+            case CommitType.ChangePlayType:
+                break;
+        }
     }
 
     /// <summary>

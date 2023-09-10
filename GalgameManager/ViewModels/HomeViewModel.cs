@@ -76,7 +76,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         
         ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
         _galgameService.PhrasedEvent += () => IsPhrasing = false;
-        // IsPhrasing = _galgameService.IsPhrasing;
+        _galgameService.SyncProgressChanged += OnSyncChanged;
 
         _stretch = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result
             ? Stretch.UniformToFill : Stretch.Uniform;
@@ -175,6 +175,14 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _ = DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
     }
 
+    private void OnSyncChanged((int cnt, int total) tuple)
+    {
+        if (tuple.total == 0) return;
+        _ = tuple.cnt == tuple.total
+            ? DisplayMsgAsync(InfoBarSeverity.Success, string.Format("HomePage_Synced".GetLocalized(), tuple.total))
+            : DisplayMsgAsync(InfoBarSeverity.Informational, string.Format("HomePage_Syncing".GetLocalized(), tuple.cnt, tuple.total), 120*1000);
+    }
+
     [RelayCommand]
     private async Task AddGalgame()
     {
@@ -237,7 +245,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            await _galgameService.RemoveGalgame(galgame);
+            await _galgameService.RemoveGalgame(galgame, true);
         };
         
         await dialog.ShowAsync();

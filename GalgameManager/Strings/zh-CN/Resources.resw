@@ -941,4 +941,10 @@
   <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
     <value>设置本地路径</value>
   </data>
+  <data name="HomePage_Syncing" xml:space="preserve">
+    <value>同步游戏记录中  {0}/{1}</value>
+  </data>
+  <data name="HomePage_Synced" xml:space="preserve">
+    <value>已同步{0}条游戏记录更改</value>
+  </data>
 </root>

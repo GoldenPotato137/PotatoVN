@@ -120,8 +120,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// 移除一个galgame
     /// </summary>
     /// <param name="galgame">galgame</param>
+    /// <param name="commitSync">是否要将变化同步到云盘</param>
     /// <param name="removeFromDisk">是否要从硬盘移除游戏</param>
-    public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
+    public async Task RemoveGalgame(Galgame galgame,bool commitSync, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
         if(galgame.CheckExist())
@@ -131,6 +132,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             galgame.Delete();
         GalgameDeletedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
+        if (commitSync)
+            await CommitChange(CommitType.Delete, galgame, null);
     }
 
     /// <summary>
@@ -165,6 +168,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 return AddGalgameResult.NotFoundInRss;
         }
 
+        // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
         Galgame? virtualGame = _galgames.FirstOrDefault(g =>
             string.IsNullOrEmpty(g.Ids[(int)RssType.Bangumi]) == false
             && g.Ids[(int)RssType.Bangumi] == galgame.Ids[(int)RssType.Bangumi]
@@ -174,8 +178,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             virtualGame.Path = galgame.Path;
             galgame = virtualGame;
         }
-        galgame.FindSaveInPath();
         
+        galgame.FindSaveInPath();
         if(virtualGame is null)
             _galgames.Add(galgame);
         _galgameMap[galgame.Path] = galgame;
@@ -183,6 +187,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await SaveGalgamesAsync(galgame);
         UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
         galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+        if (virtualGame is null)
+            _ = Task.Run(() => CommitChange(CommitType.Add, galgame, null));
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 

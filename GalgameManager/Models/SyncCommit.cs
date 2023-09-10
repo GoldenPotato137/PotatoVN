@@ -38,4 +38,6 @@ public class PlayCommit
 {
     public string Date = string.Empty;
     public int Time;
-}    
+}
+
+public class DeleteCommit { }

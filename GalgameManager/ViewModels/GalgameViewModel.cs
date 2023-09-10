@@ -22,7 +22,7 @@ namespace GalgameManager.ViewModels;
 public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 {
     private const int ProcessMaxWaitSec = 60; //(手动指定游戏进程)等待游戏进程启动的最大时间
-    private const int ManuallySelectProcessSec = 20; //认定为需要手动选择游戏进程的时间阈值
+    private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly INavigationService _navigationService;
@@ -171,12 +171,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             Item.RecordPlayTime(process);
             ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
             await _jumpListService.AddToJumpListAsync(Item);
+            Dictionary<string, int> oldPlayTime = new(Item.PlayedTime);
 
             await process.WaitForExitAsync();
 
             ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
-            if (DateTime.Now - startTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) && Item.ProcessName is null 
-                && Item.TotalPlayTime == 0)
+            if (DateTime.Now - startTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) && Item.ProcessName is null)
             {
                 SelectProcessDialog dialog = new();
                 await dialog.ShowAsync();
@@ -187,6 +187,11 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                 }
             }
             await SaveAsync(); //保存游戏信息(更新时长)
+            foreach(var date in Item.PlayedTime.Keys)
+            {
+                if (oldPlayTime.TryGetValue(date, out var oldValue) && oldValue == Item.PlayedTime[date]) continue;
+                await _galgameService.CommitChange(CommitType.Play, Item, (date, Item.PlayedTime[date] - oldValue));
+            }
         }
         catch
         {
@@ -238,7 +243,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            await _galgameService.RemoveGalgame(Item, true);
+            await _galgameService.RemoveGalgame(Item, true, true);
         };
         await dialog.ShowAsync();
     }

@@ -108,7 +108,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         
         if (delete == false || !_galgameFolders.Contains(galgameFolder)) return;
         foreach (Galgame galgame in await galgameFolder.GetGalgameList())
-            await _galgameService.RemoveGalgame(galgame);
+            await _galgameService.RemoveGalgame(galgame, true);
         _galgameFolders.Remove(galgameFolder);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
     }
