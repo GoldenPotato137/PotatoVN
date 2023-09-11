@@ -197,9 +197,9 @@ public class CategoryService : ICategoryService
             foreach (var developerStr in developerStrings)
             {
                 Producer producer = ProducerDataHelper.Producers.FirstOrDefault(p =>
-                    p.Names.Any(name => name == developerStr)) ?? new Producer(developerStr);
+                    p.Names.Any(name => string.Equals(name, developerStr, StringComparison.CurrentCultureIgnoreCase))) ?? new Producer(developerStr);
                 Category? developer = _developerGroup!.Categories.FirstOrDefault(c => 
-                        producer.Names.Any(name => name == c.Name));
+                        producer.Names.Any(name => string.Equals(name, c.Name, StringComparison.CurrentCultureIgnoreCase)));
                 if (developer is null)
                 {
                     developer = new Category(producer.Name);

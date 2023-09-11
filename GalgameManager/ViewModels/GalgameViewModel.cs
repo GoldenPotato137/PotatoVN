@@ -316,10 +316,9 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                     _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
                     return;
                 }
-                Item!.Path = folder;
+                await _galgameService.TryAddGalgameAsync(folder);
                 Item!.ExePath = file.Path;
                 IsLocalGame = Item!.CheckExist();
-                await SaveAsync();
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());
                 _galgameService.RefreshDisplay(); //重新构造显示列表以刷新特殊显示非本地游戏（因为GameToOpacityConverter只会在构造列表的时候被调用）
             }

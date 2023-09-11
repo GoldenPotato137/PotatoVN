@@ -149,7 +149,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// </summary>
     /// <param name="time">年/月/日</param>
     /// <returns></returns>
-    private static long GetTime(string time)
+    public static long GetTime(string time)
     {
         if (time == DefaultString)
             return 0;
@@ -249,7 +249,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             MyRate = MyRate,
             PrivateComment = PrivateComment,
             SavePath = SavePath,
-            ProcessName = ProcessName
+            ProcessName = ProcessName,
+            SyncTo = SyncTo,
         };
         return result;
     }

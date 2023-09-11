@@ -924,7 +924,7 @@
     <value>游戏同步</value>
   </data>
   <data name="SettingsPage_CloudSync_SyncGame.Description" xml:space="preserve">
-    <value>NOT IMPLEMENT YET</value>
+    <value>是否将游戏状态(添加/游玩/删除等)上传到云存档根目录，并跨电脑同步</value>
   </data>
   <data name="HomePage_Filter_DisplayVirtualGames.Content" xml:space="preserve">
     <value>显示非本机游戏</value>
@@ -946,5 +946,8 @@
   </data>
   <data name="HomePage_Synced" xml:space="preserve">
     <value>已同步{0}条游戏记录更改</value>
+  </data>
+  <data name="SettingsPage_CloudSync_SyncGame_Success" xml:space="preserve">
+    <value>设置成功，重启软件后生效</value>
   </data>
 </root>

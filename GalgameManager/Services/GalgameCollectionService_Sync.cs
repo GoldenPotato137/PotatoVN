@@ -47,7 +47,7 @@ public partial class GalgameCollectionService
             }
             _readyForSync = true;
             await conn.CloseAsync();
-            // await LocalSettingsService.SaveSettingAsync(KeyValues.GameSyncUpgraded, true); //todo:TEST ONLY
+            await LocalSettingsService.SaveSettingAsync(KeyValues.GameSyncUpgraded, true);
         }
     }
 
@@ -74,7 +74,8 @@ public partial class GalgameCollectionService
             foreach (SyncCommit c in commit)
                 commitMacMap[c] = mac;
             commits.AddRange(commit);
-            syncTo[mac] = commit.Max(c => c.Id);
+            if(commit.Count > 0)
+                syncTo[mac] = commit.Max(c => c.Id);
             await conn.CloseAsync();
         }
         commits.Sort((a, b) =>
@@ -111,6 +112,12 @@ public partial class GalgameCollectionService
                         game.PlayedTime.TryGetValue(playCommit.Date, out var time);
                         game.PlayedTime[playCommit.Date] = time + playCommit.Time;
                         game.TotalPlayTime += playCommit.Time;
+                        if (Galgame.GetTime(playCommit.Date) >
+                            Galgame.GetTime(game.LastPlay.Value ?? Galgame.DefaultString))
+                        {
+                            game.LastPlay = playCommit.Date;
+                            UpdateDisplay(UpdateType.Play, game);
+                        }
                         break;
                     case CommitType.Delete:
                         if (game is null) continue;
@@ -123,7 +130,7 @@ public partial class GalgameCollectionService
                 if (game is not null)
                 {
                     game.SyncTo[commitMacMap[commit]] = commit.Id;
-                    await SaveGalgamesAsync(); //在这里保存是为了防止同步到一半软件关闭导致同步到的id错误
+                    await SaveGalgamesAsync(game); //在这里保存是为了防止同步到一半软件关闭导致同步到的id错误
                 }
             }
             catch
@@ -132,7 +139,7 @@ public partial class GalgameCollectionService
             }
         }
 
-        // await LocalSettingsService.SaveSettingAsync(KeyValues.SyncTo, syncTo); //todo: TEST ONLY
+        await LocalSettingsService.SaveSettingAsync(KeyValues.SyncTo, syncTo);
         SyncProgressChanged?.Invoke((commits.Count, commits.Count));
 
         _localDb = GetConnection();

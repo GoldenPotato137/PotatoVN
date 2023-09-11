@@ -393,7 +393,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         RemoteFolder = folder?.Path ?? RemoteFolder;
     }
     
-    partial void OnSyncGamesChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SyncGames, value);
+    partial void OnSyncGamesChanged(bool value)
+    {
+        if (value && _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result == false)
+            _ = DisplayMsgAsync(InfoBarSeverity.Success, "SettingsPage_CloudSync_SyncGame_Success".GetLocalized());
+        _localSettingsService.SaveSettingAsync(KeyValues.SyncGames, value);
+    }
 
     #endregion
 
