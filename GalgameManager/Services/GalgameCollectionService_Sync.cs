@@ -143,6 +143,8 @@ public partial class GalgameCollectionService
         SyncProgressChanged?.Invoke((commits.Count, commits.Count));
 
         _localDb = GetConnection();
+        if(_localDb is not null)
+            await _localDb.CreateTableAsync<SyncCommit>();
         App.MainWindow.AppWindow.Closing += async (_, _) =>
         {
             if (_localDb is not null)

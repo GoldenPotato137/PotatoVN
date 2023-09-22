@@ -99,6 +99,7 @@ public class NavigationService : INavigationService
                 {
                     navigationAware.OnNavigatedFrom();
                 }
+                GC.Collect(); //临时解决切换界面时内存不释放的问题（见：https://github.com/microsoft/microsoft-ui-xaml/issues/5978）
             }
 
             return navigated;
