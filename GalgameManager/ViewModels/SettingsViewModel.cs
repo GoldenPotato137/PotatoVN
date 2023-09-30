@@ -133,8 +133,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
         _authenticationType = _localSettingsService.ReadSettingAsync<AuthenticationType>(KeyValues.AuthenticationType).Result;
-        //UPLOAD
+        //Other
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
+        MemoryImprove = _localSettingsService.ReadSettingAsync<bool>(KeyValues.MemoryImprove).Result;
 
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
@@ -461,11 +462,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    #region UPLOAD
+    #region Other
 
     [ObservableProperty] private bool _uploadToAppCenter;
-    
+    [ObservableProperty] private bool _memoryImprove;
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
+    
+    partial void OnMemoryImproveChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.MemoryImprove, value);
 
     #endregion
 

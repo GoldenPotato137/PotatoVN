@@ -73,9 +73,9 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _galgameService = (GalgameCollectionService)_dataCollectionService;
         _localSettingsService = localSettingsService;
         _filterService = filterService;
-        
-        ((GalgameCollectionService)dataCollectionService).GalgameLoadedEvent += async () => Source = await dataCollectionService.GetContentGridDataAsync();
-        _galgameService.PhrasedEvent += () => IsPhrasing = false;
+
+        _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
+        _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _galgameService.SyncProgressChanged += OnSyncChanged;
 
         _stretch = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result
@@ -88,7 +88,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
-
+    
     public async void OnNavigatedTo(object parameter)
     {
         SearchKey = _galgameService.GetSearchKey();
@@ -108,6 +108,9 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             await Task.Delay(200); //等待动画结束
             _filterService.RemoveFilter(_filter);
         }
+        _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
+        _galgameService.SyncProgressChanged -= OnSyncChanged;
+        _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
     }
 
     private void OnItemClick(Galgame? clickedItem)
@@ -182,6 +185,10 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             ? DisplayMsgAsync(InfoBarSeverity.Success, string.Format("HomePage_Synced".GetLocalized(), tuple.total))
             : DisplayMsgAsync(InfoBarSeverity.Informational, string.Format("HomePage_Syncing".GetLocalized(), tuple.cnt, tuple.total), 120*1000);
     }
+    
+    private void OnGalgameServicePhrased() => IsPhrasing = false;
+    
+    private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetContentGridDataAsync();
 
     [RelayCommand]
     private async Task AddGalgame()
@@ -209,6 +216,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     
     [RelayCommand]
     private async Task Sort()
+    
     {
         await _galgameService.SetSortKeysAsync();
     }

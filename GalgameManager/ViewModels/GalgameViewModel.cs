@@ -47,10 +47,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
-        _galgameService.PhrasedEvent += () => IsPhrasing = false;
+        _galgameService.PhrasedEvent += OnGalgameServiceOnPhrasedEvent;
         _jumpListService = (JumpListService)jumpListService;
         _localSettingsService = localSettingsService;
     }
+
+    
 
     public async void OnNavigatedTo(object parameter)
     {
@@ -80,6 +82,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 
     public void OnNavigatedFrom()
     {
+        _galgameService.PhrasedEvent -= OnGalgameServiceOnPhrasedEvent;
     }
     
     private void UpdateVisibility()
@@ -108,6 +111,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
         return processes[0];
     }
+    
+    private void OnGalgameServiceOnPhrasedEvent() => IsPhrasing = false;
 
     #region INFOBAR_CTRL
 

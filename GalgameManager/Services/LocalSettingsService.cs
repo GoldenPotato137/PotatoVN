@@ -188,6 +188,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)true;
             case KeyValues.OverrideLocalNameWithChinese:
                 return (T?)(object)false;
+            case KeyValues.MemoryImprove:
+                return (T?)(object)true;
             default:
                 return default;
         }

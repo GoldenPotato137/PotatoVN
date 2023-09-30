@@ -14,7 +14,6 @@
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
-        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter"/>
         <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
@@ -404,12 +403,20 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
                 
-                <!-- 上传设置 -->
-                <control:SettingExpander x:Uid="SettingsPage_Upload" SettingIcon="&#xE898;">
+                <!-- 其他设置 -->
+                <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE74C;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel>
-                            <local:SettingToggleSwitch x:Uid="SettingsPage_Upload_AppCenter"
-                                                       IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 上传匿名事件日志 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Other_AppCenter"
+                                                           IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 优化内存占用 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Other_Memory"
+                                                           IsOn="{x:Bind ViewModel.MemoryImprove, Mode=TwoWay}"/>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>

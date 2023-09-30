@@ -34,6 +34,7 @@ public static class KeyValues
     public const string FontInstalled = "fontInstalled"; //bool, 是否安装了Segoe Fluent Icons字体
     public const string SyncGames = "syncGames"; //bool, 是否同步游戏（游玩时长/状态/列表）
     public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
+    public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化
     
     //启动与跳转相关
     public const string QuitStart = "quitStart"; //bool, 是否在jump list跳转打开游戏时启动游戏
