@@ -950,4 +950,10 @@
   <data name="SettingsPage_CloudSync_SyncGame_Success" xml:space="preserve">
     <value>设置成功，重启软件后生效</value>
   </data>
+  <data name="GalgamePage_RemoveSelectedThread.Label" xml:space="preserve">
+    <value>移除进程指定</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread_Success" xml:space="preserve">
+    <value>已成功移除手动线程指定</value>
+  </data>
 </root>

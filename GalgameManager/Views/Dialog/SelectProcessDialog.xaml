@@ -17,7 +17,7 @@
         
         <TextBlock Grid.Row="0" x:Uid="SelectProcessDialog_Msg" TextWrapping="Wrap"/>
 
-        <ListView Grid.Row="1" x:Name="ListView">
+        <ListView Grid.Row="1" x:Name="ListView" SelectionChanged="ListView_OnItemClick">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="dialog:DisplayProcess">
                     <StackPanel Orientation="Horizontal" Spacing="10">

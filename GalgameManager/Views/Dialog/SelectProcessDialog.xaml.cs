@@ -25,6 +25,7 @@ public sealed partial class SelectProcessDialog
             if(ListView.SelectedItem is DisplayProcess process)
                 SelectedProcessName = process.Process.ProcessName;
         };
+        IsPrimaryButtonEnabled = false;
         DefaultButton = ContentDialogButton.Secondary;
         
         GetProcess();
@@ -69,6 +70,11 @@ public sealed partial class SelectProcessDialog
     private void ButtonRefresh_OnClick(object sender, RoutedEventArgs e)
     {
         GetProcess();
+    }
+
+    private void ListView_OnItemClick(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
+    {
+        IsPrimaryButtonEnabled = ListView.SelectedItem is not null;
     }
 }
 

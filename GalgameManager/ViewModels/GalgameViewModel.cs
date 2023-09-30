@@ -33,6 +33,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
+    [ObservableProperty] private Visibility _isRemoveSelectedThreadVisible = Visibility.Collapsed;
     [ObservableProperty] private bool _canOpenInBgm;
     [ObservableProperty] private bool _canOpenInVndb;
 
@@ -87,6 +88,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
         CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
         CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
+        IsRemoveSelectedThreadVisible = Item?.ProcessName is not null ? Visibility.Visible : Visibility.Collapsed;
     }
     
     /// <summary>
@@ -183,6 +185,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                 if (dialog.SelectedProcessName is not null)
                 {
                     Item.ProcessName = dialog.SelectedProcessName;
+                    UpdateVisibility();
                     await DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
                 }
             }
@@ -327,5 +330,14 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         {
             _ = DisplayMsg(InfoBarSeverity.Error, e.Message);
         }
+    }
+
+    [RelayCommand]
+    private async Task RemoveSelectedThread()
+    {
+        Item!.ProcessName = null;
+        UpdateVisibility();
+        _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_RemoveSelectedThread_Success".GetLocalized());
+        await SaveAsync();
     }
 }

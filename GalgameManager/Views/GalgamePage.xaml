@@ -102,12 +102,22 @@
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" 
                                         IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                     <AppBarSeparator/>
+                    <!-- 改变存档位置 -->
                     <AppBarButton
                         x:Uid="GalgamePage_ChangeSavePosition"
                         Command="{x:Bind ViewModel.ChangeSavePositionCommand}"
                         IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <!-- 移除进程指定 -->
+                    <AppBarButton 
+                        x:Uid="GalgamePage_RemoveSelectedThread"
+                        Command="{x:Bind ViewModel.RemoveSelectedThreadCommand}"
+                        Visibility="{x:Bind ViewModel.IsRemoveSelectedThreadVisible, Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE738;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
                     <AppBarSeparator/>
