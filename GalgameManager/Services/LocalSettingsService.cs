@@ -56,15 +56,28 @@ public class LocalSettingsService : ILocalSettingsService
         var retry = 0;
         while (true)
         {
-            if (retry > 3) throw new ConfigurationErrorsException("配置读取失败");
+            if (retry > 3) //配置读取失败且无法回复，全新启动
+            {
+                _settings = new Dictionary<string, object>();
+                return;
+            }
 
             await UpgradeSaveFormat();
+
+            var reset = false;
+            try
+            {
+                _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
+                            new Dictionary<string, object>();
+            }
+            catch
+            {
+                reset = true;
+            }
             
-            _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
-                        new Dictionary<string, object>();
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
-            if (CheckSettings() == false)
+            if (reset || CheckSettings() == false)
             {
                 // 恢复最后一个正确的配置
                 if (File.Exists(Path.Combine(_applicationDataFolder, _localsettingsBackupFile))) 
