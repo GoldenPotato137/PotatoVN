@@ -141,12 +141,13 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </summary>
     /// <param name="path">galgame路径</param>
     /// <param name="isForce">是否强制添加（若RSS源中找不到相关游戏信息）</param>
-    public async Task<AddGalgameResult> TryAddGalgameAsync(string path, bool isForce = false)
+    /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
+    public async Task<AddGalgameResult> TryAddGalgameAsync(string path , bool isForce = false, Galgame? virtualGame = null)
     {
         if (_galgames.Any(gal => gal.Path == path))
             return AddGalgameResult.AlreadyExists;
 
-        Galgame galgame;
+        Galgame galgame = new(path);
         var metaFolder = Path.Combine(path, Galgame.MetaPath);
         if (Path.Exists(Path.Combine(metaFolder, "meta.json"))) // 有元数据备份
         {
@@ -154,9 +155,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             Galgame.ResolveMeta(galgame, metaFolder);
             PhrasedEvent?.Invoke();
         }
-        else
+        else if (virtualGame is null)
         {
-            galgame = new(path);
             var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
             var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
             var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
@@ -169,7 +169,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         }
 
         // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
-        Galgame? virtualGame = _galgames.FirstOrDefault(g =>
+        virtualGame ??= _galgames.FirstOrDefault(g =>
             string.IsNullOrEmpty(g.Ids[(int)RssType.Bangumi]) == false
             && g.Ids[(int)RssType.Bangumi] == galgame.Ids[(int)RssType.Bangumi]
             && g.CheckExist() == false);

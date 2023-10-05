@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using SharpCompress;
 
 namespace GalgameManager.Models;
 
@@ -32,7 +33,7 @@ public partial class Category : ObservableObject
     public void UpdateSerializeList()
     {
         Galgames.Clear();
-        _galgames.ForEach(g => Galgames.Add(g.Path));
+        _galgames.Where(g => g.CheckExist()).ForEach(g => Galgames.Add(g.Path));
     }
     
     public void Add(Galgame galgame)
