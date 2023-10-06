@@ -19,8 +19,12 @@
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Never</AppxBundle>
     <DefaultLanguage>zh-cn</DefaultLanguage>
-    <AppxPackageDir>E:\.Net\PotatoVN\GalgameManager\bin\</AppxPackageDir>
+    <AppxPackageDir>D:\.Net\PotatoVN\GalgameManager\bin\</AppxPackageDir>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+    <UserSecretsId>5b27f473-5a17-4f8c-92d3-5f0de166463d</UserSecretsId>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <PackageCertificateKeyFile>GalgameManager_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Potato.altform-lightunplated_targetsize-16.png" />
