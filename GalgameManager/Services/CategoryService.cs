@@ -78,6 +78,8 @@ public class CategoryService : ICategoryService
                     {
                         if (_galgameService.GetGalgameFromPath(str) is { } tmp)
                             c.Add(tmp);
+                        else if(_galgameService.GetGalgameFromName(str) is { } tmp2)
+                            c.Add(tmp2);
                     });
             }
         });

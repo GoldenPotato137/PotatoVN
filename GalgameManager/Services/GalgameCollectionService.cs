@@ -355,6 +355,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>galgame,若找不到则返回null</returns>
     public Galgame? GetGalgameFromPath(string path)
     {
+        if (string.IsNullOrEmpty(path)) return null;
         return _galgameMap.TryGetValue(path, out Galgame? result) ? result : null;
     }
 
@@ -367,6 +368,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public Galgame? GetGalgameFromId(string id, RssType rssType)
     {
         return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
+    }
+
+    /// <summary>
+    /// 从名字获取galgame
+    /// </summary>
+    /// <param name="name">名字</param>
+    /// <returns>galgame，找不到返回null</returns>
+    public Galgame? GetGalgameFromName(string name)
+    {
+        return _galgames.FirstOrDefault(g => g.Name.Value == name);
     }
     
     /// <summary>
@@ -552,6 +563,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 await dialog.ShowAsync();
             }
         }
+        
+        await SaveGalgamesAsync(galgame);
     }
 
     /// <summary>
