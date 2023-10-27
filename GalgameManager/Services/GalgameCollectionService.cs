@@ -517,16 +517,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                     if (choose == 1)
                     {
                         new DirectoryInfo(remoteRoot).Delete(true); //删除云端文件夹
-                        FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                        FolderOperations.ConvertFolderToSymbolicLink(localSavePath, remoteRoot);
                     }
                     else if (choose == 2)
                     {
                         new DirectoryInfo(localSavePath).Delete(true); //删除本地文件夹
-                        Directory.CreateSymbolicLink(localSavePath, remoteRoot);
+                        FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
                     }
                 }
                 else
-                    FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                    FolderOperations.ConvertFolderToSymbolicLink(localSavePath, remoteRoot);
                 galgame.SavePath = localSavePath;
             }
             catch (Exception e) //创建符号链接失败，把存档复制回去
@@ -537,7 +537,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 //弹出提示框
                 StackPanel stackPanel = new();
                 stackPanel.Children.Add(new TextBlock {Text = "GalgameCollectionService_CreateSymbolicLinkFailed".GetLocalized()});
-                stackPanel.Children.Add(new TextBlock {Text = e.Message});
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = e.Message + "\n" + e.StackTrace, 
+                    TextWrapping = TextWrapping.Wrap
+                });
                 ContentDialog dialog = new()
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,

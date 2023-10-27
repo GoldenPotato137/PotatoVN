@@ -1,4 +1,6 @@
-﻿namespace GalgameManager.Helpers;
+﻿using System.Diagnostics;
+
+namespace GalgameManager.Helpers;
 
 public static class FolderOperations
 {
@@ -50,7 +52,7 @@ public static class FolderOperations
     /// <param name="targetFolderPath">映射目标地址</param>
     /// <exception cref="ArgumentException">原地址/目标地址为空或null</exception>
     /// <exception cref="DirectoryNotFoundException">原地址不存在</exception>
-    public static void CreateSymbolicLink(string sourceFolderPath, string targetFolderPath)
+    public static void ConvertFolderToSymbolicLink(string sourceFolderPath, string targetFolderPath)
     {
         if (string.IsNullOrEmpty(sourceFolderPath) || string.IsNullOrEmpty(targetFolderPath))
         {
@@ -67,7 +69,28 @@ public static class FolderOperations
         // 删除原始文件夹
         Directory.Delete(sourceFolderPath, true);
         // 创建符号链接
-        Directory.CreateSymbolicLink(sourceFolderPath, targetFolderPath);
+        CreateSymbolicLink(sourceFolderPath, targetFolderPath);
+    }
+
+    /// <summary>
+    /// 创造符号链接
+    /// </summary>
+    /// <param name="sourceFolderPath">原地址</param>
+    /// <param name="targetFolderPath">引用地址</param>
+    public static void CreateSymbolicLink(string sourceFolderPath, string targetFolderPath)
+    {
+        ProcessStartInfo processInfo = new()
+        {
+            Verb = "runas",
+            FileName = "cmd.exe",
+            Arguments = $"/c mklink /D \"{sourceFolderPath}\" \"{targetFolderPath}\"",
+            UseShellExecute = true,
+        };
+        Process? process = Process.Start(processInfo);
+        if (process is null) throw new Exception("Failed to start cmd.exe");
+        process.WaitForExit();
+        if (Directory.Exists(sourceFolderPath) == false)
+            throw new Exception("Failed to create symbolic link.");
     }
 
     /// <summary>
