@@ -101,6 +101,22 @@
                     </control:SettingExpander.SettingContent>
                     
                 </control:SettingExpander>
+                
+                <!-- 游玩 -->
+                <control:SettingExpander 
+                    x:Uid="SettingsPage_Game"
+                    SettingIcon="&#xE7FC;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 只记录前台时间 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch
+                                    x:Uid="SettingsPage_Game_RecordOnlyForeground"
+                                    IsOn="{x:Bind ViewModel.RecordOnlyForeground, Mode=TwoWay}" />
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
 
                 <!-- 信息源 -->
                 <control:SettingExpander
@@ -404,7 +420,7 @@
                 </control:SettingExpander>
                 
                 <!-- 其他设置 -->
-                <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE74C;">
+                <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE713;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <!-- 上传匿名事件日志 -->

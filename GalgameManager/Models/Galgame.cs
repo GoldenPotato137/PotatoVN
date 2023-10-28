@@ -57,6 +57,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> SyncTo = new(); //mac, lastId, 每台电脑同步到的最后一个id （防止重装软件后同步状态丢失）
 
+    [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     [JsonIgnore] public static SortKeys[] SortKeysList
     {
         get;
@@ -287,18 +288,16 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             while (!process.HasExited)
             {
                 Thread.Sleep(1000 * 60);
-                if (!process.HasExited)
+                if (process.HasExited || (RecordOnlyWhenForeground && process.IsMainWindowMinimized())) continue;
+                UiThreadInvokeHelper.Invoke(() =>
                 {
-                    UiThreadInvokeHelper.Invoke(() =>
-                    {
-                        TotalPlayTime++;
-                    });
-                    var now = DateTime.Now.ToString("yyyy/M/d");
-                    if (PlayedTime.ContainsKey(now))
-                        PlayedTime[now]++;
-                    else
-                        PlayedTime.Add(now, 1);
-                }
+                    TotalPlayTime++;
+                });
+                var now = DateTime.Now.ToString("yyyy/M/d");
+                if (PlayedTime.ContainsKey(now))
+                    PlayedTime[now]++;
+                else
+                    PlayedTime.Add(now, 1);
             }
         });
     }

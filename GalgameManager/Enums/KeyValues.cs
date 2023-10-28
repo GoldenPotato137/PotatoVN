@@ -36,6 +36,9 @@ public static class KeyValues
     public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
     public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化
     
+    //游玩相关
+    public const string RecordOnlyWhenForeground = "recordOnlyWhenForeground"; //bool, 是否只在游戏窗口在前台时记录游玩时间
+    
     //启动与跳转相关
     public const string QuitStart = "quitStart"; //bool, 是否在jump list跳转打开游戏时启动游戏
     public const string CategoryGroup = "categoryGroup"; // string，分类页展示的分类组

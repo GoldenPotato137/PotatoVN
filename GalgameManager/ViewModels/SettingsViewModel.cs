@@ -107,6 +107,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //OAUTH
         _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
+        //GAME
+        _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
@@ -281,6 +283,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
+    #region GAME
+
+    [ObservableProperty] private bool _recordOnlyForeground;
+    
+    partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
+
+    #endregion
+    
     #region RSS
 
     [ObservableProperty] private RssType _rssType;

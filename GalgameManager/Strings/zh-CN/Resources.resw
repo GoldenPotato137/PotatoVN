@@ -968,4 +968,16 @@
   <data name="Edit.Label" xml:space="preserve">
     <value>编辑</value>
   </data>
+  <data name="SettingsPage_Game.SettingTitle" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="SettingsPage_Game.SettingDescription" xml:space="preserve">
+    <value>与游玩游戏相关的设置</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Title" xml:space="preserve">
+    <value>只记录前台游玩时间</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Description" xml:space="preserve">
+    <value>游戏窗口被最小化的时间不计入游玩时间</value>
+  </data>
 </root>
