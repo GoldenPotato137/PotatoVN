@@ -157,8 +157,15 @@ public partial class App : Application
             GetService<INavigationService>().NavigateTo(typeof(HomeViewModel).FullName!);
         };
         dialog.CloseButtonClick += (_, _) => { Exit();};
-        e.Handled = true;
-        await dialog.ShowAsync();
+        try
+        {
+            await dialog.ShowAsync();
+            e.Handled = true;
+        }
+        catch
+        {
+            e.Handled = false;
+        }
     }
     
     /// <summary>
