@@ -19,7 +19,7 @@
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Never</AppxBundle>
     <DefaultLanguage>zh-cn</DefaultLanguage>
-    <AppxPackageDir>E:\.Net\PotatoVN\GalgameManager\bin\</AppxPackageDir>
+    <AppxPackageDir>D:\.Net\PotatoVN\GalgameManager\bin\</AppxPackageDir>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
   </PropertyGroup>
   <ItemGroup>
