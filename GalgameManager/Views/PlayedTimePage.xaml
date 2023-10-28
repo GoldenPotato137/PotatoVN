@@ -22,9 +22,13 @@
                     <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
                 </AppBarButton.Icon>
             </AppBarButton>
+            <AppBarButton x:Uid="Edit" Command="{x:Bind ViewModel.EditCommand}">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70F;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
         </CommandBar>
         
-        <!-- 这里不知道为什么用xbind就会数据转换报错 -->
         <lvc:CartesianChart Grid.Row="2" Series="{x:Bind ViewModel.Series}" XAxes="{x:Bind ViewModel.XAxes}"/>
     </Grid>
     

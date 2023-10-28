@@ -272,28 +272,28 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
     <value>Select another folder</value>
   </data>
-  <data name="GalgamePage_Play" xml:space="preserve">
+  <data name="GalgamePage_Play.Label" xml:space="preserve">
     <value>Play</value>
   </data>
-  <data name="GalgamePage_Edit" xml:space="preserve">
+  <data name="GalgamePage_Edit.Label" xml:space="preserve">
     <value>Edit</value>
   </data>
-  <data name="GalgamePage_ChangeSavePosition" xml:space="preserve">
+  <data name="GalgamePage_ChangeSavePosition.Label" xml:space="preserve">
     <value>Convert game save location</value>
   </data>
-  <data name="GalgamePage_Developers" xml:space="preserve">
+  <data name="GalgamePage_Developers.Text" xml:space="preserve">
     <value>Developer</value>
   </data>
-  <data name="GalgamePage_ExpectedPlayTime" xml:space="preserve">
+  <data name="GalgamePage_ExpectedPlayTime.Text" xml:space="preserve">
     <value>Estimated game duration</value>
   </data>
-  <data name="GalgamePage_SavePosition" xml:space="preserve">
+  <data name="GalgamePage_SavePosition.Text" xml:space="preserve">
     <value>Save location</value>
   </data>
-  <data name="GalgamePage_LastPlayTime" xml:space="preserve">
+  <data name="GalgamePage_LastPlayTime.Text" xml:space="preserve">
     <value>Latest Played</value>
   </data>
-  <data name="GalgamePage_Description" xml:space="preserve">
+  <data name="GalgamePage_Description.Text" xml:space="preserve">
     <value>Description</value>
   </data>
   <data name="GalgameCollectionService_SelectSavePosition" xml:space="preserve">
@@ -305,7 +305,7 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
     <value>Choose an executable</value>
   </data>
-  <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
+  <data name="GalgamePage_UiPlayFlyOutTitle.Text" xml:space="preserve">
     <value>Reset EXE path?</value>
   </data>
   <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">

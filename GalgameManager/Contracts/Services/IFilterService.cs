@@ -6,6 +6,11 @@ namespace GalgameManager.Contracts.Services;
 public interface IFilterService
 {
     /// <summary>
+    /// 初始化过滤器
+    /// </summary>
+    public Task InitAsync();
+    
+    /// <summary>
     /// 检查是否满足所有过滤器
     /// </summary>
     /// <param name="galgame">待检查游戏</param>

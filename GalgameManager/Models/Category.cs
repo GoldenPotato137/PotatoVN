@@ -32,7 +32,8 @@ public partial class Category : ObservableObject
     public void UpdateSerializeList()
     {
         Galgames.Clear();
-        _galgames.ForEach(g => Galgames.Add(g.Path));
+        foreach (Galgame game in _galgames)
+            Galgames.Add(game.CheckExist()? game.Path : game.Name!);
     }
     
     public void Add(Galgame galgame)

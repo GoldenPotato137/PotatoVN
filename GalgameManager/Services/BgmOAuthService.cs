@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Windows.Foundation;
+﻿using Windows.Foundation;
 using Windows.System;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -254,10 +253,6 @@ public class BgmOAuthService : IBgmOAuthService
 
     private static HttpClient GetHttpClient()
     {
-        HttpClient httpClient = new();
-        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
-        httpClient.DefaultRequestHeaders.Accept.Clear();
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        return httpClient;
+        return Utils.GetDefaultHttpClient().WithApplicationJson();
     }
 }

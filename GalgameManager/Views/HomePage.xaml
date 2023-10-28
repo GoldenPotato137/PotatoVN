@@ -18,6 +18,7 @@
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
+        <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -37,6 +38,7 @@
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
                         Margin="0 -67 0 0">
+                <!-- 搜索 -->
                 <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
@@ -50,29 +52,47 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
+                <!-- 添加游戏 -->
                 <AppBarButton
                     Icon="Add"
                     Label="{x:Bind ViewModel.UiAddNewGame}"
                     Command="{x:Bind ViewModel.AddGalgameCommand}"
                     IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                <!-- 排序 -->
                 <AppBarButton Label="{x:Bind ViewModel.UiSort}" Command="{x:Bind ViewModel.SortCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="{x:Bind ViewModel.UiFilter}" IsEnabled="False">
+                <!-- 过滤 -->
+                <AppBarButton Label="{x:Bind ViewModel.UiFilter}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>
+                    <AppBarButton.Flyout>
+                        <Flyout Placement="Bottom">
+                            <CheckBox x:Uid="HomePage_Filter_DisplayVirtualGames" 
+                                      IsChecked="{x:Bind ViewModel.DisplayVirtualGame, Mode=TwoWay}"/>
+                        </Flyout>
+                    </AppBarButton.Flyout>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
+                    <!-- 裁剪横图 -->
                     <AppBarToggleButton x:Uid="HomePage_FixHorizontalPicture" Icon="Crop"
                                         IsChecked="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}"/>
+                    <!-- 游玩状态标记 -->
                     <AppBarToggleButton x:Uid="HomePage_DisplayPlayType" 
                                         IsChecked="{x:Bind ViewModel.DisplayPlayTypePolygon, Mode=TwoWay}"
                                         Visibility="{x:Bind ViewModel.FixHorizontalPicture, Mode=OneWay}">
                         <AppBarToggleButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE890;"/>
+                        </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                    <!-- 非本地游戏特殊显示 -->
+                    <AppBarToggleButton x:Uid="HomePage_SpecialDisplayVirtualGame"
+                                        IsChecked="{x:Bind ViewModel.SpecialDisplayVirtualGame, Mode=TwoWay}">
+                        <AppBarToggleButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FF;"/>
                         </AppBarToggleButton.Icon>
                     </AppBarToggleButton>
                 </CommandBar.SecondaryCommands>
@@ -88,17 +108,17 @@
                 SelectionMode="None"
                 StretchContentForSingleRow="False"
                 animations:Connected.ListItemKey="galgameItem"
-                animations:Connected.ListItemElementName="connectedElement">
+                animations:Connected.ListItemElementName="ConnectedElement">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
                         <Grid
                             Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
-                                <Grid>
+                                <Grid x:Name="ConnectedElement"
+                                      Opacity="{x:Bind Converter={StaticResource GameToOpacityConverter}}">
                                     <Rectangle Height="209" Width="150"
                                                HorizontalAlignment="Center" 
                                                VerticalAlignment="Center"
-                                               x:Name="connectedElement"
                                                >
                                         <Rectangle.Fill>
                                             <ImageBrush 

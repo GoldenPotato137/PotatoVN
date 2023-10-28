@@ -296,28 +296,28 @@
   <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
     <value>选择其他文件夹</value>
   </data>
-  <data name="GalgamePage_Play" xml:space="preserve">
+  <data name="GalgamePage_Play.Label" xml:space="preserve">
     <value>开始游戏</value>
   </data>
-  <data name="GalgamePage_Edit" xml:space="preserve">
+  <data name="GalgamePage_Edit.Label" xml:space="preserve">
     <value>编辑</value>
   </data>
-  <data name="GalgamePage_ChangeSavePosition" xml:space="preserve">
+  <data name="GalgamePage_ChangeSavePosition.Label" xml:space="preserve">
     <value>转换存档位置</value>
   </data>
-  <data name="GalgamePage_Developers" xml:space="preserve">
+  <data name="GalgamePage_Developers.Text" xml:space="preserve">
     <value>开发商</value>
   </data>
-  <data name="GalgamePage_ExpectedPlayTime" xml:space="preserve">
+  <data name="GalgamePage_ExpectedPlayTime.Text" xml:space="preserve">
     <value>预计游戏时长</value>
   </data>
-  <data name="GalgamePage_SavePosition" xml:space="preserve">
+  <data name="GalgamePage_SavePosition.Text" xml:space="preserve">
     <value>存档位置</value>
   </data>
-  <data name="GalgamePage_LastPlayTime" xml:space="preserve">
+  <data name="GalgamePage_LastPlayTime.Text" xml:space="preserve">
     <value>上次游玩</value>
   </data>
-  <data name="GalgamePage_Description" xml:space="preserve">
+  <data name="GalgamePage_Description.Text" xml:space="preserve">
     <value>简介</value>
   </data>
   <data name="GalgameCollectionService_SelectSavePosition" xml:space="preserve">
@@ -329,7 +329,7 @@
   <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
     <value>选择可执行文件</value>
   </data>
-  <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
+  <data name="GalgamePage_UiPlayFlyOutTitle.Text" xml:space="preserve">
     <value>重置exe路径？</value>
   </data>
   <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
@@ -557,16 +557,16 @@
   <data name="SettingsPage_Theme_Color_Description.Text" xml:space="preserve">
     <value>选择你喜欢的应用主题吧</value>
   </data>
-  <data name="SettingsPage_Upload.SettingTitle" xml:space="preserve">
-    <value>上传设置</value>
+  <data name="SettingsPage_Other.SettingTitle" xml:space="preserve">
+    <value>其他设置</value>
   </data>
-  <data name="SettingsPage_Upload.SettingDescription" xml:space="preserve">
-    <value>与上传数据有关的设置</value>
+  <data name="SettingsPage_Other.SettingDescription" xml:space="preserve">
+    <value>一些不太好分类的设置</value>
   </data>
-  <data name="SettingsPage_Upload_AppCenter.Title" xml:space="preserve">
+  <data name="SettingsPage_Other_AppCenter.Title" xml:space="preserve">
     <value>上传匿名事件日志</value>
   </data>
-  <data name="SettingsPage_Upload_AppCenter.Description" xml:space="preserve">
+  <data name="SettingsPage_Other_AppCenter.Description" xml:space="preserve">
     <value>上传的内容不包含任何个人数据，且仅用于统计各功能使用情况以及报错跟踪</value>
   </data>
   <data name="SettingsPage_UpdateContent.Content" xml:space="preserve">
@@ -776,7 +776,7 @@
   <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
     <value>已成功下载{0}个游戏的游玩状态</value>
   </data>
-  <data name="GalgamePage_ReleaseDate" xml:space="preserve">
+  <data name="GalgamePage_ReleaseDate.Text" xml:space="preserve">
     <value>发布日期</value>
   </data>
   <data name="CategorySettingPage_CategoryName.Text" xml:space="preserve">
@@ -898,5 +898,86 @@
   </data>
   <data name="ActivationService_FontPopup_NoLongerDisplay" xml:space="preserve">
     <value>不再显示此弹窗</value>
+  </data>
+  <data name="Galgame_SavePath_Local" xml:space="preserve">
+    <value>本地</value>
+  </data>
+  <data name="Galgame_SavePath_Remote" xml:space="preserve">
+    <value>云端</value>
+  </data>
+  <data name="YesButton.Content" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="SelectProcessDialog_Title" xml:space="preserve">
+    <value>选择游戏进程</value>
+  </data>
+  <data name="SelectProcessDialog_Msg.Text" xml:space="preserve">
+    <value>oops!好像自动检测游戏进程失败了
+如果游戏尚未关闭，请手动指定游戏进程以正确统计游玩时长
+如果这个游戏游玩时长能正常记录，取消这个选择框即可
+</value>
+  </data>
+  <data name="HomePage_ProcessNameSet" xml:space="preserve">
+    <value>已成功指定游戏进程，重启游戏后生效</value>
+  </data>
+  <data name="SettingsPage_CloudSync_SyncGame.Title" xml:space="preserve">
+    <value>游戏同步</value>
+  </data>
+  <data name="SettingsPage_CloudSync_SyncGame.Description" xml:space="preserve">
+    <value>是否将游戏状态(添加/游玩/删除等)上传到云存档根目录，并跨电脑同步</value>
+  </data>
+  <data name="HomePage_Filter_DisplayVirtualGames.Content" xml:space="preserve">
+    <value>显示非本机游戏</value>
+  </data>
+  <data name="HomePage_SpecialDisplayVirtualGame.Label" xml:space="preserve">
+    <value>特殊显示非本地游戏</value>
+  </data>
+  <data name="GalgamePage_PathAlreadyExist" xml:space="preserve">
+    <value>这个路径的游戏已经被绑定到其他游戏上了</value>
+  </data>
+  <data name="GalgamePage_PathSet" xml:space="preserve">
+    <value>成功设置本游戏本地路径</value>
+  </data>
+  <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
+    <value>设置本地路径</value>
+  </data>
+  <data name="HomePage_Syncing" xml:space="preserve">
+    <value>同步游戏记录中  {0}/{1}</value>
+  </data>
+  <data name="HomePage_Synced" xml:space="preserve">
+    <value>已同步{0}条游戏记录更改</value>
+  </data>
+  <data name="SettingsPage_CloudSync_SyncGame_Success" xml:space="preserve">
+    <value>设置成功，重启软件后生效</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread.Label" xml:space="preserve">
+    <value>移除进程指定</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread_Success" xml:space="preserve">
+    <value>已成功移除手动线程指定</value>
+  </data>
+  <data name="SettingsPage_Other_Memory.Title" xml:space="preserve">
+    <value>优化内存占用</value>
+  </data>
+  <data name="SettingsPage_Other_Memory.Description" xml:space="preserve">
+    <value>减少切换界面后内存使用，但会轻微增加切换界面时cpu使用量</value>
+  </data>
+  <data name="EditPlayTimeDialog_Title" xml:space="preserve">
+    <value>编辑游玩时长</value>
+  </data>
+  <data name="Edit.Label" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="SettingsPage_Game.SettingTitle" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="SettingsPage_Game.SettingDescription" xml:space="preserve">
+    <value>与游玩游戏相关的设置</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Title" xml:space="preserve">
+    <value>只记录前台游玩时间</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Description" xml:space="preserve">
+    <value>游戏窗口被最小化的时间不计入游玩时间</value>
   </data>
 </root>

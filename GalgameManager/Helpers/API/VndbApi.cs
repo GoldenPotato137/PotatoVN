@@ -19,10 +19,7 @@ public class VndbApi
     };
     private static HttpClient GetHttpClient()
     {
-        HttpClient httpClient = new();
-        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
-        httpClient.DefaultRequestHeaders.Accept.Clear();
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        HttpClient httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
         return httpClient;
     }
 

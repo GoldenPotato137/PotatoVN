@@ -107,6 +107,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //OAUTH
         _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
+        //GAME
+        _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
@@ -128,12 +130,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _gameFolderShouldContain = _localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain).Result ?? "";
         //CLOUD
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
+        SyncGames = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result;
         //QUICK_START
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
         _authenticationType = _localSettingsService.ReadSettingAsync<AuthenticationType>(KeyValues.AuthenticationType).Result;
-        //UPLOAD
+        //Other
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
+        MemoryImprove = _localSettingsService.ReadSettingAsync<bool>(KeyValues.MemoryImprove).Result;
 
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
@@ -279,6 +283,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
+    #region GAME
+
+    [ObservableProperty] private bool _recordOnlyForeground;
+    
+    partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
+
+    #endregion
+    
     #region RSS
 
     [ObservableProperty] private RssType _rssType;
@@ -376,6 +388,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region CLOUD
 
     [ObservableProperty] private string? _remoteFolder;
+    [ObservableProperty] private bool _syncGames;
     partial void OnRemoteFolderChanged(string? value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
@@ -388,7 +401,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
         openPicker.FileTypeFilter.Add("*");
         StorageFolder? folder = await openPicker.PickSingleFolderAsync();
-        RemoteFolder = folder?.Path;
+        RemoteFolder = folder?.Path ?? RemoteFolder;
+    }
+    
+    partial void OnSyncGamesChanged(bool value)
+    {
+        if (value && _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result == false)
+            _ = DisplayMsgAsync(InfoBarSeverity.Success, "SettingsPage_CloudSync_SyncGame_Success".GetLocalized());
+        _localSettingsService.SaveSettingAsync(KeyValues.SyncGames, value);
     }
 
     #endregion
@@ -452,11 +472,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    #region UPLOAD
+    #region Other
 
     [ObservableProperty] private bool _uploadToAppCenter;
-    
+    [ObservableProperty] private bool _memoryImprove;
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
+    
+    partial void OnMemoryImproveChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.MemoryImprove, value);
 
     #endregion
 

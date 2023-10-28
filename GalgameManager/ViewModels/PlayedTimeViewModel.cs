@@ -2,7 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
+using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
+using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using LiveChartsCore;
 using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
@@ -15,10 +18,12 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
 {
     public Galgame Game = new();
     private readonly INavigationService _navigationService;
+    private readonly GalgameCollectionService _galgameCollectionService;
     
-    public PlayedTimeViewModel(INavigationService navigationService)
+    public PlayedTimeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> gameCollectionService)
     {
         _navigationService = navigationService;
+        _galgameCollectionService = (gameCollectionService as GalgameCollectionService)!;
     }
 
     public void OnNavigatedTo(object parameter)
@@ -39,6 +44,14 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
     private void Back()
     {
         _navigationService.GoBack();
+    }
+
+    [RelayCommand]
+    private async Task Edit()
+    {
+        await new EditPlayTimeDialog(Game).ShowAsync();
+        OnNavigatedTo(Game);
+        await _galgameCollectionService.SaveGalgamesAsync(Game);
     }
 
     public ISeries[] Series { get; } =

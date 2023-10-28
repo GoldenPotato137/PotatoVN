@@ -48,6 +48,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
     private async void OnGalgameAdded(Galgame galgame)
     {
+        if (galgame.CheckExist() == false) return;
         try
         {
             await AddGalgameFolderAsync(galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
@@ -61,7 +62,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
     private void OnGalgameDeleted(Galgame galgame)
     {
-        _galgameFolders.First(folder => folder.IsInFolder(galgame)).DeleteGalgame(galgame);
+        _galgameFolders.FirstOrDefault(folder => folder.IsInFolder(galgame))?.DeleteGalgame(galgame);
     }
 
     /// <summary>
@@ -107,7 +108,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         
         if (delete == false || !_galgameFolders.Contains(galgameFolder)) return;
         foreach (Galgame galgame in await galgameFolder.GetGalgameList())
-            await _galgameService.RemoveGalgame(galgame);
+            await _galgameService.RemoveGalgame(galgame, true);
         _galgameFolders.Remove(galgameFolder);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
     }

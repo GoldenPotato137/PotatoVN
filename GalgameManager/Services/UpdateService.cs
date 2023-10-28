@@ -73,7 +73,7 @@ public class UpdateService : IUpdateService
         DownloadEvent?.Invoke();
         try
         {
-            HttpClient client = new();
+            HttpClient client = Utils.GetDefaultHttpClient();
             var local = ResourceExtensions.GetLocal();
             HttpResponseMessage response = await client.GetAsync(
                 $"https://raw.gitmirror.com/GoldenPotato137/GalgameManager/main/docs/UpdateContent/{local}.md");
