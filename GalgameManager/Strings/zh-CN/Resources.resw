@@ -978,6 +978,6 @@
     <value>只记录前台游玩时间</value>
   </data>
   <data name="SettingsPage_Game_RecordOnlyForeground.Description" xml:space="preserve">
-    <value>游戏窗口被最小化的时间不计入游玩时间</value>
+    <value>游戏窗口不聚焦（最小化或在操作其他窗口）的时间不计入游玩时间</value>
   </data>
 </root>

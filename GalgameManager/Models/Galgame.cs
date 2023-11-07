@@ -288,7 +288,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             while (!process.HasExited)
             {
                 Thread.Sleep(1000 * 60);
-                if (process.HasExited || (RecordOnlyWhenForeground && process.IsMainWindowMinimized())) continue;
+                if (process.HasExited || 
+                    (RecordOnlyWhenForeground && (process.IsMainWindowMinimized() || !process.IsMainWindowActive())))
+                    continue;
                 UiThreadInvokeHelper.Invoke(() =>
                 {
                     TotalPlayTime++;
