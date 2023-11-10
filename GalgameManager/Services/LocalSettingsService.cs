@@ -203,6 +203,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)false;
             case KeyValues.MemoryImprove:
                 return (T?)(object)true;
+            case KeyValues.PlayingWindowMode:
+                return (T?)(object)WindowMode.Minimize;
             default:
                 return default;
         }

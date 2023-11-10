@@ -3,6 +3,7 @@ using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
@@ -15,6 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
+using WindowExtensions = H.NotifyIcon.WindowExtensions;
 
 namespace GalgameManager;
 
@@ -45,6 +47,7 @@ public partial class App : Application
     public static WindowEx MainWindow { get; } = new MainWindow();
     
     public static UIElement? AppTitlebar { get; set; }
+    public static bool Closing;
 
     public App()
     {
@@ -180,9 +183,31 @@ public partial class App : Application
 
     private async void OnActivated(object?_, AppActivationArguments arguments)
     {
-        await UiThreadInvokeHelper.InvokeAsync(async Task() =>
+        await GetService<IActivationService>().HandleActivationAsync(arguments);
+        await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            await GetService<IActivationService>().HandleActivationAsync(arguments);
+            SetWindowMode(WindowMode.Normal);
         });
+    }
+    
+    public static void SetWindowMode(WindowMode mode)
+    {
+        switch (mode)
+        {
+            case WindowMode.Normal:
+                WindowExtensions.Show(MainWindow);
+                MainWindow.Restore();
+                break;
+            case WindowMode.Minimize:
+                MainWindow.Minimize();
+                break;
+            case WindowMode.SystemTray:
+                WindowExtensions.Hide(MainWindow);
+                break;
+            case WindowMode.Close:
+                Closing = true;
+                MainWindow.Close();
+                break;
+        }
     }
 }

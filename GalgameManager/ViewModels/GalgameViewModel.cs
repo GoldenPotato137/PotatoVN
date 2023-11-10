@@ -13,7 +13,6 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -176,13 +175,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
             Process.GetProcessesByName(string.Empty);
             Item.RecordPlayTime(process);
-            ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Minimize(); //最小化窗口
+            App.SetWindowMode(await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
             await _jumpListService.AddToJumpListAsync(Item);
             Dictionary<string, int> oldPlayTime = new(Item.PlayedTime);
 
             await process.WaitForExitAsync();
 
-            ((OverlappedPresenter)App.MainWindow.AppWindow.Presenter).Restore(); //恢复窗口
+            App.SetWindowMode(WindowMode.Normal);
             if (DateTime.Now - startTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) && Item.ProcessName is null)
             {
                 SelectProcessDialog dialog = new();

@@ -980,4 +980,46 @@
   <data name="SettingsPage_Game_RecordOnlyForeground.Description" xml:space="preserve">
     <value>游戏窗口不聚焦（最小化或在操作其他窗口）的时间不计入游玩时间</value>
   </data>
+  <data name="Shell_SystemTray_Item1.Text" xml:space="preserve">
+    <value>恢复窗口</value>
+  </data>
+  <data name="Shell_SystemTray_Item2.Text" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="CloseConfirmDialog_Title" xml:space="preserve">
+    <value>关闭提示</value>
+  </data>
+  <data name="CloseConfirmDialog_SystemTray" xml:space="preserve">
+    <value>最小化到系统托盘</value>
+  </data>
+  <data name="CloseConfirmDialog_Exit" xml:space="preserve">
+    <value>退出应用</value>
+  </data>
+  <data name="CloseConfirmDialog_Remember.Content" xml:space="preserve">
+    <value>记住我的选择</value>
+  </data>
+  <data name="WindowMode_Normal" xml:space="preserve">
+    <value>无设置</value>
+  </data>
+  <data name="WindowMode_Close" xml:space="preserve">
+    <value>关闭应用</value>
+  </data>
+  <data name="WindowMode_SystemTray" xml:space="preserve">
+    <value>最小化至系统托盘</value>
+  </data>
+  <data name="SettingsPage_Other_CloseMode.Title" xml:space="preserve">
+    <value>关闭模式</value>
+  </data>
+  <data name="SettingsPage_Other_CloseMode.Description" xml:space="preserve">
+    <value>选择按下关闭按钮后应用的行为</value>
+  </data>
+  <data name="WindowMode_Minimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="SettingsPage_Game_PlayingWindowMode.Title" xml:space="preserve">
+    <value>游玩时窗口状态</value>
+  </data>
+  <data name="SettingsPage_Game_PlayingWindowMode.Description" xml:space="preserve">
+    <value>游戏进行时的PotatoVN的窗口状态</value>
+  </data>
 </root>

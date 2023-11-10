@@ -111,7 +111,10 @@ public class ActivationService : IActivationService
 
         if (activationHandler != null)
         {
-            await activationHandler.HandleAsync(activationArgs);
+            await UiThreadInvokeHelper.InvokeAsync(async Task() =>
+            {
+                await activationHandler.HandleAsync(activationArgs);
+            });
         }
     }
 
