@@ -202,26 +202,17 @@ public class GalgameFolder
     /// 试图解压压缩包并添加到库
     /// </summary>
     /// <param name="pack">压缩包</param>
-    /// <param name="name">压缩包名称</param>
     /// <param name="passwd">解压密码</param>
     /// <returns>解压后游戏目录（无法解压则为null)</returns>
-    public async Task<string?> UnpackGame(IEnumerable<StorageFile> packs, string name, string? passwd)
+    public async Task<string?> UnpackGame(StorageFile pack, string? passwd)
     {
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         var outputDirectory = Path; // 解压路径
         var saveDirectory = string.Empty; // 游戏保存路径
-        var archiveStreams = new List<Stream>();
         try
         {
-            // 打开文件流
-            foreach (var pack in packs)
-            {
-                archiveStreams.Add(await pack.OpenStreamForReadAsync());
-            }
-
             // 打开压缩包
-            using var archive = ArchiveFactory.Open(archiveStreams, new ReaderOptions { Password = passwd });
-
+            using var archive = ArchiveFactory.Open(new FileInfo(pack.Path), new ReaderOptions { Password = passwd });
             // 检查压缩包中的内容，以确定是否需要创建一个新的文件夹
             {
                 // 获取根文件夹
@@ -229,7 +220,12 @@ public class GalgameFolder
                 // 不止一个文件夹,使用压缩包名作为保存文件夹
                 if (rootFolders.Count() != 1)
                 {
-                    outputDirectory = StdPath.Combine(outputDirectory, StdPath.GetFileNameWithoutExtension(name));
+                    var name = StdPath.GetFileNameWithoutExtension(pack.Name);
+                    if (pack.FileType == ".001")
+                    {
+                        name = StdPath.GetFileNameWithoutExtension(name);
+                    }
+                    outputDirectory = StdPath.Combine(outputDirectory, name);
                     Directory.CreateDirectory(outputDirectory);
                     saveDirectory = outputDirectory;
                 }
@@ -284,11 +280,6 @@ public class GalgameFolder
                     DeleteDirectory(saveDirectory); // 删除解压失败的文件夹
             });
             return null;
-        }
-        finally
-        {
-            // 释放文件流
-            archiveStreams.ForEach(stream => stream.Dispose());
         }
     }
 

@@ -210,27 +210,14 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
 
         if (file == null || _item == null) return;
 
-        var fileName = file.Name;
-        IEnumerable<StorageFile> storageFile = new []{ file };
-
-        // 获取分卷压缩包
-        if (file.FileType == ".001")
-        {
-            var parentFolder = await file.GetParentAsync();
-            fileName = Path.GetFileNameWithoutExtension(fileName);
-            storageFile = (await parentFolder.GetFilesAsync()).
-                Where(file => Path.GetFileNameWithoutExtension(file.Name) == fileName).
-                Where(file=> file.FileType.TrimStart('.').All(char.IsDigit));
-        }
-
-        var result = await _item.UnpackGame(storageFile, fileName, null);
+        var result = await _item.UnpackGame(file, null);
         while (result==null)
         {
             var dialog = new PasswdDialog(App.MainWindow.Content.XamlRoot, "请输入压缩包解压密码");
             await dialog.ShowAsync();
             if(dialog.Password == null) //取消
                 return;
-            result = await _item.UnpackGame(storageFile, fileName, dialog.Password);
+            result = await _item.UnpackGame(file, dialog.Password);
         }
 
         IsUnpacking = true;
