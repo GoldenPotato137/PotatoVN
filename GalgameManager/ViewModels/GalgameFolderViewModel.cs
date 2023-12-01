@@ -205,21 +205,19 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         openPicker.FileTypeFilter.Add(".7z");
         openPicker.FileTypeFilter.Add(".rar");
         openPicker.FileTypeFilter.Add(".tar");
+        openPicker.FileTypeFilter.Add(".001");
         var file = await openPicker.PickSingleFileAsync();
 
         if (file == null || _item == null) return;
 
-        var storageFile = await StorageFile.GetFileFromPathAsync(file.Path);
-        if (storageFile == null) return;
-
-        var result = await _item.UnpackGame(storageFile, null);
+        var result = await _item.UnpackGame(file, null);
         while (result==null)
         {
             var dialog = new PasswdDialog(App.MainWindow.Content.XamlRoot, "请输入压缩包解压密码");
             await dialog.ShowAsync();
             if(dialog.Password == null) //取消
                 return;
-            result = await _item.UnpackGame(storageFile, dialog.Password);
+            result = await _item.UnpackGame(file, dialog.Password);
         }
 
         IsUnpacking = true;
