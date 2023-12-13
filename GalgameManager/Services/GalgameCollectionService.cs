@@ -61,6 +61,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         var sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
             {false,false};
         Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
+        Galgame.RecordOnlyWhenForeground = LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
 
         App.MainWindow.AppWindow.Closing += async (_, _) =>
         { 
@@ -355,6 +356,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>galgame,若找不到则返回null</returns>
     public Galgame? GetGalgameFromPath(string path)
     {
+        if (string.IsNullOrEmpty(path)) return null;
         return _galgameMap.TryGetValue(path, out Galgame? result) ? result : null;
     }
 
@@ -367,6 +369,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public Galgame? GetGalgameFromId(string id, RssType rssType)
     {
         return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
+    }
+
+    /// <summary>
+    /// 从名字获取galgame
+    /// </summary>
+    /// <param name="name">名字</param>
+    /// <returns>galgame，找不到返回null</returns>
+    public Galgame? GetGalgameFromName(string name)
+    {
+        return _galgames.FirstOrDefault(g => g.Name.Value == name);
     }
     
     /// <summary>
@@ -517,16 +529,16 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                     if (choose == 1)
                     {
                         new DirectoryInfo(remoteRoot).Delete(true); //删除云端文件夹
-                        FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                        FolderOperations.ConvertFolderToSymbolicLink(localSavePath, remoteRoot);
                     }
                     else if (choose == 2)
                     {
                         new DirectoryInfo(localSavePath).Delete(true); //删除本地文件夹
-                        Directory.CreateSymbolicLink(localSavePath, remoteRoot);
+                        FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
                     }
                 }
                 else
-                    FolderOperations.CreateSymbolicLink(localSavePath, remoteRoot);
+                    FolderOperations.ConvertFolderToSymbolicLink(localSavePath, remoteRoot);
                 galgame.SavePath = localSavePath;
             }
             catch (Exception e) //创建符号链接失败，把存档复制回去
@@ -537,7 +549,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 //弹出提示框
                 StackPanel stackPanel = new();
                 stackPanel.Children.Add(new TextBlock {Text = "GalgameCollectionService_CreateSymbolicLinkFailed".GetLocalized()});
-                stackPanel.Children.Add(new TextBlock {Text = e.Message});
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = e.Message + "\n" + e.StackTrace, 
+                    TextWrapping = TextWrapping.Wrap
+                });
                 ContentDialog dialog = new()
                 {
                     XamlRoot = App.MainWindow.Content.XamlRoot,
@@ -548,6 +564,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 await dialog.ShowAsync();
             }
         }
+        
+        await SaveGalgamesAsync(galgame);
     }
 
     /// <summary>
@@ -666,6 +684,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                     false,
                     false
                 });
+                break;
+            case KeyValues.RecordOnlyWhenForeground:
+                Galgame.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
                 break;
         }
     }

@@ -107,6 +107,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //OAUTH
         _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
+        //GAME
+        _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
+        _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
+        PlayingWindowModes = new[] {WindowMode.Minimize, WindowMode.SystemTray };
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
@@ -136,7 +140,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //Other
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
         MemoryImprove = _localSettingsService.ReadSettingAsync<bool>(KeyValues.MemoryImprove).Result;
-
+        WindowModes = new[] { WindowMode.Normal, WindowMode.Close, WindowMode.SystemTray };
+        CloseMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
+        
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
@@ -281,6 +287,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
+    #region GAME
+
+    [ObservableProperty] private bool _recordOnlyForeground;
+    [ObservableProperty] private WindowMode _playingWindowMode;
+    public WindowMode[] PlayingWindowModes;
+    
+    partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
+    
+    partial void OnPlayingWindowModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.PlayingWindowMode, value);
+
+    #endregion
+    
     #region RSS
 
     [ObservableProperty] private RssType _rssType;
@@ -466,9 +484,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty] private bool _uploadToAppCenter;
     [ObservableProperty] private bool _memoryImprove;
+    [ObservableProperty] private WindowMode _closeMode;
+    public readonly WindowMode[] WindowModes;
+    
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
     
     partial void OnMemoryImproveChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.MemoryImprove, value);
+
+    partial void OnCloseModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.CloseMode, value);
 
     #endregion
 

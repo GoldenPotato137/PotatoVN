@@ -1,4 +1,5 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using Windows.ApplicationModel.Activation;
+using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
 using Microsoft.Windows.AppLifecycle;
 
@@ -9,15 +10,15 @@ public class JumpListActivationHandler : ActivationHandler<AppActivationArgument
     protected override bool CanHandleInternal(AppActivationArguments args)
     {
         if (args.Kind != ExtendedActivationKind.Launch) return false;
-        List<string> cmlArgs = Environment.GetCommandLineArgs().ToList();
-        if (cmlArgs.Count != 3) return false; //"GalgameManager.exe" "/j" "galgamePath"
-        return cmlArgs[1] == "/j";
+        if (args.Data is not LaunchActivatedEventArgs arg) return false;
+        return arg.Arguments.StartsWith("/j") && arg.Arguments.Length > 2;
     }
 
     protected async override Task HandleInternalAsync(AppActivationArguments args)
     {
-        List<string> cmlArgs = Environment.GetCommandLineArgs().ToList();
-        App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, new Tuple<string, bool>(cmlArgs[2], true));
+        var target = (args.Data as LaunchActivatedEventArgs)!.Arguments[3..]; //去掉/j与空格
+        target = target.Substring(1, target.Length - 2);
+        App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, new Tuple<string, bool>(target, true));
         await Task.CompletedTask;
     }
 }

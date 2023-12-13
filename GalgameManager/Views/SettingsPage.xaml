@@ -14,6 +14,7 @@
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
+        <converter:WindowModeToStringConverter x:Key="WindowModeToStringConverter"/>
         <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
@@ -100,6 +101,36 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                     
+                </control:SettingExpander>
+                
+                <!-- 游玩 -->
+                <control:SettingExpander 
+                    x:Uid="SettingsPage_Game"
+                    SettingIcon="&#xE7FC;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 只记录前台时间 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch
+                                    x:Uid="SettingsPage_Game_RecordOnlyForeground"
+                                    IsOn="{x:Bind ViewModel.RecordOnlyForeground, Mode=TwoWay}" />
+                            </control:Panel>
+                            <!-- 游玩时窗口状态 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Game_PlayingWindowMode">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.PlayingWindowModes}"
+                                              SelectedItem="{x:Bind ViewModel.PlayingWindowMode, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:WindowMode">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource WindowModeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
                 <!-- 信息源 -->
@@ -404,13 +435,27 @@
                 </control:SettingExpander>
                 
                 <!-- 其他设置 -->
-                <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE74C;">
+                <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE713;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                             <!-- 上传匿名事件日志 -->
                             <control:Panel>
                                 <local:SettingToggleSwitch x:Uid="SettingsPage_Other_AppCenter"
                                                            IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 关闭模式 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Other_CloseMode">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.WindowModes}"
+                                              SelectedItem="{x:Bind ViewModel.CloseMode, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:WindowMode">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource WindowModeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
                             </control:Panel>
                             <!-- 优化内存占用 -->
                             <control:Panel>

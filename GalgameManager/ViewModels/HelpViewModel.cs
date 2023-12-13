@@ -29,6 +29,7 @@ public partial class HelpViewModel : ObservableRecipient, INavigationAware
 
     public void OnNavigatedFrom()
     {
+        _faqService.UpdateStatusChangeEvent -= ChangeInfoBar;
     }
 
     private void ChangeInfoBar()
