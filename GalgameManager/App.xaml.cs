@@ -9,6 +9,7 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
+using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -33,18 +34,23 @@ public partial class App : Application
         get;
     }
 
-    public static T GetService<T>()
-        where T : class
+    public static T GetService<T>() where T : class
     {
         if ((Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
-        {
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
-        }
-
         return service;
     }
+    
+    public static T GetResource<T>(string key) where T : class
+    {
+        if (Current.Resources[key] is not T resource)
+            throw new ArgumentException($"{key} needs to be registered in Resource.xaml.");
+        return resource;
+    }
 
+    private static Application _instance = null!;
     public static WindowEx MainWindow { get; } = new MainWindow();
+    public static TaskbarIcon? SystemTray { get; set; }
     
     public static UIElement? AppTitlebar { get; set; }
     public static bool Closing;
@@ -177,7 +183,7 @@ public partial class App : Application
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
-
+        _instance = this;
         await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
 
@@ -195,6 +201,7 @@ public partial class App : Application
         switch (mode)
         {
             case WindowMode.Normal:
+                GetService<IPageService>().Init();
                 WindowExtensions.Show(MainWindow);
                 MainWindow.Restore();
                 break;
@@ -202,11 +209,13 @@ public partial class App : Application
                 MainWindow.Minimize();
                 break;
             case WindowMode.SystemTray:
+                AppInstance.Restart("/r 123 56");
                 WindowExtensions.Hide(MainWindow);
                 break;
             case WindowMode.Close:
                 Closing = true;
-                MainWindow.Close();
+                SystemTray?.Dispose();
+                _instance.Exit();
                 break;
         }
     }

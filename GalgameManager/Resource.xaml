@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tb="using:H.NotifyIcon">
+    
+    <XamlUICommand x:Key="SetWindowNormalCommand"/>
+
+    <XamlUICommand x:Key="CloseAppCommand"/>
+
+    <tb:TaskbarIcon x:Key="TrayIcon"
+                    ToolTipText="PotatoVN"
+                    IconSource="/Assets/WindowIcon.ico"
+                    LeftClickCommand="{StaticResource SetWindowNormalCommand}"
+                    DoubleClickCommand="{StaticResource SetWindowNormalCommand}">
+        <tb:TaskbarIcon.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem x:Uid="Shell_SystemTray_Item1" Command="{StaticResource SetWindowNormalCommand}"/>
+                <MenuFlyoutItem x:Uid="Shell_SystemTray_Item2" Command="{StaticResource CloseAppCommand}"/>
+            </MenuFlyout>
+        </tb:TaskbarIcon.ContextFlyout>
+    </tb:TaskbarIcon>
+</ResourceDictionary>

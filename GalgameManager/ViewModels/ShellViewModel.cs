@@ -54,16 +54,4 @@ public partial class ShellViewModel : ObservableRecipient
             Selected = selectedItem;
         }
     }
-    
-    [RelayCommand]
-    private void Show()
-    {
-        App.SetWindowMode(WindowMode.Normal);
-    }
-
-    [RelayCommand]
-    private void Close()
-    {
-        App.SetWindowMode(WindowMode.Close);
-    }
 }
