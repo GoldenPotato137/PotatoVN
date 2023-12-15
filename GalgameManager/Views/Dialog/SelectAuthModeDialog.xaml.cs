@@ -38,7 +38,7 @@ public sealed partial class SelectAuthModeDialog : ContentDialog
     public SelectAuthModeDialog()
     {
         InitializeComponent();
-        XamlRoot = App.MainWindow.Content.XamlRoot;
+        XamlRoot = App.MainWindow!.Content.XamlRoot;
         DefaultButton = ContentDialogButton.Primary;
         Title = "选择登录方式";
         PrimaryButtonText = "登录";

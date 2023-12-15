@@ -36,7 +36,10 @@ public class CategoryService : ICategoryService
             toRemove.ForEach(c => c.Remove(galgame));
         };
         _bgmPhraser = (BgmPhraser)_galgameService.PhraserList[(int)RssType.Bangumi];
-        App.MainWindow.AppWindow.Closing += async (_, _) => await SaveAsync();
+
+        async void OnAppClosing() => await SaveAsync();
+
+        App.OnAppClosing += OnAppClosing;
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         Thread worker = new(Worker)
         {

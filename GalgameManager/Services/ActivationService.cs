@@ -7,7 +7,6 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
-using GalgameManager.Views;
 using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -70,12 +69,15 @@ public class ActivationService : IActivationService
         
         // Execute tasks before activation.
         await InitializeAsync();
-        
-        var result = await _authenticationService.StartAuthentication();
-        if (!result)
+
+        if (IsRestart() == false)
         {
-            Application.Current.Exit();
-            return;
+            var result = await _authenticationService.StartAuthentication();
+            if (!result)
+            {
+                Application.Current.Exit();
+                return;
+            } 
         }
 
         await _filterService.InitAsync();
@@ -86,7 +88,7 @@ public class ActivationService : IActivationService
         if (IsRestart() == false)
         {
             //准备好数据后，再呈现页面
-            App.MainWindow.Content.Visibility = Visibility.Visible;
+            App.MainWindow!.Content.Visibility = Visibility.Visible;
             //使窗口重新获得焦点
             App.MainWindow.Activate();
         }
@@ -118,9 +120,9 @@ public class ActivationService : IActivationService
         // 初始化窗口
         if (IsRestart() == false)
         {
-            _pageService.Init();
+            await _pageService.InitAsync();
             //防止有人手快按到页面内容
-            App.MainWindow.Content.Visibility = Visibility.Collapsed;
+            App.MainWindow!.Content.Visibility = Visibility.Collapsed;
         }
         
         //系统托盘
@@ -138,7 +140,6 @@ public class ActivationService : IActivationService
 
     private async Task StartupAsync()
     {
-        await _themeSelectorService.SetRequestedThemeAsync();
         await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
@@ -152,13 +153,14 @@ public class ActivationService : IActivationService
     /// </summary>
     private async Task CheckFont()
     {
+        if (IsRestart()) return;
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FontInstalled) == false)
         {
             if (Utils.IsFontInstalled("Segoe Fluent Icons") == false)
             {
                 ContentDialog dialog = new()
                 {
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    XamlRoot = App.MainWindow!.Content.XamlRoot,
                     Title = "ActivationService_FontPopup_Title".GetLocalized(),
                     PrimaryButtonText = "Yes".GetLocalized(),
                     CloseButtonText = "Cancel".GetLocalized(),

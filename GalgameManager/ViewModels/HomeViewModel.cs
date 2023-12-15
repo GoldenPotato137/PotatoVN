@@ -196,7 +196,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         try
         {
             FileOpenPicker openPicker = new();
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".exe");
             openPicker.FileTypeFilter.Add(".bat");
@@ -245,7 +245,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         if(galgame == null) return;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = _uiRemoveTitle,
             Content = _uiRemoveMessage,
             PrimaryButtonText = _uiYes,

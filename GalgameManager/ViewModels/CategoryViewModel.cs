@@ -84,7 +84,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         var delete = false;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_DeleteCategory_Title".GetLocalized(),
             Content = "CategoryPage_DeleteCategory_Msg".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
@@ -115,7 +115,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         public Category? Target;
         public CombineCategoryDialog(CategoryGroup group, Category source)
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot;
+            XamlRoot = App.MainWindow!.Content.XamlRoot;
             Title = "CategoryPage_CombineCategory_Title".GetLocalized();
 
             StackPanel panel = new();
@@ -166,7 +166,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         var name = string.Empty;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_AddCategoryDialog_Title".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
             SecondaryButtonText = "Cancel".GetLocalized(),
@@ -195,7 +195,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         var name = string.Empty;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_AddCategoryGroupDialog_Title".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
             SecondaryButtonText = "Cancel".GetLocalized(),
@@ -222,7 +222,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     {
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_DeleteCategoryGroupDialog_Title".GetLocalized(),
             Content = "CategoryPage_DeleteCategoryGroupDialog_Msg".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),

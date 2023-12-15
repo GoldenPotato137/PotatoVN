@@ -96,7 +96,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         var delete = false;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "GalgameFolderCollectionService_DeleteGalgameFolderAsync_Title".GetLocalized(),
             Content = "GalgameFolderCollectionService_DeleteGalgameFolderAsync_Content".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),

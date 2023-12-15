@@ -111,7 +111,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private async Task AddGalgame()
     {
         var openPicker = new FileOpenPicker();
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".exe");
         var file = await openPicker.PickSingleFileAsync();
@@ -200,7 +200,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
             ViewMode = PickerViewMode.Thumbnail,
             SuggestedStartLocation = PickerLocationId.PicturesLibrary
         };
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.FileTypeFilter.Add(".zip");
         openPicker.FileTypeFilter.Add(".7z");
         openPicker.FileTypeFilter.Add(".rar");
@@ -213,7 +213,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         var result = await _item.UnpackGame(file, null);
         while (result==null)
         {
-            var dialog = new PasswdDialog(App.MainWindow.Content.XamlRoot, "请输入压缩包解压密码");
+            var dialog = new PasswdDialog(App.MainWindow!.Content.XamlRoot, "请输入压缩包解压密码");
             await dialog.ShowAsync();
             if(dialog.Password == null) //取消
                 return;

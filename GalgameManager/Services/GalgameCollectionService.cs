@@ -63,10 +63,12 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
         Galgame.RecordOnlyWhenForeground = LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
 
-        App.MainWindow.AppWindow.Closing += async (_, _) =>
-        { 
+        async void OnAppClosing()
+        {
             await SaveGalgamesAsync();
-        };
+        }
+
+        App.OnAppClosing += OnAppClosing;
     }
     
     public async Task InitAsync()
@@ -430,7 +432,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private async Task<string?> GetGalgameSaveAsync(Galgame galgame)
     {
         List<string> subFolders = galgame.GetSubFolders();
-        FolderPickerDialog dialog = new(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectSavePosition".GetLocalized(), subFolders);
+        FolderPickerDialog dialog = new(App.MainWindow!.Content.XamlRoot, "GalgameCollectionService_SelectSavePosition".GetLocalized(), subFolders);
         return await dialog.ShowAndAwaitResultAsync();
     }
     
@@ -448,7 +450,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             {
                 ContentDialog dialog = new()
                 {
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    XamlRoot = App.MainWindow!.Content.XamlRoot,
                     Title = "Error".GetLocalized(),
                     Content = "GalgameCollectionService_NotExeFounded".GetLocalized(),
                     PrimaryButtonText = "Yes".GetLocalized()
@@ -461,7 +463,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 break;
             default:
             {
-                FilePickerDialog dialog = new(App.MainWindow.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
+                FilePickerDialog dialog = new(App.MainWindow!.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
                 await dialog.ShowAsync();
                 if (dialog.SelectedFile == null) return null;
                 galgame.ExePath = dialog.SelectedFile;
@@ -495,7 +497,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             {
                 ContentDialog dialog = new()
                 {
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    XamlRoot = App.MainWindow!.Content.XamlRoot,
                     Title = "Error".GetLocalized(),
                     Content = "GalgameCollectionService_CloudRootNotSet".GetLocalized(),
                     PrimaryButtonText = "Yes".GetLocalized()
@@ -516,7 +518,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                     var choose = 0;
                     ContentDialog dialog = new()
                     {
-                        XamlRoot = App.MainWindow.Content.XamlRoot,
+                        XamlRoot = App.MainWindow!.Content.XamlRoot,
                         Title = "GalgameCollectionService_SelectOperateTitle".GetLocalized(),
                         Content = "GalgameCollectionService_SelectOperateMsg".GetLocalized(),
                         PrimaryButtonText = "GalgameCollectionService_Local".GetLocalized(),
@@ -556,7 +558,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 });
                 ContentDialog dialog = new()
                 {
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    XamlRoot = App.MainWindow!.Content.XamlRoot,
                     Title = "Error".GetLocalized(),
                     Content = stackPanel,
                     PrimaryButtonText = "Yes".GetLocalized()
@@ -583,7 +585,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         };
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "排序",
             PrimaryButtonText = "Yes".GetLocalized(),
             SecondaryButtonText = "Cancel".GetLocalized(),
@@ -755,7 +757,7 @@ public class FolderPickerDialog : ContentDialog
         {
             FolderPicker folderPicker = new();
             folderPicker.FileTypeFilter.Add("*");
-            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
+            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow!.GetWindowHandle());
             StorageFolder? folder = await folderPicker.PickSingleFolderAsync();
             if (folder != null)
             {

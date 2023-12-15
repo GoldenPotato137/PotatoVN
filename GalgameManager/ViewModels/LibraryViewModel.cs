@@ -68,7 +68,7 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
             FolderPicker folderPicker = new();
             folderPicker.FileTypeFilter.Add("*");
 
-            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
+            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow!.GetWindowHandle());
 
             var folder = await folderPicker.PickSingleFolderAsync();
             if (folder != null)

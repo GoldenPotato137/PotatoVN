@@ -43,12 +43,15 @@ public class PageService : IPageService
         return pageType;
     }
 
-    public void Init()
+    public async Task InitAsync()
     {
+        App.MainWindow ??= new MainWindow();
         if (App.MainWindow.Content == null)
         {
             UIElement shell = App.GetService<ShellPage>();
             App.MainWindow.Content = shell;
+            App.MainWindow.Closed += (_, _) => App.OnAppClosing?.Invoke();
+            await App.GetService<IThemeSelectorService>().SetRequestedThemeAsync();
             OnInit?.Invoke();
         }
     }

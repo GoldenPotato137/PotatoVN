@@ -38,11 +38,13 @@ public class LocalSettingsService : ILocalSettingsService
         _localsettingsBackupFile = op.BackUpSettingsFile ?? ErrorFileName;
 
         _settings = new Dictionary<string, object>();
-        
-        App.MainWindow.AppWindow.Closing += async (_, _) =>
+
+        async void OnAppClosing()
         {
             await _fileService.WaitForWriteFinishAsync();
-        };
+        }
+
+        App.OnAppClosing += OnAppClosing;
         Upgrade().Wait();
     }
 

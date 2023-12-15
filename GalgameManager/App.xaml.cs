@@ -12,6 +12,7 @@ using GalgameManager.Views;
 using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
@@ -49,11 +50,13 @@ public partial class App : Application
     }
 
     private static Application _instance = null!;
-    public static WindowEx MainWindow { get; } = new MainWindow();
+    public static WindowEx? MainWindow { get; set; }
     public static TaskbarIcon? SystemTray { get; set; }
     
     public static UIElement? AppTitlebar { get; set; }
     public static bool Closing;
+    public static Action? OnAppClosing;
+    public static DispatcherQueue DispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
 
     public App()
     {
@@ -134,6 +137,7 @@ public partial class App : Application
     private async void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
+        MainWindow ??= new WindowEx();
         ContentDialog dialog = new()
         {
             XamlRoot = MainWindow.Content.XamlRoot,
@@ -201,16 +205,16 @@ public partial class App : Application
         switch (mode)
         {
             case WindowMode.Normal:
-                GetService<IPageService>().Init();
-                WindowExtensions.Show(MainWindow);
-                MainWindow.Restore();
+                GetService<IPageService>().InitAsync();
+                WindowExtensions.Show(MainWindow!);
+                MainWindow!.Restore();
                 break;
             case WindowMode.Minimize:
-                MainWindow.Minimize();
+                MainWindow!.Minimize();
                 break;
             case WindowMode.SystemTray:
                 AppInstance.Restart("/r 123 56");
-                WindowExtensions.Hide(MainWindow);
+                WindowExtensions.Hide(MainWindow!);
                 break;
             case WindowMode.Close:
                 Closing = true;

@@ -185,7 +185,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     {
         ContentDialog updateDialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "SettingsPage_UpdateNotification_Title".GetLocalized(),
             Content = "SettingsPage_UpdateNotification_Msg".GetLocalized(),
             PrimaryButtonText = "SettingsPage_SeeWhatsNew".GetLocalized(),
@@ -405,7 +405,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async Task SelectRemoteFolder()
     {
         FolderPicker openPicker = new();
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
         openPicker.FileTypeFilter.Add("*");
         StorageFolder? folder = await openPicker.PickSingleFolderAsync();
@@ -501,7 +501,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async Task Rate()
     {
         StoreContext context = StoreContext.GetDefault();
-        WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow!.GetWindowHandle());
         await context.RequestRateAndReviewAppAsync();
     }
 

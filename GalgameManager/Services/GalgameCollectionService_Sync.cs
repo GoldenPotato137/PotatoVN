@@ -145,11 +145,13 @@ public partial class GalgameCollectionService
         _localDb = GetConnection();
         if(_localDb is not null)
             await _localDb.CreateTableAsync<SyncCommit>();
-        App.MainWindow.AppWindow.Closing += async (_, _) =>
+
+        async void OnAppClosing()
         {
-            if (_localDb is not null)
-                await _localDb.CloseAsync();
-        };
+            if (_localDb is not null) await _localDb.CloseAsync();
+        }
+
+        App.OnAppClosing += OnAppClosing;
     }
 
     /// <summary>

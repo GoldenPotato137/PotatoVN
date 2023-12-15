@@ -13,7 +13,7 @@ public sealed partial class CloseConfirmDialog
     {
         InitializeComponent();
 
-        XamlRoot = App.MainWindow.Content.XamlRoot;
+        XamlRoot = App.MainWindow!.Content.XamlRoot;
 
         Title = "CloseConfirmDialog_Title".GetLocalized();
         PrimaryButtonText = "CloseConfirmDialog_Exit".GetLocalized();

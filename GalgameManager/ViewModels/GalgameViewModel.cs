@@ -241,7 +241,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if(Item == null) return;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "HomePage_Delete_Title".GetLocalized(),
             Content = "HomePage_Delete_Message".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
@@ -280,7 +280,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         if (Item == null) return;
         ChangePlayStatusDialog dialog = new(Item)
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
         };
         await dialog.ShowAsync();
         if (dialog.Canceled) return;
@@ -309,7 +309,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         try
         {
             FileOpenPicker openPicker = new();
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.FileTypeFilter.Add(".exe");
             openPicker.FileTypeFilter.Add(".bat");

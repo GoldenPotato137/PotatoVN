@@ -13,5 +13,5 @@ public interface IPageService
     /// <summary>
     /// 初始化窗口，若已经初始化则什么也不做
     /// </summary>
-    void Init();
+    Task InitAsync();
 }

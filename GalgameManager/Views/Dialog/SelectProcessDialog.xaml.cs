@@ -16,7 +16,7 @@ public sealed partial class SelectProcessDialog
     {
         InitializeComponent();
         
-        XamlRoot = App.MainWindow.Content.XamlRoot;
+        XamlRoot = App.MainWindow!.Content.XamlRoot;
         Title = "SelectProcessDialog_Title".GetLocalized();
         PrimaryButtonText = "Yes".GetLocalized();
         SecondaryButtonText = "Cancel".GetLocalized();
