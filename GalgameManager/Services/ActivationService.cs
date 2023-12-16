@@ -29,6 +29,7 @@ public class ActivationService : IActivationService
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
     private readonly IPageService _pageService;
+    private readonly IBgTaskService _bgTaskService;
     
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
@@ -37,7 +38,7 @@ public class ActivationService : IActivationService
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
-        IFilterService filterService, IPageService pageService)
+        IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -51,6 +52,7 @@ public class ActivationService : IActivationService
         _localSettingsService = localSettingsService;
         _filterService = filterService;
         _pageService = pageService;
+        _bgTaskService = bgTaskService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -95,6 +97,11 @@ public class ActivationService : IActivationService
 
         // Handle activation via ActivationHandlers.
         await HandleActivationAsync(activationArgs);
+
+        if (IsRestart())
+        {
+            await _bgTaskService.ResolvedBgTasksAsync();
+        }
 
         // Execute tasks after activation.
         await StartupAsync();
@@ -204,6 +211,10 @@ public class ActivationService : IActivationService
         }
     }
 
+    /// <summary>
+    /// 判断是否是重启（aka进入系统托盘模式）<br/>
+    /// 关于为什么要以重启进入系统托盘模式，见：<see cref="App.SetWindowMode"/>
+    /// </summary>
     private bool IsRestart()
     {
         AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();

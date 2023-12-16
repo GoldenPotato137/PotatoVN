@@ -8,6 +8,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -61,7 +62,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         var sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
             {false,false};
         Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
-        Galgame.RecordOnlyWhenForeground = LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
+        RecordPlayTimeTask.RecordOnlyWhenForeground = LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
 
         async void OnAppClosing()
         {
@@ -688,7 +689,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 });
                 break;
             case KeyValues.RecordOnlyWhenForeground:
-                Galgame.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
+                RecordPlayTimeTask.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
                 break;
         }
     }

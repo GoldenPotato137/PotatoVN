@@ -95,6 +95,7 @@ public partial class App : Application
             services.AddSingleton<IAuthenticationService, AuthenticationService>();
             services.AddSingleton<IBgmOAuthService, BgmOAuthService>();
             services.AddSingleton<IInfoService, InfoService>();
+            services.AddSingleton<IBgTaskService, BgTaskService>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();
@@ -200,6 +201,15 @@ public partial class App : Application
         });
     }
     
+    /// <summary>
+    /// 设置窗口模式<br/>
+    /// <para>
+    /// 其中最小化到系统托盘的模式以重启代替关闭主窗口，窗口关闭后内存无法释放<br/>
+    /// 见：https://github.com/microsoft/microsoft-ui-xaml/issues/9063<br/>
+    /// https://github.com/microsoft/microsoft-ui-xaml/issues/7282
+    /// </para>
+    /// </summary>
+    /// <param name="mode"></param>
     public static void SetWindowMode(WindowMode mode)
     {
         switch (mode)
@@ -213,7 +223,8 @@ public partial class App : Application
                 MainWindow!.Minimize();
                 break;
             case WindowMode.SystemTray:
-                AppInstance.Restart("/r 123 56");
+                GetService<IBgTaskService>().SaveBgTasksString();
+                AppInstance.Restart("/r");
                 WindowExtensions.Hide(MainWindow!);
                 break;
             case WindowMode.Close:

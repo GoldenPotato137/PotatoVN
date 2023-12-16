@@ -1,6 +1,7 @@
 ﻿using System.Drawing.Text;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
+using System.Text;
 using Windows.Foundation;
 
 namespace GalgameManager.Helpers;
@@ -81,4 +82,8 @@ public static class Utils
             return false;
         }
     }
+    
+    public static string ToBase64(this string str) => Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
+    
+    public static string FromBase64(string str) => Encoding.UTF8.GetString(Convert.FromBase64String(str));
 }

@@ -11,6 +11,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
@@ -27,6 +28,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly JumpListService _jumpListService;
+    private readonly IBgTaskService _bgTaskService;
     [ObservableProperty] private Galgame? _item;
     [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
     [ObservableProperty] private bool _isPhrasing;
@@ -41,7 +43,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
 
-    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, IJumpListService jumpListService, ILocalSettingsService localSettingsService)
+    public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, 
+        IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
@@ -49,6 +52,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _galgameService.PhrasedEvent += OnGalgameServiceOnPhrasedEvent;
         _jumpListService = (JumpListService)jumpListService;
         _localSettingsService = localSettingsService;
+        _bgTaskService = bgTaskService;
     }
 
     
@@ -174,7 +178,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 
             await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
             Process.GetProcessesByName(string.Empty);
-            Item.RecordPlayTime(process);
+            _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
             App.SetWindowMode(await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
             await _jumpListService.AddToJumpListAsync(Item);
             Dictionary<string, int> oldPlayTime = new(Item.PlayedTime);
