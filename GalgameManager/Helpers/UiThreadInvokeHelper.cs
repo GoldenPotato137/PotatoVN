@@ -4,8 +4,9 @@ namespace GalgameManager.Helpers;
 
 public static class UiThreadInvokeHelper
 {
-    public static async Task InvokeAsync(Action action)
+    public static async Task InvokeAsync(Action? action)
     {
+        if(action is null) return;
         await App.DispatcherQueue.EnqueueAsync(action);
     }
 

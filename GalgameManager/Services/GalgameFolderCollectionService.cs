@@ -5,6 +5,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using Microsoft.UI.Xaml.Controls;
 using SharpCompress;
 
@@ -15,13 +16,16 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
     private ObservableCollection<GalgameFolder> _galgameFolders = new();
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IBgTaskService _bgTaskService;
 
-    public GalgameFolderCollectionService(ILocalSettingsService localSettingsService, IDataCollectionService<Galgame> galgameService)
+    public GalgameFolderCollectionService(ILocalSettingsService localSettingsService, 
+        IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _localSettingsService = localSettingsService;
         _galgameService = ((GalgameCollectionService?)galgameService)!;
         _galgameService.GalgameAddedEvent += OnGalgameAdded;
         _galgameService.GalgameDeletedEvent += OnGalgameDeleted;
+        _bgTaskService = bgTaskService;
     }
 
     public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()
@@ -83,7 +87,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
         if (tryGetGalgame)
         {
-            await galgameFolder.GetGalgameInFolder(_localSettingsService);
+            await _bgTaskService.AddBgTask(new GetGalgameInFolderTask(galgameFolder));
         }
     }
 
@@ -111,6 +115,14 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
             await _galgameService.RemoveGalgame(galgame, true);
         _galgameFolders.Remove(galgameFolder);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
+    }
+    
+    /// <summary>
+    /// 找到一个galgame库，若不存在则返回null
+    /// </summary>
+    public GalgameFolder? GetGalgameFolderFromPath(string path)
+    {
+        return _galgameFolders.FirstOrDefault(folder => folder.Path == path);
     }
 }
 

@@ -14,7 +14,8 @@ public class BgTaskService : IBgTaskService
 
     public BgTaskService()
     {
-        _bgTasksString[typeof(RecordPlayTimeTask)] = "-r";
+        _bgTasksString[typeof(RecordPlayTimeTask)] = "-record";
+        _bgTasksString[typeof(GetGalgameInFolderTask)] = "-getGalInFolder";
     }
 
     public void SaveBgTasksString()
@@ -46,6 +47,13 @@ public class BgTaskService : IBgTaskService
     }
 
     public Task AddBgTask(BgTaskBase bgTask) => AddTaskInternal(bgTask);
+    
+    public IEnumerable<BgTaskBase> GetBgTasks() => _bgTasks;
+   
+    public T? GetBgTask<T>(string key) where T : BgTaskBase
+    {
+        return _bgTasks.FirstOrDefault(t => t is T && t.OnSearch(key)) as T;
+    }
 
     private Task AddTaskInternal(BgTaskBase bgTask)
     {

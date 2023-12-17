@@ -17,7 +17,6 @@ public class RecordPlayTimeTask : BgTaskBase
     public string GalgamePath = string.Empty;
     private Galgame? _galgame;
     private Process? _process;
-    private bool _startFromBg;
     
     public RecordPlayTimeTask(){}
 
@@ -28,20 +27,19 @@ public class RecordPlayTimeTask : BgTaskBase
         _galgame = game;
         _process = process;
     }
-
-    public override Task RecoverFromJson()
+    
+    protected override Task RecoverFromJsonInternal()
     {
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         _galgame = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)?.
             GetGalgameFromPath(GalgamePath);
-        _startFromBg = true;
         return Task.CompletedTask;
     }
 
     public override Task Run()
     {
         if(_process is null || _galgame is null) return Task.CompletedTask;
-        if (_startFromBg)
+        if (StartFromBg)
         {
             Task.Run(async () =>
             {

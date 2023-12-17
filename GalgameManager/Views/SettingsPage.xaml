@@ -434,6 +434,19 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
                 
+                <!-- 消息通知 -->
+                <control:SettingExpander x:Uid="SettingsPage_Notification" SettingIcon="&#xEA8F;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 完成游戏扫描通知 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_GetGalgameFolder"
+                                                           IsOn="{x:Bind ViewModel.NotifyWhenGetGalgameInFolder, Mode=TwoWay}"/>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+                
                 <!-- 其他设置 -->
                 <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE713;">
                     <control:SettingExpander.SettingContent>

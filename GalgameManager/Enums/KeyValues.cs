@@ -55,6 +55,9 @@ public static class KeyValues
     public const string DisplayVirtualGame = "displayVirtualGame"; //bool, 主页是否显示虚拟游戏
     public const string SpecialDisplayVirtualGame = "specialDisplayVirtualGame"; //bool, 主页是否特殊显示虚拟游戏（降低透明度）
     
+    //消息通知相关 (最小化到托盘时是否通知)
+    public const string NotifyWhenGetGalgameInFolder = "notifyWhenGetGalgameInFolder"; //bool, 完成获取文件夹内游戏
+    
     //软件本体设置相关
     public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化
     public const string UploadData = "uploadData"; // bool,是否将匿名数据上传到AppCenter
