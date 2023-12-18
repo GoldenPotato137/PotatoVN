@@ -1,16 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using Windows.Storage;
-using CommunityToolkit.WinUI;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
-using Microsoft.UI.Dispatching;
 using Newtonsoft.Json;
-using SharpCompress.Archives;
-using SharpCompress.Common;
-using SharpCompress.Readers;
-using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
@@ -103,106 +96,5 @@ public class GalgameFolder
 
         IsRunning = false;
         ProgressChangedEvent?.Invoke();
-    }
-
-    /// <summary>
-    /// 试图解压压缩包并添加到库
-    /// </summary>
-    /// <param name="pack">压缩包</param>
-    /// <param name="passwd">解压密码</param>
-    /// <returns>解压后游戏目录（无法解压则为null)</returns>
-    public async Task<string?> UnpackGame(StorageFile pack, string? passwd)
-    {
-        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        var outputDirectory = Path; // 解压路径
-        var saveDirectory = string.Empty; // 游戏保存路径
-        try
-        {
-            // 打开压缩包
-            using var archive = ArchiveFactory.Open(new FileInfo(pack.Path), new ReaderOptions { Password = passwd });
-            // 检查压缩包中的内容，以确定是否需要创建一个新的文件夹
-            {
-                // 获取根文件夹
-                var rootFolders = archive.Entries.Where(entry => entry.IsDirectory && StdPath.GetDirectoryName(entry.Key.Trim('/', '\\')) == "");
-                // 不止一个文件夹,使用压缩包名作为保存文件夹
-                if (rootFolders.Count() != 1)
-                {
-                    var name = StdPath.GetFileNameWithoutExtension(pack.Name);
-                    if (pack.FileType == ".001")
-                    {
-                        name = StdPath.GetFileNameWithoutExtension(name);
-                    }
-                    outputDirectory = StdPath.Combine(outputDirectory, name);
-                    Directory.CreateDirectory(outputDirectory);
-                    saveDirectory = outputDirectory;
-                }
-                else
-                {
-                    saveDirectory = StdPath.Combine(outputDirectory, rootFolders.First().Key);
-                }
-            }
-
-            await Task.Run(async () =>
-            {
-                await dispatcherQueue.EnqueueAsync(() =>
-                {
-                    IsUnpacking = true;
-                    ProgressMax = archive.Entries.Count();
-                    ProgressValue = 1;
-                    ProgressChangedEvent?.Invoke();
-                });
-
-                foreach (var entry in archive.Entries)
-                {
-                    // 更新解压进度
-                    await dispatcherQueue.EnqueueAsync(() =>
-                    {
-                        ProgressText = $"正在解压到 {StdPath.Combine(outputDirectory ,entry.Key)}";
-                        ProgressValue = int.Min(ProgressValue + 1, ProgressMax);
-                        ProgressChangedEvent?.Invoke();
-                    });
-
-                    entry.WriteToDirectory(outputDirectory, new ExtractionOptions
-                    {
-                        ExtractFullPath = true,
-                        Overwrite = true
-                    });
-                }
-
-                await dispatcherQueue.EnqueueAsync(() =>
-                {
-                    IsUnpacking = false;
-                    ProgressChangedEvent?.Invoke();
-                });
-            });
-            return saveDirectory.TrimEnd('/','\\');
-        }
-        catch (Exception) //密码错误或压缩包损坏
-        {
-           await dispatcherQueue.EnqueueAsync(() =>
-            {
-                IsUnpacking = false;
-                ProgressChangedEvent?.Invoke();
-                if (saveDirectory != string.Empty && saveDirectory != Path)
-                    DeleteDirectory(saveDirectory); // 删除解压失败的文件夹
-            });
-            return null;
-        }
-    }
-
-    private static void DeleteDirectory(string directoryPath)
-    {
-        var directoryInfo = new DirectoryInfo(directoryPath);
-        foreach (var file in directoryInfo.GetFiles())
-        {
-            file.Delete();
-        }
-
-        foreach (var subDirectory in directoryInfo.GetDirectories())
-        {
-            DeleteDirectory(subDirectory.FullName);
-        }
-
-        directoryInfo.Delete();
     }
 }

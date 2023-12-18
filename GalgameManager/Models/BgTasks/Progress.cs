@@ -4,8 +4,8 @@ namespace GalgameManager.Models.BgTasks;
 
 public struct Progress
 {
-    public int Current;
-    public int Total;
+    public long Current;
+    public long Total;
     public string Message;
 
     public InfoBarSeverity ToSeverity()

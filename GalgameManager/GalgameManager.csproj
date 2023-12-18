@@ -45,6 +45,9 @@
     <Content Update="Assets\Data\producers.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\Libs\x64\7za.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Potato.scale-100.png" />
@@ -83,8 +86,8 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls" Version="7.1.3" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.231008000" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
-    <PackageReference Include="SharpCompress" Version="0.33.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
+    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
     <PackageReference Include="WinUIEx" Version="2.2.0" />
   </ItemGroup>
 

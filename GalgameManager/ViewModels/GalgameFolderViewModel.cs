@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,6 +11,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -25,6 +27,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
     private GetGalgameInFolderTask? _getGalInFolderTask;
+    private UnpackGameTask? _unpackGameTask;
     public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
     
     [ObservableProperty] private bool _isUnpacking;
@@ -80,38 +83,43 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         if (parameter is not string path) return;
         Item = (_dataCollectionService as GalgameFolderCollectionService)!.GetGalgameFolderFromPath(path);
         if (Item == null) return;
-        Item.ProgressChangedEvent += UpdateOld;
+        
+        CanExecute = !Item.IsRunning;
         _getGalInFolderTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Path);
         if (_getGalInFolderTask != null)
         {
-            _getGalInFolderTask.OnProgress += Update;
-            Update(_getGalInFolderTask.CurrentProgress);
+            _getGalInFolderTask.OnProgress += UpdateNotifyGetGalInFolder;
+            UpdateNotifyGetGalInFolder(_getGalInFolderTask.CurrentProgress);
         }
-        UpdateOld();
+        _unpackGameTask = _bgTaskService.GetBgTask<UnpackGameTask>(Item.Path);
+        if (_unpackGameTask != null)
+        {
+            _unpackGameTask.OnProgress += UpdateNotifyUnpack;
+            UpdateNotifyUnpack(_unpackGameTask.CurrentProgress);
+        }
     }
 
     public void OnNavigatedFrom()
     {
         _galgameService.GalgameAddedEvent -= ReloadGalgameList;
-        if (Item is not null)
+        if (_getGalInFolderTask != null) _getGalInFolderTask.OnProgress -= UpdateNotifyGetGalInFolder;
+        if (_unpackGameTask != null)
         {
-            Item.ProgressChangedEvent -= UpdateOld;
+            _unpackGameTask.OnProgress -= UpdateNotifyGetGalInFolder;
+            _unpackGameTask.OnProgress -= HandelUnpackError;
         }
-        if (_getGalInFolderTask != null) _getGalInFolderTask.OnProgress -= Update;
     }
 
-    private void UpdateOld() //todo:将解压改为BgTask
+    private void UpdateNotifyUnpack(Progress progress)
     {
         if(Item == null) return;
         CanExecute = !Item.IsRunning;
-        IsInfoBarOpen = Item.IsRunning;
-        
         IsUnpacking = Item.IsUnpacking;
-        ProgressValue = (int)((double)Item.ProgressValue / Item.ProgressMax * 100);
-        ProgressMsg = Item.ProgressText;
+        ProgressValue = (int)((double)progress.Current / progress.Total * 100);
+        ProgressMsg = progress.Message;
     }
 
-    private void Update(Progress progress)
+    private void UpdateNotifyGetGalInFolder(Progress progress)
     {
         if(Item == null) return;
         CanExecute = !Item.IsRunning;
@@ -206,42 +214,29 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
         if (_item == null) return;
         _getGalInFolderTask = new GetGalgameInFolderTask(_item);
-        _getGalInFolderTask.OnProgress += Update;
+        _getGalInFolderTask.OnProgress += UpdateNotifyGetGalInFolder;
         _ = _bgTaskService.AddBgTask(_getGalInFolderTask);
     }
     
     [RelayCommand]
-    private async Task AddGalFromZip()
+    private async Task AddGalFromZip(string? passWord = null)
     {
-        var openPicker = new FileOpenPicker
-        {
-            ViewMode = PickerViewMode.Thumbnail,
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary
-        };
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
-        openPicker.FileTypeFilter.Add(".zip");
-        openPicker.FileTypeFilter.Add(".7z");
-        openPicker.FileTypeFilter.Add(".rar");
-        openPicker.FileTypeFilter.Add(".tar");
-        openPicker.FileTypeFilter.Add(".001");
-        var file = await openPicker.PickSingleFileAsync();
+        UnpackDialog dialog = new();
+        await dialog.ShowAsync();
+        StorageFile? file = dialog.StorageFile;
 
         if (file == null || _item == null) return;
 
-        var result = await _item.UnpackGame(file, null);
-        while (result==null)
-        {
-            var dialog = new PasswdDialog(App.MainWindow!.Content.XamlRoot, "请输入压缩包解压密码");
-            await dialog.ShowAsync();
-            if(dialog.Password == null) //取消
-                return;
-            result = await _item.UnpackGame(file, dialog.Password);
-        }
+        _unpackGameTask = new UnpackGameTask(file, _item, dialog.GameName, dialog.Password);
+        _unpackGameTask.OnProgress += UpdateNotifyUnpack;
+        _unpackGameTask.OnProgress += HandelUnpackError;
+        _ = _bgTaskService.AddBgTask(_unpackGameTask);
+    }
 
-        IsUnpacking = true;
-        ProgressMsg = "正在从信息源中获取游戏信息...";
-        await TryAddGalgame(result);
-        IsUnpacking = false;
+    private async void HandelUnpackError(Progress progress)
+    {
+        if(progress.ToSeverity() != InfoBarSeverity.Error) return;
+        await DisplayMsgAsync(InfoBarSeverity.Error, "GalgameFolder_UnpackGame_Error".GetLocalized());
     }
 
     [RelayCommand]
@@ -302,36 +297,4 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     #endregion
-}
-
-public class PasswdDialog : ContentDialog
-{
-    public string? Password;
-    private TextBox? _textBox;
-
-    public PasswdDialog(XamlRoot xamlRoot, string title)
-    {
-        XamlRoot = xamlRoot;
-        Title = title;
-        Content = CreateContent();
-        PrimaryButtonText = "确定";
-        SecondaryButtonText = "取消";
-
-        IsPrimaryButtonEnabled = false;
-
-        PrimaryButtonClick += (_, _) => { Password = _textBox?.Text;};
-        SecondaryButtonClick += (_, _) => { Password = null; };
-    }
-
-    private UIElement CreateContent()
-    {
-        var stackPanel = new StackPanel();
-        _textBox = new TextBox
-        {
-            PlaceholderText = "请输入压缩包解压密码",
-        };
-        _textBox.TextChanged += (_, _) => IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(_textBox?.Text); 
-        stackPanel.Children.Add(_textBox);
-        return stackPanel;
-    }
 }

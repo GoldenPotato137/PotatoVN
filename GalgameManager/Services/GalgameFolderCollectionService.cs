@@ -7,7 +7,6 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using Microsoft.UI.Xaml.Controls;
-using SharpCompress;
 
 namespace GalgameManager.Services;
 
@@ -45,7 +44,8 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
             foreach (GalgameFolder galgameFolder in _galgameFolders)
             {
                 galgameFolder.GalgameService = _galgameService;
-                galgames.Where(galgame => galgameFolder.IsInFolder(galgame)).ForEach(galgameFolder.AddGalgame);
+                foreach(Galgame game in galgames.Where(galgame => galgameFolder.IsInFolder(galgame)))
+                    galgameFolder.AddGalgame(game);
             }
         });
     }

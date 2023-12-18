@@ -25,7 +25,7 @@ public abstract class BgTaskBase
 
     public virtual bool OnSearch(string key) => false;
     
-    protected void ChangeProgress(int current, int total, string message)
+    protected void ChangeProgress(long current, long total, string message)
     {
         CurrentProgress = new Progress
         {

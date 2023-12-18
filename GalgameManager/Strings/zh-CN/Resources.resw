@@ -1040,4 +1040,34 @@
   <data name="SettingsPage_Notification_GetGalgameFolder.Description" xml:space="preserve">
     <value>是否开启游戏文件夹扫描完成的通知</value>
   </data>
+  <data name="GalgameFolder_UnpackGame_Done" xml:space="preserve">
+    <value>解压完成，识别游戏中</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Start" xml:space="preserve">
+    <value>开始解压，请稍后</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PasswordRequired" xml:space="preserve">
+    <value>请输入压缩包解压密码</value>
+  </data>
+  <data name="UnpackDialog_Select.Content" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="UnpackDialog_GameName.Text" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="UnpackDialog_GameDescription.Text" xml:space="preserve">
+    <value>为提高识别准确度，游戏名应尽可能准确(正式名)并去除不必要的内容(如版本、汉化组名等)</value>
+  </data>
+  <data name="UnpackDialog_Password.Text" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="UnpackDialog_Password_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>若没有密码可不填</value>
+  </data>
+  <data name="UnpackDialog_Title" xml:space="preserve">
+    <value>一键添加游戏</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Error" xml:space="preserve">
+    <value>压缩包损坏或密码不正确</value>
+  </data>
 </root>
