@@ -27,8 +27,8 @@ public interface IUpdateService
     /// </summary>
     public Task UpdateSettingsBadgeAsync();
 
-    public event VoidDelegate? DownloadEvent;
-    public event VoidDelegate? DownloadCompletedEvent;
-    public event GenericDelegate<string>? DownloadFailedEvent;
-    public event GenericDelegate<bool>? SettingBadgeEvent; 
+    public event Action? DownloadEvent;
+    public event Action? DownloadCompletedEvent;
+    public event Action<string>? DownloadFailedEvent;
+    public event Action<bool>? SettingBadgeEvent; 
 }

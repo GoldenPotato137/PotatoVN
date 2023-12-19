@@ -1109,4 +1109,10 @@
   <data name="GalgameFolder_GetGalInFolder_Saving" xml:space="preserve">
     <value>扫描完成，保存记录中</value>
   </data>
+  <data name="UpdateContentPage_Download_Success" xml:space="preserve">
+    <value>已成功下载最新更新记录文档</value>
+  </data>
+  <data name="SettingsPage_About_UpdateAvailable.Text" xml:space="preserve">
+    <value>有新版本 ヾ(✿ﾟ▽ﾟ)ノ</value>
+  </data>
 </root>

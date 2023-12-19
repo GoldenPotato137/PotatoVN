@@ -31,8 +31,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly IBgmOAuthService _bgmOAuthService;
     private string _versionDescription;
 
-    #region UI_STRINGS
-
+    #region UI_STRINGS //历史遗留，不要继续使用这种方式获取字符串
+    
     private static readonly ResourceLoader ResourceLoader = new();
     public readonly string UiThemeTitle = ResourceLoader.GetString("SettingsPage_ThemeTitle");
     public readonly string UiThemeDescription = ResourceLoader.GetString("SettingsPage_ThemeDescription");
@@ -77,16 +77,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     
     public async void OnNavigatedTo(object parameter)
     {
-        if (_shouldDisplayUpdateNotification)
-        {
-            await ShowUpdateNotification();
-            await _updateService.UpdateSettingsBadgeAsync();
-        }
-
+        await _updateService.UpdateSettingsBadgeAsync();
+        UpdateAvailable = await _updateService.CheckUpdateAsync();
         await LoadBgmAccountAsync(await _bgmOAuthService.GetBgmAccountWithCache());
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+        _updateService.SettingBadgeEvent -= HandelSettingBadgeEvent;
+        _bgmOAuthService.OnAuthResultChange -= BgmAuthResultNotify;
+        _galgameCollectionService.MetaSavedEvent -= SetSaveMetaPopUp;
+        _localSettingsService.OnSettingChanged -= OnSettingChange;
+    }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
@@ -97,8 +99,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _navigationService = navigationService;
         _updateService = updateService;
         _bgmOAuthService = bgmOAuthService;
-        updateService.SettingBadgeEvent += result => _shouldDisplayUpdateNotification = result;
-        updateService.UpdateSettingsBadgeAsync(); //只是为了触发事件，原地TP，先这么写吧
+        updateService.SettingBadgeEvent += HandelSettingBadgeEvent;
         _versionDescription = GetVersionDescription();
         _localSettingsService = localSettingsService;
         
@@ -182,7 +183,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #region UPDATE
 
-    private bool _shouldDisplayUpdateNotification;
+    [ObservableProperty] private bool _updateAvailable;
     
     private async Task ShowUpdateNotification()
     {
@@ -199,6 +200,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!);
         await _localSettingsService.SaveSettingAsync(KeyValues.LastNoticeUpdateVersion, RuntimeHelper.GetVersion());
         await updateDialog.ShowAsync();
+    }
+    
+    private async void HandelSettingBadgeEvent(bool result)
+    {
+        if (result == false) return;
+        await ShowUpdateNotification();
+        await _updateService.UpdateSettingsBadgeAsync();
     }
     
     #endregion

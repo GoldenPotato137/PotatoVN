@@ -147,7 +147,7 @@ public class ActivationService : IActivationService
 
     private async Task StartupAsync()
     {
-        await _updateService.UpdateSettingsBadgeAsync();
+        if(IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
         await CheckFont();
