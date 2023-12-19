@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
@@ -7,7 +6,6 @@ using Newtonsoft.Json;
 
 namespace GalgameManager.Models;
 
-[SuppressMessage("ReSharper", "EnforceIfStatementBraces")]
 public class GalgameFolder
 {
     [JsonIgnore] public GalgameCollectionService GalgameService;
@@ -20,11 +18,8 @@ public class GalgameFolder
     private readonly List<Galgame> _galgames = new();
     public event VoidDelegate? ProgressChangedEvent;
 
-    public string Path
-    {
-        get;
-        set;
-    }
+    public string Path { get; set; }
+    public bool ScanOnStart { get; set; }
 
     public GalgameFolder(string path, IDataCollectionService<Galgame> service)
     {

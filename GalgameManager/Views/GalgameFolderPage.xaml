@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d">
@@ -27,20 +26,32 @@
                            MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"/>
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
                             DefaultLabelPosition="Right">
-                    <AppBarButton Icon="Add" Label="手动添加游戏" Command="{x:Bind ViewModel.AddGalgameCommand}">
+                    <!-- 手动添加游戏 -->
+                    <AppBarButton Icon="Add" x:Uid="GalgameFolderPage_AddManually" 
+                                  Command="{x:Bind ViewModel.AddGalgameCommand}">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="A" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
-                    <AppBarButton Label="添加游戏(压缩包)" Command="{x:Bind ViewModel.AddGalFromZipCommand}">
+                    <!-- 从压缩包添加游戏 -->
+                    <AppBarButton x:Uid="GalgameFolderPage_AddFromZip"
+                                  Command="{x:Bind ViewModel.AddGalFromZipCommand}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF012;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Icon="Refresh" Label="自动寻找游戏" Command="{x:Bind ViewModel.GetGalInFolderCommand}" />
+                    <!-- 扫描游戏 -->
+                    <AppBarButton Icon="Refresh" x:Uid="GalgameFolderPage_Refresh"
+                                  Command="{x:Bind ViewModel.GetGalInFolderCommand}" />
                     <!-- 下载游戏数据 -->
                     <AppBarButton Icon="Download" Label="{x:Bind ViewModel.UiDownloadInfo, Mode=OneWay}" 
                                   Command="{x:Bind ViewModel.GetInfoFromRssCommand}" />
+                    <CommandBar.SecondaryCommands>
+                        <!-- 启动时自动扫描 -->
+                        <AppBarToggleButton x:Uid="GalgameFolderPage_AutoScan" Icon="Refresh"
+                                            IsChecked="{x:Bind ViewModel.Item.ScanOnStart, Mode=TwoWay, 
+                                            FallbackValue=False}"/>
+                    </CommandBar.SecondaryCommands>
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SizeChanged">
                             <core:InvokeCommandAction Command="{x:Bind ViewModel.CommandBarSizeChangedCommand}"/>

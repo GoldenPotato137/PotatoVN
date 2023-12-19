@@ -101,7 +101,8 @@ public class UnpackGameTask : BgTaskBase
                 _galgameFolder.IsUnpacking = false;
                 ChangeProgress(1, 1, string.Empty);
 
-                if (StartFromBg && await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.NotifyWhenUnpackGame))
+                if (StartFromBg && await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.NotifyWhenUnpackGame)
+                    && App.MainWindow is null)
                 {
                     App.SystemTray?.ShowNotification("UnpackGameTask_Done_Title".GetLocalized(), 
                         "UnpackGameTask_Done_Msg".GetLocalized(GameName, saveDirectory));

@@ -50,6 +50,13 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         });
     }
 
+    public Task StartAsync()
+    {
+        foreach(GalgameFolder folder in _galgameFolders.Where(f => f.ScanOnStart)) 
+            _bgTaskService.AddBgTask(new GetGalgameInFolderTask(folder));
+        return Task.CompletedTask;
+    }
+
     private async void OnGalgameAdded(Galgame galgame)
     {
         if (galgame.CheckExist() == false) return;

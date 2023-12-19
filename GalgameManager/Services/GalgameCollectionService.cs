@@ -79,6 +79,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await Upgrade();
     }
 
+    public Task StartAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     private async Task GetGalgames()
     {
         _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();

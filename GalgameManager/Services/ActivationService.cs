@@ -151,6 +151,7 @@ public class ActivationService : IActivationService
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
         await CheckFont();
+        await _galgameFolderCollectionService.StartAsync();
         await ((GalgameCollectionService)_galgameCollectionService).SyncUpgrade();
         await ((GalgameCollectionService)_galgameCollectionService).SyncGames();
     }

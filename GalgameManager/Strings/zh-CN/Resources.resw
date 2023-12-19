@@ -1082,4 +1082,16 @@
   <data name="UnpackGameTask_Done_Msg" xml:space="preserve">
     <value>{0}已解压到{1}并已添加到库中</value>
   </data>
+  <data name="GalgameFolderPage_AutoScan.Label" xml:space="preserve">
+    <value>启动时自动扫描</value>
+  </data>
+  <data name="GalgameFolderPage_AddManually.Label" xml:space="preserve">
+    <value>手动添加游戏</value>
+  </data>
+  <data name="GalgameFolderPage_AddFromZip.Label" xml:space="preserve">
+    <value>添加游戏(压缩包)</value>
+  </data>
+  <data name="GalgameFolderPage_Refresh.Label" xml:space="preserve">
+    <value>自动寻找游戏</value>
+  </data>
 </root>
