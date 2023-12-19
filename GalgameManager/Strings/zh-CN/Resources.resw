@@ -1070,4 +1070,16 @@
   <data name="GalgameFolder_UnpackGame_Error" xml:space="preserve">
     <value>压缩包损坏或密码不正确</value>
   </data>
+  <data name="SettingsPage_Notification_Unpack.Title" xml:space="preserve">
+    <value>完成解压通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Description" xml:space="preserve">
+    <value>是否开启解压游戏完成的通知</value>
+  </data>
+  <data name="UnpackGameTask_Done_Title" xml:space="preserve">
+    <value>解压完成</value>
+  </data>
+  <data name="UnpackGameTask_Done_Msg" xml:space="preserve">
+    <value>{0}已解压到{1}并已添加到库中</value>
+  </data>
 </root>

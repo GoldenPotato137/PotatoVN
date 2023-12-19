@@ -50,7 +50,6 @@ public class PageService : IPageService
         {
             UIElement shell = App.GetService<ShellPage>();
             App.MainWindow.Content = shell;
-            App.MainWindow.Closed += (_, _) => App.OnAppClosing?.Invoke();
             await App.GetService<IThemeSelectorService>().SetRequestedThemeAsync();
             OnInit?.Invoke();
         }

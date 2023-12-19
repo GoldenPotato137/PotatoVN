@@ -57,6 +57,7 @@ public static class KeyValues
     
     //消息通知相关 (最小化到托盘时是否通知)
     public const string NotifyWhenGetGalgameInFolder = "notifyWhenGetGalgameInFolder"; //bool, 完成获取文件夹内游戏
+    public const string NotifyWhenUnpackGame = "notifyWhenUnpackGame"; //bool, 完成解压游戏
     
     //软件本体设置相关
     public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化

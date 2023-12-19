@@ -55,7 +55,7 @@ public partial class App : Application
     
     public static UIElement? AppTitlebar { get; set; }
     public static bool Closing;
-    public static Action? OnAppClosing;
+    public static event Action? OnAppClosing;
     public static DispatcherQueue DispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
 
     public App()
@@ -223,11 +223,13 @@ public partial class App : Application
                 MainWindow!.Minimize();
                 break;
             case WindowMode.SystemTray:
+                OnAppClosing?.Invoke();
                 GetService<IBgTaskService>().SaveBgTasksString();
                 AppInstance.Restart("/r");
                 WindowExtensions.Hide(MainWindow!);
                 break;
             case WindowMode.Close:
+                OnAppClosing?.Invoke();
                 Closing = true;
                 SystemTray?.Dispose();
                 _instance.Exit();

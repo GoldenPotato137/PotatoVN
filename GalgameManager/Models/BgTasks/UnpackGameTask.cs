@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Windows.Storage;
+using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
 using SevenZip;
@@ -98,6 +100,12 @@ public class UnpackGameTask : BgTaskBase
                 });
                 _galgameFolder.IsUnpacking = false;
                 ChangeProgress(1, 1, string.Empty);
+
+                if (StartFromBg && await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.NotifyWhenUnpackGame))
+                {
+                    App.SystemTray?.ShowNotification("UnpackGameTask_Done_Title".GetLocalized(), 
+                        "UnpackGameTask_Done_Msg".GetLocalized(GameName, saveDirectory));
+                }
             }
             catch (Exception) //密码错误或压缩包损坏
             {

@@ -208,6 +208,7 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.PlayingWindowMode:
                 return (T?)(object)WindowMode.Minimize;
             case KeyValues.NotifyWhenGetGalgameInFolder:
+            case KeyValues.NotifyWhenUnpackGame:
                 return (T?)(object)true;
             default:
                 return default;

@@ -443,6 +443,11 @@
                                 <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_GetGalgameFolder"
                                                            IsOn="{x:Bind ViewModel.NotifyWhenGetGalgameInFolder, Mode=TwoWay}"/>
                             </control:Panel>
+                            <!-- 完成游戏解压通知 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Unpack"
+                                                           IsOn="{x:Bind ViewModel.NotifyWhenUnpackGame, Mode=TwoWay}"/>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
