@@ -1094,4 +1094,13 @@
   <data name="GalgameFolderPage_Refresh.Label" xml:space="preserve">
     <value>自动寻找游戏</value>
   </data>
+  <data name="LibraryPage_AddGalgameFolder.Label" xml:space="preserve">
+    <value>新增库</value>
+  </data>
+  <data name="LibraryPage_ScanAll.Label" xml:space="preserve">
+    <value>扫描所有库</value>
+  </data>
+  <data name="LibraryPage_ScanAll_Success" xml:space="preserve">
+    <value>已启动{0}个库的扫描任务</value>
+  </data>
 </root>

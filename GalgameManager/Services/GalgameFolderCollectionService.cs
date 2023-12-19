@@ -131,5 +131,14 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
     {
         return _galgameFolders.FirstOrDefault(folder => folder.Path == path);
     }
+
+    /// <summary>
+    /// 扫描所有库
+    /// </summary>
+    public void ScanAll()
+    {
+        foreach(GalgameFolder f in _galgameFolders)
+            _bgTaskService.AddBgTask(new GetGalgameInFolderTask(f));
+    }
 }
 
