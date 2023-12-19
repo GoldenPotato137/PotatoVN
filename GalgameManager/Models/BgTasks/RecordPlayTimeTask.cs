@@ -22,6 +22,7 @@ public class RecordPlayTimeTask : BgTaskBase
 
     public RecordPlayTimeTask(Galgame game, Process process)
     {
+        if (process.HasExited) return;
         ProcessName = process.ProcessName;
         GalgamePath = game.Path;
         _galgame = game;

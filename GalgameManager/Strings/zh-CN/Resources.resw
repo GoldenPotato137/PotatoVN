@@ -1115,4 +1115,7 @@
   <data name="SettingsPage_About_UpdateAvailable.Text" xml:space="preserve">
     <value>有新版本 ヾ(✿ﾟ▽ﾟ)ノ</value>
   </data>
+  <data name="GalgamePage_SelectThread.Label" xml:space="preserve">
+    <value>手动指定游戏进程</value>
+  </data>
 </root>

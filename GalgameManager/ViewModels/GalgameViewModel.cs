@@ -35,6 +35,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isRemoveSelectedThreadVisible = Visibility.Collapsed;
+    [ObservableProperty] private Visibility _isSelectProcessVisible = Visibility.Collapsed;
     [ObservableProperty] private bool _canOpenInBgm;
     [ObservableProperty] private bool _canOpenInVndb;
 
@@ -95,6 +96,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
         CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
         IsRemoveSelectedThreadVisible = Item?.ProcessName is not null ? Visibility.Visible : Visibility.Collapsed;
+        IsSelectProcessVisible = Item?.ProcessName is null ? Visibility.Visible : Visibility.Collapsed;
     }
     
     /// <summary>
@@ -175,28 +177,19 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                 await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出
                 process = await WaitForProcessStartAsync(Item.ProcessName) ?? process;
             }
-
-            await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
-            Process.GetProcessesByName(string.Empty);
             _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
-            App.SetWindowMode(await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
             await _jumpListService.AddToJumpListAsync(Item);
             Dictionary<string, int> oldPlayTime = new(Item.PlayedTime);
-
+            
+            await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
+            if(process.HasExited == false)
+                App.SetWindowMode(await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
+            
             await process.WaitForExitAsync();
 
             App.SetWindowMode(WindowMode.Normal);
             if (DateTime.Now - startTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) && Item.ProcessName is null)
-            {
-                SelectProcessDialog dialog = new();
-                await dialog.ShowAsync();
-                if (dialog.SelectedProcessName is not null)
-                {
-                    Item.ProcessName = dialog.SelectedProcessName;
-                    UpdateVisibility();
-                    await DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
-                }
-            }
+                await SelectProcess();
             await SaveAsync(); //保存游戏信息(更新时长)
             foreach(var date in Item.PlayedTime.Keys)
             {
@@ -348,5 +341,20 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         UpdateVisibility();
         _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_RemoveSelectedThread_Success".GetLocalized());
         await SaveAsync();
+    }
+
+    [RelayCommand]
+    private async Task SelectProcess()
+    {
+        if(Item is null) return;
+        SelectProcessDialog dialog = new();
+        await dialog.ShowAsync();
+        if (dialog.SelectedProcessName is not null)
+        {
+            Item.ProcessName = dialog.SelectedProcessName;
+            UpdateVisibility();
+            await SaveAsync();
+            _ = DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
+        }
     }
 }

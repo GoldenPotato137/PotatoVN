@@ -218,6 +218,7 @@ public partial class App : Application
                 GetService<IPageService>().InitAsync();
                 WindowExtensions.Show(MainWindow!);
                 MainWindow!.Restore();
+                MainWindow!.Activate();
                 break;
             case WindowMode.Minimize:
                 MainWindow!.Minimize();

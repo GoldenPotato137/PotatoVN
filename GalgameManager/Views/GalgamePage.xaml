@@ -111,6 +111,15 @@
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
+                    <!-- 手动选择进程 -->
+                    <AppBarButton 
+                        x:Uid="GalgamePage_SelectThread"
+                        Command="{x:Bind ViewModel.SelectProcessCommand}"
+                        Visibility="{x:Bind ViewModel.IsSelectProcessVisible, Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE840;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <!-- 移除进程指定 -->
                     <AppBarButton 
                         x:Uid="GalgamePage_RemoveSelectedThread"
