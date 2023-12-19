@@ -29,21 +29,47 @@ public static class FileHelper
     /// 保存不会立刻进行，而是加入保存队列中排队完成<br/>
     /// 该函数不会阻塞线程
     /// </summary>
-    public static void Save(string fileName, object content)
+    public static void Save(string fileName, object content, string? subFolder = null)
     {
-        FileService.Save(_appDataPath, fileName, content);
+        FileService.Save(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, content);
+    }
+    
+    /// <summary>
+    /// 保存纯文本,该函数不会阻塞线程
+    /// </summary>
+    public static void SaveWithoutJson(string fileName, string content, string? subFolder = null)
+    {
+        FileService.SaveWithoutJson(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, content);
     }
     
     /// <summary>
     /// 读取某个文件，该文件必须是json格式
     /// </summary>
-    public static T? Load<T>(string fileName)
+    public static T? Load<T>(string fileName, string? subFolder = null)
     {
-        return FileService.Read<T>(_appDataPath, fileName);
+        return FileService.Read<T>(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName);
     }
     
-    public static void Delete(string fileName)
+    /// 读取存文本
+    public static string LoadWithoutJson(string fileName, string? subFolder = null)
     {
-        FileService.Delete(_appDataPath, fileName);
+        return FileService.ReadWithoutJson(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName);
+    }
+    
+    public static void Delete(string fileName, string? subFolder = null)
+    {
+        FileService.Delete(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName);
+    }
+    
+    public static string GetFullPath(string fileName, string? subFolder = null)
+    {
+        _ = FileService; //确保初始化
+        return Path.Combine(_appDataPath, subFolder ?? string.Empty, fileName);
+    }
+    
+    public static bool Exists(string fileName, string? subFolder = null)
+    {
+        _ = FileService; //确保初始化
+        return File.Exists(Path.Combine(_appDataPath, subFolder ?? string.Empty, fileName));
     }
 }

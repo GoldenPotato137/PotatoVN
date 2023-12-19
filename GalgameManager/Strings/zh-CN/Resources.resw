@@ -1103,4 +1103,10 @@
   <data name="LibraryPage_ScanAll_Success" xml:space="preserve">
     <value>已启动{0}个库的扫描任务</value>
   </data>
+  <data name="GalgameFolderPage_Log.Label" xml:space="preserve">
+    <value>打开扫描记录</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Saving" xml:space="preserve">
+    <value>扫描完成，保存记录中</value>
+  </data>
 </root>

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
@@ -33,12 +34,12 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _isUnpacking;
     [ObservableProperty] private int _progressValue;
     [ObservableProperty] private string _progressMsg = string.Empty;
-    
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddGalgameCommand))] 
     [NotifyCanExecuteChangedFor(nameof(GetInfoFromRssCommand))]
     [NotifyCanExecuteChangedFor(nameof(GetGalInFolderCommand))]
     private bool _canExecute; //是否正在运行命令
+    [ObservableProperty] private bool _logExists; //是否存在日志文件
 
     [ObservableProperty] private double _titleMaxWidth = 200;
     private double _commandBarWidth;
@@ -84,7 +85,6 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         Item = (_dataCollectionService as GalgameFolderCollectionService)!.GetGalgameFolderFromPath(path);
         if (Item == null) return;
         
-        CanExecute = !Item.IsRunning;
         _getGalInFolderTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Path);
         if (_getGalInFolderTask != null)
         {
@@ -97,6 +97,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
             _unpackGameTask.OnProgress += UpdateNotifyUnpack;
             UpdateNotifyUnpack(_unpackGameTask.CurrentProgress);
         }
+        Update();
     }
 
     public void OnNavigatedFrom()
@@ -110,11 +111,18 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         }
     }
 
+    private void Update()
+    {
+        if(Item is null) return;
+        CanExecute = !Item.IsRunning;
+        IsUnpacking = Item.IsUnpacking;
+        LogExists = FileHelper.Exists(Item.GetLogPath());
+    }
+
     private void UpdateNotifyUnpack(Progress progress)
     {
         if(Item == null) return;
-        CanExecute = !Item.IsRunning;
-        IsUnpacking = Item.IsUnpacking;
+        Update();
         ProgressValue = (int)((double)progress.Current / progress.Total * 100);
         ProgressMsg = progress.Message;
     }
@@ -122,7 +130,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private void UpdateNotifyGetGalInFolder(Progress progress)
     {
         if(Item == null) return;
-        CanExecute = !Item.IsRunning;
+        Update();
         _ = DisplayMsgAsync(progress.ToSeverity(), progress.Message, progress.ToSeverity() switch
         {
             InfoBarSeverity.Informational => 300000,
@@ -270,6 +278,15 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
         _commandBarWidth = e.NewSize.Width;
         UpdateTitleMaxWidth();
+    }
+
+    [RelayCommand]
+    private async Task ViewLog()
+    {
+        if(Item is null) return;
+        var path = Item.GetLogPath();
+        if(FileHelper.Exists(path) == false) return; 
+        await Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(FileHelper.GetFullPath(path)));
     }
     
     #region INFO_BAR_CTRL

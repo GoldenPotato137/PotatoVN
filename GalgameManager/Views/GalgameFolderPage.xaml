@@ -51,6 +51,14 @@
                         <AppBarToggleButton x:Uid="GalgameFolderPage_AutoScan" Icon="Refresh"
                                             IsChecked="{x:Bind ViewModel.Item.ScanOnStart, Mode=TwoWay, 
                                             FallbackValue=False}"/>
+                        <!-- 打开Log文件 -->
+                        <AppBarButton x:Uid="GalgameFolderPage_Log" 
+                                      IsEnabled="{x:Bind ViewModel.LogExists, Mode=OneWay}"
+                                      Command="{x:Bind ViewModel.ViewLogCommand}">
+                            <AppBarButton.Icon>
+                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
                     </CommandBar.SecondaryCommands>
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SizeChanged">

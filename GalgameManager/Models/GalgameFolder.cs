@@ -3,6 +3,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
 using Newtonsoft.Json;
+using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
@@ -92,4 +93,11 @@ public class GalgameFolder
         IsRunning = false;
         ProgressChangedEvent?.Invoke();
     }
+
+    /// <summary>
+    /// 获取这个库的日志路径（相对存储根目录）
+    /// </summary>
+    public string GetLogPath() => StdPath.Combine("Logs", $"GalgameFolder_{Path.ToBase64()}.txt");
+    
+    public string GetLogName() => $"GalgameFolder_{Path.ToBase64()}.txt";
 }

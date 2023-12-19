@@ -42,7 +42,7 @@ public class BgTaskService : IBgTaskService
             if (JsonConvert.DeserializeObject(Utils.FromBase64(argStrings[++i]), bgTaskType) is not BgTaskBase bgTask)
                 continue;
             await bgTask.RecoverFromJson();
-            await AddTaskInternal(bgTask);
+            _ = AddTaskInternal(bgTask);
         }
         FileHelper.Delete(FileName);
     }

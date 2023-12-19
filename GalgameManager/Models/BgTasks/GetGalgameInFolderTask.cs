@@ -33,9 +33,11 @@ public class GetGalgameInFolderTask : BgTaskBase
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+        var log = string.Empty;
         
         return Task.Run((async Task () =>
         {
+            log += $"{DateTime.Now}\n{GalgameFolderPath}\n\n";
             List<string> fileMustContain = new();
             List<string> fileShouldContain = new();
             var searchSubFolder = await localSettings.ReadSettingAsync<bool>(KeyValues.SearchChildFolder);
@@ -48,6 +50,11 @@ public class GetGalgameInFolderTask : BgTaskBase
                 fileShouldContain = tmp.Split('\r', '\n').ToList();
             var ignoreFetchResult = await localSettings.ReadSettingAsync<bool>(KeyValues.IgnoreFetchResult);
 
+            log += "Params:\n" + $"searchSubFolder:{searchSubFolder}\n" + $"maxDepth:{maxDepth}\n" +
+                   $"fileMustContain:{string.Join(",", fileMustContain)}\n" +
+                   $"fileShouldContain:{string.Join(",", fileShouldContain)}\n" +
+                   $"ignoreFetchResult:{ignoreFetchResult}\n\n\n";
+
             _galgameFolder.IsRunning = true;
             var cnt = 0;
             Queue<(string Path, int Depth)> pathToCheck = new();
@@ -55,28 +62,38 @@ public class GetGalgameInFolderTask : BgTaskBase
             while (pathToCheck.Count > 0)
             {
                 var (currentPath, currentDepth) = pathToCheck.Dequeue();
-                if (!HasPermission(currentPath)) continue;
+                log += $"\n{currentPath}: ";
+                if (!HasPermission(currentPath))
+                {
+                    log += "No Permission";
+                    continue;
+                }
                 ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Progress".GetLocalized(currentPath));
                 if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
                 {
+                    AddGalgameResult result = AddGalgameResult.Other;
                     await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                     {
-                        AddGalgameResult result = await galgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
+                        result = await galgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
                         if (result == AddGalgameResult.Success ||
                             (ignoreFetchResult && result == AddGalgameResult.NotFoundInRss))
                             cnt++;
                     });
+                    log += result;
                 }
+                else
+                    log += "Not a game folder";
 
                 if (currentDepth == maxDepth) continue;
                 foreach (var subPath in Directory.GetDirectories(currentPath))
                     pathToCheck.Enqueue((subPath, currentDepth + 1));
             }
+            ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Saving".GetLocalized(cnt));
+            FileHelper.SaveWithoutJson(_galgameFolder.GetLogName(), log, "Logs");
+            await Task.Delay(1000); //等待文件保存
             
             ChangeProgress(1, 1, "GalgameFolder_GetGalInFolder_Done".GetLocalized(cnt));
-            
             _galgameFolder.IsRunning = false;
-
             if (App.MainWindow is null && await localSettings.ReadSettingAsync<bool>(KeyValues.NotifyWhenGetGalgameInFolder))
             {
                 App.SystemTray?.ShowNotification(nameof(NotificationIcon.Info), 

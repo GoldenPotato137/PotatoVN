@@ -28,7 +28,13 @@ public class FileService : IFileService
 
         return default;
     }
-    
+
+    public string ReadWithoutJson(string folderPath, string fileName)
+    {
+        var path = Path.Combine(folderPath, fileName);
+        return File.Exists(path) ? File.ReadAllText(path) : string.Empty;
+    }
+
     public void Save<T>(string folderPath, string fileName, T content)
     {
         if (folderPath == null)
@@ -47,6 +53,16 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         var filePath = Path.Combine(folderPath, fileName);
         File.WriteAllText(filePath, JsonConvert.SerializeObject(content));
+    }
+
+    public void SaveWithoutJson(string folderPath, string fileName, string content)
+    {
+        if (folderPath == null)
+            throw new Exception("folderPath is null");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+        var filePath = Path.Combine(folderPath, fileName);
+        WritingQueue.Add((filePath, content));
     }
 
     public void Delete(string folderPath, string fileName)
