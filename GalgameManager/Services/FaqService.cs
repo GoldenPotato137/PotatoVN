@@ -57,9 +57,9 @@ public class FaqService : IFaqService
     {
         if (jsonUrl == null) return;
         HttpClient httpClient = new();
-        HttpResponseMessage response = await httpClient.GetAsync(jsonUrl);
         try
         {
+            HttpResponseMessage response = await httpClient.GetAsync(jsonUrl);
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsByteArrayAsync();
             StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
