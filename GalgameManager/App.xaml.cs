@@ -42,7 +42,7 @@ public partial class App : Application
         return service;
     }
     
-    public static T GetResource<T>(string key) where T : class
+    public static T GetResource<T>(string key)
     {
         if (Current.Resources[key] is not T resource)
             throw new ArgumentException($"{key} needs to be registered in Resource.xaml.");

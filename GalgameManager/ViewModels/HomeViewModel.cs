@@ -1,10 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows.Input;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using GalgameManager.Contracts;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
@@ -14,10 +14,10 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Helpers.Converter;
+using GalgameManager.Models.Filters;
 
 namespace GalgameManager.ViewModels;
 
@@ -29,7 +29,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
-    private IFilter? _filter; //进入界面时的使用的过滤器，退出界面后移除
+    private FilterBase? _filter; //进入界面时的使用的过滤器，退出界面后移除
     private DateTime _lastSearchTime = DateTime.Now;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
@@ -41,21 +41,10 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _specialDisplayVirtualGame; //是否特殊显示虚拟游戏（降低透明度）
 
     #region UI
-
-    private static readonly ResourceLoader ResourceLoader= new();
-    public readonly string UiEdit = ResourceLoader.GetString("HomePage_Edit");
-    public readonly string UiDownLoad = ResourceLoader.GetString("HomePage_Download");
-    public readonly string UiRemove = ResourceLoader.GetString("HomePage_Remove");
-    public readonly string UiAddNewGame = ResourceLoader.GetString("HomePage_AddNewGame");
-    public readonly string UiSort = ResourceLoader.GetString("HomePage_Sort");
-    public readonly string UiFilter = ResourceLoader.GetString("HomePage_Filter");
+    public readonly string UiEdit = "HomePage_Edit".GetLocalized();
+    public readonly string UiDownLoad = "HomePage_Download".GetLocalized();
+    public readonly string UiRemove = "HomePage_Remove".GetLocalized();
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
-
-    private readonly string _uiRemoveTitle = ResourceLoader.GetString("HomePage_Remove_Title");
-    private readonly string _uiRemoveMessage = ResourceLoader.GetString("HomePage_Remove_Message");
-    private readonly string _uiYes = ResourceLoader.GetString("Yes");
-    private readonly string _uiCancel = ResourceLoader.GetString("Cancel");
-
     #endregion
 
     public ICommand ItemClickCommand
@@ -64,6 +53,9 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     public ObservableCollection<Galgame> Source { get; private set; } = new();
+    public ObservableCollection<FilterBase> Filters = null!;
+    // ReSharper disable once CollectionNeverQueried.Global
+    public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService)
@@ -93,12 +85,15 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         SearchKey = _galgameService.GetSearchKey();
         UpdateSearchTitle();
-        if(parameter is IFilter filter)
+        if(parameter is FilterBase filter)
         {
             _filter = filter;
             _filterService.AddFilter(_filter);
         }
         Source = await _dataCollectionService.GetContentGridDataAsync();
+        Filters = _filterService.GetFilters();
+        Filters.CollectionChanged += UpdateFilterPanelDisplay;
+        UpdateFilterPanelDisplay(null,null!);
     }
 
     public async void OnNavigatedFrom()
@@ -111,6 +106,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
         _galgameService.SyncProgressChanged -= OnSyncChanged;
         _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
+        Filters.CollectionChanged -= UpdateFilterPanelDisplay;
     }
 
     private void OnItemClick(Galgame? clickedItem)
@@ -152,6 +148,67 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     public void Grid_DragLeave(object sender, DragEventArgs e)
     {
         DisplayDragArea = false;
+    }
+
+    #endregion
+    
+    #region FILTER
+    
+    [ObservableProperty] private bool _filterListVisible; //是否显示过滤器列表
+    [ObservableProperty] private bool _filterInputVisible; //是否显示过滤器输入框
+    [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
+
+    private void UpdateFilterPanelDisplay(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        FilterListVisible = Filters.Count > 0;
+        if (Filters.Count == 0)
+            FilterInputVisible = true;
+    }
+    
+    [RelayCommand]
+    private void DeleteFilter(FilterBase filter)
+    {
+        _filterService.RemoveFilter(filter);
+    }
+
+    [RelayCommand]
+    private void SetFilterInputVisible() => FilterInputVisible = !FilterInputVisible;
+
+    [RelayCommand]
+    private async Task FilterInputTextChange(AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if(args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
+        if (FilterInputText == string.Empty)
+        {
+            FilterInputSuggestions.Clear();
+            return;
+        }
+        List<FilterBase> result = await _filterService.SearchFilters(FilterInputText);
+        FilterInputSuggestions.Clear();
+        foreach (FilterBase filter in result)
+            FilterInputSuggestions.Add(filter);
+    }
+    
+    [RelayCommand]
+    private async Task FilterInputQuerySubmitted(AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (args.ChosenSuggestion is FilterBase filter)
+            _filterService.AddFilter(filter);
+        else if (string.IsNullOrEmpty(args.QueryText) == false)
+        {
+            List<FilterBase> result = await _filterService.SearchFilters(args.QueryText);
+            if (result.Count > 1)
+                _filterService.AddFilter(result[0]);
+            else
+                _ = DisplayMsgAsync(InfoBarSeverity.Error, "HomePage_Filter_Not_Found".GetLocalized());
+        }
+        FilterInputText = string.Empty;
+    }
+
+    [RelayCommand]
+    private void OnFilterFlyoutOpening(object arg)
+    {
+        FilterInputVisible = Filters.Count == 0;
     }
 
     #endregion
@@ -246,10 +303,10 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow!.Content.XamlRoot,
-            Title = _uiRemoveTitle,
-            Content = _uiRemoveMessage,
-            PrimaryButtonText = _uiYes,
-            SecondaryButtonText = _uiCancel
+            Title = "HomePage_Remove_Title".GetLocalized(),
+            Content = "HomePage_Remove_Message".GetLocalized(),
+            PrimaryButtonText = "Yes".GetLocalized(),
+            SecondaryButtonText = "Cancel".GetLocalized()
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {

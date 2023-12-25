@@ -1,10 +1,13 @@
-﻿using GalgameManager.Models;
+﻿using System.Collections.ObjectModel;
+using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Services;
 
 public interface ICategoryService
 {
     public Task Init();
+
+    public Task<ObservableCollection<CategoryGroup>> GetCategoryGroupsAsync();
 
     /// <summary>
     /// 更新所有Galgame的分类
