@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace GalgameManager.ViewModels;
 
@@ -157,12 +158,19 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _filterListVisible; //是否显示过滤器列表
     [ObservableProperty] private bool _filterInputVisible; //是否显示过滤器输入框
     [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
+    public TransitionCollection FilterFlyoutTransitions = new();
 
     private void UpdateFilterPanelDisplay(object? sender, NotifyCollectionChangedEventArgs e)
     {
         FilterListVisible = Filters.Count > 0;
         if (Filters.Count == 0)
             FilterInputVisible = true;
+        //Trick: 在这里设置而不在xaml里面设置是为了防止出现动画播放两次(一次为RepositoryThemeTransition，一次为Implicit.ShowAnimations)
+        //用两个动画的原因是因为RepositoryThemeTransition的出现动画只能在控件第一次显示时播放
+        if (FilterInputVisible && FilterFlyoutTransitions.Count == 0)
+            FilterFlyoutTransitions.Add(new RepositionThemeTransition());
+        else if (FilterInputVisible == false)
+            FilterFlyoutTransitions.Clear();
     }
     
     [RelayCommand]
@@ -208,7 +216,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private void OnFilterFlyoutOpening(object arg)
     {
-        FilterInputVisible = Filters.Count == 0;
+        FilterInputVisible = false;
+        UpdateFilterPanelDisplay(null, null!);
     }
 
     #endregion

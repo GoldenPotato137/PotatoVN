@@ -80,7 +80,7 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0" Padding="5" Text="{x:Bind Name}" 
+                                                <TextBlock Grid.Column="0" Padding="5" Text="{x:Bind ToString()}" 
                                                            VerticalAlignment="Center"/>
                                                 <Button Grid.Column="1" Margin="2 0 0 0"
                                                         Content="&#xE894;" FontFamily="{ThemeResource SymbolThemeFontFamily}" 
@@ -98,7 +98,8 @@
                                                 Text="{x:Bind ViewModel.FilterInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 ItemsSource="{x:Bind ViewModel.FilterInputSuggestions, Mode=OneWay}"
                                                 Visibility="{x:Bind ViewModel.FilterInputVisible, Mode=OneWay}"
-                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}">
+                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}"
+                                                Transitions="{x:Bind ViewModel.FilterFlyoutTransitions}">
                                     <interactivity:Interaction.Behaviors>
                                         <core:EventTriggerBehavior EventName="TextChanged">
                                             <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTextChangeCommand}" />
@@ -107,6 +108,10 @@
                                             <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputQuerySubmittedCommand}" />
                                         </core:EventTriggerBehavior>
                                     </interactivity:Interaction.Behaviors>
+                                    <animations:Implicit.ShowAnimations>
+                                        <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
+                                        <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
+                                    </animations:Implicit.ShowAnimations>
                                 </AutoSuggestBox>
                             </Grid>
                             <interactivity:Interaction.Behaviors>
