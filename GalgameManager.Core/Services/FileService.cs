@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿#nullable enable
+using System.Collections.Concurrent;
 using GalgameManager.Core.Contracts.Services;
 using Newtonsoft.Json;
 
@@ -17,16 +18,15 @@ public class FileService : IFileService
         writer.Start();
     }
     
-    public T Read<T>(string folderPath, string fileName)
+    public T Read<T>(string folderPath, string fileName, JsonSerializerSettings? settings = null)
     {
         var path = Path.Combine(folderPath, fileName);
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(json, settings)!;
         }
-
-        return default;
+        throw new Exception($"File {path} not found");
     }
 
     public string ReadWithoutJson(string folderPath, string fileName)
@@ -35,14 +35,14 @@ public class FileService : IFileService
         return File.Exists(path) ? File.ReadAllText(path) : string.Empty;
     }
 
-    public void Save<T>(string folderPath, string fileName, T content)
+    public void Save<T>(string folderPath, string fileName, T content, JsonSerializerSettings? settings = null)
     {
         if (folderPath == null)
             throw new Exception("folderPath is null");
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
         var filePath = Path.Combine(folderPath, fileName);
-        WritingQueue.Add((filePath, JsonConvert.SerializeObject(content)));
+        WritingQueue.Add((filePath, JsonConvert.SerializeObject(content, settings)));
     }
 
     public void SaveNow<T>(string folderPath, string fileName, T content)
@@ -67,7 +67,7 @@ public class FileService : IFileService
 
     public void Delete(string folderPath, string fileName)
     {
-        if (fileName != null && File.Exists(Path.Combine(folderPath, fileName)))
+        if (File.Exists(Path.Combine(folderPath, fileName)))
         {
             File.Delete(Path.Combine(folderPath, fileName));
         }

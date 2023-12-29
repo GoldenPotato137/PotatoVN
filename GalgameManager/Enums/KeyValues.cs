@@ -47,6 +47,7 @@ public static class KeyValues
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
     public const string Filters = "filters";
+    public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
     public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
     
     //主页显示相关
@@ -71,6 +72,7 @@ public static class KeyValues
     public const string OAuthUpgraded = "OAuthUpgraded"; //OAuth升级
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
+    public const string CategoryUpgraded = "categoryUpgraded"; //分类索引升级
     
     
     //废弃Key，只读，仅用于升级

@@ -37,7 +37,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
     {
         _galgameFolders = await _localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders, true)
                           ?? new ObservableCollection<GalgameFolder>();
-        ObservableCollection<Galgame> galgames = await _galgameService.GetContentGridDataAsync();
+        List<Galgame> galgames = _galgameService.Galgames;
 
         await Task.Run(() =>
         {

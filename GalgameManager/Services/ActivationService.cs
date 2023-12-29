@@ -81,11 +81,11 @@ public class ActivationService : IActivationService
                 return;
             } 
         }
-
-        await _filterService.InitAsync();
+        
         await _galgameCollectionService.InitAsync();
         await _galgameFolderCollectionService.InitAsync();
         await _categoryService.Init();
+        await _filterService.InitAsync();
         
         if (IsRestart() == false)
         {
@@ -147,6 +147,7 @@ public class ActivationService : IActivationService
 
     private async Task StartupAsync()
     {
+        await _galgameCollectionService.StartAsync();
         if(IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();

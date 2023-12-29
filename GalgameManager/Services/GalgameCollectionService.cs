@@ -81,6 +81,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
     public Task StartAsync()
     {
+        UpdateDisplay(UpdateType.Init);
         return Task.CompletedTask;
     }
 
@@ -95,7 +96,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             g.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
         }
         GalgameLoadedEvent?.Invoke();
-        UpdateDisplay(UpdateType.Init);
     }
 
     /// <summary>

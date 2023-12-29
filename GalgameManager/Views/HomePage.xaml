@@ -57,7 +57,7 @@
                     </AppBarButton.Flyout>
                 </AppBarButton>
                 <!-- 过滤 -->
-                <AppBarButton x:Uid="HomePage_Filter">
+                <AppBarButton x:Uid="HomePage_Filter" Label="{x:Bind ViewModel.UiFilter, Mode=OneWay}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>
@@ -152,6 +152,11 @@
                         <AppBarToggleButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FF;"/>
                         </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                    <!-- 保留过滤器 -->
+                    <AppBarToggleButton x:Uid="HomePage_KeepFilters"
+                                        IsChecked="{x:Bind ViewModel.KeepFilters, Mode=TwoWay}"
+                                        Icon="{ui:FontIcon Glyph=&#xE74E;}">
                     </AppBarToggleButton>
                     <!-- 显示非本地游戏 -->
                     <AppBarToggleButton x:Uid="HomePage_Filter_DisplayVirtualGames"

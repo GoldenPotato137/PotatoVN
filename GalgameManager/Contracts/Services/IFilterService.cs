@@ -34,6 +34,11 @@ public interface IFilterService
     public void RemoveFilter(FilterBase filter);
 
     /// <summary>
+    /// 移除除了虚拟游戏过滤器以外的所有过滤器
+    /// </summary>
+    public void ClearFilters();
+
+    /// <summary>
     /// 搜索可能的过滤器
     /// </summary>
     /// <param name="str">当前输入字符串</param>

@@ -30,7 +30,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
-    private FilterBase? _filter; //进入界面时的使用的过滤器，退出界面后移除
     private DateTime _lastSearchTime = DateTime.Now;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
@@ -67,18 +66,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _localSettingsService = localSettingsService;
         _filterService = filterService;
 
-        _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
-        _galgameService.PhrasedEvent += OnGalgameServicePhrased;
-        _galgameService.SyncProgressChanged += OnSyncChanged;
-
-        _stretch = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result
-            ? Stretch.UniformToFill : Stretch.Uniform;
-        _fixHorizontalPicture = localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
-        DisplayPlayTypePolygon = localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayPlayTypePolygon).Result;
-        DisplayVirtualGame = localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayVirtualGame).Result;
-        SpecialDisplayVirtualGame = localSettingsService.ReadSettingAsync<bool>(KeyValues.SpecialDisplayVirtualGame).Result;
-        GameToOpacityConverter.SpecialDisplayVirtualGame = SpecialDisplayVirtualGame;
-
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
     
@@ -86,28 +73,46 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         SearchKey = _galgameService.GetSearchKey();
         UpdateSearchTitle();
-        if(parameter is FilterBase filter)
-        {
-            _filter = filter;
-            _filterService.AddFilter(_filter);
-        }
         Source = await _dataCollectionService.GetContentGridDataAsync();
         Filters = _filterService.GetFilters();
+        
+        Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
+            ? Stretch.UniformToFill : Stretch.Uniform;
+        FixHorizontalPicture = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture);
+        DisplayPlayTypePolygon = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayPlayTypePolygon);
+        DisplayVirtualGame = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayVirtualGame);
+        SpecialDisplayVirtualGame = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SpecialDisplayVirtualGame);
+        KeepFilters = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters);
+        GameToOpacityConverter.SpecialDisplayVirtualGame = SpecialDisplayVirtualGame;
+        
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
+        _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
+        _galgameService.PhrasedEvent += OnGalgameServicePhrased;
+        _galgameService.SyncProgressChanged += OnSyncChanged;
+        _localSettingsService.OnSettingChanged += OnSettingChanged;
         UpdateFilterPanelDisplay(null,null!);
+    }
+
+    private void OnSettingChanged(string key, object value)
+    {
+        switch (key)
+        {
+            case KeyValues.DisplayVirtualGame:
+                DisplayVirtualGame = (bool)value;
+                break;
+        }
     }
 
     public async void OnNavigatedFrom()
     {
-        if (_filter is not null)
-        {
-            await Task.Delay(200); //等待动画结束
-            _filterService.RemoveFilter(_filter);
-        }
+        await Task.Delay(200); //等待动画结束
+        if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
+            _filterService.ClearFilters();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
         _galgameService.SyncProgressChanged -= OnSyncChanged;
         _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
         Filters.CollectionChanged -= UpdateFilterPanelDisplay;
+        _localSettingsService.OnSettingChanged -= OnSettingChanged;
     }
 
     private void OnItemClick(Galgame? clickedItem)
@@ -158,10 +163,13 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _filterListVisible; //是否显示过滤器列表
     [ObservableProperty] private bool _filterInputVisible; //是否显示过滤器输入框
     [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
+    [ObservableProperty] private string _uiFilter = string.Empty; //过滤器在AppBar上的文本
+    [ObservableProperty] private bool _keepFilters; //是否保留过滤器
     public TransitionCollection FilterFlyoutTransitions = new();
 
     private void UpdateFilterPanelDisplay(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        UiFilter = "HomePage_Filter".GetLocalized() + (ContainNonVirtualGameFilter() ? " ●" : string.Empty);
         FilterListVisible = Filters.Count > 0;
         if (Filters.Count == 0)
             FilterInputVisible = true;
@@ -219,6 +227,13 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         FilterInputVisible = false;
         UpdateFilterPanelDisplay(null, null!);
     }
+    
+    private bool ContainNonVirtualGameFilter()
+    {
+        return Filters.Count > 0 && Filters.Any(f => f.GetType() != typeof(VirtualGameFilter));
+    }
+    
+    partial void OnKeepFiltersChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.KeepFilters, value);
 
     #endregion
     

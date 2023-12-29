@@ -8,5 +8,5 @@ public class VirtualGameFilter : FilterBase
     
     public override string Name { get; } = "VirtualGameFilter".GetLocalized();
 
-    protected override string SuggestName { get; } = string.Empty; //用不到
+    protected override string SuggestName { get; } = "VirtualGameFilter".GetLocalized();
 }

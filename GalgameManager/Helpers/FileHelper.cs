@@ -1,5 +1,6 @@
 ﻿using Windows.Storage;
 using GalgameManager.Core.Contracts.Services;
+using Newtonsoft.Json;
 
 namespace GalgameManager.Helpers;
 
@@ -29,9 +30,10 @@ public static class FileHelper
     /// 保存不会立刻进行，而是加入保存队列中排队完成<br/>
     /// 该函数不会阻塞线程
     /// </summary>
-    public static void Save(string fileName, object content, string? subFolder = null)
+    public static void Save(string fileName, object content, string? subFolder = null, 
+        JsonSerializerSettings? settings = null)
     {
-        FileService.Save(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, content);
+        FileService.Save(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, content, settings);
     }
     
     /// <summary>
@@ -45,12 +47,12 @@ public static class FileHelper
     /// <summary>
     /// 读取某个文件，该文件必须是json格式
     /// </summary>
-    public static T? Load<T>(string fileName, string? subFolder = null)
+    public static T Load<T>(string fileName, string? subFolder = null, JsonSerializerSettings? settings = null)
     {
-        return FileService.Read<T>(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName);
+        return FileService.Read<T>(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, settings);
     }
     
-    /// 读取存文本
+    /// 读取纯文本
     public static string LoadWithoutJson(string fileName, string? subFolder = null)
     {
         return FileService.ReadWithoutJson(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName);

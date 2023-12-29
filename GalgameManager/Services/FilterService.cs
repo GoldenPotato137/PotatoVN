@@ -10,7 +10,7 @@ namespace GalgameManager.Services;
 
 public class FilterService : IFilterService
 {
-    public readonly ObservableCollection<FilterBase> Filters;
+    public ObservableCollection<FilterBase> Filters;
     public event Action? OnFilterChanged;
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -37,6 +37,8 @@ public class FilterService : IFilterService
     {
         if (Filters.Contains(filter)) return;
         Filters.Add(filter);
+        if (filter is VirtualGameFilter)
+            _localSettingsService.SaveSettingAsync(KeyValues.DisplayVirtualGame, false);
         OnFilterChanged?.Invoke();
     }
 
@@ -44,6 +46,16 @@ public class FilterService : IFilterService
     {
         if (Filters.Contains(filter) == false) return;
         Filters.Remove(filter);
+        if (filter is VirtualGameFilter)
+            _localSettingsService.SaveSettingAsync(KeyValues.DisplayVirtualGame, true);
+        OnFilterChanged?.Invoke();
+    }
+
+    public void ClearFilters()
+    {
+        List<FilterBase> toRemove = Filters.Where(filter => filter is not VirtualGameFilter).ToList();
+        foreach (FilterBase filter in toRemove)
+            Filters.Remove(filter);
         OnFilterChanged?.Invoke();
     }
 
@@ -100,6 +112,9 @@ public class FilterService : IFilterService
                 where addedTags.Add(tag)
                 select new TagFilter(tag));
             result.RemoveAll(filter => Filters.Any(f => f is TagFilter && f.Name == filter.Name));
+            //本地游戏
+            if(Filters.Any(f => f is VirtualGameFilter) == false)
+                result.Add(new VirtualGameFilter());
         })!);
         return result;
     }

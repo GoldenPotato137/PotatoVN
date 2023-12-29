@@ -181,9 +181,10 @@ public class CategoryService : ICategoryService
     /// </summary>
     public async Task UpdateAllGames()
     {
-        ObservableCollection<Galgame> games = await _galgameService.GetContentGridDataAsync();
+        List<Galgame> games = _galgameService.Galgames;
         foreach (Galgame game in games)
             UpdateCategory(game);
+        await Task.CompletedTask;
         //todo:空Category删除
     }
 

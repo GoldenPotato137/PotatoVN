@@ -4,7 +4,9 @@ namespace GalgameManager.Models.Filters;
 
 public class CategoryFilter : FilterBase
 {
-    private readonly Category _category;
+    private readonly Category? _category;
+    
+    public CategoryFilter(){} //for json
     
     public CategoryFilter(Category category)
     {
@@ -15,10 +17,10 @@ public class CategoryFilter : FilterBase
     
     public override bool Apply(Galgame galgame)
     {
-        return _category.Belong(galgame);
+        return _category is null || _category.Belong(galgame);
     }
 
-    public override string Name { get; }
+    public override string Name { get; } = string.Empty;
 
-    protected override string SuggestName { get; }
+    protected override string SuggestName { get; } = string.Empty;
 }
