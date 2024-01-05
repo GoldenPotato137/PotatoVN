@@ -160,8 +160,15 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         var metaFolder = Path.Combine(path, Galgame.MetaPath);
         if (Path.Exists(Path.Combine(metaFolder, "meta.json"))) // 有元数据备份
         {
-            galgame =  _fileService.Read<Galgame>(metaFolder, "meta.json");
-            Galgame.ResolveMeta(galgame, metaFolder);
+            try
+            {
+                galgame = _fileService.Read<Galgame>(metaFolder, "meta.json")!;
+                Galgame.ResolveMeta(galgame, metaFolder);
+            }
+            catch (Exception) // 文件不合法
+            {
+                throw new Exception("GalgameCollectionService_PhraseFileFailed".GetLocalized());
+            }
             PhrasedEvent?.Invoke();
         }
         else if (virtualGame is null)

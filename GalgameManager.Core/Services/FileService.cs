@@ -18,7 +18,7 @@ public class FileService : IFileService
         writer.Start();
     }
     
-    public T Read<T>(string folderPath, string fileName, JsonSerializerSettings? settings = null)
+    public T? Read<T>(string folderPath, string fileName, JsonSerializerSettings? settings = null)
     {
         var path = Path.Combine(folderPath, fileName);
         if (File.Exists(path))
@@ -26,7 +26,7 @@ public class FileService : IFileService
             var json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<T>(json, settings)!;
         }
-        throw new Exception($"File {path} not found");
+        return default;
     }
 
     public string ReadWithoutJson(string folderPath, string fileName)

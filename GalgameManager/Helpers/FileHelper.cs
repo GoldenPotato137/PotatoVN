@@ -47,7 +47,7 @@ public static class FileHelper
     /// <summary>
     /// 读取某个文件，该文件必须是json格式
     /// </summary>
-    public static T Load<T>(string fileName, string? subFolder = null, JsonSerializerSettings? settings = null)
+    public static T? Load<T>(string fileName, string? subFolder = null, JsonSerializerSettings? settings = null)
     {
         return FileService.Read<T>(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, settings);
     }

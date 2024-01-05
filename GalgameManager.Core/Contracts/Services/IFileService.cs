@@ -11,7 +11,7 @@ public interface IFileService
     /// <param name="folderPath">文件夹路径</param>
     /// <param name="fileName">文件名</param>
     /// <param name="settings">序列化设置</param>
-    T Read<T>(string folderPath, string fileName, JsonSerializerSettings? settings = null);
+    T? Read<T>(string folderPath, string fileName, JsonSerializerSettings? settings = null);
     
     /// <summary>
     /// 读取纯文本数据

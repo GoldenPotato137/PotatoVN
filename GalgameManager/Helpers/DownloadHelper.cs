@@ -8,8 +8,9 @@ public static class DownloadHelper
     /// 从网络下载图片并保存到本地
     /// </summary>
     /// <param name="imageUrl">图片链接</param>
+    /// <param name="retry">这是第几次重试</param>
     /// <returns>本地文件路径, 如果下载失败则返回null</returns>
-    public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl)
+    public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl, int retry = 0)
     {
         try
         {
@@ -23,6 +24,7 @@ public static class DownloadHelper
             StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
             var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
             if (fileName == string.Empty) fileName = imageUrl;
+            if (fileName.Contains('?')) fileName = fileName[..fileName.IndexOf('?')];
             StorageFile? storageFile;
             try
             {
@@ -45,7 +47,16 @@ public static class DownloadHelper
             }
 
             // 返回本地文件的路径
-            return storageFile.Path;    
+            return storageFile.Path;
+        }
+        catch (HttpRequestException)
+        {
+            if (retry < 3)
+            {
+                await Task.Delay(5000);
+                return await DownloadAndSaveImageAsync(imageUrl, retry + 1);
+            }
+            return null;
         }
         catch(Exception)
         {
