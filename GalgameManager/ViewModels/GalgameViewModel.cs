@@ -68,9 +68,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             path = para.Item1;
             startGame = para.Item2;
         }
-
-        ObservableCollection<Galgame>? data = await _dataCollectionService.GetContentGridDataAsync();
-        Item = parameter as Galgame ?? data.FirstOrDefault(g => g.Path == path);
+        
+        Item = parameter as Galgame ?? _galgameService.GetGalgameFromPath(path!);
         if (Item is null) //找不到这个游戏，回到主界面
         {
             _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
