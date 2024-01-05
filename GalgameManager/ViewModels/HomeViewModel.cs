@@ -120,8 +120,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         if (clickedItem != null)
         {
             _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-            object param = string.IsNullOrEmpty(clickedItem.Path) ? clickedItem : clickedItem.Path;
-            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, param);
+            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, new GalgamePageParameter {Galgame = clickedItem});
         }
     }
 

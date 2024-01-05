@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -22,8 +22,6 @@ namespace GalgameManager.ViewModels;
 public partial class GalgameViewModel : ObservableRecipient, INavigationAware
 {
     private const int ProcessMaxWaitSec = 60; //(手动指定游戏进程)等待游戏进程启动的最大时间
-    private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
-    private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
@@ -47,7 +45,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, 
         IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService)
     {
-        _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
         _galgameService.PhrasedEvent += OnGalgameServiceOnPhrasedEvent;
@@ -55,32 +52,27 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _localSettingsService = localSettingsService;
         _bgTaskService = bgTaskService;
     }
-
     
-
     public async void OnNavigatedTo(object parameter)
     {
-        var path = parameter as string ?? null;
-        var startGame = false;
-        Tuple<string, bool>? para = parameter as Tuple<string, bool> ?? null;
-        if (para != null)
-        {
-            path = para.Item1;
-            startGame = para.Item2;
-        }
-        
-        Item = parameter as Galgame ?? _galgameService.GetGalgameFromPath(path!);
-        if (Item is null) //找不到这个游戏，回到主界面
+        if (parameter is not GalgamePageParameter param) //参数不正确，返回主菜单
         {
             _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
             return;
         }
 
+        Item = param.Galgame;
         IsLocalGame = Item.CheckExist();
         Item.SavePath = Item.SavePath; //更新存档位置显示
         UpdateVisibility();
-        if (startGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
+        
+        if (param.StartGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
             await Play();
+        if (param.SelectProgress)
+        {
+            await Task.Delay(1000);
+            await SelectProcess();
+        }
     }
 
     public void OnNavigatedFrom()
@@ -168,7 +160,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         };
         try
         {
-            DateTime startTime = DateTime.Now;
             process.Start();
             _galgameService.Sort();
             if (Item.ProcessName is not null)
@@ -186,10 +177,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             
             await process.WaitForExitAsync();
 
-            App.SetWindowMode(WindowMode.Normal);
-            if (DateTime.Now - startTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) && Item.ProcessName is null)
-                await SelectProcess();
-            await SaveAsync(); //保存游戏信息(更新时长)
+
             foreach(var date in Item.PlayedTime.Keys)
             {
                 if (oldPlayTime.TryGetValue(date, out var oldValue) && oldValue == Item.PlayedTime[date]) continue;
@@ -356,4 +344,14 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             _ = DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
         }
     }
+}
+
+public class GalgamePageParameter
+{
+    /// 目标游戏
+    [Required] public Galgame Galgame = null!;
+    /// 如果设置有打开直接启动游戏，则直接启动游戏
+    public bool StartGame;
+    /// 显示手动选择线程弹窗
+    public bool SelectProgress;
 }
