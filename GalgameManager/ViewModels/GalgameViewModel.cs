@@ -344,6 +344,35 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             _ = DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
         }
     }
+
+    [RelayCommand]
+    private async Task SelectText()
+    {
+        if (Item is null) return;
+        var path = Item.TextPath;
+        if (path is null || File.Exists(path) == false)
+        {
+            SelectFileDialog dialog = new(Item!.Path, new[] {".txt", ".pdf"}, "GalgamePage_SelectText_Title".GetLocalized());
+            await dialog.ShowAsync();
+            path = dialog.SelectedFilePath;
+            if (dialog.RememberMe)
+            {
+                Item.TextPath = path;
+                await SaveAsync();
+            }
+        }
+        
+        if (path is not null)
+            _ = Launcher.LaunchUriAsync(new Uri(path));
+    }
+    
+    [RelayCommand]
+    private async Task ClearText()
+    {
+        if (Item is null) return;
+        Item.TextPath = null;
+        await SaveAsync();
+    }
 }
 
 public class GalgamePageParameter

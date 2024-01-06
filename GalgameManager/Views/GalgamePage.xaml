@@ -7,6 +7,7 @@
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:local="using:GalgameManager.Helpers"
     xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -80,6 +81,23 @@
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74C;" />
                     </AppBarButton.Icon>
+                </AppBarButton>
+                <!-- 打开文本 -->
+                <AppBarButton x:Uid="GalgamePage_OpenText" Command="{x:Bind ViewModel.SelectTextCommand}"
+                              Icon="{ui:FontIcon Glyph=&#xE8A1;}">
+                    <AppBarButton.ContextFlyout>
+                        <Flyout Placement="Bottom" x:Name="ClearTextFlyout">
+                            <StackPanel>
+                                <TextBlock Style="{ThemeResource BaseTextBlockStyle}"
+                                           x:Uid="GalgamePage_TextFlyout_ClearText" />
+                                <Button Command="{x:Bind ViewModel.ClearTextCommand}"
+                                        local:FlyoutHelper.CloseFlyoutOnClick="True"
+                                        x:Uid="YesButton"
+                                        Margin="{StaticResource SmallTopMargin}" HorizontalAlignment="Center" 
+                                        Flyout="{x:Bind ClearTextFlyout}"/>
+                            </StackPanel>
+                        </Flyout>
+                    </AppBarButton.ContextFlyout>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="OpenLocal" x:Uid="GalgamePage_OpenInExplorer" Command="{x:Bind ViewModel.OpenInExplorerCommand}"

@@ -54,6 +54,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     [ObservableProperty] private bool _privateComment; //是否私密评论
     private string? _savePath; //云端存档本地路径
     public string? ProcessName; //手动指定的进程名，用于正确获取游戏进程
+    public string? TextPath; //记录的要打开的文本的路径
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> SyncTo = new(); //mac, lastId, 每台电脑同步到的最后一个id （防止重装软件后同步状态丢失）
 
@@ -252,6 +253,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             SavePath = SavePath,
             ProcessName = ProcessName,
             SyncTo = SyncTo,
+            TextPath =  TextPath,
         };
         return result;
     }

@@ -1133,4 +1133,16 @@
   <data name="GalgameCollectionService_PhraseFileFailed" xml:space="preserve">
     <value>解析.PotatoVN备份文件失败，请手动删除游戏目录下.PotatoVN文件夹或修改meta.json为合法的json文件后重试。</value>
   </data>
+  <data name="SelectFileDialog_NoFound" xml:space="preserve">
+    <value>在{0}中没有找到任何{1}文件</value>
+  </data>
+  <data name="GalgamePage_OpenText.Label" xml:space="preserve">
+    <value>打开文本</value>
+  </data>
+  <data name="GalgamePage_SelectText_Title" xml:space="preserve">
+    <value>选择文本打开</value>
+  </data>
+  <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
+    <value>清除选择记录？</value>
+  </data>
 </root>

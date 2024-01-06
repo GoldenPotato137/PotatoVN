@@ -111,6 +111,9 @@
     <Page Update="Views\Control\SettingToggleSwitch.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Views\Dialog\SelectFileDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
