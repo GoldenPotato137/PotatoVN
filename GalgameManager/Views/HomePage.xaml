@@ -55,6 +55,9 @@
                             </TextBox>
                         </Flyout>
                     </AppBarButton.Flyout>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="F" />
+                    </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <!-- 过滤 -->
                 <AppBarButton x:Uid="HomePage_Filter" Label="{x:Bind ViewModel.UiFilter, Mode=OneWay}">
@@ -121,18 +124,28 @@
                             </interactivity:Interaction.Behaviors>
                         </Flyout>
                     </AppBarButton.Flyout>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="K"/>
+                    </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <!-- 添加游戏 -->
                 <AppBarButton
                     Icon="Add"
                     x:Uid="HomePage_AddNewGame"
                     Command="{x:Bind ViewModel.AddGalgameCommand}"
-                    IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="N"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
                 <!-- 排序 -->
                 <AppBarButton x:Uid="HomePage_Sort" Command="{x:Bind ViewModel.SortCommand}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;" />
                     </AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="S"/>
+                    </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
                     <!-- 裁剪横图 -->

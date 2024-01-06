@@ -32,7 +32,11 @@
             </AppBarButton>
             <!-- 扫描所有库 -->
             <AppBarButton Icon="Refresh" x:Uid="LibraryPage_ScanAll"
-                          Command="{x:Bind ViewModel.ScanAllCommand}"/>
+                          Command="{x:Bind ViewModel.ScanAllCommand}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="R"/>
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
             <!-- <AppBarButton Icon="Share" Label="Share"/> -->
             <CommandBar.SecondaryCommands>
                 <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">

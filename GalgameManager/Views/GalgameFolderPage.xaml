@@ -30,7 +30,7 @@
                     <AppBarButton Icon="Add" x:Uid="GalgameFolderPage_AddManually" 
                                   Command="{x:Bind ViewModel.AddGalgameCommand}">
                         <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Modifiers="Control" Key="A" />
+                            <KeyboardAccelerator Modifiers="Control" Key="N" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                     <!-- 从压缩包添加游戏 -->
@@ -39,10 +39,17 @@
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF012;" />
                         </AppBarButton.Icon>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="A"/>
+                        </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                     <!-- 扫描游戏 -->
                     <AppBarButton Icon="Refresh" x:Uid="GalgameFolderPage_Refresh"
-                                  Command="{x:Bind ViewModel.GetGalInFolderCommand}" />
+                                  Command="{x:Bind ViewModel.GetGalInFolderCommand}">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="R"/>
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
                     <!-- 下载游戏数据 -->
                     <AppBarButton Icon="Download" Label="{x:Bind ViewModel.UiDownloadInfo, Mode=OneWay}" 
                                   Command="{x:Bind ViewModel.GetInfoFromRssCommand}" />
