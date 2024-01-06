@@ -358,6 +358,34 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     }
 
     /// <summary>
+    /// 获取搜索建议
+    /// </summary>
+    /// <param name="current">当前文本串</param>
+    /// <returns>搜索建议，若没有则返回空List</returns>
+    public async Task<List<string>> GetSearchSuggestions(string current)
+    {
+        List<string> tmp = new();
+        await Task.Run(() =>
+        {
+            //Name
+            tmp.AddRange(from galgame in _galgames
+                where galgame.Name.Value is not null && galgame.Name.Value.ContainX(current) select galgame.Name.Value);
+            //Developer
+            tmp.AddRange(from galgame in _galgames
+                where galgame.Developer.Value is not null && galgame.Developer.Value.ContainX(current)
+                select galgame.Developer.Value);
+            //Tag
+            tmp.AddRange(from galgame in _galgames
+                from tag in galgame.Tags.Value ?? new ObservableCollection<string>()
+                where tag.ContainX(current)
+                select tag);
+        });
+        //去重
+        tmp.Sort((a,b)=> a.CompareX(b));
+        return tmp.Where((t, i) => i == 0 || t.CompareX(tmp[i - 1]) !=0).ToList();
+    }
+
+    /// <summary>
     /// 获取搜索关键字(的clone)
     /// </summary>
     public string GetSearchKey()

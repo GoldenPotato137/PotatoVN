@@ -1145,4 +1145,7 @@
   <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
     <value>清除选择记录？</value>
   </data>
+  <data name="HomePage_Search.PlaceholderText" xml:space="preserve">
+    <value>支持拼音/拼音首字母搜索</value>
+  </data>
 </root>

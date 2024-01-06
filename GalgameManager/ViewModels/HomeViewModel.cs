@@ -19,22 +19,19 @@ using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
 using Microsoft.UI.Xaml.Media.Animation;
+// ReSharper disable CollectionNeverQueried.Global
 
 namespace GalgameManager.ViewModels;
 
 public partial class HomeViewModel : ObservableRecipient, INavigationAware
 {
-    private const int SearchDelay = 500;
     private readonly INavigationService _navigationService;
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
-    private DateTime _lastSearchTime = DateTime.Now;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
-    [ObservableProperty] private string _searchKey = string.Empty;
-    [ObservableProperty] private string _searchTitle = string.Empty;
     [ObservableProperty] private bool _fixHorizontalPicture; // 是否修复横向图片（截断为标准的长方形）
     [ObservableProperty] private bool _displayPlayTypePolygon = true; // 是否显示游玩状态的小三角形
     [ObservableProperty] private bool _displayVirtualGame; //是否显示虚拟游戏
@@ -53,9 +50,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     }
 
     public ObservableCollection<Galgame> Source { get; private set; } = new();
-    public ObservableCollection<FilterBase> Filters = null!;
-    // ReSharper disable once CollectionNeverQueried.Global
-    public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService)
@@ -165,6 +159,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _uiFilter = string.Empty; //过滤器在AppBar上的文本
     [ObservableProperty] private bool _keepFilters; //是否保留过滤器
     public TransitionCollection FilterFlyoutTransitions = new();
+    public ObservableCollection<FilterBase> Filters = null!;
+    public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
     private void UpdateFilterPanelDisplay(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -235,6 +231,67 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     partial void OnKeepFiltersChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.KeepFilters, value);
 
     #endregion
+
+    #region SEARCH
+    
+    private const int SearchDelay = 500;
+    
+    public readonly ObservableCollection<string> SearchSuggestions = new();
+    private DateTime _lastSearchTime = DateTime.Now;
+    [ObservableProperty] private string _searchKey = string.Empty;
+    [ObservableProperty] private string _searchTitle = string.Empty;
+
+    private void UpdateSearchTitle()
+    {
+        SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
+    }
+    
+    [RelayCommand]
+    private async Task SearchChange(AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (string.IsNullOrEmpty(SearchKey))
+        {
+            UpdateSearchTitle();
+            _galgameService.Search(string.Empty);
+            SearchSuggestions.Clear();
+            return;
+        }
+        
+        _ = Task.Run((async Task() =>
+        {
+            _lastSearchTime = DateTime.Now;
+            DateTime tmp = _lastSearchTime;
+            await Task.Delay(SearchDelay);
+            if (tmp == _lastSearchTime) //如果在延迟时间内没有再次输入，则开始搜索
+            {
+                await UiThreadInvokeHelper.InvokeAsync(() =>
+                {
+                    _galgameService.Search(SearchKey);
+                    UpdateSearchTitle();
+                });
+            }
+        })!);
+        //更新建议
+        if(args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
+        if (SearchKey == string.Empty)
+        {
+            SearchSuggestions.Clear();
+            return;
+        }
+        List<string> result = await _galgameService.GetSearchSuggestions(SearchKey);
+        SearchSuggestions.Clear();
+        foreach (var suggestion in result)
+            SearchSuggestions.Add(suggestion);
+    }
+    
+    [RelayCommand]
+    private void SearchSubmitted(AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (string.IsNullOrEmpty(SearchKey)) return;
+        _galgameService.Search(SearchKey);
+    }
+
+    #endregion
     
     /// <summary>
     /// 添加Galgame
@@ -300,25 +357,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         await _galgameService.SetSortKeysAsync();
     }
-
-    [RelayCommand]
-    private async Task Search(object et)
-    {
-        _lastSearchTime = DateTime.Now;
-        DateTime tmp = _lastSearchTime;
-        await Task.Delay(SearchDelay);
-        if (tmp == _lastSearchTime) //如果在延迟时间内没有再次输入，则开始搜索
-        {
-            _galgameService.Search(SearchKey);
-            UpdateSearchTitle();
-        }
-    }
-
-    private void UpdateSearchTitle()
-    {
-        SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-    }
-
+    
     [RelayCommand]
     private async Task GalFlyOutDelete(Galgame? galgame)
     {
