@@ -154,8 +154,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             {
                 FileName = Item.ExePath,
                 WorkingDirectory = Item.Path,
-                UseShellExecute = Item.RunAsAdmin,
-                Verb = Item.RunAsAdmin ? "runas" : null
+                UseShellExecute = Item.RunAsAdmin | Item.ExePath.ToLower().EndsWith("lnk"),
+                Verb = Item.RunAsAdmin ? "runas" : null,
             }
         };
         try

@@ -264,6 +264,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     {
         List<string> result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
         result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".bat")));
+        result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".lnk")));
         return result;
     }
     
