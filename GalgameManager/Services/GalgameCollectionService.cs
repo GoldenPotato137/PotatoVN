@@ -9,6 +9,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -476,10 +477,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 break;
             default:
             {
-                FilePickerDialog dialog = new(App.MainWindow!.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
+                SelectFileDialog dialog = new(galgame.Path, new[] {".exe", ".bat", ".lnk"}, 
+                    "GalgameCollectionService_SelectExe".GetLocalized(), false);
                 await dialog.ShowAsync();
-                if (dialog.SelectedFile == null) return null;
-                galgame.ExePath = dialog.SelectedFile;
+                if (dialog.SelectedFilePath == null) return null;
+                galgame.ExePath = dialog.SelectedFilePath;
                 break;
             }
         }
@@ -704,51 +706,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 RecordPlayTimeTask.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
                 break;
         }
-    }
-}
-
-public class FilePickerDialog : ContentDialog
-{
-    public string? SelectedFile
-    {
-        get; private set;
-    }
-
-    public FilePickerDialog(XamlRoot xamlRoot, string title, List<string> files)
-    {
-        XamlRoot = xamlRoot;
-        Title = title;
-        Content = CreateContent(files);
-        PrimaryButtonText = "Yes".GetLocalized();
-        SecondaryButtonText = "Cancel".GetLocalized();
-
-        IsPrimaryButtonEnabled = false;
-
-        PrimaryButtonClick += (_, _) => { };
-        SecondaryButtonClick += (_, _) => { SelectedFile = null; };
-    }
-
-    private UIElement CreateContent(List<string> files)
-    {
-        StackPanel stackPanel = new();
-        foreach (var file in files)
-        {
-            RadioButton radioButton = new()
-            {
-                Content = file,
-                GroupName = "ExeFiles"
-            };
-            radioButton.Checked += RadioButton_Checked;
-            stackPanel.Children.Add(radioButton);
-        }
-        return stackPanel;
-    }
-
-    private void RadioButton_Checked(object sender, RoutedEventArgs e)
-    {
-        RadioButton radioButton = (RadioButton)sender;
-        SelectedFile = radioButton.Content.ToString()!;
-        IsPrimaryButtonEnabled = true;
     }
 }
 

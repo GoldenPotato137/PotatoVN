@@ -28,7 +28,7 @@
             </ListView.ItemTemplate>
         </ListView>
         
-        <CheckBox Grid.Row="1" x:Uid="CloseConfirmDialog_Remember" 
+        <CheckBox Grid.Row="1" x:Name="RememberMeCheckBox" x:Uid="CloseConfirmDialog_Remember" 
                   IsChecked="{x:Bind RememberMe, Mode=TwoWay}"/>
     </Grid>
 </ContentDialog>

@@ -15,12 +15,13 @@ public sealed partial class SelectFileDialog
     private readonly IEnumerable<string> _fileExtensions;
     private readonly string _path;
     
-    public SelectFileDialog(string path,IEnumerable<string> fileExtensions, string title)
+    public SelectFileDialog(string path,IEnumerable<string> fileExtensions, string title, bool displayRememberMe = true)
     {
         InitializeComponent();
 
         _path = path;
         _fileExtensions = fileExtensions;
+        RememberMeCheckBox.Visibility = displayRememberMe ? Visibility.Visible : Visibility.Collapsed;
        
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         Title = title;
