@@ -23,12 +23,20 @@
         </Grid.RowDefinitions>
         
         <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-            <AppBarButton Icon="Add" Label="新增库" Command="{x:Bind ViewModel.AddLibraryCommand}">
+            <!-- 新增游戏库 -->
+            <AppBarButton Icon="Add" x:Uid="LibraryPage_AddGalgameFolder"
+                          Command="{x:Bind ViewModel.AddLibraryCommand}">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="N"/>
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <!-- <AppBarButton Icon="Edit" Label="Edit"/> -->
+            <!-- 扫描所有库 -->
+            <AppBarButton Icon="Refresh" x:Uid="LibraryPage_ScanAll"
+                          Command="{x:Bind ViewModel.ScanAllCommand}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="R"/>
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
             <!-- <AppBarButton Icon="Share" Label="Share"/> -->
             <CommandBar.SecondaryCommands>
                 <AppBarButton Icon="Setting" Label="Settings" IsEnabled="False">

@@ -434,6 +434,24 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
                 
+                <!-- 消息通知 -->
+                <control:SettingExpander x:Uid="SettingsPage_Notification" SettingIcon="&#xEA8F;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 完成游戏扫描通知 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_GetGalgameFolder"
+                                                           IsOn="{x:Bind ViewModel.NotifyWhenGetGalgameInFolder, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 完成游戏解压通知 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Unpack"
+                                                           IsOn="{x:Bind ViewModel.NotifyWhenUnpackGame, Mode=TwoWay}"/>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+                
                 <!-- 其他设置 -->
                 <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE713;">
                     <control:SettingExpander.SettingContent>
@@ -469,12 +487,21 @@
                 <!-- 关于 -->
                 <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
                 <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                    <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}"
-                               Style="{ThemeResource BodyTextBlockStyle}" />
-                    <!-- <TextBlock -->
-                    <!--     Text="{x:Bind ViewModel.UiAbout}" -->
-                    <!--     Margin="{StaticResource XSmallTopMargin}" -->
-                    <!--     Style="{ThemeResource BodyTextBlockStyle}" /> -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- PotatoVN-版本 -->
+                        <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}"
+                                   Style="{ThemeResource BodyTextBlockStyle}" VerticalAlignment="Center"/>
+                        <!-- 更新提醒 -->
+                        <Grid Grid.Column="1" Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" 
+                              CornerRadius="10" VerticalAlignment="Center" Margin="10 0 0 0"
+                              Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}">
+                            <TextBlock Padding="10 0 10 0" x:Uid="SettingsPage_About_UpdateAvailable" />
+                    </Grid>
+                    </Grid>
                     <StackPanel Orientation="Horizontal">
                         <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink"
                                          Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />

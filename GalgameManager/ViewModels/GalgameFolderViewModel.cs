@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
@@ -9,7 +10,9 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -19,24 +22,24 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
 {
     private readonly IDataCollectionService<GalgameFolder> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
-    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IBgTaskService _bgTaskService;
+    
     private GalgameFolder? _item;
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
+    private GetGalgameInFolderTask? _getGalInFolderTask;
+    private UnpackGameTask? _unpackGameTask;
     public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
-
-    [ObservableProperty] private bool _isInfoBarOpen;
-    [ObservableProperty] private string _infoBarMessage = string.Empty;
-    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    
     [ObservableProperty] private bool _isUnpacking;
     [ObservableProperty] private int _progressValue;
     [ObservableProperty] private string _progressMsg = string.Empty;
-    
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddGalgameCommand))] 
     [NotifyCanExecuteChangedFor(nameof(GetInfoFromRssCommand))]
     [NotifyCanExecuteChangedFor(nameof(GetGalInFolderCommand))]
     private bool _canExecute; //是否正在运行命令
+    [ObservableProperty] private bool _logExists; //是否存在日志文件
 
     [ObservableProperty] private double _titleMaxWidth = 200;
     private double _commandBarWidth;
@@ -60,12 +63,13 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         }
     }
 
-    public GalgameFolderViewModel(IDataCollectionService<GalgameFolder> dataCollectionService, IDataCollectionService<Galgame> galgameService, ILocalSettingsService localSettingsService)
+    public GalgameFolderViewModel(IDataCollectionService<GalgameFolder> dataCollectionService, 
+        IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)galgameService;
         _galgameService.GalgameAddedEvent += ReloadGalgameList;
-        _localSettingsService = localSettingsService;
+        _bgTaskService = bgTaskService;
     }
 
     private void ReloadGalgameList(Galgame galgame)
@@ -75,35 +79,63 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
             Galgames.Add(galgame);
     }
 
-    public async void OnNavigatedTo(object parameter)
+    public void OnNavigatedTo(object parameter)
     {
-        if (parameter is string path)
+        if (parameter is not string path) return;
+        Item = (_dataCollectionService as GalgameFolderCollectionService)!.GetGalgameFolderFromPath(path);
+        if (Item == null) return;
+        
+        _getGalInFolderTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Path);
+        if (_getGalInFolderTask != null)
         {
-            var data = await _dataCollectionService.GetContentGridDataAsync();
-            Item = data.First(i => i.Path == path);
-            if (Item != null)
-            {
-                Item.ProgressChangedEvent += Update;
-                Update();
-            }
+            _getGalInFolderTask.OnProgress += UpdateNotifyGetGalInFolder;
+            UpdateNotifyGetGalInFolder(_getGalInFolderTask.CurrentProgress);
         }
+        _unpackGameTask = _bgTaskService.GetBgTask<UnpackGameTask>(Item.Path);
+        if (_unpackGameTask != null)
+        {
+            _unpackGameTask.OnProgress += UpdateNotifyUnpack;
+            UpdateNotifyUnpack(_unpackGameTask.CurrentProgress);
+        }
+        Update();
     }
 
     public void OnNavigatedFrom()
     {
+        _galgameService.GalgameAddedEvent -= ReloadGalgameList;
+        if (_getGalInFolderTask != null) _getGalInFolderTask.OnProgress -= UpdateNotifyGetGalInFolder;
+        if (_unpackGameTask != null)
+        {
+            _unpackGameTask.OnProgress -= UpdateNotifyGetGalInFolder;
+            _unpackGameTask.OnProgress -= HandelUnpackError;
+        }
     }
 
     private void Update()
     {
-        if(Item == null) return;
+        if(Item is null) return;
         CanExecute = !Item.IsRunning;
-        IsInfoBarOpen = Item.IsRunning;
-        InfoBarMessage = Item.ProgressText;
-        InfoBarSeverity = InfoBarSeverity.Success;
-        
         IsUnpacking = Item.IsUnpacking;
-        ProgressValue = (int)((double)Item.ProgressValue / Item.ProgressMax * 100);
-        ProgressMsg = Item.ProgressText;
+        LogExists = FileHelper.Exists(Item.GetLogPath());
+    }
+
+    private void UpdateNotifyUnpack(Progress progress)
+    {
+        if(Item == null) return;
+        Update();
+        ProgressValue = (int)((double)progress.Current / progress.Total * 100);
+        ProgressMsg = progress.Message;
+    }
+
+    private void UpdateNotifyGetGalInFolder(Progress progress)
+    {
+        if(Item == null) return;
+        Update();
+        _ = DisplayMsgAsync(progress.ToSeverity(), progress.Message, progress.ToSeverity() switch
+        {
+            InfoBarSeverity.Informational => 300000,
+            _ => 3000
+        });
     }
     
 
@@ -111,7 +143,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private async Task AddGalgame()
     {
         var openPicker = new FileOpenPicker();
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".exe");
         var file = await openPicker.PickSingleFileAsync();
@@ -186,44 +218,33 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async Task GetGalInFolder()
+    private void GetGalInFolder()
     {
         if (_item == null) return;
-        await _item.GetGalgameInFolder(_localSettingsService);
+        _getGalInFolderTask = new GetGalgameInFolderTask(_item);
+        _getGalInFolderTask.OnProgress += UpdateNotifyGetGalInFolder;
+        _ = _bgTaskService.AddBgTask(_getGalInFolderTask);
     }
     
     [RelayCommand]
-    private async Task AddGalFromZip()
+    private async Task AddGalFromZip(string? passWord = null)
     {
-        var openPicker = new FileOpenPicker
-        {
-            ViewMode = PickerViewMode.Thumbnail,
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary
-        };
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
-        openPicker.FileTypeFilter.Add(".zip");
-        openPicker.FileTypeFilter.Add(".7z");
-        openPicker.FileTypeFilter.Add(".rar");
-        openPicker.FileTypeFilter.Add(".tar");
-        openPicker.FileTypeFilter.Add(".001");
-        var file = await openPicker.PickSingleFileAsync();
+        UnpackDialog dialog = new();
+        await dialog.ShowAsync();
+        StorageFile? file = dialog.StorageFile;
 
         if (file == null || _item == null) return;
 
-        var result = await _item.UnpackGame(file, null);
-        while (result==null)
-        {
-            var dialog = new PasswdDialog(App.MainWindow.Content.XamlRoot, "请输入压缩包解压密码");
-            await dialog.ShowAsync();
-            if(dialog.Password == null) //取消
-                return;
-            result = await _item.UnpackGame(file, dialog.Password);
-        }
+        _unpackGameTask = new UnpackGameTask(file, _item, dialog.GameName, dialog.Password);
+        _unpackGameTask.OnProgress += UpdateNotifyUnpack;
+        _unpackGameTask.OnProgress += HandelUnpackError;
+        _ = _bgTaskService.AddBgTask(_unpackGameTask);
+    }
 
-        IsUnpacking = true;
-        ProgressMsg = "正在从信息源中获取游戏信息...";
-        await TryAddGalgame(result);
-        IsUnpacking = false;
+    private async void HandelUnpackError(Progress progress)
+    {
+        if(progress.ToSeverity() != InfoBarSeverity.Error) return;
+        await DisplayMsgAsync(InfoBarSeverity.Error, "GalgameFolder_UnpackGame_Error".GetLocalized());
     }
 
     [RelayCommand]
@@ -258,36 +279,39 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         _commandBarWidth = e.NewSize.Width;
         UpdateTitleMaxWidth();
     }
-}
 
-public class PasswdDialog : ContentDialog
-{
-    public string? Password;
-    private TextBox? _textBox;
-
-    public PasswdDialog(XamlRoot xamlRoot, string title)
+    [RelayCommand]
+    private async Task ViewLog()
     {
-        XamlRoot = xamlRoot;
-        Title = title;
-        Content = CreateContent();
-        PrimaryButtonText = "确定";
-        SecondaryButtonText = "取消";
+        if(Item is null) return;
+        var path = Item.GetLogPath();
+        if(FileHelper.Exists(path) == false) return; 
+        await Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(FileHelper.GetFullPath(path)));
+    }
+    
+    #region INFO_BAR_CTRL
 
-        IsPrimaryButtonEnabled = false;
+    private int _infoBarIndex;
+    [ObservableProperty] private bool _isInfoBarOpen;
+    [ObservableProperty] private string _infoBarMessage = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
 
-        PrimaryButtonClick += (_, _) => { Password = _textBox?.Text;};
-        SecondaryButtonClick += (_, _) => { Password = null; };
+    /// <summary>
+    /// 使用InfoBar显示信息
+    /// </summary>
+    /// <param name="infoBarSeverity">信息严重程度</param>
+    /// <param name="msg">信息</param>
+    /// <param name="delayMs">显示时长(ms)</param>
+    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
+    {
+        var currentIndex = ++_infoBarIndex;
+        InfoBarSeverity = infoBarSeverity;
+        InfoBarMessage = msg;
+        IsInfoBarOpen = true;
+        await Task.Delay(delayMs);
+        if (currentIndex == _infoBarIndex)
+            IsInfoBarOpen = false;
     }
 
-    private UIElement CreateContent()
-    {
-        var stackPanel = new StackPanel();
-        _textBox = new TextBox
-        {
-            PlaceholderText = "请输入压缩包解压密码",
-        };
-        _textBox.TextChanged += (_, _) => IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(_textBox?.Text); 
-        stackPanel.Children.Add(_textBox);
-        return stackPanel;
-    }
+    #endregion
 }

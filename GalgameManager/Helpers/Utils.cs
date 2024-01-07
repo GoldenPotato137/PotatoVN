@@ -1,7 +1,9 @@
 ﻿using System.Drawing.Text;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
+using System.Text;
 using Windows.Foundation;
+using TinyPinyin;
 
 namespace GalgameManager.Helpers;
 
@@ -80,5 +82,42 @@ public static class Utils
         {
             return false;
         }
+    }
+    
+    public static string ToBase64(this string str) => Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
+    
+    public static string FromBase64(string str) => Encoding.UTF8.GetString(Convert.FromBase64String(str));
+
+    /// <summary>
+    /// self是否包含target，忽略大小写与空格，对于中文串也会比较拼音与拼音首字母
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    public static bool ContainX(this string self, string target)
+    {
+        self = self.ToLower().Replace(" ",string.Empty);
+        target = target.ToLower().Replace(" ",string.Empty);
+        if (self.Contains(target)) return true;
+        if (IsFullyAscii(target) == false) return false;
+        if (PinyinHelper.GetPinyinInitials(self).ToLower().Contains(target)) return true;
+        if (PinyinHelper.GetPinyin(self, string.Empty).ToLower().Contains(target)) 
+            return true;
+        return false;
+    }
+    
+    private static bool IsFullyAscii(string str)
+    {
+        return str.All(c => c <= 127);
+    }
+
+    /// <summary>
+    /// self与target比较，忽略大小写、下划线、连字符，空格
+    /// </summary>
+    public static int CompareX(this string self, string target)
+    {
+        self = self.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
+        target = target.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
+        return string.Compare(self, target, StringComparison.Ordinal);
     }
 }

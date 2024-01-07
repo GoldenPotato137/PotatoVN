@@ -13,7 +13,7 @@ public partial class AuthenticationViewModel : ObservableRecipient
     public void SetContentAsShellPage()
     {
         ShellPage _shell = App.GetService<ShellPage>();
-        App.MainWindow.Content = _shell;
+        App.MainWindow!.Content = _shell;
     }
 
     public async Task<bool> StartAuthentication()

@@ -47,6 +47,7 @@ public static class KeyValues
     public const string GalgameFolders = "galgameFolders";
     public const string Galgames = "galgames";
     public const string Filters = "filters";
+    public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
     public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
     
     //主页显示相关
@@ -54,6 +55,10 @@ public static class KeyValues
     public const string FixHorizontalPicture = "fixHorizontalPictrue"; //bool, 主页是否裁剪横图
     public const string DisplayVirtualGame = "displayVirtualGame"; //bool, 主页是否显示虚拟游戏
     public const string SpecialDisplayVirtualGame = "specialDisplayVirtualGame"; //bool, 主页是否特殊显示虚拟游戏（降低透明度）
+    
+    //消息通知相关 (最小化到托盘时是否通知)
+    public const string NotifyWhenGetGalgameInFolder = "notifyWhenGetGalgameInFolder"; //bool, 完成获取文件夹内游戏
+    public const string NotifyWhenUnpackGame = "notifyWhenUnpackGame"; //bool, 完成解压游戏
     
     //软件本体设置相关
     public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化
@@ -67,6 +72,7 @@ public static class KeyValues
     public const string OAuthUpgraded = "OAuthUpgraded"; //OAuth升级
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
+    public const string CategoryUpgraded = "categoryUpgraded"; //分类索引升级
     
     
     //废弃Key，只读，仅用于升级

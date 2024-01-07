@@ -10,7 +10,7 @@ public sealed partial class PasswordDialog : ContentDialog
     public PasswordDialog()
     {
         this.InitializeComponent();
-        XamlRoot = App.MainWindow.Content.XamlRoot;
+        XamlRoot = App.MainWindow!.Content.XamlRoot;
         IsPrimaryButtonEnabled = false;
         DefaultButton = ContentDialogButton.Primary;
     }

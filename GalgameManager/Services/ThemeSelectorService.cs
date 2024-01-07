@@ -33,7 +33,7 @@ public class ThemeSelectorService : IThemeSelectorService
 
     public async Task SetRequestedThemeAsync()
     {
-        if (App.MainWindow.Content is FrameworkElement rootElement)
+        if (App.MainWindow!.Content is FrameworkElement rootElement)
         {
             rootElement.RequestedTheme = Theme;
             TitleBarHelper.UpdateTitleBar(Theme);

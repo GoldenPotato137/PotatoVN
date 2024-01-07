@@ -5,7 +5,6 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers.API;
 using GalgameManager.Models;
 using Newtonsoft.Json.Linq;
-using SharpCompress;
 
 namespace GalgameManager.Helpers.Phrase;
 
@@ -131,12 +130,12 @@ public class VndbPhraser : IGalInfoPhraser
             if (rssItem.Tags != null)
             {
                 IOrderedEnumerable<VndbTag> tmpTags = rssItem.Tags.OrderByDescending(t => t.Rating);
-                tmpTags.ForEach(tag =>
+                foreach (VndbTag tag in tmpTags)
                 {
-                    if (!int.TryParse(tag.Id![1..], out var i)) return;
+                    if (!int.TryParse(tag.Id![1..], out var i)) continue;
                     if (_tagDb.TryGetValue(i, out JToken? tagInfo))
                         result.Tags.Value.Add(tagInfo["name"]!.ToString() ?? "");
-                });
+                }
             }
         }
         catch (Exception)

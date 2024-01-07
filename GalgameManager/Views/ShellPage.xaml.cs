@@ -4,6 +4,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.ViewModels;
 using GalgameManager.Views.Dialog;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -32,7 +33,7 @@ public sealed partial class ShellPage : Page
 
         // A custom title bar is required for full window theme and Mica support.
         // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
-        App.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.MainWindow!.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
         App.MainWindow.Activated += MainWindow_Activated;
         App.MainWindow.AppWindow.Closing += MainWindowOnClosed;
@@ -113,5 +114,12 @@ public sealed partial class ShellPage : Page
         var result = navigationService.GoBack();
 
         args.Handled = result;
+    }
+
+    private void NavigationViewControl_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        PointerPointProperties? properties = e.GetCurrentPoint(sender as UIElement).Properties;
+        if(properties.IsXButton1Pressed)
+            App.GetService<INavigationService>().GoBack();
     }
 }

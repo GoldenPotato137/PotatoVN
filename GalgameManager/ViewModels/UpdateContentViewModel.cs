@@ -33,7 +33,11 @@ public partial class UpdateContentViewModel : ObservableObject, INavigationAware
         _localSettingsService = localSettingsService;
         localSettingsService.OnSettingChanged += OnSettingChanged;
         _updateService.DownloadEvent += () => IsDownloading = Visibility.Visible;
-        _updateService.DownloadCompletedEvent += () => IsDownloading = Visibility.Collapsed;
+        _updateService.DownloadCompletedEvent += () =>
+        {
+            IsDownloading = Visibility.Collapsed;
+            _ = DisplayMsgAsync("UpdateContentPage_Download_Success".GetLocalized(), InfoBarSeverity.Success);
+        };
         _updateService.DownloadFailedEvent += async s =>
         {
             await DisplayMsgAsync(s, InfoBarSeverity.Error);

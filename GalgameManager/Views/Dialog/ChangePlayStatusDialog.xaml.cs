@@ -27,7 +27,7 @@ public sealed partial class ChangePlayStatusDialog
         _galgame = galgame;
         
         InitializeComponent();
-        XamlRoot = App.MainWindow.Content.XamlRoot;
+        XamlRoot = App.MainWindow!.Content.XamlRoot;
         PrimaryButtonText = "Yes".GetLocalized();
         SecondaryButtonText = "Cancel".GetLocalized();
         Title = "ChangePlayStatusDialog_Title".GetLocalized();

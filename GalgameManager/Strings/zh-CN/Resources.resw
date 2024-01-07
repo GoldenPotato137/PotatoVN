@@ -174,10 +174,10 @@
   <data name="GalgamePage_Delete.Label" xml:space="preserve">
     <value>彻底删除游戏</value>
   </data>
-  <data name="HomePage_AddNewGame" xml:space="preserve">
+  <data name="HomePage_AddNewGame.Label" xml:space="preserve">
     <value>添加游戏</value>
   </data>
-  <data name="HomePage_Sort" xml:space="preserve">
+  <data name="HomePage_Sort.Label" xml:space="preserve">
     <value>排序</value>
   </data>
   <data name="HomePage_Filter" xml:space="preserve">
@@ -926,7 +926,7 @@
   <data name="SettingsPage_CloudSync_SyncGame.Description" xml:space="preserve">
     <value>是否将游戏状态(添加/游玩/删除等)上传到云存档根目录，并跨电脑同步</value>
   </data>
-  <data name="HomePage_Filter_DisplayVirtualGames.Content" xml:space="preserve">
+  <data name="HomePage_Filter_DisplayVirtualGames.Label" xml:space="preserve">
     <value>显示非本机游戏</value>
   </data>
   <data name="HomePage_SpecialDisplayVirtualGame.Label" xml:space="preserve">
@@ -1021,5 +1021,131 @@
   </data>
   <data name="SettingsPage_Game_PlayingWindowMode.Description" xml:space="preserve">
     <value>游戏进行时的PotatoVN的窗口状态</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Progress" xml:space="preserve">
+    <value>正在扫描路径:{0}</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Done" xml:space="preserve">
+    <value>扫描完成, 共添加了{0}个游戏</value>
+  </data>
+  <data name="SettingsPage_Notification.SettingTitle" xml:space="preserve">
+    <value>消息通知</value>
+  </data>
+  <data name="SettingsPage_Notification.SettingDescription" xml:space="preserve">
+    <value>管理应用最小化到托盘时的通知设置</value>
+  </data>
+  <data name="SettingsPage_Notification_GetGalgameFolder.Title" xml:space="preserve">
+    <value>完成游戏扫描通知</value>
+  </data>
+  <data name="SettingsPage_Notification_GetGalgameFolder.Description" xml:space="preserve">
+    <value>是否开启游戏文件夹扫描完成的通知</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Done" xml:space="preserve">
+    <value>解压完成，识别游戏中</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Start" xml:space="preserve">
+    <value>开始解压，请稍后</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PasswordRequired" xml:space="preserve">
+    <value>请输入压缩包解压密码</value>
+  </data>
+  <data name="UnpackDialog_Select.Content" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="UnpackDialog_GameName.Text" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="UnpackDialog_GameDescription.Text" xml:space="preserve">
+    <value>为提高识别准确度，游戏名应尽可能准确(正式名)并去除不必要的内容(如版本、汉化组名等)</value>
+  </data>
+  <data name="UnpackDialog_Password.Text" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="UnpackDialog_Password_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>若没有密码可不填</value>
+  </data>
+  <data name="UnpackDialog_Title" xml:space="preserve">
+    <value>一键添加游戏</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Error" xml:space="preserve">
+    <value>压缩包损坏或密码不正确</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Title" xml:space="preserve">
+    <value>完成解压通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Description" xml:space="preserve">
+    <value>是否开启解压游戏完成的通知</value>
+  </data>
+  <data name="UnpackGameTask_Done_Title" xml:space="preserve">
+    <value>解压完成</value>
+  </data>
+  <data name="UnpackGameTask_Done_Msg" xml:space="preserve">
+    <value>{0}已解压到{1}并已添加到库中</value>
+  </data>
+  <data name="GalgameFolderPage_AutoScan.Label" xml:space="preserve">
+    <value>启动时自动扫描</value>
+  </data>
+  <data name="GalgameFolderPage_AddManually.Label" xml:space="preserve">
+    <value>手动添加游戏</value>
+  </data>
+  <data name="GalgameFolderPage_AddFromZip.Label" xml:space="preserve">
+    <value>添加游戏(压缩包)</value>
+  </data>
+  <data name="GalgameFolderPage_Refresh.Label" xml:space="preserve">
+    <value>自动寻找游戏</value>
+  </data>
+  <data name="LibraryPage_AddGalgameFolder.Label" xml:space="preserve">
+    <value>新增库</value>
+  </data>
+  <data name="LibraryPage_ScanAll.Label" xml:space="preserve">
+    <value>扫描所有库</value>
+  </data>
+  <data name="LibraryPage_ScanAll_Success" xml:space="preserve">
+    <value>已启动{0}个库的扫描任务</value>
+  </data>
+  <data name="GalgameFolderPage_Log.Label" xml:space="preserve">
+    <value>打开扫描记录</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Saving" xml:space="preserve">
+    <value>扫描完成，保存记录中</value>
+  </data>
+  <data name="UpdateContentPage_Download_Success" xml:space="preserve">
+    <value>已成功下载最新更新记录文档</value>
+  </data>
+  <data name="SettingsPage_About_UpdateAvailable.Text" xml:space="preserve">
+    <value>有新版本 ヾ(✿ﾟ▽ﾟ)ノ</value>
+  </data>
+  <data name="GalgamePage_SelectThread.Label" xml:space="preserve">
+    <value>手动指定游戏进程</value>
+  </data>
+  <data name="VirtualGameFilter" xml:space="preserve">
+    <value>本地游戏</value>
+  </data>
+  <data name="HomePage_FilterInputBox.PlaceholderText" xml:space="preserve">
+    <value>Tag/开发商/游玩状态/分类</value>
+  </data>
+  <data name="HomePage_Filter_Not_Found" xml:space="preserve">
+    <value>找不到匹配的过滤器</value>
+  </data>
+  <data name="HomePage_KeepFilters.Label" xml:space="preserve">
+    <value>保留过滤器</value>
+  </data>
+  <data name="GalgameCollectionService_PhraseFileFailed" xml:space="preserve">
+    <value>解析.PotatoVN备份文件失败，请手动删除游戏目录下.PotatoVN文件夹或修改meta.json为合法的json文件后重试。</value>
+  </data>
+  <data name="SelectFileDialog_NoFound" xml:space="preserve">
+    <value>在{0}中没有找到任何{1}文件</value>
+  </data>
+  <data name="GalgamePage_OpenText.Label" xml:space="preserve">
+    <value>打开文本</value>
+  </data>
+  <data name="GalgamePage_SelectText_Title" xml:space="preserve">
+    <value>选择文本打开</value>
+  </data>
+  <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
+    <value>清除选择记录？</value>
+  </data>
+  <data name="HomePage_Search.PlaceholderText" xml:space="preserve">
+    <value>支持拼音/拼音首字母搜索</value>
   </data>
 </root>

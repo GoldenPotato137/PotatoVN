@@ -92,7 +92,7 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
             ViewMode = PickerViewMode.Thumbnail,
             SuggestedStartLocation = PickerLocationId.PicturesLibrary
         };
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.FileTypeFilter.Add(".jpg");
         openPicker.FileTypeFilter.Add(".jpeg");
         openPicker.FileTypeFilter.Add(".png");

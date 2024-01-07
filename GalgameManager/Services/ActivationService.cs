@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Windows.ApplicationModel.Activation;
 using Windows.Storage;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
@@ -6,9 +7,10 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
-using GalgameManager.Views;
+using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.AppLifecycle;
 
 namespace GalgameManager.Services;
@@ -26,8 +28,9 @@ public class ActivationService : IActivationService
     private readonly IBgmOAuthService _bgmOAuthService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
-    private UIElement? _shell;
-
+    private readonly IPageService _pageService;
+    private readonly IBgTaskService _bgTaskService;
+    
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
         IDataCollectionService<GalgameFolder> galgameFolderCollectionService,
@@ -35,7 +38,7 @@ public class ActivationService : IActivationService
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
-        IFilterService filterService)
+        IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -48,6 +51,8 @@ public class ActivationService : IActivationService
         _authenticationService = authenticationService;
         _localSettingsService = localSettingsService;
         _filterService = filterService;
+        _pageService = pageService;
+        _bgTaskService = bgTaskService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -67,39 +72,36 @@ public class ActivationService : IActivationService
         // Execute tasks before activation.
         await InitializeAsync();
 
-        // Set the MainWindow Content.
-        if (App.MainWindow.Content == null)
+        if (IsRestart() == false)
         {
-            _shell = App.GetService<ShellPage>();
-            App.MainWindow.Content = _shell ?? new Frame();
+            var result = await _authenticationService.StartAuthentication();
+            if (!result)
+            {
+                Application.Current.Exit();
+                return;
+            } 
         }
-
-        //防止有人手快按到页面内容
-        App.MainWindow.Content.Visibility = Visibility.Collapsed;
-
-        // Activate the MainWindow.
-        App.MainWindow.Activate();
-
-        var result = await _authenticationService.StartAuthentication();
-        if (!result)
-        {
-            Application.Current.Exit();
-            return;
-        }
-
-        await _filterService.InitAsync();
+        
         await _galgameCollectionService.InitAsync();
         await _galgameFolderCollectionService.InitAsync();
         await _categoryService.Init();
-
-        //准备好数据后，再呈现页面
-        App.MainWindow.Content.Visibility = Visibility.Visible;
-
-        //使窗口重新获得焦点
-        App.MainWindow.Activate();
+        await _filterService.InitAsync();
+        
+        if (IsRestart() == false)
+        {
+            //准备好数据后，再呈现页面
+            App.MainWindow!.Content.Visibility = Visibility.Visible;
+            //使窗口重新获得焦点
+            App.MainWindow.Activate();
+        }
 
         // Handle activation via ActivationHandlers.
         await HandleActivationAsync(activationArgs);
+
+        if (IsRestart())
+        {
+            await _bgTaskService.ResolvedBgTasksAsync();
+        }
 
         // Execute tasks after activation.
         await StartupAsync();
@@ -121,15 +123,36 @@ public class ActivationService : IActivationService
     private async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
+
+        // 初始化窗口
+        if (IsRestart() == false)
+        {
+            await _pageService.InitAsync();
+            //防止有人手快按到页面内容
+            App.MainWindow!.Content.Visibility = Visibility.Collapsed;
+        }
+        
+        //系统托盘
+        App.GetResource<XamlUICommand>("SetWindowNormalCommand").ExecuteRequested += (_, _) =>
+        {
+            App.SetWindowMode(WindowMode.Normal);
+        };
+        App.GetResource<XamlUICommand>("CloseAppCommand").ExecuteRequested += (_, _) =>
+        {
+            App.SetWindowMode(WindowMode.Close);
+        };
+        App.SystemTray = App.GetResource<TaskbarIcon>("TrayIcon");
+        App.SystemTray.ForceCreate(false);
     }
 
     private async Task StartupAsync()
     {
-        await _themeSelectorService.SetRequestedThemeAsync();
-        await _updateService.UpdateSettingsBadgeAsync();
+        await _galgameCollectionService.StartAsync();
+        if(IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
         await CheckFont();
+        await _galgameFolderCollectionService.StartAsync();
         await ((GalgameCollectionService)_galgameCollectionService).SyncUpgrade();
         await ((GalgameCollectionService)_galgameCollectionService).SyncGames();
     }
@@ -139,13 +162,14 @@ public class ActivationService : IActivationService
     /// </summary>
     private async Task CheckFont()
     {
+        if (IsRestart()) return;
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FontInstalled) == false)
         {
             if (Utils.IsFontInstalled("Segoe Fluent Icons") == false)
             {
                 ContentDialog dialog = new()
                 {
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    XamlRoot = App.MainWindow!.Content.XamlRoot,
                     Title = "ActivationService_FontPopup_Title".GetLocalized(),
                     PrimaryButtonText = "Yes".GetLocalized(),
                     CloseButtonText = "Cancel".GetLocalized(),
@@ -187,5 +211,28 @@ public class ActivationService : IActivationService
             if (Utils.IsFontInstalled("Segoe Fluent Icons"))
                 await _localSettingsService.SaveSettingAsync(KeyValues.FontInstalled, true);
         }
+    }
+
+    /// <summary>
+    /// 判断是否是重启（aka进入系统托盘模式）<br/>
+    /// 关于为什么要以重启进入系统托盘模式，见：<see cref="App.SetWindowMode"/>
+    /// </summary>
+    private bool IsRestart()
+    {
+        AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+        ExtendedActivationKind kind = activatedArgs.Kind;
+
+        if (kind == ExtendedActivationKind.Launch)
+        {
+            if (activatedArgs.Data is ILaunchActivatedEventArgs launchArgs)
+            {
+                var argStrings = launchArgs.Arguments.Split();
+                if (argStrings.Length > 1)
+                    argStrings = argStrings.Skip(1).ToArray();
+
+                return argStrings.Length > 1 && argStrings[1] == "/r";
+            }
+        }
+        return false;
     }
 }

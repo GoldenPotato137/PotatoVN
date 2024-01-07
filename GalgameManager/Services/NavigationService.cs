@@ -20,6 +20,7 @@ public class NavigationService : INavigationService
     private object? _lastParameterUsed;
     private Frame? _frame;
     private bool _isMemoryImprove;
+    private (string pageKey, object? param, bool clearNavigation)? _lastFailedNavigation;
 
     public event NavigatedEventHandler? Navigated;
 
@@ -29,7 +30,7 @@ public class NavigationService : INavigationService
         {
             if (_frame == null)
             {
-                _frame = App.MainWindow.Content as Frame;
+                _frame = App.MainWindow!.Content as Frame;
                 RegisterFrameEvents();
             }
 
@@ -50,6 +51,12 @@ public class NavigationService : INavigationService
     public NavigationService(IPageService pageService, ILocalSettingsService localSettingsService)
     {
         _pageService = pageService;
+        _pageService.OnInit += () =>
+        {
+            if (_lastFailedNavigation is null) return;
+            NavigateTo(_lastFailedNavigation.Value.pageKey, _lastFailedNavigation.Value.param,
+                _lastFailedNavigation.Value.clearNavigation);
+        };
         localSettingsService.OnSettingChanged += OnSettingChanged;
     }
 
@@ -115,6 +122,7 @@ public class NavigationService : INavigationService
             return navigated;
         }
 
+        _lastFailedNavigation = (pageKey, parameter, clearNavigation);
         return false;
     }
 

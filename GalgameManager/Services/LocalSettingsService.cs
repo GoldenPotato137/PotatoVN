@@ -38,11 +38,13 @@ public class LocalSettingsService : ILocalSettingsService
         _localsettingsBackupFile = op.BackUpSettingsFile ?? ErrorFileName;
 
         _settings = new Dictionary<string, object>();
-        
-        App.MainWindow.AppWindow.Closing += async (_, _) =>
+
+        async void OnAppClosing()
         {
             await _fileService.WaitForWriteFinishAsync();
-        };
+        }
+
+        App.OnAppClosing += OnAppClosing;
         Upgrade().Wait();
     }
 
@@ -205,6 +207,9 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)true;
             case KeyValues.PlayingWindowMode:
                 return (T?)(object)WindowMode.Minimize;
+            case KeyValues.NotifyWhenGetGalgameInFolder:
+            case KeyValues.NotifyWhenUnpackGame:
+                return (T?)(object)true;
             default:
                 return default;
         }

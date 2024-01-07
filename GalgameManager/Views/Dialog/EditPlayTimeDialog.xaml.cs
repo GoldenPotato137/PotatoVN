@@ -14,7 +14,7 @@ public sealed partial class EditPlayTimeDialog
     {
         InitializeComponent();
 
-        XamlRoot = App.MainWindow.Content.XamlRoot;
+        XamlRoot = App.MainWindow!.Content.XamlRoot;
         Title = "EditPlayTimeDialog_Title".GetLocalized();
         PrimaryButtonText = "Yes".GetLocalized();
         SecondaryButtonText = "Cancel".GetLocalized();
