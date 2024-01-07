@@ -230,7 +230,7 @@ public class ActivationService : IActivationService
                 if (argStrings.Length > 1)
                     argStrings = argStrings.Skip(1).ToArray();
 
-                return argStrings.Length > 1 && argStrings[1] == "/r";
+                return argStrings.Any(str => str == "/r");
             }
         }
         return false;
