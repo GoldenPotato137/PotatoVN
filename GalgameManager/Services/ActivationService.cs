@@ -57,6 +57,18 @@ public class ActivationService : IActivationService
 
     public async Task LaunchedAsync(object activationArgs)
     {
+        // TEST CODE
+        // AppActivationArguments arg2 = (activationArgs as AppActivationArguments)!;
+        // AppActivationArguments arg1 = AppInstance.GetCurrent().GetActivatedEventArgs();
+        // if (arg1.Kind == ExtendedActivationKind.Launch)
+        // {
+        //     var txt = string.Join(",", (arg1.Data as ILaunchActivatedEventArgs)!.Arguments);
+        //     txt += "\n" + IsRestart();
+        //     FileHelper.SaveWithoutJson("launchArgs.txt", txt);
+        // }
+        // else if(arg1.Kind == ExtendedActivationKind.Protocol)
+        //     FileHelper.SaveWithoutJson("launchArgs.txt", (arg1.Data as IProtocolActivatedEventArgs)!.Uri.ToString());
+        
         // 多实例启动，切换到第一实例，第一实例 App.OnActivated() 响应
         IList<AppInstance> instances = AppInstance.GetInstances();
         if (instances.Count > 1)
@@ -227,10 +239,7 @@ public class ActivationService : IActivationService
             if (activatedArgs.Data is ILaunchActivatedEventArgs launchArgs)
             {
                 var argStrings = launchArgs.Arguments.Split();
-                if (argStrings.Length > 1)
-                    argStrings = argStrings.Skip(1).ToArray();
-
-                return argStrings.Length > 1 && argStrings[1] == "/r";
+                return argStrings.Any(str => str == "/r");
             }
         }
         return false;

@@ -19,7 +19,7 @@
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Never</AppxBundle>
     <DefaultLanguage>zh-cn</DefaultLanguage>
-    <AppxPackageDir>D:\.Net\PotatoVN_Release\</AppxPackageDir>
+    <AppxPackageDir>D:\.Net\PotatoVN_Debug\</AppxPackageDir>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
     <UserSecretsId>5b27f473-5a17-4f8c-92d3-5f0de166463d</UserSecretsId>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
