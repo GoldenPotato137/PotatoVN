@@ -7,6 +7,7 @@
 # PotatoVN
 ![123](https://img.shields.io/endpoint?color=blue&label=Microsoft%20Store%20Rating&url=https%3A%2F%2Fmicrosoft-store-badge.fly.dev%2Fapi%2Frating%3FstoreId%3D9P9CBKD5HR3W)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN?ref=badge_shield)
+[![Telegram](https://img.shields.io/badge/Telegram%E5%90%B9%E6%B0%B4%E7%BE%A4-Join-green)](https://t.me/+gymkuMygUpY1NzY1)
 
 一个VisualNovel管理工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。
 </div>
