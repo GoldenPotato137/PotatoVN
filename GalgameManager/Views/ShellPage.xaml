@@ -31,7 +31,8 @@
             IsSettingsVisible="False"
             ExpandedModeThresholdWidth="1280"
             DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay, FallbackValue={}}">
+            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay, FallbackValue={}}"
+            PointerPressed="NavigationViewControl_OnPointerPressed">
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="Shell_Home" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.HomeViewModel">
                     <NavigationViewItem.Icon>

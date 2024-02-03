@@ -42,7 +42,6 @@ public sealed partial class UnpackDialog
         WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.FileTypeFilter.Add(".zip");
         openPicker.FileTypeFilter.Add(".7z");
-        openPicker.FileTypeFilter.Add(".rar");
         openPicker.FileTypeFilter.Add(".tar");
         openPicker.FileTypeFilter.Add(".001");
         StorageFile = await openPicker.PickSingleFileAsync();

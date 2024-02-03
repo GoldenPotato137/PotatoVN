@@ -9,6 +9,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -160,8 +161,15 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         var metaFolder = Path.Combine(path, Galgame.MetaPath);
         if (Path.Exists(Path.Combine(metaFolder, "meta.json"))) // 有元数据备份
         {
-            galgame =  _fileService.Read<Galgame>(metaFolder, "meta.json");
-            Galgame.ResolveMeta(galgame, metaFolder);
+            try
+            {
+                galgame = _fileService.Read<Galgame>(metaFolder, "meta.json")!;
+                Galgame.ResolveMeta(galgame, metaFolder);
+            }
+            catch (Exception) // 文件不合法
+            {
+                throw new Exception("GalgameCollectionService_PhraseFileFailed".GetLocalized());
+            }
             PhrasedEvent?.Invoke();
         }
         else if (virtualGame is null)
@@ -350,6 +358,34 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     }
 
     /// <summary>
+    /// 获取搜索建议
+    /// </summary>
+    /// <param name="current">当前文本串</param>
+    /// <returns>搜索建议，若没有则返回空List</returns>
+    public async Task<List<string>> GetSearchSuggestions(string current)
+    {
+        List<string> tmp = new();
+        await Task.Run(() =>
+        {
+            //Name
+            tmp.AddRange(from galgame in _galgames
+                where galgame.Name.Value is not null && galgame.Name.Value.ContainX(current) select galgame.Name.Value);
+            //Developer
+            tmp.AddRange(from galgame in _galgames
+                where galgame.Developer.Value is not null && galgame.Developer.Value.ContainX(current)
+                select galgame.Developer.Value);
+            //Tag
+            tmp.AddRange(from galgame in _galgames
+                from tag in galgame.Tags.Value ?? new ObservableCollection<string>()
+                where tag.ContainX(current)
+                select tag);
+        });
+        //去重
+        tmp.Sort((a,b)=> a.CompareX(b));
+        return tmp.Where((t, i) => i == 0 || t.CompareX(tmp[i - 1]) !=0).ToList();
+    }
+
+    /// <summary>
     /// 获取搜索关键字(的clone)
     /// </summary>
     public string GetSearchKey()
@@ -469,10 +505,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 break;
             default:
             {
-                FilePickerDialog dialog = new(App.MainWindow!.Content.XamlRoot, "GalgameCollectionService_SelectExe".GetLocalized(), exes);
+                SelectFileDialog dialog = new(galgame.Path, new[] {".exe", ".bat", ".lnk"}, 
+                    "GalgameCollectionService_SelectExe".GetLocalized(), false);
                 await dialog.ShowAsync();
-                if (dialog.SelectedFile == null) return null;
-                galgame.ExePath = dialog.SelectedFile;
+                if (dialog.SelectedFilePath == null) return null;
+                galgame.ExePath = dialog.SelectedFilePath;
                 break;
             }
         }
@@ -697,51 +734,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 RecordPlayTimeTask.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
                 break;
         }
-    }
-}
-
-public class FilePickerDialog : ContentDialog
-{
-    public string? SelectedFile
-    {
-        get; private set;
-    }
-
-    public FilePickerDialog(XamlRoot xamlRoot, string title, List<string> files)
-    {
-        XamlRoot = xamlRoot;
-        Title = title;
-        Content = CreateContent(files);
-        PrimaryButtonText = "Yes".GetLocalized();
-        SecondaryButtonText = "Cancel".GetLocalized();
-
-        IsPrimaryButtonEnabled = false;
-
-        PrimaryButtonClick += (_, _) => { };
-        SecondaryButtonClick += (_, _) => { SelectedFile = null; };
-    }
-
-    private UIElement CreateContent(List<string> files)
-    {
-        StackPanel stackPanel = new();
-        foreach (var file in files)
-        {
-            RadioButton radioButton = new()
-            {
-                Content = file,
-                GroupName = "ExeFiles"
-            };
-            radioButton.Checked += RadioButton_Checked;
-            stackPanel.Children.Add(radioButton);
-        }
-        return stackPanel;
-    }
-
-    private void RadioButton_Checked(object sender, RoutedEventArgs e)
-    {
-        RadioButton radioButton = (RadioButton)sender;
-        SelectedFile = radioButton.Content.ToString()!;
-        IsPrimaryButtonEnabled = true;
     }
 }
 

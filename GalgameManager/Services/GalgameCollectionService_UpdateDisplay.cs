@@ -1,4 +1,5 @@
-﻿using GalgameManager.Models;
+﻿using GalgameManager.Helpers;
+using GalgameManager.Models;
 
 namespace GalgameManager.Services;
 
@@ -101,8 +102,8 @@ public partial class GalgameCollectionService
 
     private bool ApplySearchKey(Galgame galgame)
     {
-        return galgame.Name.Value!.Contains(_searchKey) || 
-               galgame.Developer.Value!.Contains(_searchKey) || 
-               galgame.Tags.Value!.Any(str => str.Contains(_searchKey));
+        return galgame.Name.Value!.ContainX(_searchKey) || 
+               galgame.Developer.Value!.ContainX(_searchKey) || 
+               galgame.Tags.Value!.Any(str => str.ContainX(_searchKey));
     }
 }

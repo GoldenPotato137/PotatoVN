@@ -11,10 +11,12 @@ namespace GalgameManager.Models.BgTasks;
 
 public class RecordPlayTimeTask : BgTaskBase
 {
+    private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
     [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     
     public string ProcessName = string.Empty;
     public string GalgamePath = string.Empty;
+    public DateTime StartTime = DateTime.Now;
     private Galgame? _galgame;
     private Process? _process;
     
@@ -40,18 +42,23 @@ public class RecordPlayTimeTask : BgTaskBase
     public override Task Run()
     {
         if(_process is null || _galgame is null) return Task.CompletedTask;
-        if (StartFromBg)
+        _ = Task.Run(async () =>
         {
-            Task.Run(async () =>
+            await _process.WaitForExitAsync();
+            await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                await _process.WaitForExitAsync();
-                await UiThreadInvokeHelper.InvokeAsync(() =>
+                GalgamePageParameter parma = new()
                 {
-                    App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, _galgame);
-                    App.SetWindowMode(WindowMode.Normal);
-                });
+                    Galgame = _galgame,
+                    SelectProgress = DateTime.Now - StartTime < TimeSpan.FromSeconds(ManuallySelectProcessSec) 
+                                     && _galgame.ProcessName is null
+                };
+                App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, parma);
+                App.SetWindowMode(WindowMode.Normal);
             });
-        }
+            await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
+        });
+        
         return Task.Run(() =>
         {
             while (_process.HasExited == false)

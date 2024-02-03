@@ -110,4 +110,14 @@ public static class Utils
     {
         return str.All(c => c <= 127);
     }
+
+    /// <summary>
+    /// self与target比较，忽略大小写、下划线、连字符，空格
+    /// </summary>
+    public static int CompareX(this string self, string target)
+    {
+        self = self.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
+        target = target.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
+        return string.Compare(self, target, StringComparison.Ordinal);
+    }
 }

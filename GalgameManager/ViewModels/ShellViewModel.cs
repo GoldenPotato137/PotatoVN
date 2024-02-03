@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Enums;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace GalgameManager.ViewModels;

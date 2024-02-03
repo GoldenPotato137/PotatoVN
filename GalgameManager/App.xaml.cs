@@ -218,7 +218,7 @@ public partial class App : Application
                 GetService<IPageService>().InitAsync();
                 WindowExtensions.Show(MainWindow!);
                 MainWindow!.Restore();
-                MainWindow!.Activate();
+                MainWindow!.BringToFront();
                 break;
             case WindowMode.Minimize:
                 MainWindow!.Minimize();
