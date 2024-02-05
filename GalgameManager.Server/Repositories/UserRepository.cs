@@ -1,38 +1,33 @@
 ﻿using GalgameManager.Server.Contracts;
 using GalgameManager.Server.Data;
-using GalgameManager.Server.Enums;
 using GalgameManager.Server.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GalgameManager.Server.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository(DataContext context) : IUserRepository
 {
-    private readonly DataContext _context;
-    private readonly IConfiguration _config;
-
-    public UserRepository(DataContext context, IConfiguration config)
+    public async Task<PagedResult<User>> GetUsersAsync(int pageIndex, int pageSize)
     {
-        _context = context;
-        _config = config;
+        return new PagedResult<User>(await 
+            context.User.OrderBy(u => u.Id).Skip(pageIndex * pageSize).Take(pageSize).ToListAsync(), 
+            pageIndex, pageSize, await context.User.CountAsync());
     }
 
-    public async Task<Result<User>> GetUserAsync(int id)
+    public async Task<User?> GetUserAsync(int id)
     {
-        User? user = await _context.User.FindAsync(id);
-        return new Result<User>(user is not null ? ResultType.Ok : ResultType.NotFound, user);
+        return await context.User.FindAsync(id);
     }
 
-    public async Task<Result<User>> GetUserAsync(string username)
+    public async Task<User?> GetUserAsync(string username)
     {
-        User? user = await _context.User.FirstOrDefaultAsync(u => u.UserName == username);
-        return new Result<User>(user is not null ? ResultType.Ok : ResultType.NotFound, user); 
+        return await context.User.FirstOrDefaultAsync(u => u.UserName == username);
     }
 
-    public async Task<Result<User>> RegisterAsync(UserRegisterDto payload)
+    public async Task<User> AddUserAsync(User user)
     {
-        if ((await GetUserAsync(payload.UserName)).Type != ResultType.NotFound)
-            return new Result<User>(ResultType.BadRequest);
-        return null;
+        context.User.Add(user);
+        await context.SaveChangesAsync();
+        return user;
     }
 }

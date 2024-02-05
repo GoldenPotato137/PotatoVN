@@ -4,9 +4,26 @@ namespace GalgameManager.Server.Contracts;
 
 public interface IUserRepository
 {
-    public Task<Result<User>> GetUserAsync(int id);
+    /// <summary>
+    /// 获取用户列表
+    /// </summary>
+    /// <param name="pageIndex"></param>
+    /// <param name="pageSize"></param>
+    /// <returns></returns>
+    public Task<PagedResult<User>> GetUsersAsync(int pageIndex, int pageSize);
     
-    public Task<Result<User>> GetUserAsync(string username);
-
-    public Task<Result<User>> RegisterAsync(UserRegisterDto payload);
+    /// <summary>
+    /// 获取用户，若不存在则返回null
+    /// </summary>;
+    public Task<User?> GetUserAsync(int id);
+    
+    /// <summary>
+    /// 获取用户，若不存在则返回null
+    /// </summary>
+    public Task<User?> GetUserAsync(string username);
+    
+    /// <summary>
+    /// 添加用户
+    /// </summary>
+    public Task<User> AddUserAsync(User user);
 }

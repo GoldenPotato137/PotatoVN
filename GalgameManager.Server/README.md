@@ -9,3 +9,4 @@ dotnet user-secrets set "Key" "Value"
 ```
 应该设置的环境变量有（Key）：
 * `ConnectionStrings:DefaultConnection` 数据库连接字符串，**数据库必须是MySQL**
+* `AppSettings:JwtKey` JWT秘钥，**至少64位长**
