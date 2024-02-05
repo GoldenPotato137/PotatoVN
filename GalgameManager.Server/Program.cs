@@ -1,10 +1,13 @@
 using System.Text;
 using GalgameManager.Server.Contracts;
 using GalgameManager.Server.Data;
+using GalgameManager.Server.Helpers;
 using GalgameManager.Server.Repositories;
+using GalgameManager.Server.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Minio;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace GalgameManager.Server;
@@ -28,7 +31,19 @@ public class Program
             options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!);
         });
         builder.Services.AddScoped<IUserRepository, UserRepository>();
-        builder.Services.AddControllers();
+        builder.Services.AddScoped<IOssService, OssService>();
+        builder.Services.AddMinio(client =>
+        {
+            client.WithEndpoint(builder.Configuration["AppSettings:Minio:EndPoint"])
+                .WithCredentials(
+                    builder.Configuration["AppSettings:Minio:AccessKey"], 
+                    builder.Configuration["AppSettings:Minio:SecretKey"])
+                .WithSSL(Convert.ToBoolean(builder.Configuration["AppSettings:Minio:UseSSL"] ?? "False"));
+        });
+        builder.Services.AddControllers(options =>
+        {
+            options.Conventions.Add(new RouteConvention());
+        });
         
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -86,16 +101,35 @@ public class Program
     private static bool CheckEnv(WebApplicationBuilder builder)
     {
         var result = true;
-        if (string.IsNullOrEmpty(builder.Configuration.GetConnectionString("DefaultConnection")!))
-        {
-            Console.WriteLine("Connection string is not set.");
-            result = false;
-        }
-        if (string.IsNullOrEmpty(builder.Configuration["AppSettings:JwtKey"]))
-        {
-            Console.WriteLine("JwtKey is not set.");
-            result = false;
-        }
+        result = Check("ConnectionStrings:DefaultConnection") && result;
+        result = Check("AppSettings:JwtKey") && result;
+        result = Check("AppSettings:Minio:EndPoint") && result;
+        result = Check("AppSettings:Minio:AccessKey") && result;
+        result = Check("AppSettings:Minio:SecretKey") && result;
+        
+        result = CheckBoolValue("AppSettings:Minio:UseSSL") && result;
+        
         return result;
+
+        bool Check(string key)
+        {
+            if (string.IsNullOrEmpty(builder.Configuration[key]))
+            {
+                Console.WriteLine($"{key} is not set.");
+                return false;
+            }
+            return true;
+        }
+
+        bool CheckBoolValue(string key)
+        {
+            if (string.IsNullOrEmpty(builder.Configuration[key]) == false && 
+                bool.TryParse(builder.Configuration[key], out _) == false)
+            {
+                Console.WriteLine($"{key} is is not a valid boolean value.");
+                return false;
+            }
+            return true;
+        }
     }
 }
