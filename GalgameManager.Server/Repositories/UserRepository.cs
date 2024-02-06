@@ -30,4 +30,11 @@ public class UserRepository(DataContext context) : IUserRepository
         await context.SaveChangesAsync();
         return user;
     }
+
+    public async Task<User> UpdateUserAsync(User user)
+    {
+        context.User.Update(user);
+        await context.SaveChangesAsync();
+        return user;
+    }
 }

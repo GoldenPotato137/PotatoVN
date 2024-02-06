@@ -57,7 +57,7 @@ public class UserController(IUserRepository userRepository, IConfiguration confi
     /// <response code="200">登录成功，返回token</response>
     /// <response code="400">账户不存在或密码不正确</response>
     [HttpPost("session")]
-    public async Task<ActionResult<string>> LoginAsync([FromQuery] UserLoginDto payload)
+    public async Task<ActionResult<string>> LoginAsync([FromBody] UserLoginDto payload)
     {
         User? user = await userRepository.GetUserAsync(payload.UserName);
         if (user is null || BCrypt.Net.BCrypt.Verify(payload.Password, user.PasswordHash) == false)
@@ -69,7 +69,7 @@ public class UserController(IUserRepository userRepository, IConfiguration confi
     /// <remarks>若注册成功则返回用户信息</remarks>
     /// <response code="400">该用户名已被占用</response>
     [HttpPost]
-    public async Task<ActionResult<UserDto>> RegisterAsync([FromQuery] UserRegisterDto payload)
+    public async Task<ActionResult<UserDto>> RegisterAsync([FromBody] UserRegisterDto payload)
     {
         User? user = await userRepository.GetUserAsync(payload.UserName);
         if (user != null) return BadRequest("User already exists.");
@@ -81,6 +81,27 @@ public class UserController(IUserRepository userRepository, IConfiguration confi
             Type = UserType.User,
         };
         await userRepository.AddUserAsync(user);
+        return Ok(new UserDto(user));
+    }
+
+    /// <summary>修改用户信息</summary>
+    /// <remarks>所有字段均可选</remarks>
+    /// <response code="200">成功，返回新的用户信息</response>
+    /// <response code="400">填入了新密码但旧密码不正确/没填写</response>
+    [HttpPatch("me")]
+    [Authorize]
+    public async Task<ActionResult<UserDto>> ModifyAsync([FromBody] UserModifyDto payload)
+    {
+        User? user = await userRepository.GetUserAsync(this.GetUserId());
+        if (user == null) return NotFound();
+        user.DisplayUserName = payload.DisplayUserName ?? user.DisplayUserName;
+        user.AvatarLoc = payload.AvatarLoc ?? user.AvatarLoc;
+        if (payload.NewPassword is not null)
+        {
+            if(payload.OldPassword is null || BCrypt.Net.BCrypt.Verify(payload.OldPassword, user.PasswordHash) == false)
+                return BadRequest("Old password incorrect.");
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(payload.NewPassword);
+        }
         return Ok(new UserDto(user));
     }
     

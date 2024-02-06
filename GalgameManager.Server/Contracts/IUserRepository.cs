@@ -26,4 +26,9 @@ public interface IUserRepository
     /// 添加用户
     /// </summary>
     public Task<User> AddUserAsync(User user);
+    
+    /// <summary>
+    /// 更新用户信息
+    /// </summary>
+    public Task<User> UpdateUserAsync(User user);
 }

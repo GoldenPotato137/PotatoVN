@@ -10,4 +10,5 @@ public class User
     [MaxLength(100)] public string DisplayUserName { get; set; } = string.Empty;
     [MaxLength(200)] public string PasswordHash { get; set; } = string.Empty;
     public UserType Type { get; set; }
+    [MaxLength(30)] public string AvatarLoc { get; set; } = string.Empty;
 }
