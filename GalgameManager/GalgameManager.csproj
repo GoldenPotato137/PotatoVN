@@ -68,6 +68,7 @@
     <None Remove="Views\Control\HomeItem.xaml" />
     <None Remove="Views\Dialog\ChangePlayStatusDialog.xaml" />
     <None Remove="Views\Dialog\SelectProcessDialog.xaml" />
+    <None Remove="Views\Dialog\SelectPvnServerDialog.xaml" />
     <None Remove="Views\PasswordDialog.xaml" />
     <None Remove="Views\SettingExpander.xaml" />
   </ItemGroup>
@@ -101,6 +102,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Dialog\SelectPvnServerDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Dialog\SelectProcessDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

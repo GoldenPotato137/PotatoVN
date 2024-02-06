@@ -1,0 +1,75 @@
+﻿<Page
+    x:Class="GalgameManager.Views.AccountPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:enums="using:GalgameManager.Enums"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converter:ImagePathConverter x:Key="ImagePathConverter"/>
+        <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
+        <converter:EnumToStringConverter x:Key="EnumStringConverter" />
+    </Page.Resources>
+
+    <Grid Margin="{ThemeResource PageButtonMargin}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0 10 25 0">
+                <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                          IsExpanded="True">
+                    <Expander.Header>
+                        <Grid Padding="0,18,0,18">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="80" Height="80" CornerRadius="15">
+                                <Border.Background>
+                                    <ImageBrush
+                                        ImageSource="{x:Bind ViewModel.PvnAvatar, Mode=OneWay, 
+                                                Converter={StaticResource ImagePathConverter}, 
+                                                ConverterParameter=ms-appx:///Assets/Pictures/Akkarin.webp}" />
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="10,10,0,0" HorizontalAlignment="Left">
+                                <TextBlock Text="PotatoVN" 
+                                           FontSize="18"/>
+                                <TextBlock Text="{x:Bind ViewModel.PvnDisplayName}" Margin="0 0 0 5"/>
+                                <TextBlock Text="{x:Bind ViewModel.PvnStateMsg}" 
+                                           FontSize="12"
+                                           Opacity="0.6"/>
+                            </StackPanel>
+                        </Grid>
+                    </Expander.Header>
+                    
+                    <Expander.Content>
+                        <control:Panel>
+                            <control:Setting x:Uid="AccountPage_Pvn_ServerType">
+                                <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                          ItemsSource="{x:Bind ViewModel.PvnServerTypes}"
+                                          SelectedItem="{x:Bind ViewModel.PvnServerType, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="enums:PvnServerType">
+                                            <TextBlock Text="{x:Bind Converter={StaticResource EnumStringConverter}}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </control:Setting>
+                        </control:Panel>
+                    </Expander.Content>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+
+        <InfoBar Grid.Row="1" IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
+                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
+    </Grid>
+</Page>

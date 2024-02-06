@@ -1148,4 +1148,31 @@
   <data name="HomePage_Search.PlaceholderText" xml:space="preserve">
     <value>支持拼音/拼音首字母搜索</value>
   </data>
+  <data name="Shell_Account.Content" xml:space="preserve">
+    <value>账户</value>
+  </data>
+  <data name="OfficialServer" xml:space="preserve">
+    <value>官方服务器</value>
+  </data>
+  <data name="CustomServer" xml:space="preserve">
+    <value>自定义服务器</value>
+  </data>
+  <data name="SelectPvnServerDialog_Title" xml:space="preserve">
+    <value>自定义服务器</value>
+  </data>
+  <data name="SelectPvnServerDialog_Placeholder" xml:space="preserve">
+    <value>服务器Url，如: https://114514.moe:1919</value>
+  </data>
+  <data name="SelectPvnServerDialog_Checking" xml:space="preserve">
+    <value>检测连接中</value>
+  </data>
+  <data name="SelectPvnServerDialog_Check" xml:space="preserve">
+    <value>检查</value>
+  </data>
+  <data name="AccountPage_Pvn_ServerType.Title" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="AccountPage_Pvn_ServerType.Description" xml:space="preserve">
+    <value>选择要连接至哪一个服务器</value>
+  </data>
 </root>

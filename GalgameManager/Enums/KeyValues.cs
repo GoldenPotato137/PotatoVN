@@ -3,8 +3,6 @@
 public static class KeyValues
 {
     //设置与杂项
-    public const string BangumiOAuthState= "bangumiOAuthState";
-    public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
     public const string RssType = "rssType";
     public const string OverrideLocalName = "overrideLocalName";
     public const string OverrideLocalNameWithChinese = "overrideLocalNameWithChinese";
@@ -33,6 +31,12 @@ public static class KeyValues
     public const string FontInstalled = "fontInstalled"; //bool, 是否安装了Segoe Fluent Icons字体
     public const string SyncGames = "syncGames"; //bool, 是否同步游戏（游玩时长/状态/列表）
     public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
+    
+    //账户相关
+    public const string BangumiOAuthState= "bangumiOAuthState";
+    public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
+    public const string PvnServerType = "pvnServerType"; //enum: PvnServerType, 服务器类型（官方/自定义）
+    public const string PvnServerEndpoint = "pvnServerEndpoint"; //string, 自定义服务器Url
     
     //游玩相关
     public const string RecordOnlyWhenForeground = "recordOnlyWhenForeground"; //bool, 是否只在游戏窗口在前台时记录游玩时间

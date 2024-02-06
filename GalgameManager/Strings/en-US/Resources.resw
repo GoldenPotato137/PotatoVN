@@ -1144,4 +1144,7 @@ If play time can record correctly, just cancel this popup.
   <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
     <value>Clear selection</value>
   </data>
+  <data name="Shell_Account.Content" xml:space="preserve">
+    <value>Account</value>
+  </data>
 </root>
