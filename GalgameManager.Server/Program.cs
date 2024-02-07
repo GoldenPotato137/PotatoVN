@@ -31,7 +31,9 @@ public class Program
             options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!);
         });
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IOssService, OssService>();
+        builder.Services.AddScoped<IBangumiService, BangumiService>();
         builder.Services.AddMinio(client =>
         {
             client.WithEndpoint(builder.Configuration["AppSettings:Minio:EndPoint"])
@@ -44,6 +46,9 @@ public class Program
         {
             options.Conventions.Add(new RouteConvention());
         });
+        
+        // Enable logging
+        builder.Logging.AddConsole();
         
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -107,7 +112,16 @@ public class Program
         result = Check("AppSettings:Minio:AccessKey") && result;
         result = Check("AppSettings:Minio:SecretKey") && result;
         
-        result = CheckBoolValue("AppSettings:Minio:UseSSL") && result;
+        result = CheckBoolValue("AppSettings:Minio:UseSSL", out _) && result;
+        result = CheckBoolValue("AppSettings:Bangumi:OAuth2Enable", out var isBgmOAuth2Enable) && result;
+        if (isBgmOAuth2Enable)
+        {
+            result = Check("AppSettings:Bangumi:AppId") && result;
+            result = Check("AppSettings:Bangumi:AppSecret") && result;
+            result = Check("AppSettings:Bangumi:RedirectUri") && result;
+        }
+        result = CheckBoolValue("AppSettings:User:Bangumi", out _) && result;
+        result = CheckBoolValue("AppSettings:User:Default", out _) && result;
         
         return result;
 
@@ -121,14 +135,16 @@ public class Program
             return true;
         }
 
-        bool CheckBoolValue(string key)
+        bool CheckBoolValue(string key, out bool value)
         {
             if (string.IsNullOrEmpty(builder.Configuration[key]) == false && 
                 bool.TryParse(builder.Configuration[key], out _) == false)
             {
                 Console.WriteLine($"{key} is is not a valid boolean value.");
+                value = false;
                 return false;
             }
+            value = Convert.ToBoolean(builder.Configuration[key]);
             return true;
         }
     }

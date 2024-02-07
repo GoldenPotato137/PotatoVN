@@ -23,6 +23,11 @@ public interface IUserRepository
     public Task<User?> GetUserAsync(string username);
     
     /// <summary>
+    /// 获取用户，若不存在则返回null
+    /// </summary>
+    public Task<User?> GetUserByBangumiIdAsync(int bangumiId);
+    
+    /// <summary>
     /// 添加用户
     /// </summary>
     public Task<User> AddUserAsync(User user);

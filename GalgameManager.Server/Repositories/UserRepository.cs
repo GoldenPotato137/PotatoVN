@@ -24,6 +24,11 @@ public class UserRepository(DataContext context) : IUserRepository
         return await context.User.FirstOrDefaultAsync(u => u.UserName == username);
     }
 
+    public Task<User?> GetUserByBangumiIdAsync(int bangumiId)
+    {
+        return context.User.FirstOrDefaultAsync(u => u.BangumiId == bangumiId);
+    }
+
     public async Task<User> AddUserAsync(User user)
     {
         context.User.Add(user);

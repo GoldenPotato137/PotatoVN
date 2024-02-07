@@ -1,19 +1,20 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using GalgameManager.Server.Contracts;
+﻿using GalgameManager.Server.Contracts;
 using GalgameManager.Server.Enums;
+using GalgameManager.Server.Exceptions;
 using GalgameManager.Server.Helpers;
 using GalgameManager.Server.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace GalgameManager.Server.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class UserController(IUserRepository userRepository, IConfiguration config) : ControllerBase
+public class UserController(
+    IUserService userService,
+    IUserRepository userRepository,
+    IBangumiService bgmService,
+    ILogger<UserController> logger) : ControllerBase
 {
     /// <summary>获取用户列表</summary>
     /// <remarks>
@@ -56,21 +57,65 @@ public class UserController(IUserRepository userRepository, IConfiguration confi
     /// <remarks>若登录成功则返回jwtToken</remarks>
     /// <response code="200">登录成功，返回token</response>
     /// <response code="400">账户不存在或密码不正确</response>
+    /// <response code="503">不允许使用账户密码登录与注册</response>
     [HttpPost("session")]
     public async Task<ActionResult<string>> LoginAsync([FromBody] UserLoginDto payload)
     {
+        if(userService.IsDefaultLoginEnable == false)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Default login is disabled.");
         User? user = await userRepository.GetUserAsync(payload.UserName);
         if (user is null || BCrypt.Net.BCrypt.Verify(payload.Password, user.PasswordHash) == false)
             return BadRequest("User not found or password incorrect.");
-        return Ok(GetToken(user));
+        return Ok(userService.GetToken(user));
     }
 
-    /// <summary>注册账户</summary>
-    /// <remarks>若注册成功则返回用户信息</remarks>
-    /// <response code="400">该用户名已被占用</response>
-    [HttpPost]
-    public async Task<ActionResult<UserDto>> RegisterAsync([FromBody] UserRegisterDto payload)
+    /// <summary>使用bgm账户登录/注册</summary>
+    /// <remarks>如果该bgm账户没有potatoVN账号，则自动注册一个</remarks>
+    /// <response code="200">用户信息与token</response>
+    /// <response code="400">token无效</response>
+    /// <response code="502">无法连接至bgm服务器</response>
+    /// <response code="503">不允许使用bangumi注册与登录</response>
+    [HttpPost("session/bgm")]
+    public async Task<ActionResult<UserWithTokenDto>> LoginViaBgmAsync([FromBody] UserLoginViaBgmDto payload)
     {
+        if(bgmService.IsLoginEnable == false)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Login via bangumi is disabled.");
+        BangumiAccount account;
+        try
+        {
+            account = await bgmService.GetAccount(payload.BgmToken);
+        }
+        catch (Exception e)
+        {
+            if (e is InvalidAuthorizationCodeException)
+                return BadRequest($"{e.Message}");
+            logger.LogWarning(e, "Failed to get Bangumi account with token");
+            return StatusCode(StatusCodes.Status502BadGateway, e.ToString());
+        }
+        User? user = await userRepository.GetUserByBangumiIdAsync(account.Id);
+        if (user is null)
+        {
+            user = new User
+            {
+                UserName = $"_bgm_{account.UserName}",
+                DisplayUserName = account.UserDisplayName,
+                BangumiId = account.Id,
+                Type = UserType.User,
+            };
+            await userRepository.AddUserAsync(user);
+        }
+        return Ok(new UserWithTokenDto(new UserDto(user), userService.GetToken(user)));
+    }
+    
+    /// <summary>注册账户</summary>
+    /// <remarks>若注册成功则返回用户信息与token</remarks>
+    /// <response code="400">该用户名已被占用</response>
+    /// <response code="503">不允许使用账户密码登录与注册</response>
+    [HttpPost]
+    public async Task<ActionResult<UserWithTokenDto>> RegisterAsync([FromBody] UserRegisterDto payload)
+    {
+        if(userService.IsDefaultLoginEnable == false)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Default login is disabled.");
         User? user = await userRepository.GetUserAsync(payload.UserName);
         if (user != null) return BadRequest("User already exists.");
         user = new User
@@ -81,7 +126,7 @@ public class UserController(IUserRepository userRepository, IConfiguration confi
             Type = UserType.User,
         };
         await userRepository.AddUserAsync(user);
-        return Ok(new UserDto(user));
+        return Ok(new UserWithTokenDto(new UserDto(user), userService.GetToken(user)));
     }
 
     /// <summary>修改用户信息</summary>
@@ -103,18 +148,5 @@ public class UserController(IUserRepository userRepository, IConfiguration confi
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(payload.NewPassword);
         }
         return Ok(new UserDto(user));
-    }
-    
-    private string GetToken(User user)
-    {
-        List<Claim> claims = new()
-        {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Role, user.Type.ToString()),
-        };
-        SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(config.GetSection("AppSettings:JwtKey").Value!));
-        SigningCredentials cred = new(key, SecurityAlgorithms.HmacSha512Signature);
-        JwtSecurityToken token = new(claims: claims, expires: DateTime.Now.AddMonths(1), signingCredentials: cred);
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
