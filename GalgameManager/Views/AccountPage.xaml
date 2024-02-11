@@ -12,6 +12,10 @@
         <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
+        <Style x:Key="AccountStackPanelStyle" TargetType="StackPanel">
+            <Setter Property="Spacing" Value="13" />
+            <Setter Property="Orientation" Value="Vertical" />
+        </Style>
     </Page.Resources>
 
     <Grid Margin="{ThemeResource PageButtonMargin}">
@@ -41,8 +45,9 @@
                             <StackPanel Grid.Column="1" Margin="10,10,0,0" HorizontalAlignment="Left">
                                 <TextBlock Text="PotatoVN" 
                                            FontSize="18"/>
-                                <TextBlock Text="{x:Bind ViewModel.PvnDisplayName}" Margin="0 0 0 5"/>
-                                <TextBlock Text="{x:Bind ViewModel.PvnStateMsg}" 
+                                <TextBlock Text="{x:Bind ViewModel.PvnDisplayName, Mode=OneWay}" 
+                                           Margin="0 0 0 5"/>
+                                <TextBlock Text="{x:Bind ViewModel.PvnStateMsg, Mode=OneWay}" 
                                            FontSize="12"
                                            Opacity="0.6"/>
                             </StackPanel>
@@ -50,19 +55,39 @@
                     </Expander.Header>
                     
                     <Expander.Content>
-                        <control:Panel>
-                            <control:Setting x:Uid="AccountPage_Pvn_ServerType">
-                                <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
-                                          ItemsSource="{x:Bind ViewModel.PvnServerTypes}"
-                                          SelectedItem="{x:Bind ViewModel.PvnServerType, Mode=TwoWay}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate x:DataType="enums:PvnServerType">
-                                            <TextBlock Text="{x:Bind Converter={StaticResource EnumStringConverter}}" />
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </control:Setting>
-                        </control:Panel>
+                        <StackPanel Style="{StaticResource AccountStackPanelStyle}">
+                            <!-- 账号状态 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="AccountPage_Pvn_AccountStatus" 
+                                                 Description="{x:Bind ViewModel.PvnLoginDescription, Mode=OneWay}">
+                                    <Button MinWidth="{StaticResource ToggleSwitchWidth}" 
+                                            Content="{x:Bind ViewModel.PvnLoginButtonText, Mode=OneWay}"
+                                            Command="{x:Bind ViewModel.PvnLoginButtonCommand, Mode=OneWay}"/>
+                                </control:Setting>
+                            </control:Panel>
+                            <!-- 账号管理 -->
+                            <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
+                                <control:Setting x:Uid="AccountPage_Pvn_SetAccount">
+                                    <Button x:Uid="AccountPage_Pvn_SetAccount_Button"
+                                            MinWidth="{StaticResource ToggleSwitchWidth}"
+                                            Command="{x:Bind ViewModel.PvnSetAccountCommand}"/>
+                                </control:Setting>
+                            </control:Panel>
+                            <!-- 服务器类型 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="AccountPage_Pvn_ServerType">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.PvnServerTypes}"
+                                              SelectedItem="{x:Bind ViewModel.PvnServerType, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:PvnServerType">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource EnumStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                        </StackPanel>
                     </Expander.Content>
                 </Expander>
             </StackPanel>

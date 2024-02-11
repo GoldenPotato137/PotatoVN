@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Text;
 using Windows.Foundation;
+using Newtonsoft.Json;
 using TinyPinyin;
 
 namespace GalgameManager.Helpers;
@@ -51,6 +52,12 @@ public static class Utils
     {
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        return client;
+    }
+    
+    public static HttpClient AddToken(this HttpClient client, string token)
+    {
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }
 
@@ -119,5 +126,10 @@ public static class Utils
         self = self.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
         target = target.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
         return string.Compare(self, target, StringComparison.Ordinal);
+    }
+    
+    public static StringContent ToJsonContent(this object obj)
+    {
+        return new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
     }
 }

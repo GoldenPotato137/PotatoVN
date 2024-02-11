@@ -15,8 +15,8 @@ public class InfoService : IInfoService
         _appCenterService = appCenterService;
     }
     
-    public void Event(string eventName, Exception? exception = null)
+    public void Event(string eventName, Exception? exception = null, string? msg = null)
     {
-        _appCenterService.UploadEvent(eventName, exception);
+        _appCenterService.UploadEvent(eventName, exception, msg);
     }
 }

@@ -115,7 +115,7 @@ public class Program
         result = CheckBoolValue("AppSettings:Minio:UseSSL", out _) && result;
         result = CheckBoolValue("AppSettings:Bangumi:OAuth2Enable", out var isBgmOAuth2Enable) && result;
         if (isBgmOAuth2Enable)
-        {
+        { 
             result = Check("AppSettings:Bangumi:AppId") && result;
             result = Check("AppSettings:Bangumi:AppSecret") && result;
             result = Check("AppSettings:Bangumi:RedirectUri") && result;

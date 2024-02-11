@@ -9,8 +9,10 @@ public static class DownloadHelper
     /// </summary>
     /// <param name="imageUrl">图片链接</param>
     /// <param name="retry">这是第几次重试</param>
+    /// <param name="fileNameWithoutExtension">目标文件名（不带扩展名）</param>
     /// <returns>本地文件路径, 如果下载失败则返回null</returns>
-    public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl, int retry = 0)
+    public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl, int retry = 0, 
+        string? fileNameWithoutExtension = null)
     {
         try
         {
@@ -22,7 +24,9 @@ public static class DownloadHelper
             var imageBytes = await response.Content.ReadAsByteArrayAsync();
 
             StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
-            var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
+            var fileName = fileNameWithoutExtension is not null
+                ? $"{fileNameWithoutExtension}{GetImageFormat(imageBytes)}"
+                : imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
             if (fileName == string.Empty) fileName = imageUrl;
             if (fileName.Contains('?')) fileName = fileName[..fileName.IndexOf('?')];
             StorageFile? storageFile;
@@ -32,7 +36,7 @@ public static class DownloadHelper
             }
             catch (FileNotFoundException)
             {
-                fileName = Path.GetRandomFileName(); //随机文件名
+                fileName = fileNameWithoutExtension ?? Path.GetRandomFileName(); //随机文件名
                 var format = GetImageFormat(imageBytes);
                 if (format != string.Empty)
                     fileName = fileName[..fileName.LastIndexOf('.')] + format;

@@ -1151,10 +1151,10 @@
   <data name="Shell_Account.Content" xml:space="preserve">
     <value>账户</value>
   </data>
-  <data name="OfficialServer" xml:space="preserve">
+  <data name="PvnServerType_OfficialServer" xml:space="preserve">
     <value>官方服务器</value>
   </data>
-  <data name="CustomServer" xml:space="preserve">
+  <data name="PvnServerType_CustomServer" xml:space="preserve">
     <value>自定义服务器</value>
   </data>
   <data name="SelectPvnServerDialog_Title" xml:space="preserve">
@@ -1174,5 +1174,101 @@
   </data>
   <data name="AccountPage_Pvn_ServerType.Description" xml:space="preserve">
     <value>选择要连接至哪一个服务器</value>
+  </data>
+  <data name="AccountPage_Pvn_AccountStatus.Title" xml:space="preserve">
+    <value>账号状态</value>
+  </data>
+  <data name="AccountPage_Pvn_AccountStatus_Unlogin" xml:space="preserve">
+    <value>还没有登录PotatoVN账号呢~</value>
+  </data>
+  <data name="PvnLoginDialog.Title" xml:space="preserve">
+    <value>登录PotatoVN账号</value>
+  </data>
+  <data name="PvnLoginDialog_Account.Text" xml:space="preserve">
+    <value>账号</value>
+  </data>
+  <data name="PvnLoginDialog_Password.Text" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>注册</value>
+  </data>
+  <data name="PvnLoginDialog_UseThirdParty.Text" xml:space="preserve">
+    <value>或使用第三方账号来注册或登录：</value>
+  </data>
+  <data name="PvnLoginDialog_GettingServerInfo.Text" xml:space="preserve">
+    <value>获取服务器信息中...</value>
+  </data>
+  <data name="PvnService_PasswordIncorrect" xml:space="preserve">
+    <value>账户不存在或密码不正确</value>
+  </data>
+  <data name="PvnService_ServerUnavailable" xml:space="preserve">
+    <value>服务器不允许此方式登录或注册</value>
+  </data>
+  <data name="AccountPage_Pvn_ConnectTo" xml:space="preserve">
+    <value>连接至服务器：{0}</value>
+  </data>
+  <data name="AccountPage_Pvn_LoginSuccess" xml:space="preserve">
+    <value>登录成功 </value>
+  </data>
+  <data name="AccountPage_Pvn_Logout" xml:space="preserve">
+    <value>登出成功</value>
+  </data>
+  <data name="AccountPage_Pvn_AccountStatus_Login" xml:space="preserve">
+    <value>用户ID:{0}, 登录方式:{1}</value>
+  </data>
+  <data name="LoginMethodEnum_Default" xml:space="preserve">
+    <value>账户密码</value>
+  </data>
+  <data name="LoginMethodEnum_Bangumi" xml:space="preserve">
+    <value>Bangumi</value>
+  </data>
+  <data name="PvnService_UserNameAlreadyTaken" xml:space="preserve">
+    <value>该用户名已被占用</value>
+  </data>
+  <data name="AccountPage_Pvn_RegisterSuccess" xml:space="preserve">
+    <value>注册并登录成功</value>
+  </data>
+  <data name="PvnService_NoBgmAccount" xml:space="preserve">
+    <value>登录Bangumi账户失败</value>
+  </data>
+  <data name="PvnService_ServerCannotConnectBgm" xml:space="preserve">
+    <value>服务器无法访问Bangumi服务器，请稍后重试</value>
+  </data>
+  <data name="AccountPage_Pvn_Logging" xml:space="preserve">
+    <value>正在连接至服务器，请稍后</value>
+  </data>
+  <data name="AccountPage_Pvn_SetAccount.Title" xml:space="preserve">
+    <value>账号管理</value>
+  </data>
+  <data name="AccountPage_Pvn_SetAccount.Description" xml:space="preserve">
+    <value>修改账号头像、昵称、密码等</value>
+  </data>
+  <data name="AccountPage_Pvn_SetAccount_Button.Content" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="PvnSetAccountDialog_UserDisplayName.Text" xml:space="preserve">
+    <value>昵称</value>
+  </data>
+  <data name="PvnSetAccountDialog_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>填入新值来更改，留空则不变</value>
+  </data>
+  <data name="PvnSetAccountDialog_SetImgButton.Content" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="PvnSetAccountDialog_Avatar.Text" xml:space="preserve">
+    <value>头像</value>
+  </data>
+  <data name="PvnServiceStatus_UploadingAvatar" xml:space="preserve">
+    <value>上传头像中...</value>
+  </data>
+  <data name="PvnServiceStatus_UploadingUserInfo" xml:space="preserve">
+    <value>更新用户信息中...</value>
+  </data>
+  <data name="AccountPage_Pvn_Modified" xml:space="preserve">
+    <value>更新用户信息成功！</value>
+  </data>
+  <data name="PvnServiceStatus_DownloadingAvatar" xml:space="preserve">
+    <value>下载PotatoVN用户头像中</value>
   </data>
 </root>

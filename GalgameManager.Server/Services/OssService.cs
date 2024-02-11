@@ -11,6 +11,7 @@ public class OssService (IMinioClient client, IConfiguration config) : IOssServi
     
     public async Task<string?> GetWritePresignedUrlAsync(int userId, string objectFullName)
     {
+        if (string.IsNullOrEmpty(objectFullName)) return null;
         try
         {
             return await client.PresignedPutObjectAsync(new PresignedPutObjectArgs()
@@ -28,6 +29,7 @@ public class OssService (IMinioClient client, IConfiguration config) : IOssServi
 
     public async Task<string?> GetReadPresignedUrlAsync(int userId, string objectFullName)
     {
+        if (string.IsNullOrEmpty(objectFullName)) return null;
         try
         {
             return await client.PresignedGetObjectAsync(new PresignedGetObjectArgs()

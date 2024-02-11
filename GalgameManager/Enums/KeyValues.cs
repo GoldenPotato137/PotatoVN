@@ -37,6 +37,8 @@ public static class KeyValues
     public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
     public const string PvnServerType = "pvnServerType"; //enum: PvnServerType, 服务器类型（官方/自定义）
     public const string PvnServerEndpoint = "pvnServerEndpoint"; //string, 自定义服务器Url
+    public const string PvnAccount = "pvnAccount"; //PvnAccount, PotatoVN账户
+    public const string PvnAccountUserName = "pvnAccountUserName"; //string, PotatoVN账户名
     
     //游玩相关
     public const string RecordOnlyWhenForeground = "recordOnlyWhenForeground"; //bool, 是否只在游戏窗口在前台时记录游玩时间

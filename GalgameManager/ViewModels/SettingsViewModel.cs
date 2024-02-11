@@ -280,18 +280,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
     }
     
-    private async void BgmAuthResultNotify((OAuthResult, string) arg)
+    private async void BgmAuthResultNotify(OAuthResult result, string msg)
     {
-        switch (arg.Item1)
+        switch (result)
         {
             case OAuthResult.Done:
             case OAuthResult.Failed:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
                 break;
             case OAuthResult.FetchingAccount: 
             case OAuthResult.FetchingToken:
             default:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2, 1000 * 60);
+                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg, 1000 * 60);
                 break;
         }
     }

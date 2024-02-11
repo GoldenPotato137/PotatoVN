@@ -14,12 +14,14 @@ public class UserController(
     IUserService userService,
     IUserRepository userRepository,
     IBangumiService bgmService,
+    IOssService ossService,
     ILogger<UserController> logger) : ControllerBase
 {
     /// <summary>获取用户列表</summary>
     /// <remarks>
     /// <b>该命令需要管理员权限</b><br/>
-    /// pageIndex从0开始
+    /// pageIndex从0开始<br/>
+    /// 不返回用户的头像URL
     /// </remarks>
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -39,7 +41,9 @@ public class UserController(
     {
         User? user = await userRepository.GetUserAsync(id);
         if (user == null) return NotFound();
-        return Ok(new UserDto(user));
+        UserDto dto = new(user);
+        await dto.WithAvatarAsync(ossService);
+        return Ok(dto);
     }
 
     /// <summary>获取自己的用户信息</summary>
@@ -50,7 +54,9 @@ public class UserController(
         var userId = this.GetUserId();
         User? user = await userRepository.GetUserAsync(userId);
         if (user == null) return NotFound();
-        return Ok(new UserDto(user));
+        UserDto dto = new(user);
+        await dto.WithAvatarAsync(ossService);
+        return Ok(dto);
     }
 
     /// <summary>登录账户</summary>
@@ -59,14 +65,17 @@ public class UserController(
     /// <response code="400">账户不存在或密码不正确</response>
     /// <response code="503">不允许使用账户密码登录与注册</response>
     [HttpPost("session")]
-    public async Task<ActionResult<string>> LoginAsync([FromBody] UserLoginDto payload)
+    public async Task<ActionResult<UserWithTokenDto>> LoginAsync([FromBody] UserLoginDto payload)
     {
         if(userService.IsDefaultLoginEnable == false)
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "Default login is disabled.");
         User? user = await userRepository.GetUserAsync(payload.UserName);
         if (user is null || BCrypt.Net.BCrypt.Verify(payload.Password, user.PasswordHash) == false)
             return BadRequest("User not found or password incorrect.");
-        return Ok(userService.GetToken(user));
+        var token = userService.GetToken(user);
+        UserDto dto = new(user);
+        await dto.WithAvatarAsync(ossService);
+        return Ok(new UserWithTokenDto(dto, token, userService.GetExpiryDateFromToken(token)));
     }
 
     /// <summary>使用bgm账户登录/注册</summary>
@@ -104,7 +113,10 @@ public class UserController(
             };
             await userRepository.AddUserAsync(user);
         }
-        return Ok(new UserWithTokenDto(new UserDto(user), userService.GetToken(user)));
+        var token = userService.GetToken(user);
+        UserDto dto = new(user);
+        await dto.WithAvatarAsync(ossService);
+        return Ok(new UserWithTokenDto(dto, token, userService.GetExpiryDateFromToken(token)));
     }
     
     /// <summary>注册账户</summary>
@@ -126,7 +138,8 @@ public class UserController(
             Type = UserType.User,
         };
         await userRepository.AddUserAsync(user);
-        return Ok(new UserWithTokenDto(new UserDto(user), userService.GetToken(user)));
+        var token = userService.GetToken(user);
+        return Ok(new UserWithTokenDto(new UserDto(user), token, userService.GetExpiryDateFromToken(token)));
     }
 
     /// <summary>修改用户信息</summary>
@@ -139,7 +152,7 @@ public class UserController(
     {
         User? user = await userRepository.GetUserAsync(this.GetUserId());
         if (user == null) return NotFound();
-        user.DisplayUserName = payload.DisplayUserName ?? user.DisplayUserName;
+        user.DisplayUserName = payload.UserDisplayName ?? user.DisplayUserName;
         user.AvatarLoc = payload.AvatarLoc ?? user.AvatarLoc;
         if (payload.NewPassword is not null)
         {
@@ -147,6 +160,9 @@ public class UserController(
                 return BadRequest("Old password incorrect.");
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(payload.NewPassword);
         }
-        return Ok(new UserDto(user));
+        await userRepository.UpdateUserAsync(user);
+        UserDto dto = new(user);
+        await dto.WithAvatarAsync(ossService);
+        return Ok(dto);
     }
 }

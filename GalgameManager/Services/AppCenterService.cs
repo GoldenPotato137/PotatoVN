@@ -53,12 +53,13 @@ public class AppCenterService : IAppCenterService
     /// <summary>
     /// 记录事件
     /// </summary>
-    public void UploadEvent(string eventName, Exception? exception = null)
+    public void UploadEvent(string eventName, Exception? exception = null, string? msg = null)
     {
         if (!_isStarted) return;
         Analytics.TrackEvent(eventName, new Dictionary<string, string>
         {
-            {"Exception", exception?.ToString() ?? "null"}
+            {"Exception", exception?.ToString() ?? "null"},
+            {"Msg", msg ?? string.Empty}
         });
     }
 }

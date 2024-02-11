@@ -215,7 +215,7 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
-    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false)
+    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false, bool triggerEventWhenNull = false)
     {
         if (RuntimeHelper.IsMSIX && !isLarge)
         {
@@ -227,8 +227,10 @@ public class LocalSettingsService : ILocalSettingsService
             _settings[key] = value;
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
-        if(value != null)
+        if(value != null || triggerEventWhenNull)
+#pragma warning disable CS8604 // 引用类型参数可能为 null。
             OnSettingChanged?.Invoke(key, value);
+#pragma warning restore CS8604 // 引用类型参数可能为 null。
     }
     
     public async Task RemoveSettingAsync(string key)

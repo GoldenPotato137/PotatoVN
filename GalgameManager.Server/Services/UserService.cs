@@ -25,4 +25,15 @@ public class UserService (IConfiguration config): IUserService
         JwtSecurityToken token = new(claims: claims, expires: DateTime.Now.AddMonths(1), signingCredentials: cred);
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
+    public long GetExpiryDateFromToken(string token)
+    {
+        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(token)) return 0;
+        JwtSecurityToken? jwtToken = handler.ReadJwtToken(token);
+        Claim? expClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp);
+        if (expClaim != null && long.TryParse(expClaim.Value, out var expValue))
+            return expValue;
+        return 0;
+    }
 }
