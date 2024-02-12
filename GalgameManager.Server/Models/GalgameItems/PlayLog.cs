@@ -6,6 +6,6 @@ public class PlayLog
     public int GalgameId { get; set; }
     public int Id { get; set; }
     
-    public DateTime Date { get; set; } = DateTime.UnixEpoch;
+    public long DateTimeStamp { get; set; } // 游玩时间那一天的0点0秒的时间戳
     public int Minute { get; set; }
 }

@@ -28,7 +28,7 @@ public class Program
         // Add services to the container.
         builder.Services.AddDbContext<DataContext>(options =>
         {
-            options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!);
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")!);
         });
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUserService, UserService>();

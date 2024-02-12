@@ -8,7 +8,7 @@ dotnet user-secrets init
 dotnet user-secrets set "Key" "Value"
 ```
 应该设置的环境变量有（Key）：
-* `ConnectionStrings:DefaultConnection` 数据库连接字符串，**数据库必须是MySQL**
+* `ConnectionStrings:DefaultConnection` 数据库连接字符串，**数据库必须是PostgreSQL**
 * `AppSettings:JwtKey` JWT秘钥，**至少64位长**
 * `AppSettings:Minio:EndPoint` Minio服务器地址与端口, 如: 114514.moe:1919
 * `AppSettings:Minio:AccessKey` Minio用户识别码

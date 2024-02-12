@@ -28,7 +28,8 @@ public class UserController(
     public async Task<ActionResult<PagedResult<UserDto>>> GetUsers([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 20)
     {
         PagedResult<User> tmp = await userRepository.GetUsersAsync(pageIndex, pageSize);
-        PagedResult<UserDto> result = new(tmp.Items.ToDto(), tmp.PageIndex, tmp.PageSize, tmp.Cnt);
+        PagedResult<UserDto> result = new(tmp.Items.ToDtoList(u => new UserDto(u)), tmp.PageIndex, tmp.PageSize,
+            tmp.Cnt);
         return Ok(result);
     }
 

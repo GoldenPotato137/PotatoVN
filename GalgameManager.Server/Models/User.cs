@@ -11,6 +11,9 @@ public class User
     [MaxLength(200)] public string PasswordHash { get; set; } = string.Empty;
     public UserType Type { get; set; }
     [MaxLength(30)] public string AvatarLoc { get; set; } = string.Empty;
+    
+    public long LastGalChangedTimeStamp { get; set; }
+    public List<Galgame>? Galgames { get; set; }
 
     public int BangumiId { get; set; }
 }

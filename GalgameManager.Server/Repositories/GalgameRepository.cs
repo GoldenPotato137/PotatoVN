@@ -1,0 +1,62 @@
+﻿using GalgameManager.Server.Contracts;
+using GalgameManager.Server.Data;
+using GalgameManager.Server.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace GalgameManager.Server.Repositories;
+
+public class GalgameRepository (DataContext context): IGalgameRepository
+{
+    public async Task<Galgame?> GetGalgameAsync(int id)
+    {
+        return await context.Galgame
+            .Include(g => g.PlayTime)
+            .FirstOrDefaultAsync(g => g.Id == id);
+    }
+
+    public async Task<PagedResult<Galgame>> GetGalgamesAsync(int userId, int timestamp, int pageIndex, int pageSize)
+    {
+        if(pageIndex < 0 || pageSize < 0)
+            throw new ArgumentException("Invalid page index or page size");
+        
+        IQueryable<Galgame> query = context.Galgame
+            .Where(g => g.UserId == userId && g.LastChangedTimeStamp > timestamp);
+        Task<int> countTask = query.CountAsync();
+        Task<List<Galgame>> dataTask = query
+            .Include(g => g.PlayTime)
+            .OrderByDescending(g => g.Id)
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return new PagedResult<Galgame>(await dataTask, pageIndex, pageSize, await countTask);
+    }
+
+    public async Task<Galgame> AddGalgameAsync(Galgame galgame)
+    {
+        await context.Galgame.AddAsync(galgame);
+        await context.SaveChangesAsync();
+        return galgame;
+    }
+
+    public async Task UpdateGalgameAsync(Galgame galgame)
+    {
+        context.Galgame.Update(galgame);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task DeleteGalgameAsync(int id)
+    {
+        Galgame? galgame = await context.Galgame.FindAsync(id);
+        if (galgame is not null)
+        {
+            context.Galgame.Remove(galgame);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    public async Task DeleteGalgamesAsync(int userId)
+    {
+        IQueryable<Galgame> query = context.Galgame.Where(g => g.UserId == userId);
+        await query.ExecuteDeleteAsync();
+    }
+}
