@@ -9,4 +9,6 @@ public interface IUserService
     public string GetToken(User user);
     
     public long GetExpiryDateFromToken(string token);
+    
+    public Task UpdateLastModifiedAsync(int userId, long lastModifiedTimestamp);
 }

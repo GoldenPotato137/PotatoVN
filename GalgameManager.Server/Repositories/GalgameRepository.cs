@@ -7,14 +7,15 @@ namespace GalgameManager.Server.Repositories;
 
 public class GalgameRepository (DataContext context): IGalgameRepository
 {
-    public async Task<Galgame?> GetGalgameAsync(int id)
+    public async Task<Galgame?> GetGalgameAsync(int id, bool includePlayTime = false)
     {
-        return await context.Galgame
-            .Include(g => g.PlayTime)
-            .FirstOrDefaultAsync(g => g.Id == id);
+        IQueryable<Galgame> query = context.Galgame.AsQueryable();
+        if(includePlayTime)
+            query = query.Include(g => g.PlayTime);
+        return await query.FirstOrDefaultAsync(g => g.Id == id);
     }
 
-    public async Task<PagedResult<Galgame>> GetGalgamesAsync(int userId, int timestamp, int pageIndex, int pageSize)
+    public async Task<PagedResult<Galgame>> GetGalgamesAsync(int userId, long timestamp, int pageIndex, int pageSize)
     {
         if(pageIndex < 0 || pageSize < 0)
             throw new ArgumentException("Invalid page index or page size");
@@ -38,7 +39,7 @@ public class GalgameRepository (DataContext context): IGalgameRepository
         return galgame;
     }
 
-    public async Task UpdateGalgameAsync(Galgame galgame)
+    public async Task AddOrUpdateGalgameAsync(Galgame galgame)
     {
         context.Galgame.Update(galgame);
         await context.SaveChangesAsync();
@@ -54,9 +55,11 @@ public class GalgameRepository (DataContext context): IGalgameRepository
         }
     }
 
-    public async Task DeleteGalgamesAsync(int userId)
+    public async Task<List<int>> DeleteGalgamesAsync(int userId)
     {
         IQueryable<Galgame> query = context.Galgame.Where(g => g.UserId == userId);
+        List<int> ids = await query.Select(g => g.Id).ToListAsync();
         await query.ExecuteDeleteAsync();
+        return ids;
     }
 }

@@ -43,6 +43,7 @@ public class GalgameDto(Galgame galgame)
 
 public class GalgameUpdateDto
 {
+    public int? Id { get; set; }
     public string? BgmId { get; set; }
     public string? VndbId { get; set; }
     public string? Name { get; set; }
@@ -54,7 +55,7 @@ public class GalgameUpdateDto
     public string? ReleaseDate { get; set; }
     public string? ImageLoc { get; set; }
     public List<string>? Tags { get; set; }
-    public int TotalPlayTime { get; set; }
+    public int? TotalPlayTime { get; set; }
     public PlayType? PlayType { get; set; }
     public List<PlayLogDto>? PlayTime { get; set; }
     public string? Comment { get; set; }

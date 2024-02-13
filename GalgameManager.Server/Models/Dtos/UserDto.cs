@@ -14,6 +14,8 @@ public class UserDto(User user)
     /// <summary>用户头像URL，可能为null</summary>>
     public string? Avatar { get; set; }
 
+    public long LastGalChangedTimeStamp { get; set; } = user.LastGalChangedTimeStamp;
+
     public async Task WithAvatarAsync(IOssService ossService)
     {
         Avatar = await ossService.GetReadPresignedUrlAsync(user.Id, user.AvatarLoc);

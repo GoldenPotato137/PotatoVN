@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace GalgameManager.Server.Services;
 
-public class UserService (IConfiguration config): IUserService
+public class UserService (IConfiguration config, IUserRepository repository): IUserService
 {
     private readonly string _jwtKey = config["AppSettings:JwtKey"]!;
 
@@ -35,5 +35,16 @@ public class UserService (IConfiguration config): IUserService
         if (expClaim != null && long.TryParse(expClaim.Value, out var expValue))
             return expValue;
         return 0;
+    }
+
+    public async Task UpdateLastModifiedAsync(int userId, long lastModifiedTimestamp)
+    {
+        User? user = await repository.GetUserAsync(userId);
+        if (user is null) return;
+        if (lastModifiedTimestamp > user.LastGalChangedTimeStamp)
+        {
+            user.LastGalChangedTimeStamp = lastModifiedTimestamp;
+            await repository.UpdateUserAsync(user);
+        }
     }
 }

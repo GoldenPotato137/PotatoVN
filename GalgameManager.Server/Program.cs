@@ -31,9 +31,13 @@ public class Program
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")!);
         });
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IGalgameRepository, GalgameRepository>();
+        builder.Services.AddScoped<IGalgameDeletedRepository, GalgameDeletedRepository>();
+        builder.Services.AddScoped<IPlayLogRepository, PlayLogRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IOssService, OssService>();
         builder.Services.AddScoped<IBangumiService, BangumiService>();
+        builder.Services.AddScoped<IGalgameService, GalgameService>();
         builder.Services.AddMinio(client =>
         {
             client.WithEndpoint(builder.Configuration["AppSettings:Minio:EndPoint"])
