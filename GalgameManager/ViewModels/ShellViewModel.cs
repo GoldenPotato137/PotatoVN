@@ -8,8 +8,11 @@ public partial class ShellViewModel : ObservableRecipient
 {
     private bool _isBackEnabled;
     private object? _selected;
+    private readonly IBgTaskService _bgTaskService;
     [ObservableProperty] private bool _updateBadgeVisibility;
     [ObservableProperty] private string? _title;
+    [ObservableProperty] private bool _infoPageBadgeVisibility;
+    [ObservableProperty] private int _infoPageBadgeCount;
 
     public INavigationService NavigationService
     {
@@ -34,12 +37,17 @@ public partial class ShellViewModel : ObservableRecipient
     }
 
     public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService,
-        IUpdateService updateService)
+        IUpdateService updateService, IBgTaskService bgTaskService)
     {
-        updateService.SettingBadgeEvent += result => UpdateBadgeVisibility = result;
         NavigationService = navigationService;
-        NavigationService.Navigated += OnNavigated;
         NavigationViewService = navigationViewService;
+        _bgTaskService = bgTaskService;
+        NavigationService.Navigated += OnNavigated;
+        updateService.SettingBadgeEvent += result => UpdateBadgeVisibility = result;
+        _bgTaskService.BgTaskAdded += _ => UpdateInfoPageBadge();
+        _bgTaskService.BgTaskRemoved += _ => UpdateInfoPageBadge();
+        
+        UpdateInfoPageBadge();
     }
 
     private void OnNavigated(object sender, NavigationEventArgs e)
@@ -51,5 +59,11 @@ public partial class ShellViewModel : ObservableRecipient
         {
             Selected = selectedItem;
         }
+    }
+    
+    private void UpdateInfoPageBadge()
+    {
+        InfoPageBadgeCount = _bgTaskService.GetBgTasks().Count();
+        InfoPageBadgeVisibility = _infoPageBadgeCount > 0;
     }
 }

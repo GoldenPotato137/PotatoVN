@@ -1,5 +1,4 @@
-﻿using Windows.ApplicationModel.DataTransfer;
-using GalgameManager.Activation;
+﻿using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
@@ -10,15 +9,16 @@ using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
 using H.NotifyIcon;
+using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
-using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using WindowExtensions = H.NotifyIcon.WindowExtensions;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace GalgameManager;
 
@@ -102,6 +102,8 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<InfoViewModel>();
+            services.AddTransient<InfoPage>();
             services.AddTransient<AccountViewModel>();
             services.AddTransient<AccountPage>();
             services.AddTransient<CategoryViewModel>();

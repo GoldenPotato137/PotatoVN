@@ -1271,4 +1271,37 @@
   <data name="PvnServiceStatus_DownloadingAvatar" xml:space="preserve">
     <value>下载PotatoVN用户头像中</value>
   </data>
+  <data name="Shell_Info.Content" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="InfoPage_BgTask.SettingTitle" xml:space="preserve">
+    <value>后台任务</value>
+  </data>
+  <data name="InfoPage_BgTask.SettingDescription" xml:space="preserve">
+    <value>这些任务会在最小化到系统托盘后继续运行</value>
+  </data>
+  <data name="InfoPage_Info.SettingTitle" xml:space="preserve">
+    <value>运行消息</value>
+  </data>
+  <data name="InfoPage_Info.SettingDescription" xml:space="preserve">
+    <value>在这里显示所有的程序运行消息，如报错、报告等</value>
+  </data>
+  <data name="InfoPage_NoBgTask.Text" xml:space="preserve">
+    <value>暂无后台任务</value>
+  </data>
+  <data name="InfoPage_NoInfo.Text" xml:space="preserve">
+    <value>暂无运行消息</value>
+  </data>
+  <data name="GetGalgameInFolderTask_Title" xml:space="preserve">
+    <value>扫描文件夹任务</value>
+  </data>
+  <data name="RecordPlayTimeTask_Title" xml:space="preserve">
+    <value>记录游戏时长任务</value>
+  </data>
+  <data name="UnpackGameTask_Title" xml:space="preserve">
+    <value>解压游戏任务</value>
+  </data>
+  <data name="RecordPlayTimeTask_ProgressMsg" xml:space="preserve">
+    <value>正在记录游玩时间：{0}</value>
+  </data>
 </root>

@@ -4,6 +4,9 @@ namespace GalgameManager.Contracts.Services;
 
 public interface IBgTaskService
 {
+    public event Action<BgTaskBase> BgTaskAdded; 
+    public event Action<BgTaskBase> BgTaskRemoved; 
+    
     /// <summary>
     /// 保存所有后台任务的启动字符串
     /// </summary>

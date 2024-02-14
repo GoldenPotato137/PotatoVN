@@ -24,6 +24,8 @@ public abstract class BgTaskBase
     public abstract Task Run();
 
     public virtual bool OnSearch(string key) => false;
+
+    public abstract string Title { get; }
     
     protected void ChangeProgress(long current, long total, string message)
     {

@@ -1147,4 +1147,7 @@ If play time can record correctly, just cancel this popup.
   <data name="Shell_Account.Content" xml:space="preserve">
     <value>Account</value>
   </data>
+  <data name="Shell_Info.Content" xml:space="preserve">
+    <value>Info</value>
+  </data>
 </root>

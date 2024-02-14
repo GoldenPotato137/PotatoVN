@@ -120,6 +120,8 @@ public class UnpackGameTask : BgTaskBase
 
     public override bool OnSearch(string key) => GalgameFolderPath == key;
 
+    public override string Title { get; } = "UnpackGameTask_Title".GetLocalized();
+
     private static void Init()
     {
         if (_init) return;

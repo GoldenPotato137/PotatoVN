@@ -27,6 +27,7 @@ public class PageService : IPageService
         Configure<CategoryViewModel, CategoryPage>();
         Configure<CategorySettingViewModel, CategorySettingPage>();
         Configure<AccountViewModel, AccountPage>();
+        Configure<InfoViewModel, InfoPage>();
     }
     
     private readonly Dictionary<string, Type> _pages = new();
