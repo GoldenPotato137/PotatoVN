@@ -146,6 +146,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         MemoryImprove = _localSettingsService.ReadSettingAsync<bool>(KeyValues.MemoryImprove).Result;
         WindowModes = new[] { WindowMode.Normal, WindowMode.Close, WindowMode.SystemTray };
         CloseMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
+        DevelopmentMode = _localSettingsService.ReadSettingAsync<bool>(KeyValues.DevelopmentMode).Result;
         
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
@@ -496,6 +497,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _uploadToAppCenter;
     [ObservableProperty] private bool _memoryImprove;
     [ObservableProperty] private WindowMode _closeMode;
+    [ObservableProperty] private bool _developmentMode;
     public readonly WindowMode[] WindowModes;
     
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
@@ -503,6 +505,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     partial void OnMemoryImproveChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.MemoryImprove, value);
 
     partial void OnCloseModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.CloseMode, value);
+    
+    partial void OnDevelopmentModeChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.DevelopmentMode, value);
 
     #endregion
 

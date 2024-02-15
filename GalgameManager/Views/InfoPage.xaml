@@ -7,6 +7,7 @@
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:viewModels="using:GalgameManager.ViewModels"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:models="using:GalgameManager.Models"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -44,12 +45,28 @@
                 </control:SettingExpander.SettingContent>
             </control:SettingExpander>
 
-            <control:SettingExpander x:Uid="InfoPage_Info" SettingIcon="&#xE946;" IsExpanded="True">
+            <control:SettingExpander x:Uid="InfoPage_Info" SettingIcon="&#xE946;" 
+                                     IsExpanded="{x:Bind ViewModel.InfoExpanded}">
                 <control:SettingExpander.SettingContent>
                     <Grid>
                         <TextBlock x:Uid="InfoPage_NoInfo" HorizontalAlignment="Center"
                                    Style="{ThemeResource TitleTextBlockStyle}"
-                                   Margin="0 0 0 6" />
+                                   Margin="0 0 0 6" 
+                                   Visibility="{x:Bind ViewModel.NoInfoVisibility, Mode=OneWay}"/>
+                        
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Infos, Mode=OneWay}"
+                                       Visibility="{x:Bind ViewModel.NoInfoVisibility, Mode=OneWay,
+                                       Converter={StaticResource InverseVisibilityConverter}}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="models:Info">
+                                    <InfoBar Severity="{x:Bind Severity}"
+                                             Title="{x:Bind Title}"
+                                             Message="{x:Bind Message}"
+                                             IsOpen="True" IsClosable="False"
+                                             Margin="0 0 0 10 "/>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
                     </Grid>
                 </control:SettingExpander.SettingContent>
 

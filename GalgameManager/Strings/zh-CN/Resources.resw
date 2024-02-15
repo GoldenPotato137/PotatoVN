@@ -1304,4 +1304,13 @@
   <data name="RecordPlayTimeTask_ProgressMsg" xml:space="preserve">
     <value>正在记录游玩时间：{0}</value>
   </data>
+  <data name="SettingsPage_Other_DevelopmentMode_Description.Text" xml:space="preserve">
+    <value>是否开启开发者模式</value>
+  </data>
+  <data name="SettingsPage_Other_DevelopmentMode.Content" xml:space="preserve">
+    <value>开发者模式</value>
+  </data>
+  <data name="SettingsPage_Other_DevelopmentMode.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E5%BC%80%E5%8F%91%E8%80%85%E6%A8%A1%E5%BC%8F</value>
+  </data>
 </root>

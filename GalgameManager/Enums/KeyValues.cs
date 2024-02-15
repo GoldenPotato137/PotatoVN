@@ -70,6 +70,7 @@ public static class KeyValues
     public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化
     public const string UploadData = "uploadData"; // bool,是否将匿名数据上传到AppCenter
     public const string CloseMode = "closeMode"; // WindowMode,关闭模式，Normal（表示未设定）/Close/SystemTray
+    public const string DevelopmentMode = "developmentMode"; //bool, 是否开发模式
     
     //是否执行过某种升级, bool
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
