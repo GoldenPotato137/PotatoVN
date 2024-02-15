@@ -50,13 +50,14 @@ public class UserController(
     /// <summary>获取自己的用户信息</summary>
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<UserDto>> Me()
+    public async Task<ActionResult<UserDto>> Me([FromQuery] bool withAvatar = true)
     {
         var userId = this.GetUserId();
         User? user = await userRepository.GetUserAsync(userId);
         if (user == null) return NotFound();
         UserDto dto = new(user);
-        await dto.WithAvatarAsync(ossService);
+        if(withAvatar)
+            await dto.WithAvatarAsync(ossService);
         return Ok(dto);
     }
 

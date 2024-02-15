@@ -28,7 +28,7 @@ public class Galgame
     [MaxLength(200)] public string Developer { get; set; } = DefaultString;
     [MaxLength(200)] public string ExpectedPlayTime { get; set; } = DefaultString;
     public float Rating { get; set; }
-    [MaxLength(30)] public string ReleaseDate { get; set; } = DefaultString;
+    public long ReleaseDateTimeStamp { get; set; }
     [MaxLength(220)] public string? ImageLoc { get; set; }
     public List<string>? Tags { get; set; }
     #endregion

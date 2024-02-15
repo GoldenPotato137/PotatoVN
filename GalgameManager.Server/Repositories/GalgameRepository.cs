@@ -22,14 +22,14 @@ public class GalgameRepository (DataContext context): IGalgameRepository
         
         IQueryable<Galgame> query = context.Galgame
             .Where(g => g.UserId == userId && g.LastChangedTimeStamp > timestamp);
-        Task<int> countTask = query.CountAsync();
-        Task<List<Galgame>> dataTask = query
+        var count = await query.CountAsync();
+        List<Galgame> data = await query
             .Include(g => g.PlayTime)
             .OrderByDescending(g => g.Id)
             .Skip(pageIndex * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        return new PagedResult<Galgame>(await dataTask, pageIndex, pageSize, await countTask);
+        return new PagedResult<Galgame>(data, pageIndex, pageSize, count);
     }
 
     public async Task<Galgame> AddGalgameAsync(Galgame galgame)

@@ -480,6 +480,19 @@
                                 <local:SettingToggleSwitch x:Uid="SettingsPage_Other_Memory"
                                                            IsOn="{x:Bind ViewModel.MemoryImprove, Mode=TwoWay}"/>
                             </control:Panel>
+                            <!-- 开发者模式 -->
+                            <control:Panel>
+                                <RelativePanel HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Vertical">
+                                        <HyperlinkButton x:Uid="SettingsPage_Other_DevelopmentMode" Padding="0"/>
+                                        <TextBlock x:Uid="SettingsPage_Other_DevelopmentMode_Description"
+                                                   FontSize="12" Opacity="0.6" />
+                                    </StackPanel>
+                                    <ToggleSwitch IsOn="{x:Bind ViewModel.DevelopmentMode, Mode=TwoWay}"
+                                                  Margin="0,0,-80,0"
+                                                  RelativePanel.AlignRightWithPanel="True" />
+                                </RelativePanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>

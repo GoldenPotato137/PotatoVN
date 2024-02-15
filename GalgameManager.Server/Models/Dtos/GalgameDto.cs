@@ -18,7 +18,7 @@ public class GalgameDto(Galgame galgame)
     public string Developer { get; set; } = galgame.Developer;
     public string ExpectedPlayTime { get; set; } = galgame.ExpectedPlayTime;
     public float Rating { get; set; } = galgame.Rating;
-    public string ReleaseDate { get; set; } = galgame.ReleaseDate;
+    public long ReleasedDateTimeStamp { get; set; } = galgame.ReleaseDateTimeStamp;
     public string? ImageUrl { get; set; }
     public List<string>? Tags { get; set; } = galgame.Tags;
 
@@ -52,7 +52,7 @@ public class GalgameUpdateDto
     public string? Developer { get; set; }
     public string? ExpectedPlayTime { get; set; }
     public float? Rating { get; set; }
-    public string? ReleaseDate { get; set; }
+    public long? ReleaseDateTimeStamp { get; set; }
     public string? ImageLoc { get; set; }
     public List<string>? Tags { get; set; }
     public int? TotalPlayTime { get; set; }

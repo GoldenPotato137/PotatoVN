@@ -44,7 +44,7 @@ public class GalgameService(IGalgameRepository galRep, IGalgameDeletedRepository
         galgame.Developer = payload.Developer ?? galgame.Developer;
         galgame.ExpectedPlayTime = payload.ExpectedPlayTime ?? galgame.ExpectedPlayTime;
         galgame.Rating = payload.Rating ?? galgame.Rating;
-        galgame.ReleaseDate = payload.ReleaseDate ?? galgame.ReleaseDate;
+        galgame.ReleaseDateTimeStamp = payload.ReleaseDateTimeStamp ?? galgame.ReleaseDateTimeStamp;
         galgame.ImageLoc = payload.ImageLoc ?? galgame.ImageLoc;
         galgame.Tags = payload.Tags ?? galgame.Tags;
 
