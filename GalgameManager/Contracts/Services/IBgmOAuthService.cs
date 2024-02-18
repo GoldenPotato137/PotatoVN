@@ -34,7 +34,7 @@ public interface IBgmOAuthService
     /// <summary>
     /// 当授权状态改变时触发（用于提示当前授权获取进度）
     /// </summary>
-    public event GenericDelegate<(OAuthResult, string)> OnAuthResultChange; 
+    public event Action<OAuthResult, string> OnAuthResultChange; 
 
     public static DateTime UnixTimeStampToDateTime( double unixTimeStamp )
     {

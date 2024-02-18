@@ -133,7 +133,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _gameFolderShouldContain = _localSettingsService.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain).Result ?? "";
         //CLOUD
         RemoteFolder = _localSettingsService.ReadSettingAsync<string>(KeyValues.RemoteFolder).Result ?? "";
-        SyncGames = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result;
         //QUICK_START
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
@@ -146,6 +145,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         MemoryImprove = _localSettingsService.ReadSettingAsync<bool>(KeyValues.MemoryImprove).Result;
         WindowModes = new[] { WindowMode.Normal, WindowMode.Close, WindowMode.SystemTray };
         CloseMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
+        DevelopmentMode = _localSettingsService.ReadSettingAsync<bool>(KeyValues.DevelopmentMode).Result;
         
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
@@ -280,18 +280,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
     }
     
-    private async void BgmAuthResultNotify((OAuthResult, string) arg)
+    private async void BgmAuthResultNotify(OAuthResult result, string msg)
     {
-        switch (arg.Item1)
+        switch (result)
         {
             case OAuthResult.Done:
             case OAuthResult.Failed:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
                 break;
             case OAuthResult.FetchingAccount: 
             case OAuthResult.FetchingToken:
             default:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2, 1000 * 60);
+                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg, 1000 * 60);
                 break;
         }
     }
@@ -407,7 +407,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     #region CLOUD
 
     [ObservableProperty] private string? _remoteFolder;
-    [ObservableProperty] private bool _syncGames;
     partial void OnRemoteFolderChanged(string? value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RemoteFolder, value);
@@ -421,13 +420,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         openPicker.FileTypeFilter.Add("*");
         StorageFolder? folder = await openPicker.PickSingleFolderAsync();
         RemoteFolder = folder?.Path ?? RemoteFolder;
-    }
-    
-    partial void OnSyncGamesChanged(bool value)
-    {
-        if (value && _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result == false)
-            _ = DisplayMsgAsync(InfoBarSeverity.Success, "SettingsPage_CloudSync_SyncGame_Success".GetLocalized());
-        _localSettingsService.SaveSettingAsync(KeyValues.SyncGames, value);
     }
 
     #endregion
@@ -496,6 +488,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _uploadToAppCenter;
     [ObservableProperty] private bool _memoryImprove;
     [ObservableProperty] private WindowMode _closeMode;
+    [ObservableProperty] private bool _developmentMode;
     public readonly WindowMode[] WindowModes;
     
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
@@ -503,6 +496,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     partial void OnMemoryImproveChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.MemoryImprove, value);
 
     partial void OnCloseModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.CloseMode, value);
+    
+    partial void OnDevelopmentModeChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.DevelopmentMode, value);
 
     #endregion
 

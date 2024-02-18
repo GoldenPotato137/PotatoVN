@@ -56,9 +56,23 @@
             </NavigationView.MenuItems>
             
             <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Uid="Shell_Info" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.InfoViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE770;"/>
+                    </NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Value="{x:Bind ViewModel.InfoPageBadgeCount, Mode=OneWay}" 
+                                   Visibility="{x:Bind ViewModel.InfoPageBadgeVisibility, Mode=OneWay}"/>
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_Help" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.HelpViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE897;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_Account" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.AccountViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE77B;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_Settings" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.SettingsViewModel">

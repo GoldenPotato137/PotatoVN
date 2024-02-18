@@ -19,7 +19,7 @@ public class BgmOAuthService : IBgmOAuthService
     private bool _isInitialized;
     
     public event IBgmOAuthService.Delegate? OnOAuthStateChange;
-    public event GenericDelegate<(OAuthResult, string)>? OnAuthResultChange;
+    public event Action<OAuthResult, string>? OnAuthResultChange;
 
     
     public BgmOAuthService(ILocalSettingsService localSettingsService)
@@ -72,7 +72,7 @@ public class BgmOAuthService : IBgmOAuthService
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
             App.SetWindowMode(WindowMode.Normal);
-            OnAuthResultChange?.Invoke((OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg()));
+            OnAuthResultChange?.Invoke(OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg());
         });
         WwwFormUrlDecoder decoder = new(uri.Query);
         var code = decoder.GetFirstValueByNameOrEmpty("code");
@@ -90,7 +90,7 @@ public class BgmOAuthService : IBgmOAuthService
         {
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message));
+                OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message);
             });
         }
     }
@@ -149,7 +149,7 @@ public class BgmOAuthService : IBgmOAuthService
         if (!_bgmAccount.OAuthed) return;
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            OnAuthResultChange?.Invoke((OAuthResult.FetchingAccount, OAuthResult.FetchingAccount.ToMsg()));
+            OnAuthResultChange?.Invoke(OAuthResult.FetchingAccount, OAuthResult.FetchingAccount.ToMsg());
         });
         HttpClient httpClient = GetHttpClient();
         try
@@ -185,14 +185,14 @@ public class BgmOAuthService : IBgmOAuthService
             await SaveOAuthState();
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke((OAuthResult.Done, OAuthResult.Done.ToMsg()));
+                OnAuthResultChange?.Invoke(OAuthResult.Done, OAuthResult.Done.ToMsg());
             });
         }
         catch (Exception e)
         {
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg() + e.Message));
+                OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg() + e.Message);
             });
         }
     }

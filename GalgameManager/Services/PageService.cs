@@ -3,6 +3,7 @@
 using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -25,6 +26,8 @@ public class PageService : IPageService
         Configure<UpdateContentViewModel, UpdateContentPage>();
         Configure<CategoryViewModel, CategoryPage>();
         Configure<CategorySettingViewModel, CategorySettingPage>();
+        Configure<AccountViewModel, AccountPage>();
+        Configure<InfoViewModel, InfoPage>();
     }
     
     private readonly Dictionary<string, Type> _pages = new();

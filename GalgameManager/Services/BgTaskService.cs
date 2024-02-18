@@ -7,6 +7,9 @@ namespace GalgameManager.Services;
 
 public class BgTaskService : IBgTaskService
 {
+    public event Action<BgTaskBase>? BgTaskAdded;
+    public event Action<BgTaskBase>? BgTaskRemoved;
+    
     private const string FileName = "bgTasks.json";
     
     private readonly List<BgTaskBase> _bgTasks = new();
@@ -18,7 +21,7 @@ public class BgTaskService : IBgTaskService
         _bgTasksString[typeof(GetGalgameInFolderTask)] = "-getGalInFolder";
         _bgTasksString[typeof(UnpackGameTask)] = "-unpack";
     }
-
+    
     public void SaveBgTasksString()
     {
         var result = string.Empty;
@@ -59,9 +62,12 @@ public class BgTaskService : IBgTaskService
     private Task AddTaskInternal(BgTaskBase bgTask)
     {
         _bgTasks.Add(bgTask);
-        return bgTask.Run().ContinueWith(_ =>
+        Task t = bgTask.Run().ContinueWith(_ =>
         {
             _bgTasks.Remove(bgTask);
+            UiThreadInvokeHelper.Invoke(() => BgTaskRemoved?.Invoke(bgTask));
         });
+        BgTaskAdded?.Invoke(bgTask);
+        return t;
     }
 }

@@ -5,5 +5,6 @@ public enum RssType
     Vndb,
     Bangumi,
     Mixed,
-    None
+    None,
+    PotatoVn,
 }

@@ -42,7 +42,8 @@ public class RecordPlayTimeTask : BgTaskBase
     public override Task Run()
     {
         if(_process is null || _galgame is null) return Task.CompletedTask;
-        _ = Task.Run(async () =>
+        ChangeProgress(0, 1, "RecordPlayTimeTask_ProgressMsg".GetLocalized(_galgame.Name.Value!));
+        Task t = Task.Run(async () =>
         {
             await _process.WaitForExitAsync();
             await UiThreadInvokeHelper.InvokeAsync(() =>
@@ -59,7 +60,7 @@ public class RecordPlayTimeTask : BgTaskBase
             await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
         });
         
-        return Task.Run(() =>
+        Task.Run(() =>
         {
             while (_process.HasExited == false)
             {
@@ -71,10 +72,14 @@ public class RecordPlayTimeTask : BgTaskBase
                 {
                     _galgame.TotalPlayTime++;
                 });
-                var now = DateTime.Now.ToString("yyyy/M/d");
+                var now = DateTime.Now.ToStringDefault();
                 if (_galgame.PlayedTime.TryAdd(now, 1) == false)
                     _galgame.PlayedTime[now]++;
             }
         });
+        
+        return t;
     }
+
+    public override string Title { get; } = "RecordPlayTimeTask_Title".GetLocalized();
 }

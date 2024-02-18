@@ -57,6 +57,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     public string? TextPath; //记录的要打开的文本的路径
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> SyncTo = new(); //mac, lastId, 每台电脑同步到的最后一个id （防止重装软件后同步状态丢失）
+    public bool PvnUpdate; //是否需要更新
+    public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
 
     [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     [JsonIgnore] public static SortKeys[] SortKeysList

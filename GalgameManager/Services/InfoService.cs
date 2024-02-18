@@ -1,22 +1,30 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using System.Collections.ObjectModel;
+using GalgameManager.Contracts.Services;
+using GalgameManager.Helpers;
+using GalgameManager.Models;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
 /// <summary>
 /// 消息及异常记录与通知服务<br/>
-/// 未来会加入消息通知功能，目前仅记录异常
 /// </summary>
 public class InfoService : IInfoService
 {
+    public ObservableCollection<Info> Infos { get; } = new();
     private readonly IAppCenterService _appCenterService;
     
     public InfoService(IAppCenterService appCenterService)
     {
         _appCenterService = appCenterService;
     }
-    
-    public void Event(string eventName, Exception? exception = null)
+
+    public void Event(InfoBarSeverity infoBarSeverity, string title, Exception? exception = null, string? msg = null)
     {
-        _appCenterService.UploadEvent(eventName, exception);
+        UiThreadInvokeHelper.Invoke(() =>
+        {
+            Infos.Insert(0, new Info(infoBarSeverity, title, exception?.ToString() ?? msg ?? string.Empty));
+        });
+        _appCenterService.UploadEvent(title, exception, msg);
     }
 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.PvnSetAccountDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="15">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" x:Uid="PvnSetAccountDialog_UserDisplayName" Margin="0 0 25 0"
+                       VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" x:Name="UserDisplayNameBox"
+                     x:Uid="PvnSetAccountDialog_Placeholder"
+                     VerticalAlignment="Center" />
+        </Grid>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" x:Uid="PvnSetAccountDialog_Avatar" Margin="0 0 25 0"
+                       VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" x:Name="AvatarPathBox" MinWidth="300" VerticalAlignment="Center"
+                     x:Uid="PvnSetAccountDialog_Placeholder" IsEnabled="False" 
+                     TextWrapping="Wrap" Margin="0 0 25 0"/>
+            <Button Grid.Column="2" x:Uid="PvnSetAccountDialog_SetImgButton" Click="SetImgButton_OnClick"
+                    VerticalAlignment="Center" />
+        </Grid>
+    </StackPanel>
+</ContentDialog>

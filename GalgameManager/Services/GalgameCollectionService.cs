@@ -94,7 +94,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             if (g.CheckExist() == false)
                 g.Path = string.Empty;
             _galgameMap[g.Path] = g;
-            g.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+            g.ErrorOccurred += e => _infoService.Event(InfoBarSeverity.Warning, "GalgameEvent", e);
         }
         GalgameLoadedEvent?.Invoke();
     }
@@ -203,10 +203,17 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
         UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
-        galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+        galgame.ErrorOccurred += e => _infoService.Event(InfoBarSeverity.Warning, "GalgameEvent", e);
         if (virtualGame is null)
             _ = Task.Run(() => CommitChange(CommitType.Add, galgame, null));
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
+    }
+
+    public void AddVirtualGalgame(Galgame game)
+    {
+        _galgames.Add(game);
+        GalgameAddedEvent?.Invoke(game);
+        UpdateDisplay(UpdateType.Add, game);
     }
 
     private async Task<Galgame?> TryAddGalgameAsync(AddCommit commit, string bgmId)
@@ -221,7 +228,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
         UpdateDisplay(UpdateType.Add, galgame);
-        galgame.ErrorOccurred += e => _infoService.Event("GalgameEvent", e);
+        galgame.ErrorOccurred += e => _infoService.Event(InfoBarSeverity.Warning, "GalgameEvent", e);
         return galgame;
     }
     
@@ -410,8 +417,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="id">id</param>
     /// <param name="rssType">id的信息源</param>
     /// <returns>galgame，若找不到返回null</returns>
-    public Galgame? GetGalgameFromId(string id, RssType rssType)
+    public Galgame? GetGalgameFromId(string? id, RssType rssType)
     {
+        if (id is null) return null;
         return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
     }
 
@@ -446,6 +454,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="galgame"></param>
     private async Task SaveMetaAsync(Galgame galgame)
     {
+        if(string.IsNullOrEmpty(galgame.Path)) return;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
         _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy());
         var imagePath = Path.Combine(galgame.Path, Galgame.MetaPath);

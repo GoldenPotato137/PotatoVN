@@ -103,6 +103,8 @@ public class GetGalgameInFolderTask : BgTaskBase
     }
 
     public override bool OnSearch(string key) => GalgameFolderPath.Contains(key);
+    
+    public override string Title { get; } = "GetGalgameInFolderTask_Title".GetLocalized();
 
     /// <summary>
     /// 检查是否具有读取文件夹的权限

@@ -15,5 +15,5 @@ public interface IAppCenterService
     /// <summary>
     /// 记录事件
     /// </summary>
-    public void UploadEvent(string eventName, Exception? exception = null);
+    public void UploadEvent(string eventName, Exception? exception = null, string? msg = null);
 }

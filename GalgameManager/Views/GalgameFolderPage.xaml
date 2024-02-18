@@ -87,10 +87,10 @@
                 GridLinesVisibility="Horizontal"
                 ItemsSource="{x:Bind ViewModel.Galgames, Mode=OneWay}">
                 <controls:DataGrid.Columns>
-                    <controls:DataGridTextColumn Binding="{Binding Name.Value}" Header="游戏名" Width="250"/>
+                    <controls:DataGridTextColumn Binding="{Binding name.Value}" Header="游戏名" Width="250"/>
                     <controls:DataGridComboBoxColumn Binding="{Binding RssType}" Header="数据源" 
                                                      ItemsSource="{x:Bind ViewModel.RssTypes}"/>
-                    <controls:DataGridTextColumn Binding="{Binding Id}" Header="id" />
+                    <controls:DataGridTextColumn Binding="{Binding galgameId}" Header="id" />
                     <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" IsReadOnly="True"/>
                 </controls:DataGrid.Columns>
                 <interactivity:Interaction.Behaviors>
