@@ -32,6 +32,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
         _pvnService.StatusChanged += HandelPvnServiceStatusChanged;
         
         _pvnServerType = await _localSettingsService.ReadSettingAsync<PvnServerType>(KeyValues.PvnServerType);
+        _pvnSyncGames = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames);
         await UpdateAccountDisplay();
     }
 

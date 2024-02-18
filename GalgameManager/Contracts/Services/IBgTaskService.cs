@@ -18,7 +18,7 @@ public interface IBgTaskService
     public Task ResolvedBgTasksAsync();
     
     /// <summary>
-    /// 新增记录游玩时间的后台任务
+    /// 新增后台任务
     /// </summary>
     /// <returns>这个后台任务对应的task</returns>
     public Task AddBgTask(BgTaskBase bgTask);
