@@ -7,6 +7,7 @@
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:enums="using:GalgameManager.Enums"
+    xmlns:views="using:GalgameManager.Views"
     mc:Ignorable="d">
     <Page.Resources>
         <converter:ImagePathConverter x:Key="ImagePathConverter"/>
@@ -64,6 +65,12 @@
                                             Content="{x:Bind ViewModel.PvnLoginButtonText, Mode=OneWay}"
                                             Command="{x:Bind ViewModel.PvnLoginButtonCommand, Mode=OneWay}"/>
                                 </control:Setting>
+                            </control:Panel>
+                            <!-- 同步游戏 -->
+                            <control:Panel>
+                                <views:SettingToggleSwitch 
+                                    x:Uid="AccountPage_Pvn_SyncGame" 
+                                    IsOn="{x:Bind ViewModel.PvnSyncGames, Mode=TwoWay}"/>
                             </control:Panel>
                             <!-- 账号管理 -->
                             <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">

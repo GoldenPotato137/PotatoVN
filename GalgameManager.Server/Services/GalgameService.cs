@@ -114,7 +114,7 @@ public class GalgameService(IGalgameRepository galRep, IGalgameDeletedRepository
         {
             DeleteTimeStamp = timestamp,
             GalgameId = id,
-            UsedId = gal.UserId
+            UserId = gal.UserId
         });
         await userService.UpdateLastModifiedAsync(gal.UserId, timestamp);
     }
@@ -128,7 +128,7 @@ public class GalgameService(IGalgameRepository galRep, IGalgameDeletedRepository
             {
                 DeleteTimeStamp = timestamp,
                 GalgameId = id,
-                UsedId = userId
+                UserId = userId
             });
         await userService.UpdateLastModifiedAsync(userId, timestamp);
     }

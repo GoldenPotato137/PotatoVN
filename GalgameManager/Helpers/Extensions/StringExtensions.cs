@@ -1,6 +1,6 @@
 ﻿namespace GalgameManager.Helpers;
 
-public static class StringDistanceExtensions
+public static class StringExtensions
 {
     /// <summary>
     /// 计算两个字符串的相似度
@@ -63,4 +63,6 @@ public static class StringDistanceExtensions
 
         return dp[n, m];
     }
+    
+    public static bool IsNullOrEmpty(this string? str) => string.IsNullOrEmpty(str);
 }

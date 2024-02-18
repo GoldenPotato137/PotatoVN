@@ -59,7 +59,7 @@ namespace GalgameManager.Server.Migrations
                     Developer = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     ExpectedPlayTime = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: false),
-                    ReleaseDate = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    ReleaseDateTimeStamp = table.Column<long>(type: "bigint", nullable: false),
                     ImageLoc = table.Column<string>(type: "character varying(220)", maxLength: 220, nullable: true),
                     Tags = table.Column<List<string>>(type: "text[]", nullable: true),
                     TotalPlayTime = table.Column<int>(type: "integer", nullable: false),
@@ -73,6 +73,27 @@ namespace GalgameManager.Server.Migrations
                     table.PrimaryKey("PK_Galgame", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Galgame_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GalgameDeleted",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    GalgameId = table.Column<int>(type: "integer", nullable: false),
+                    DeleteTimeStamp = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GalgameDeleted", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GalgameDeleted_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -138,6 +159,11 @@ namespace GalgameManager.Server.Migrations
                 name: "IX_Galgame_UserId",
                 table: "Galgame",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GalgameDeleted_UserId",
+                table: "GalgameDeleted",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -148,6 +174,9 @@ namespace GalgameManager.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "GalPlayLog");
+
+            migrationBuilder.DropTable(
+                name: "GalgameDeleted");
 
             migrationBuilder.DropTable(
                 name: "Category");

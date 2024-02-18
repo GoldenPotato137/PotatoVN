@@ -127,9 +127,4 @@ public static class Utils
         target = target.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
         return string.Compare(self, target, StringComparison.Ordinal);
     }
-    
-    public static StringContent ToJsonContent(this object obj)
-    {
-        return new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
-    }
 }

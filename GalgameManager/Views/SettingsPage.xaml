@@ -380,13 +380,6 @@
                                             Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
                                 </Grid>
                             </control:Panel>
-                            
-                            <!-- 同步游戏 -->
-                            <control:Panel>
-                                <local:SettingToggleSwitch 
-                                    x:Uid="SettingsPage_CloudSync_SyncGame" 
-                                    IsOn="{x:Bind ViewModel.SyncGames, Mode=TwoWay}"/>
-                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>

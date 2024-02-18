@@ -920,10 +920,10 @@
   <data name="HomePage_ProcessNameSet" xml:space="preserve">
     <value>已成功指定游戏进程，重启游戏后生效</value>
   </data>
-  <data name="SettingsPage_CloudSync_SyncGame.Title" xml:space="preserve">
+  <data name="AccountPage_Pvn_SyncGame.Title" xml:space="preserve">
     <value>游戏同步</value>
   </data>
-  <data name="SettingsPage_CloudSync_SyncGame.Description" xml:space="preserve">
+  <data name="AccountPage_Pvn_SyncGame.Description" xml:space="preserve">
     <value>是否将游戏状态(添加/游玩/删除等)上传到云存档根目录，并跨电脑同步</value>
   </data>
   <data name="HomePage_Filter_DisplayVirtualGames.Label" xml:space="preserve">
@@ -946,9 +946,6 @@
   </data>
   <data name="HomePage_Synced" xml:space="preserve">
     <value>已同步{0}条游戏记录更改</value>
-  </data>
-  <data name="SettingsPage_CloudSync_SyncGame_Success" xml:space="preserve">
-    <value>设置成功，重启软件后生效</value>
   </data>
   <data name="GalgamePage_RemoveSelectedThread.Label" xml:space="preserve">
     <value>移除进程指定</value>
@@ -1312,5 +1309,35 @@
   </data>
   <data name="SettingsPage_Other_DevelopmentMode.NavigateUri" xml:space="preserve">
     <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E5%BC%80%E5%8F%91%E8%80%85%E6%A8%A1%E5%BC%8F</value>
+  </data>
+  <data name="PvnSyncTask_Title" xml:space="preserve">
+    <value>PotatoVN同步任务</value>
+  </data>
+  <data name="PvnSyncTask_Error" xml:space="preserve">
+    <value>Pvn同步失败</value>
+  </data>
+  <data name="PvnSyncTask_GettingModifiedTimestamp" xml:space="preserve">
+    <value>正在查询Pvn服务器修改</value>
+  </data>
+  <data name="PvnSyncTask_GettingModifiedList" xml:space="preserve">
+    <value>获取更改列表中</value>
+  </data>
+  <data name="PvnSyncTask_Downloading" xml:space="preserve">
+    <value>正在更新游戏{0}(ID:{1})的信息</value>
+  </data>
+  <data name="PvnSyncTask_Uploading" xml:space="preserve">
+    <value>正在上传游戏:{0}</value>
+  </data>
+  <data name="PvnSyncTask_Error_Upload" xml:space="preserve">
+    <value>Pvn同步(上传)失败</value>
+  </data>
+  <data name="PvnSyncTask_Completed" xml:space="preserve">
+    <value>PotaotVN同步完成</value>
+  </data>
+  <data name="PvnSyncTask_Error_NotLogin" xml:space="preserve">
+    <value>未登录</value>
+  </data>
+  <data name="PvnSyncTask_Error_Network" xml:space="preserve">
+    <value>无法连接至服务器</value>
   </data>
 </root>

@@ -35,9 +35,10 @@ public class GalgameDto(Galgame galgame)
 
     #endregion
 
-    public async Task WithImgAsync(IOssService ossService, int userId)
+    public async Task<GalgameDto> WithImgAsync(IOssService ossService, int userId)
     {
         ImageUrl = await ossService.GetReadPresignedUrlAsync(userId, galgame.ImageLoc ?? string.Empty);
+        return this;
     }
 }
 

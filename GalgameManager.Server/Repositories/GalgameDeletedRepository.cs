@@ -11,10 +11,12 @@ public class GalgameDeletedRepository(DataContext context) : IGalgameDeletedRepo
         int pageSize)
     {
         IQueryable<GalgameDeleted> query =
-            context.GalgameDeleted.Where(g => g.UsedId == userId && g.DeleteTimeStamp > timestamp);
-        Task<int> countTask = query.CountAsync();
-        Task<List<GalgameDeleted>> resultTask = query.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
-        return new PagedResult<GalgameDeleted>(await resultTask, pageIndex, pageSize, await countTask);
+            context.GalgameDeleted.Where(g => g.UserId == userId && g.DeleteTimeStamp > timestamp);
+        var count = await query.CountAsync();
+        List<GalgameDeleted> result = await query
+            .Skip(pageIndex * pageSize).Take(pageSize).OrderBy(g => g.Id)
+            .ToListAsync();
+        return new PagedResult<GalgameDeleted>(result, pageIndex, pageSize, count);
     }
 
     public async Task<GalgameDeleted> AddGalgameDeletedAsync(GalgameDeleted galgameDeleted)

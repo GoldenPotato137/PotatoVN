@@ -209,6 +209,13 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
+    public void AddVirtualGalgame(Galgame game)
+    {
+        _galgames.Add(game);
+        GalgameAddedEvent?.Invoke(game);
+        UpdateDisplay(UpdateType.Add, game);
+    }
+
     private async Task<Galgame?> TryAddGalgameAsync(AddCommit commit, string bgmId)
     {
         if (GetGalgameFromId(bgmId, RssType.Bangumi) is not null) return null;
@@ -410,8 +417,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="id">id</param>
     /// <param name="rssType">id的信息源</param>
     /// <returns>galgame，若找不到返回null</returns>
-    public Galgame? GetGalgameFromId(string id, RssType rssType)
+    public Galgame? GetGalgameFromId(string? id, RssType rssType)
     {
+        if (id is null) return null;
         return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
     }
 
@@ -446,6 +454,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="galgame"></param>
     private async Task SaveMetaAsync(Galgame galgame)
     {
+        if(string.IsNullOrEmpty(galgame.Path)) return;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
         _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy());
         var imagePath = Path.Combine(galgame.Path, Galgame.MetaPath);

@@ -26,6 +26,8 @@ public abstract class BgTaskBase
     public virtual bool OnSearch(string key) => false;
 
     public abstract string Title { get; }
+
+    public bool IsRunning => CurrentProgress.Current >= CurrentProgress.Total || CurrentProgress.Current < 0;
     
     protected void ChangeProgress(long current, long total, string message)
     {

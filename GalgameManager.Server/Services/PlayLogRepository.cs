@@ -27,18 +27,19 @@ public class PlayLogRepository (DataContext context): IPlayLogRepository
         Dictionary<long, PlayLog> newLogs = new();
         foreach (PlayLog log in playLogs)
             newLogs[log.DateTimeStamp] = log;
-        HashSet<PlayLog> existingLogs = [];
+        HashSet<long> existingTimestamp = [];
         foreach (PlayLog log in logs)
         {
             if (newLogs.TryGetValue(log.DateTimeStamp, out PlayLog? newLog))
             {
-                context.GalPlayLog.Update(newLog);
-                existingLogs.Add(newLog);
+                log.Minute = newLog.Minute;
+                context.GalPlayLog.Update(log);
+                existingTimestamp.Add(log.DateTimeStamp);
             }
             else
                 context.GalPlayLog.Remove(log);
         }
-        foreach (PlayLog log in playLogs.Where(log => existingLogs.Contains(log) == false)) 
+        foreach (PlayLog log in playLogs.Where(log => existingTimestamp.Contains(log.DateTimeStamp) == false)) 
             context.GalPlayLog.Add(log);
         await context.SaveChangesAsync();
     }

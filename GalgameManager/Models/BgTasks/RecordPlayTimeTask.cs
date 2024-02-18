@@ -72,7 +72,7 @@ public class RecordPlayTimeTask : BgTaskBase
                 {
                     _galgame.TotalPlayTime++;
                 });
-                var now = DateTime.Now.ToString("yyyy/M/d");
+                var now = DateTime.Now.ToStringDefault();
                 if (_galgame.PlayedTime.TryAdd(now, 1) == false)
                     _galgame.PlayedTime[now]++;
             }

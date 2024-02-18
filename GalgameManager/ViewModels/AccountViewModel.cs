@@ -60,6 +60,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _pvnLoginDescription = string.Empty;
     [ObservableProperty] private ICommand? _pvnLoginButtonCommand;
     [ObservableProperty] private bool _isPvnLogin;
+    [ObservableProperty] private bool _pvnSyncGames;
     
     async partial void OnPvnServerTypeChanged(PvnServerType value)
     {
@@ -152,6 +153,13 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
         if(dialog.Canceled) return;
         await _pvnService.ModifyAccountAsync(dialog.UserDisplayName, dialog.AvatarPath);
         _ = DisplayMsgAsync(InfoBarSeverity.Success, "AccountPage_Pvn_Modified".GetLocalized());
+    }
+
+    partial void OnPvnSyncGamesChanged(bool value)
+    {
+        _localSettingsService.SaveSettingAsync(KeyValues.SyncGames, value);
+        if (value)
+            _pvnService.SyncGames();
     }
 
     #endregion

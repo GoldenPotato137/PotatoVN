@@ -9,7 +9,7 @@ namespace GalgameManager.Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class GalgameController (IGalgameService galService): ControllerBase
+public class GalgameController (IGalgameService galService, IOssService ossService): ControllerBase
 {
     /// <summary>获取galgame列表</summary>
     /// <remarks>获取最后一次更新时间严格晚于给定时间戳的galgame列表</remarks>
@@ -25,6 +25,8 @@ public class GalgameController (IGalgameService galService): ControllerBase
         PagedResult<Galgame> tmp = await galService.GetGalgamesAsync(userId, timestamp, pageIndex, pageSize);
         PagedResult<GalgameDto> result = new(tmp.Items.ToDtoList(g => new GalgameDto(g)), tmp.PageIndex, 
             tmp.PageSize, tmp.Cnt);
+        foreach(GalgameDto dto in result.Items)
+            await dto.WithImgAsync(ossService, userId);
         return Ok(result);
     }
 

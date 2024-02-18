@@ -24,6 +24,7 @@ public static class DownloadHelper
             var imageBytes = await response.Content.ReadAsByteArrayAsync();
 
             StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
+            localFolder = await localFolder.CreateFolderAsync("Images", CreationCollisionOption.OpenIfExists);
             var fileName = fileNameWithoutExtension is not null
                 ? $"{fileNameWithoutExtension}{GetImageFormat(imageBytes)}"
                 : imageUrl[(imageUrl.LastIndexOf('/') + 1)..];

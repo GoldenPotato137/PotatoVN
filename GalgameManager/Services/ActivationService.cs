@@ -30,6 +30,7 @@ public class ActivationService : IActivationService
     private readonly IFilterService _filterService;
     private readonly IPageService _pageService;
     private readonly IBgTaskService _bgTaskService;
+    private readonly IPvnService _pvnService;
     
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
@@ -38,7 +39,7 @@ public class ActivationService : IActivationService
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
-        IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService)
+        IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService, IPvnService pvnService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -53,6 +54,7 @@ public class ActivationService : IActivationService
         _filterService = filterService;
         _pageService = pageService;
         _bgTaskService = bgTaskService;
+        _pvnService = pvnService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -145,16 +147,15 @@ public class ActivationService : IActivationService
         App.SystemTray.ForceCreate(false);
     }
 
-    private async Task StartupAsync()
+    private async Task StartupAsync() 
     {
         await _galgameCollectionService.StartAsync();
-        if(IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
+        if (IsRestart() == false) _pvnService.Startup();
+        if (IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         await _bgmOAuthService.TryRefreshOAuthAsync();
         await CheckFont();
         await _galgameFolderCollectionService.StartAsync();
-        await ((GalgameCollectionService)_galgameCollectionService).SyncUpgrade();
-        await ((GalgameCollectionService)_galgameCollectionService).SyncGames();
     }
 
     /// <summary>

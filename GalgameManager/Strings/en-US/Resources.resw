@@ -919,10 +919,10 @@ If play time can record correctly, just cancel this popup.
   <data name="HomePage_ProcessNameSet" xml:space="preserve">
     <value>The game process has been successfully specified. Restart this game to take effect</value>
   </data>
-  <data name="SettingsPage_CloudSync_SyncGame.Title" xml:space="preserve">
+  <data name="AccountPage_Pvn_SyncGame.Title" xml:space="preserve">
     <value>Game sync</value>
   </data>
-  <data name="SettingsPage_CloudSync_SyncGame.Description" xml:space="preserve">
+  <data name="AccountPage_Pvn_SyncGame.Description" xml:space="preserve">
     <value>Whether to upload the game status (add/play/delete, etc.) to the cloud archive root and sync across computer</value>
   </data>
   <data name="HomePage_Filter_DisplayVirtualGames.Label" xml:space="preserve">
@@ -945,9 +945,6 @@ If play time can record correctly, just cancel this popup.
   </data>
   <data name="HomePage_Synced" xml:space="preserve">
     <value>Synchronized {0} game history changes</value>
-  </data>
-  <data name="SettingsPage_CloudSync_SyncGame_Success" xml:space="preserve">
-    <value>Set. It will take effect after restarting the software.</value>
   </data>
   <data name="GalgamePage_RemoveSelectedThread.Label" xml:space="preserve">
     <value>Remove process specified</value>

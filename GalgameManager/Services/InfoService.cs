@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using Microsoft.UI.Xaml.Controls;
 
@@ -20,7 +21,10 @@ public class InfoService : IInfoService
 
     public void Event(InfoBarSeverity infoBarSeverity, string title, Exception? exception = null, string? msg = null)
     {
-        Infos.Insert(0, new Info(infoBarSeverity, title, exception?.ToString() ?? msg ?? string.Empty));
+        UiThreadInvokeHelper.Invoke(() =>
+        {
+            Infos.Insert(0, new Info(infoBarSeverity, title, exception?.ToString() ?? msg ?? string.Empty));
+        });
         _appCenterService.UploadEvent(title, exception, msg);
     }
 }
