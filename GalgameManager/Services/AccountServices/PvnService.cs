@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Authentication;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;

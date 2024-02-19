@@ -15,6 +15,11 @@ public interface IBangumiService
     public Task<BangumiToken> GetTokenWithCodeAsync(string code);
     
     /// <summary>
+    /// 使用refresh token完成授权，需要在外部捕获异常
+    /// </summary>
+    public Task<BangumiToken> GetTokenWithRefreshTokenAsync(string refreshToken);
+    
+    /// <summary>
     /// 使用token获取Token信息，需要在外部捕获异常
     /// </summary>
     /// <param name="token"></param>

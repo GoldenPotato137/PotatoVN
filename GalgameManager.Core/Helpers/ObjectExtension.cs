@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
 
-namespace GalgameManager.Helpers;
+namespace GalgameManager.Core.Helpers;
 
 public static class ObjectExtension
 {

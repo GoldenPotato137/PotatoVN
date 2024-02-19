@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json.Nodes;
+using GalgameManager.Core.Helpers;
 using GalgameManager.Server.Contracts;
 using GalgameManager.Server.Exceptions;
 using GalgameManager.Server.Helpers;
@@ -28,8 +29,35 @@ public class BangumiService(IConfiguration config) : IBangumiService
             { "code", code },
             { "redirect_uri", _redirectUri }
         };
-        HttpResponseMessage response = await _httpClient.PostAsync("https://bgm.tv/oauth/access_token", 
-            new FormUrlEncodedContent(payload));
+        HttpResponseMessage response =
+            await _httpClient.PostAsync("https://bgm.tv/oauth/access_token", payload.ToJsonContent());
+        if(response.StatusCode == HttpStatusCode.BadRequest)
+            throw new InvalidAuthorizationCodeException(await response.Content.ReadAsStringAsync());
+        response.EnsureSuccessStatusCode();
+        JsonNode json = JsonNode.Parse(await response.Content.ReadAsStringAsync())!;
+        return new BangumiToken
+        {
+            Token = json["access_token"]!.ToString(),
+            RefreshToken = json["refresh_token"]!.ToString(),
+            Expires = DateTime.Now.AddSeconds(Convert.ToInt64(json["expires_in"]!.ToString())).ToUnixTime(),
+            UserId = Convert.ToInt32(json["user_id"]!.ToString())
+        };
+    }
+
+    public async Task<BangumiToken> GetTokenWithRefreshTokenAsync(string refreshToken)
+    {
+        if (IsOauth2Enable == false)
+            throw new InvalidOperationException("Bangumi is not enabled.");
+        Dictionary<string, string> payload = new()
+        {
+            { "grant_type", "refresh_token" },
+            { "client_id", _appId },
+            { "client_secret", _appSecret },
+            { "refresh_token", refreshToken },
+            { "redirect_uri", _redirectUri }
+        };
+        HttpResponseMessage response =
+            await _httpClient.PostAsync("https://bgm.tv/oauth/access_token", payload.ToJsonContent());
         if(response.StatusCode == HttpStatusCode.BadRequest)
             throw new InvalidAuthorizationCodeException(await response.Content.ReadAsStringAsync());
         response.EnsureSuccessStatusCode();
