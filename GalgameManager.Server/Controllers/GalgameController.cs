@@ -55,6 +55,7 @@ public class GalgameController (IGalgameService galService, IOssService ossServi
     /// 务必注意字段是覆盖的，意味着游玩时间记录会覆盖掉原记录，若需要追加记录请使用[PATCH] /galgame/{id}/playlog <br/>
     /// </remarks>
     /// <response code="404">填入了id字段，但不存在具有该id的galgame</response>
+    /// <response code="400">调用方不是该游戏所属者</response>
     [HttpPatch]
     [Authorize]
     public async Task<ActionResult<GalgameDto>> AddOrUpdateGalgameAsync([FromBody] GalgameUpdateDto payload)
@@ -68,6 +69,10 @@ public class GalgameController (IGalgameService galService, IOssService ossServi
         catch (ArgumentException)
         {
             return NotFound("galgame with given id not found");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return BadRequest("You are not the owner of the galgame.");
         }
     }
 

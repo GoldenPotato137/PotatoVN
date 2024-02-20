@@ -26,6 +26,8 @@ public class GalgameService(IGalgameRepository galRep, IGalgameDeletedRepository
             galgame = await galRep.GetGalgameAsync(payload.Id ?? 0);
             if (galgame is null)
                 throw new ArgumentException("Galgame not found.");
+            if(galgame.UserId != userId)
+                throw new UnauthorizedAccessException("You are not the owner of this galgame.");
         }
         else
         {
