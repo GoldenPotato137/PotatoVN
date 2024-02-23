@@ -43,10 +43,17 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
         _pvnService.StatusChanged -= HandelPvnServiceStatusChanged;
     }
 
-    private async void OnLocalSettingsChanged(string key, object _)
+    private async void OnLocalSettingsChanged(string key, object value)
     {
-        if(key == KeyValues.PvnAccount)
-            await UpdateAccountDisplay();
+        switch (key)
+        {
+            case KeyValues.PvnAccount:
+                await UpdateAccountDisplay();
+                break;
+            case KeyValues.SyncGames:
+                PvnSyncGames = (bool)value;
+                break;
+        }
     }
 
     #region POTATOVN_ACCOUNT

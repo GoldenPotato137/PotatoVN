@@ -27,6 +27,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly ILocalSettingsService _localSettingsService;
     private readonly JumpListService _jumpListService;
     private readonly IBgTaskService _bgTaskService;
+    private readonly IPvnService _pvnService;
     [ObservableProperty] private Galgame? _item;
     [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
     [ObservableProperty] private bool _isPhrasing;
@@ -43,7 +44,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private int _msgIndex;
 
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, 
-        IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService)
+        IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
+        IPvnService pvnService)
     {
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
@@ -51,6 +53,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _jumpListService = (JumpListService)jumpListService;
         _localSettingsService = localSettingsService;
         _bgTaskService = bgTaskService;
+        _pvnService = pvnService;
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -277,6 +280,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
         if (dialog.UploadToVndb)
             throw new NotImplementedException();
+        _pvnService.Upload(Item, PvnUploadProperties.Review);
     }
 
     [RelayCommand]

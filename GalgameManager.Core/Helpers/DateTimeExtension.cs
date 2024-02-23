@@ -1,21 +1,23 @@
 ﻿using System.Globalization;
 
-namespace GalgameManager.Helpers;
+namespace GalgameManager.Core.Helpers;
 
 public static class DateTimeExtensions
 {
-    // Convert datetime to UNIX time
+    /// <summary>Convert datetime to UNIX time</summary>
+    /// <param name="dateTime">日期，UTC/本地时间均可</param>
     public static long ToUnixTime(this DateTime dateTime)
     {
-        DateTimeOffset dto = new DateTimeOffset(dateTime.ToUniversalTime());
+        DateTimeOffset dto = new(dateTime.ToUniversalTime());
         return dto.ToUnixTimeSeconds();
     }
     
-    // Convert UNIX time to datetime
+    /// <summary>Convert UNIX time to datetime</summary>
+    /// <returns>UTC DateTime</returns>
     public static DateTime ToDateTime(this long unixTime)
     {
         DateTimeOffset dto = DateTimeOffset.FromUnixTimeSeconds(unixTime);
-        return dto.DateTime;
+        return dto.UtcDateTime;
     }
 
     public static string ToStringDefault(this DateTime dateTime)

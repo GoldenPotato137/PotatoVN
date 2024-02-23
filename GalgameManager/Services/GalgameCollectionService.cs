@@ -428,8 +428,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </summary>
     /// <param name="name">名字</param>
     /// <returns>galgame，找不到返回null</returns>
-    public Galgame? GetGalgameFromName(string name)
+    public Galgame? GetGalgameFromName(string? name)
     {
+        if (string.IsNullOrEmpty(name)) return null;
         return _galgames.FirstOrDefault(g => g.Name.Value == name);
     }
     

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
@@ -58,6 +59,7 @@ public class RecordPlayTimeTask : BgTaskBase
                 App.SetWindowMode(WindowMode.Normal);
             });
             await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
+            App.GetService<IPvnService>().Upload(_galgame, PvnUploadProperties.PlayTime);
         });
         
         Task.Run(() =>

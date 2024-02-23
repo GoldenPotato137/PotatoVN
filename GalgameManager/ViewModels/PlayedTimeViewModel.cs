@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
@@ -18,12 +19,15 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
 {
     public Galgame Game = new();
     private readonly INavigationService _navigationService;
+    private readonly IPvnService _pvnService;
     private readonly GalgameCollectionService _galgameCollectionService;
     
-    public PlayedTimeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> gameCollectionService)
+    public PlayedTimeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> gameCollectionService,
+        IPvnService pvnService)
     {
         _navigationService = navigationService;
         _galgameCollectionService = (gameCollectionService as GalgameCollectionService)!;
+        _pvnService = pvnService;
     }
 
     public void OnNavigatedTo(object parameter)
@@ -52,6 +56,7 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
         await new EditPlayTimeDialog(Game).ShowAsync();
         OnNavigatedTo(Game);
         await _galgameCollectionService.SaveGalgamesAsync(Game);
+        _pvnService.Upload(Game, PvnUploadProperties.PlayTime);
     }
 
     public ISeries[] Series { get; } =

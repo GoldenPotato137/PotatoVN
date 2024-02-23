@@ -1,4 +1,5 @@
-﻿using GalgameManager.Server.Contracts;
+﻿using GalgameManager.Core.Helpers;
+using GalgameManager.Server.Contracts;
 using GalgameManager.Server.Helpers;
 using GalgameManager.Server.Models;
 

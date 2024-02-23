@@ -747,7 +747,7 @@
     <value>登录成功</value>
   </data>
   <data name="OAuthResult_Failed" xml:space="preserve">
-    <value>因为以下原因登录失败：</value>
+    <value>因为以下原因Bangumi登录失败：</value>
   </data>
   <data name="OAuthResult_FetchingToken" xml:space="preserve">
     <value>获取Token中，请稍后</value>
@@ -1339,5 +1339,26 @@
   </data>
   <data name="PvnSyncTask_Error_Network" xml:space="preserve">
     <value>无法连接至服务器</value>
+  </data>
+  <data name="BgmOAuthService_RefreshFailed" xml:space="preserve">
+    <value>更新Bangumi Token失败</value>
+  </data>
+  <data name="PvnSyncTask_Error_Upload_SaveSyncTime" xml:space="preserve">
+    <value>Pvn同步保存修改时间失败</value>
+  </data>
+  <data name="PvnSyncTask_Pull_Added" xml:space="preserve">
+    <value>从远端下载：{0} (id:{1})</value>
+  </data>
+  <data name="PvnSyncTask_Pull_Updated" xml:space="preserve">
+    <value>从远端更新：{0} (id:{1})</value>
+  </data>
+  <data name="PvnSyncTask_Pull_Deleted" xml:space="preserve">
+    <value>随远端删除：{0} (id:{1})</value>
+  </data>
+  <data name="PvnSyncTask_Commit" xml:space="preserve">
+    <value>上传游戏: {0} (id:{1}) / Type:{2}</value>
+  </data>
+  <data name="PvnSyncTask_NoChange" xml:space="preserve">
+    <value>已同步至最新状态，无更改</value>
   </data>
 </root>

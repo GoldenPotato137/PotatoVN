@@ -4,6 +4,8 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
@@ -12,6 +14,9 @@ namespace GalgameManager.Services;
 public class BgmOAuthService : IBgmOAuthService
 {
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IInfoService _infoService;
+    private IPvnService? _pvnService;
+    private readonly IConfiguration _config;
     private BgmAccount _bgmAccount;
     private DateTime _lastUpdateDateTime;
     private readonly TimeSpan _minUpdateTime = new(1, 0, 0, 0);
@@ -22,9 +27,11 @@ public class BgmOAuthService : IBgmOAuthService
     public event Action<OAuthResult, string>? OnAuthResultChange;
 
     
-    public BgmOAuthService(ILocalSettingsService localSettingsService)
+    public BgmOAuthService(ILocalSettingsService localSettingsService, IInfoService infoService, IConfiguration config)
     {
         _localSettingsService = localSettingsService;
+        _infoService = infoService;
+        _config = config;
         _bgmAccount = new BgmAccount();
         _lastUpdateDateTime = DateTime.UnixEpoch;
     }
@@ -79,11 +86,12 @@ public class BgmOAuthService : IBgmOAuthService
         HttpClient client = GetHttpClient();
         try
         {
-            HttpResponseMessage response = await client.GetAsync(string.Format(BgmOAuthConfig.GetTokenUrl, code));
+            HttpResponseMessage response = await client.GetAsync(new Uri(await BaseUriAsync(), 
+                "bangumi/oauth").AddQuery("code", code));
             if (!response.IsSuccessStatusCode) return;
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            _bgmAccount.BangumiAccessToken = json["access_token"]!.ToString();
-            _bgmAccount.BangumiRefreshToken = json["refresh_token"]!.ToString();
+            _bgmAccount.BangumiAccessToken = json["token"]!.ToString();
+            _bgmAccount.BangumiRefreshToken = json["refreshToken"]!.ToString();
             await GetBgmAccount();
         }
         catch (Exception e)
@@ -91,6 +99,7 @@ public class BgmOAuthService : IBgmOAuthService
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
                 OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message);
+                _infoService.Event(InfoBarSeverity.Error, OAuthResult.Failed.ToMsg(), e);
             });
         }
     }
@@ -114,15 +123,17 @@ public class BgmOAuthService : IBgmOAuthService
         HttpClient client = GetHttpClient();
         try
         {
-            HttpResponseMessage response = await client.GetAsync(string.Format(BgmOAuthConfig.RefreshTokenUrl, _bgmAccount.BangumiRefreshToken));
+            HttpResponseMessage response = await client.GetAsync(new Uri(await BaseUriAsync(), 
+                "bangumi/refresh").AddQuery("refreshToken", _bgmAccount.BangumiRefreshToken));
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            _bgmAccount.BangumiAccessToken = json["access_token"]!.ToString();
-            _bgmAccount.BangumiRefreshToken = json["refresh_token"]!.ToString();
+            _bgmAccount.BangumiAccessToken = json["token"]!.ToString();
+            _bgmAccount.BangumiRefreshToken = json["refreshToken"]!.ToString();
             await GetBgmAccount();
             return true;
         }
-        catch
+        catch(Exception e)
         {
+            _infoService.Event(InfoBarSeverity.Error, "BgmOAuthService_RefreshFailed".GetLocalized(), e);
             return false;
         }
     }
@@ -249,6 +260,14 @@ public class BgmOAuthService : IBgmOAuthService
         {
             await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthStateLastUpdate, _lastUpdateDateTime);
         });
+    }
+
+    private async Task<Uri> BaseUriAsync()
+    {
+        if (_pvnService is null) _pvnService = App.GetService<IPvnService>();
+        PvnServerInfo? serverInfo = await _pvnService.GetServerInfoAsync();
+        if (serverInfo?.BangumiOauth2Enable == true) return _pvnService.BaseUri;
+        return new Uri(_config["PotatoVNOfficialServer"]!);
     }
 
     private static HttpClient GetHttpClient()

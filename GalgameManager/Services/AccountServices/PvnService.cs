@@ -38,12 +38,17 @@ public class PvnService : IPvnService
         _gameService = (GalgameCollectionService)gameService;
         _httpClient = Utils.GetDefaultHttpClient();
 
-        _settingsService.OnSettingChanged += (key, _) =>
+        _settingsService.OnSettingChanged += async (key, _) =>
         {
             if (key is KeyValues.PvnServerType or KeyValues.PvnServerEndpoint)
             {
                 BaseUri = GetBaseUri();
                 _serverInfo = null;
+                await LogOutAsync();
+                await _settingsService.SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0);
+                foreach (Galgame galgame in _gameService.Galgames)
+                    galgame.Ids[(int)RssType.PotatoVn] = null;
+                await _gameService.SaveGalgamesAsync();
             }
         };
     }
@@ -265,11 +270,12 @@ public class PvnService : IPvnService
         if (account is null) throw new InvalidOperationException("PotatoVN account is not login."); //不应该发生
         HttpClient client = Utils.GetDefaultHttpClient().AddToken(account.Token);
         Dictionary<string, object?> payload = new();
+        
+        if (galgame.Ids[(int)RssType.PotatoVn].IsNullOrEmpty() == false)
+            payload["id"] = galgame.Ids[(int)RssType.PotatoVn]!;
 
         if (galgame.PvnUploadProperties.HasFlag(PvnUploadProperties.Infos))
         {
-            if (galgame.Ids[(int)RssType.PotatoVn].IsNullOrEmpty() == false)
-                payload["id"] = galgame.Ids[(int)RssType.PotatoVn]!;
             payload["bgmId"] = galgame.Ids[(int)RssType.Bangumi];
             payload["vndbId"] = galgame.Ids[(int)RssType.Vndb];
             payload["name"] = galgame.Name.Value;
@@ -331,6 +337,8 @@ public class PvnService : IPvnService
 
     public async Task LogOutAsync()
     {
+        await _settingsService.SaveSettingAsync(KeyValues.PvnLastAccount, await 
+            _settingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount));
         await _settingsService.SaveSettingAsync<PvnAccount?>(KeyValues.PvnAccount, null, false, true);
     }
 
@@ -361,6 +369,16 @@ public class PvnService : IPvnService
                 0, "PvnAvatar");
         }
 
+        PvnAccount? lastAccount = await _settingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnLastAccount);
+        if (lastAccount is not null && account.Id != lastAccount.Id)
+        {
+            foreach (Galgame gal in _gameService.Galgames)
+                gal.Ids[(int)RssType.PotatoVn] = null;
+            await _gameService.SaveGalgamesAsync();
+            await _settingsService.SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0);
+        }
+        
+        await _settingsService.SaveSettingAsync(KeyValues.SyncGames, false);
         await _settingsService.SaveSettingAsync(KeyValues.PvnAccount, account);
         return account;
     }
