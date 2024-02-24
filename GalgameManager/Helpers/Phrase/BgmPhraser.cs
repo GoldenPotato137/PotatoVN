@@ -198,6 +198,19 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
                     break;
             }
         }
+        var charactersUrl = "https://api.bgm.tv/v0/subjects/" + id + "/characters";
+        HttpResponseMessage charactersResponse = await _httpClient.GetAsync(charactersUrl);
+        if (!charactersResponse.IsSuccessStatusCode) return result;
+        List<JToken>? charactersList = JToken.Parse(await charactersResponse.Content.ReadAsStringAsync())?.ToObject<List<JToken>>();
+        result.Characters = new ObservableCollection<GalgameCharacter>();
+        charactersList?.ForEach(character => result.Characters.Add(new GalgameCharacter()
+        {
+            Name = character["name"]?.ToObject<string>() ?? "",
+            Relation = character["relation"]?.ToObject<string>() ?? "",
+            // 一个小规则，可以找到bgm人物头像
+            ImageUrl = character["images"]?["large"]?.ToObject<string>()?.Replace("/l/", "/g/") ?? ""
+        }));
+
         return result;
     }
 

@@ -1147,4 +1147,7 @@ If play time can record correctly, just cancel this popup.
   <data name="Shell_Info.Content" xml:space="preserve">
     <value>Info</value>
   </data>
+  <data name="GalgamePage_Characters.Text" xml:space="preserve">
+    <value>Characters</value>
+  </data>
 </root>

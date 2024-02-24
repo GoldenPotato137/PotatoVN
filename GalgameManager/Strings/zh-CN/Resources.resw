@@ -1382,4 +1382,7 @@
   <data name="FaqService_DownloadError" xml:space="preserve">
     <value>下载FAQ失败</value>
   </data>
+  <data name="GalgamePage_Characters.Text" xml:space="preserve">
+    <value>角色</value>
+  </data>
 </root>
