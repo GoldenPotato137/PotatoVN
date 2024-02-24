@@ -1,0 +1,6 @@
+@GalgameManager.Server_HostAddress = http://localhost:5186
+
+GET {{GalgameManager.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

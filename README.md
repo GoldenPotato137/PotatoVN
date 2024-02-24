@@ -1,17 +1,23 @@
+<p align="center">
+<img src="GalgameManager/Assets/Pictures/Potato.png" width="80px"/>
+</p>
+
+<div align="center">
+  
 # PotatoVN
-TODO: 这里应该放介绍图
-
-## 介绍
+![123](https://img.shields.io/endpoint?color=blue&label=Microsoft%20Store%20Rating&url=https%3A%2F%2Fmicrosoft-store-badge.fly.dev%2Fapi%2Frating%3FstoreId%3D9P9CBKD5HR3W)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FGoldenPotato137%2FPotatoVN?ref=badge_shield)
+[![Telegram](https://img.shields.io/badge/Telegram%E5%90%B9%E6%B0%B4%E7%BE%A4-Join-green)](https://t.me/+gymkuMygUpY1NzY1)
 
-PotatoVN是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。
+一个VisualNovel管理工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。
+</div>
 
-### 功能
+## 功能
 * 自动检索文件夹内的游戏
-* 自动从多个数据库中获取游戏信息
-* 将游戏存档与云端同步
+* 自动从多个数据库中获取游戏信息 （目前支持[bangumi](https://bgm.tv/)、[visual novel database](https://vndb.org/)），并从账户中同步游玩状态
+* 将游戏存档与云端同步 (此功能需要电脑上具有任意一款同步软件来同步存档文件夹，如OneDrive、NextCloud、坚果云、百度云同步盘等)
 * 统计游戏游玩时间
-* 从压缩包中自动解压游戏
+* 从压缩包中自动解压游戏，并自动识别且添加到游戏库中
 
 ### 预览
 [见应用商店](https://www.microsoft.com/store/apps/9P9CBKD5HR3W)

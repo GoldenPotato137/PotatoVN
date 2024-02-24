@@ -4,13 +4,14 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
 public class PageService : IPageService
 {
-    private readonly Dictionary<string, Type> _pages = new();
+    public Action? OnInit { get; set; }
 
     public PageService()
     {
@@ -25,8 +26,12 @@ public class PageService : IPageService
         Configure<UpdateContentViewModel, UpdateContentPage>();
         Configure<CategoryViewModel, CategoryPage>();
         Configure<CategorySettingViewModel, CategorySettingPage>();
+        Configure<AccountViewModel, AccountPage>();
+        Configure<InfoViewModel, InfoPage>();
     }
-
+    
+    private readonly Dictionary<string, Type> _pages = new();
+    
     public Type GetPageType(string key)
     {
         Type? pageType;
@@ -39,6 +44,18 @@ public class PageService : IPageService
         }
 
         return pageType;
+    }
+
+    public async Task InitAsync()
+    {
+        App.MainWindow ??= new MainWindow();
+        if (App.MainWindow.Content == null)
+        {
+            UIElement shell = App.GetService<ShellPage>();
+            App.MainWindow.Content = shell;
+            await App.GetService<IThemeSelectorService>().SetRequestedThemeAsync();
+            OnInit?.Invoke();
+        }
     }
 
     private void Configure<VM, V>()

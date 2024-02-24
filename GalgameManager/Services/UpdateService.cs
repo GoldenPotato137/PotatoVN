@@ -1,5 +1,4 @@
-﻿using Windows.ApplicationModel;
-using Windows.Storage;
+﻿using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -13,10 +12,10 @@ public class UpdateService : IUpdateService
     private const string FileName = "update.md";
     private readonly string _localFolder = ApplicationData.Current.LocalFolder.Path;
 
-    public event VoidDelegate? DownloadEvent;
-    public event VoidDelegate? DownloadCompletedEvent;
-    public event GenericDelegate<string>? DownloadFailedEvent;
-    public event GenericDelegate<bool>? SettingBadgeEvent;
+    public event Action? DownloadEvent;
+    public event Action? DownloadCompletedEvent;
+    public event Action<string>? DownloadFailedEvent;
+    public event Action<bool>? SettingBadgeEvent;
     private string FilePath => Path.Combine(_localFolder, FileName);
 
     public UpdateService(ILocalSettingsService localSettingsService)
@@ -28,14 +27,21 @@ public class UpdateService : IUpdateService
 
     public async Task<bool> CheckUpdateAsync()
     {
-        if (RuntimeHelper.IsMSIX == false) return false;
-        // if (await _localSettingsService.ReadSettingAsync<DateTime>(KeyValues.LastUpdateCheckDate) 
-        //         is var lastDate && lastDate.Date == DateTime.Now.Date)
-        //     return await _localSettingsService.ReadSettingAsync<bool>(KeyValues.LastUpdateCheckResult);
+        if (await _localSettingsService.ReadSettingAsync<DateTime>(KeyValues.LastUpdateCheckDate) is var lastDate 
+            && lastDate.Date == DateTime.Now.Date 
+            && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.LastUpdateCheckResult) == false)
+        {
+            return false;
+        }
+        
         try
         {
-            PackageUpdateAvailabilityResult tmp = await Package.Current.CheckUpdateAvailabilityAsync();
-            var result = tmp.Availability is PackageUpdateAvailability.Available or PackageUpdateAvailability.Required;
+            HttpClient client = Utils.GetDefaultHttpClient();
+            HttpResponseMessage response = await client.GetAsync(
+                "https://raw.gitmirror.com/GoldenPotato137/GalgameManager/main/docs/version");
+            var newestVersion = (await response.Content.ReadAsStringAsync())
+                .Replace("\n", "").Replace("\r","");
+            var result = newestVersion != RuntimeHelper.GetVersion();
             await _localSettingsService.SaveSettingAsync(KeyValues.LastUpdateCheckDate, DateTime.Now.Date);
             await _localSettingsService.SaveSettingAsync(KeyValues.LastUpdateCheckResult, result);
             return result;
@@ -68,15 +74,21 @@ public class UpdateService : IUpdateService
         return result;
     }
 
-    private async Task DownloadUpdateContentAsync()
+    private async Task DownloadUpdateContentAsync(string? targetLocal = null)
     {
         DownloadEvent?.Invoke();
         try
         {
-            HttpClient client = new();
-            var local = ResourceExtensions.GetLocal();
+            HttpClient client = Utils.GetDefaultHttpClient();
+            var local = targetLocal ?? ResourceExtensions.GetLocal();
             HttpResponseMessage response = await client.GetAsync(
                 $"https://raw.gitmirror.com/GoldenPotato137/GalgameManager/main/docs/UpdateContent/{local}.md");
+            if (response.IsSuccessStatusCode == false && targetLocal is null)
+            {
+               await DownloadUpdateContentAsync("zh-CN"); //对应的语言不存在时，使用中文
+               return;
+            }
+
             var content = await response.Content.ReadAsStringAsync();
             await File.WriteAllTextAsync(FilePath, content);
         }

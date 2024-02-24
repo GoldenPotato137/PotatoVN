@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalgameManager", "GalgameMa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalgameManager.Core", "GalgameManager.Core\GalgameManager.Core.csproj", "{B3AFCE1A-462E-409B-9EE0-9B1A616907ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalgameManager.Test", "GalgameManager.Test\GalgameManager.Test.csproj", "{E138EDC8-7B97-4439-8EDB-3A08E388D6F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalgameManager.Test", "GalgameManager.Test\GalgameManager.Test.csproj", "{E138EDC8-7B97-4439-8EDB-3A08E388D6F5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GalgameManager.Tool", "GalgameManager.Tool\GalgameManager.Tool.vcxproj", "{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalgameManager.Server", "GalgameManager.Server\GalgameManager.Server.csproj", "{42BD087B-70D5-425B-9423-522AD114E916}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,22 +79,22 @@ Global
 		{E138EDC8-7B97-4439-8EDB-3A08E388D6F5}.Release|x64.Build.0 = Release|Any CPU
 		{E138EDC8-7B97-4439-8EDB-3A08E388D6F5}.Release|x86.ActiveCfg = Release|Any CPU
 		{E138EDC8-7B97-4439-8EDB-3A08E388D6F5}.Release|x86.Build.0 = Release|Any CPU
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|Any CPU.Build.0 = Debug|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|arm64.ActiveCfg = Debug|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|arm64.Build.0 = Debug|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|x64.ActiveCfg = Debug|x64
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|x64.Build.0 = Debug|x64
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|x86.ActiveCfg = Debug|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Debug|x86.Build.0 = Debug|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|Any CPU.ActiveCfg = Release|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|Any CPU.Build.0 = Release|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|arm64.ActiveCfg = Release|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|arm64.Build.0 = Release|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|x64.ActiveCfg = Release|x64
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|x64.Build.0 = Release|x64
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|x86.ActiveCfg = Release|Win32
-		{C64FFB05-EB55-4AF2-B1A5-EEEAF74A2B73}.Release|x86.Build.0 = Release|Win32
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|arm64.Build.0 = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|x64.Build.0 = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Debug|x86.Build.0 = Debug|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|arm64.ActiveCfg = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|arm64.Build.0 = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|x64.ActiveCfg = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|x64.Build.0 = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|x86.ActiveCfg = Release|Any CPU
+		{42BD087B-70D5-425B-9423-522AD114E916}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

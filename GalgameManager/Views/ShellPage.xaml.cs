@@ -1,7 +1,11 @@
 ﻿using Windows.System;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.ViewModels;
+using GalgameManager.Views.Dialog;
+using Microsoft.UI.Input;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -16,9 +20,12 @@ public sealed partial class ShellPage : Page
         get;
     }
 
-    public ShellPage(ShellViewModel viewModel)
+    private readonly ILocalSettingsService _localSettingsService;
+
+    public ShellPage(ShellViewModel viewModel, ILocalSettingsService localSettingsService)
     {
         ViewModel = viewModel;
+        _localSettingsService = localSettingsService;
         InitializeComponent();
 
         ViewModel.NavigationService.Frame = NavigationFrame;
@@ -26,10 +33,37 @@ public sealed partial class ShellPage : Page
 
         // A custom title bar is required for full window theme and Mica support.
         // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
-        App.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.MainWindow!.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
         App.MainWindow.Activated += MainWindow_Activated;
+        App.MainWindow.AppWindow.Closing += MainWindowOnClosed;
         AppTitleBarText.Text = "AppDisplayName".GetLocalized();
+    }
+
+    private void MainWindowOnClosed(AppWindow appWindow, AppWindowClosingEventArgs appWindowClosingEventArgs)
+    {
+        if(App.Closing) return;
+        WindowMode closeMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
+        if (closeMode == WindowMode.Close) return;
+        if (closeMode == WindowMode.Normal)
+        {
+            appWindowClosingEventArgs.Cancel = true;
+            _ = CloseConfirm();
+        }
+        else
+        {
+            appWindowClosingEventArgs.Cancel = true;
+            App.SetWindowMode(closeMode);
+        }
+    }
+
+    private async Task CloseConfirm()
+    {
+        CloseConfirmDialog dialog = new();
+        await dialog.ShowAsync();
+        if (dialog.RememberMe)
+            await _localSettingsService.SaveSettingAsync(KeyValues.CloseMode, dialog.Result);
+        App.SetWindowMode(dialog.Result);
     }
 
     private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -80,5 +114,12 @@ public sealed partial class ShellPage : Page
         var result = navigationService.GoBack();
 
         args.Handled = result;
+    }
+
+    private void NavigationViewControl_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        PointerPointProperties? properties = e.GetCurrentPoint(sender as UIElement).Properties;
+        if(properties.IsXButton1Pressed)
+            App.GetService<INavigationService>().GoBack();
     }
 }

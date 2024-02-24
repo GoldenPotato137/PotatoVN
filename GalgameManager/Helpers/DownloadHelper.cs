@@ -8,8 +8,11 @@ public static class DownloadHelper
     /// 从网络下载图片并保存到本地
     /// </summary>
     /// <param name="imageUrl">图片链接</param>
+    /// <param name="retry">这是第几次重试</param>
+    /// <param name="fileNameWithoutExtension">目标文件名（不带扩展名）</param>
     /// <returns>本地文件路径, 如果下载失败则返回null</returns>
-    public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl)
+    public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl, int retry = 0, 
+        string? fileNameWithoutExtension = null)
     {
         try
         {
@@ -21,8 +24,12 @@ public static class DownloadHelper
             var imageBytes = await response.Content.ReadAsByteArrayAsync();
 
             StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
-            var fileName = imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
+            localFolder = await localFolder.CreateFolderAsync("Images", CreationCollisionOption.OpenIfExists);
+            var fileName = fileNameWithoutExtension is not null
+                ? $"{fileNameWithoutExtension}{GetImageFormat(imageBytes)}"
+                : imageUrl[(imageUrl.LastIndexOf('/') + 1)..];
             if (fileName == string.Empty) fileName = imageUrl;
+            if (fileName.Contains('?')) fileName = fileName[..fileName.IndexOf('?')];
             StorageFile? storageFile;
             try
             {
@@ -30,7 +37,7 @@ public static class DownloadHelper
             }
             catch (FileNotFoundException)
             {
-                fileName = Path.GetRandomFileName(); //随机文件名
+                fileName = fileNameWithoutExtension ?? Path.GetRandomFileName(); //随机文件名
                 var format = GetImageFormat(imageBytes);
                 if (format != string.Empty)
                     fileName = fileName[..fileName.LastIndexOf('.')] + format;
@@ -45,7 +52,16 @@ public static class DownloadHelper
             }
 
             // 返回本地文件的路径
-            return storageFile.Path;    
+            return storageFile.Path;
+        }
+        catch (HttpRequestException)
+        {
+            if (retry < 3)
+            {
+                await Task.Delay(5000);
+                return await DownloadAndSaveImageAsync(imageUrl, retry + 1);
+            }
+            return null;
         }
         catch(Exception)
         {

@@ -11,7 +11,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
@@ -41,8 +40,5 @@
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>
         </ScrollViewer>
-
-        <InfoBar Grid.Row="2" IsOpen="{x:Bind ViewModel.InfoBarVisibility, Mode=OneWay}" 
-                 Severity="Success" x:Uid="HelpPage_InfoBar" Margin="0 0 0 20" />
     </Grid>
 </Page>

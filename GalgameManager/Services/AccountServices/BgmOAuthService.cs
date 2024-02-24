@@ -1,10 +1,11 @@
-﻿using System.Net.Http.Headers;
-using Windows.Foundation;
+﻿using Windows.Foundation;
 using Windows.System;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
@@ -13,6 +14,9 @@ namespace GalgameManager.Services;
 public class BgmOAuthService : IBgmOAuthService
 {
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IInfoService _infoService;
+    private IPvnService? _pvnService;
+    private readonly IConfiguration _config;
     private BgmAccount _bgmAccount;
     private DateTime _lastUpdateDateTime;
     private readonly TimeSpan _minUpdateTime = new(1, 0, 0, 0);
@@ -20,12 +24,14 @@ public class BgmOAuthService : IBgmOAuthService
     private bool _isInitialized;
     
     public event IBgmOAuthService.Delegate? OnOAuthStateChange;
-    public event GenericDelegate<(OAuthResult, string)>? OnAuthResultChange;
+    public event Action<OAuthResult, string>? OnAuthResultChange;
 
     
-    public BgmOAuthService(ILocalSettingsService localSettingsService)
+    public BgmOAuthService(ILocalSettingsService localSettingsService, IInfoService infoService, IConfiguration config)
     {
         _localSettingsService = localSettingsService;
+        _infoService = infoService;
+        _config = config;
         _bgmAccount = new BgmAccount();
         _lastUpdateDateTime = DateTime.UnixEpoch;
     }
@@ -72,26 +78,28 @@ public class BgmOAuthService : IBgmOAuthService
     {
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            App.MainWindow.BringToFront(); //把窗口提到最前面
-            OnAuthResultChange?.Invoke((OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg()));
+            App.SetWindowMode(WindowMode.Normal);
+            OnAuthResultChange?.Invoke(OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg());
         });
         WwwFormUrlDecoder decoder = new(uri.Query);
         var code = decoder.GetFirstValueByNameOrEmpty("code");
         HttpClient client = GetHttpClient();
         try
         {
-            HttpResponseMessage response = await client.GetAsync(string.Format(BgmOAuthConfig.GetTokenUrl, code));
+            HttpResponseMessage response = await client.GetAsync(new Uri(await BaseUriAsync(), 
+                "bangumi/oauth").AddQuery("code", code));
             if (!response.IsSuccessStatusCode) return;
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            _bgmAccount.BangumiAccessToken = json["access_token"]!.ToString();
-            _bgmAccount.BangumiRefreshToken = json["refresh_token"]!.ToString();
+            _bgmAccount.BangumiAccessToken = json["token"]!.ToString();
+            _bgmAccount.BangumiRefreshToken = json["refreshToken"]!.ToString();
             await GetBgmAccount();
         }
         catch (Exception e)
         {
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message));
+                OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message);
+                _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error, OAuthResult.Failed.ToMsg(), e);
             });
         }
     }
@@ -115,15 +123,18 @@ public class BgmOAuthService : IBgmOAuthService
         HttpClient client = GetHttpClient();
         try
         {
-            HttpResponseMessage response = await client.GetAsync(string.Format(BgmOAuthConfig.RefreshTokenUrl, _bgmAccount.BangumiRefreshToken));
+            HttpResponseMessage response = await client.GetAsync(new Uri(await BaseUriAsync(), 
+                "bangumi/refresh").AddQuery("refreshToken", _bgmAccount.BangumiRefreshToken));
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            _bgmAccount.BangumiAccessToken = json["access_token"]!.ToString();
-            _bgmAccount.BangumiRefreshToken = json["refresh_token"]!.ToString();
+            _bgmAccount.BangumiAccessToken = json["token"]!.ToString();
+            _bgmAccount.BangumiRefreshToken = json["refreshToken"]!.ToString();
             await GetBgmAccount();
             return true;
         }
-        catch
+        catch(Exception e)
         {
+            _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error,
+                "BgmOAuthService_RefreshFailed".GetLocalized(), e);
             return false;
         }
     }
@@ -150,7 +161,7 @@ public class BgmOAuthService : IBgmOAuthService
         if (!_bgmAccount.OAuthed) return;
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
-            OnAuthResultChange?.Invoke((OAuthResult.FetchingAccount, OAuthResult.FetchingAccount.ToMsg()));
+            OnAuthResultChange?.Invoke(OAuthResult.FetchingAccount, OAuthResult.FetchingAccount.ToMsg());
         });
         HttpClient httpClient = GetHttpClient();
         try
@@ -186,14 +197,14 @@ public class BgmOAuthService : IBgmOAuthService
             await SaveOAuthState();
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke((OAuthResult.Done, OAuthResult.Done.ToMsg()));
+                OnAuthResultChange?.Invoke(OAuthResult.Done, OAuthResult.Done.ToMsg());
             });
         }
         catch (Exception e)
         {
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke((OAuthResult.Failed, OAuthResult.Failed.ToMsg() + e.Message));
+                OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg() + e.Message);
             });
         }
     }
@@ -252,12 +263,16 @@ public class BgmOAuthService : IBgmOAuthService
         });
     }
 
+    private async Task<Uri> BaseUriAsync()
+    {
+        if (_pvnService is null) _pvnService = App.GetService<IPvnService>();
+        PvnServerInfo? serverInfo = await _pvnService.GetServerInfoAsync();
+        if (serverInfo?.BangumiOauth2Enable == true) return _pvnService.BaseUri;
+        return new Uri(_config["PotatoVNOfficialServer"]!);
+    }
+
     private static HttpClient GetHttpClient()
     {
-        HttpClient httpClient = new();
-        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "GoldenPotato/GalgameManager/1.0-dev (Windows) (https://github.com/GoldenPotato137/GalgameManager)");
-        httpClient.DefaultRequestHeaders.Accept.Clear();
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        return httpClient;
+        return Utils.GetDefaultHttpClient().WithApplicationJson();
     }
 }

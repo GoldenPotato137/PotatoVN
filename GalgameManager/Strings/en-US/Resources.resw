@@ -60,45 +60,45 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -124,7 +124,7 @@
     <value>PotatoVN is a tool to manage visual novels and is designed to provide a convenient game management platform for players.</value>
   </data>
   <data name="Shell_Home.Content" xml:space="preserve">
-    <value>Home</value>
+    <value>Games</value>
   </data>
   <data name="Settings_Main.Text" xml:space="preserve">
     <value>Main</value>
@@ -174,11 +174,11 @@
   <data name="GalgamePage_Delete.Label" xml:space="preserve">
     <value>Delete Game</value>
   </data>
-  <data name="HomePage_AddNewGame" xml:space="preserve">
+  <data name="HomePage_AddNewGame.Label" xml:space="preserve">
     <value>Add Game</value>
   </data>
-  <data name="HomePage_Sort" xml:space="preserve">
-    <value>Sort by…</value>
+  <data name="HomePage_Sort.Label" xml:space="preserve">
+    <value>Sort</value>
   </data>
   <data name="HomePage_Filter" xml:space="preserve">
     <value>Filter</value>
@@ -190,7 +190,7 @@
     <value>This game already exists in the library</value>
   </data>
   <data name="AddGalgameResult_NotFoundInRss" xml:space="preserve">
-    <value>Game was successfully added, but no information was found on this game from the source</value>
+    <value>No information found for this game from the feed</value>
   </data>
   <data name="HomePage_Remove_Title" xml:space="preserve">
     <value>Unhosted</value>
@@ -214,7 +214,31 @@
     <value>Appearance</value>
   </data>
   <data name="SettingsPage_ThemeDescription" xml:space="preserve">
-    <value>Toggle dark or light mode</value>
+    <value>Settings related to display</value>
+  </data>
+  <data name="SettingsPage_OAuth.SettingTitle" xml:space="preserve">
+    <value>Third Party Accounts</value>
+  </data>
+  <data name="SettingsPage_OAuth.SettingDescription" xml:space="preserve">
+    <value>Third Party Accounts</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Title" xml:space="preserve">
+    <value>Login to Bangumi</value>
+  </data>
+  <data name="SettingsPage_OAuth_LoginBgm.Description" xml:space="preserve">
+    <value>Login to Bangumi via OAuth</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Log In</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm.Title" xml:space="preserve">
+    <value>Logout from Bangumi</value>
+  </data>
+  <data name="SettingsPage_OAuth_LogoutBgm.Description" xml:space="preserve">
+    <value>Logout from Bangumi</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
   </data>
   <data name="SettingsPage_RssTitle" xml:space="preserve">
     <value>Feeds</value>
@@ -272,28 +296,28 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
     <value>Select another folder</value>
   </data>
-  <data name="GalgamePage_Play" xml:space="preserve">
+  <data name="GalgamePage_Play.Label" xml:space="preserve">
     <value>Play</value>
   </data>
-  <data name="GalgamePage_Edit" xml:space="preserve">
+  <data name="GalgamePage_Edit.Label" xml:space="preserve">
     <value>Edit</value>
   </data>
-  <data name="GalgamePage_ChangeSavePosition" xml:space="preserve">
-    <value>Convert game save location</value>
+  <data name="GalgamePage_ChangeSavePosition.Label" xml:space="preserve">
+    <value>Convert save location</value>
   </data>
-  <data name="GalgamePage_Developers" xml:space="preserve">
+  <data name="GalgamePage_Developers.Text" xml:space="preserve">
     <value>Developer</value>
   </data>
-  <data name="GalgamePage_ExpectedPlayTime" xml:space="preserve">
+  <data name="GalgamePage_ExpectedPlayTime.Text" xml:space="preserve">
     <value>Estimated game duration</value>
   </data>
-  <data name="GalgamePage_SavePosition" xml:space="preserve">
+  <data name="GalgamePage_SavePosition.Text" xml:space="preserve">
     <value>Save location</value>
   </data>
-  <data name="GalgamePage_LastPlayTime" xml:space="preserve">
+  <data name="GalgamePage_LastPlayTime.Text" xml:space="preserve">
     <value>Latest Played</value>
   </data>
-  <data name="GalgamePage_Description" xml:space="preserve">
+  <data name="GalgamePage_Description.Text" xml:space="preserve">
     <value>Description</value>
   </data>
   <data name="GalgameCollectionService_SelectSavePosition" xml:space="preserve">
@@ -305,14 +329,14 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
     <value>Choose an executable</value>
   </data>
-  <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
-    <value>Reset EXE path?</value>
+  <data name="GalgamePage_UiPlayFlyOutTitle.Text" xml:space="preserve">
+    <value>Reset exe path?</value>
   </data>
   <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
     <value>Launch Game</value>
   </data>
   <data name="SettingsPage_Start_AutoStartGame.Description" xml:space="preserve">
-    <value>Whether to start the game directly when right-clicking icon in the taskbar</value>
+    <value>Whether to start the game directly when right-clicking game from icon in the taskbar</value>
   </data>
   <data name="SettingsPage_LibraryTitle" xml:space="preserve">
     <value>Library</value>
@@ -326,9 +350,15 @@ If you would like to use cloud saves, dropping local saves, pls chose Cloud.</va
   <data name="SettingsPage_Library_SearchSubPathDescription" xml:space="preserve">
     <value>Whether to search for subdirectories recursively. Only subfolders at the root of the game library if not checked</value>
   </data>
+  <data name="SettingsPage_Library_SearchSubPathDepth" xml:space="preserve">
+    <value>Recursive Search Depth</value>
+  </data>
+  <data name="SettingsPage_Library_SearchSubPathDepthDescription" xml:space="preserve">
+    <value>Limit the depth of recursive search subdirectories</value>
+  </data>
   <data name="SettingsPage_Library_NameDescription" xml:space="preserve">
     <value>This software matches the name of the game folder with a regular expression and takes the selected match substring into the game.
-Users who do not know the regular expression can understand：The name of the game folder will be used as the name of the game.</value>
+Users who do not know the regular expression can understand: The name of the game folder will be used as the name of the game.</value>
   </data>
   <data name="SettingsPage_Library_SearchRegex" xml:space="preserve">
     <value>Regular expression</value>
@@ -366,49 +396,755 @@ Users who do not know the regular expression can understand：The name of the ga
   <data name="Shell_Help.Content" xml:space="preserve">
     <value>Help</value>
   </data>
-  <data name="SettingsPage_RepositoryLink.Content" xml:space="preserve">
-    <value>仓库地址</value>
-  </data>
   <data name="SettingsPage_RepositoryLink.NavigateUri" xml:space="preserve">
     <value>https://github.com/GoldenPotato137/GalgameManager</value>
   </data>
+  <data name="SettingsPage_RepositoryLink.Content" xml:space="preserve">
+    <value>Repository URL</value>
+  </data>
+  <data name="SettingsPage_RateLink.Content" xml:space="preserve">
+    <value>Rate this app</value>
+  </data>
+  <data name="App_UnhandledException_Oops" xml:space="preserve">
+    <value>Oops! Something went wrong</value>
+  </data>
+  <data name="App_UnhandledException_BackToHome" xml:space="preserve">
+    <value>Return to Home</value>
+  </data>
+  <data name="App_UnhandledException_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="App_UnhandledException_Hyperlink" xml:space="preserve">
+    <value>Click here to copy the error message and report this issue</value>
+  </data>
+  <data name="HelpPage_GettingFaq" xml:space="preserve">
+    <value>Retrieving the latest FAQ from the network</value>
+  </data>
+  <data name="HelpPage_NewFeature.Label" xml:space="preserve">
+    <value>Suggest a feature</value>
+  </data>
+  <data name="HelpPage_Help.Label" xml:space="preserve">
+    <value>New question</value>
+  </data>
+  <data name="HelpPage_Download.Label" xml:space="preserve">
+    <value>Download the latest FAQ</value>
+  </data>
+  <data name="GalgameCollectionService_CreateSymbolicLinkFailed" xml:space="preserve">
+    <value>Failed to archive cloud! Don't worry, your save is secure.
+Failure reasons:</value>
+  </data>
+  <data name="GalgamePage_TotalPlayTime.Text" xml:space="preserve">
+    <value>Time Played</value>
+  </data>
+  <data name="Minute" xml:space="preserve">
+    <value>mins</value>
+  </data>
+  <data name="SettingsPage_Theme_FixHorizontalPicture.Title" xml:space="preserve">
+    <value>Repair Homepage Horizontal Image</value>
+  </data>
+  <data name="SettingsPage_Theme_FixHorizontalPicture.Description" xml:space="preserve">
+    <value>Whether to crop horizontal cover image to vertical</value>
+  </data>
+  <data name="Back.Label" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="GalgameFolderCollectionService_DeleteGalgameFolderAsync_Title" xml:space="preserve">
+    <value>Delete Library</value>
+  </data>
+  <data name="GalgameFolderCollectionService_DeleteGalgameFolderAsync_Content" xml:space="preserve">
+    <value>Removing the library will unhost all games in the library</value>
+  </data>
+  <data name="LibraryPage_DeleteFolder" xml:space="preserve">
+    <value>Delete library</value>
+  </data>
+  <data name="GalgameFolderPage_DownloadInfo" xml:space="preserve">
+    <value>Download game metadata</value>
+  </data>
+  <data name="GalgameFolderPage_DownloadSelectedInfo" xml:space="preserve">
+    <value>Download metadata</value>
+  </data>
+  <data name="HomePage_Search_Label" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SettingsPage_Library_MetaBackup" xml:space="preserve">
+    <value>Metadata backup</value>
+  </data>
+  <data name="SettingsPage_Library_MetaBackupDescription" xml:space="preserve">
+    <value>Whether to back up game info data in each game folder, if unchecked, only in the app data folder</value>
+  </data>
+  <data name="SettingsPage_Library_BackupNow.Title" xml:space="preserve">
+    <value>Backup all game info</value>
+  </data>
+  <data name="SettingsPage_Library_BackupNow.Description" xml:space="preserve">
+    <value>The old game will need to be backed up manually by clicking on the button, and all later changes will be backed up automatically</value>
+  </data>
+  <data name="SettingsPage_Library_MetaBackupProgress" xml:space="preserve">
+    <value>Saving:</value>
+  </data>
+  <data name="GalgamePage_OpenInExplorer.Label" xml:space="preserve">
+    <value>Open in Explorer</value>
+  </data>
+  <data name="GalgamePage_OpenInBgm.Label" xml:space="preserve">
+    <value>Open in Bangumi</value>
+  </data>
+  <data name="GalgamePage_OpenInVndb.Label" xml:space="preserve">
+    <value>Open in VNDB</value>
+  </data>
+  <data name="SettingsPage_Library_IgnoreFetchResult.Title" xml:space="preserve">
+    <value>Ignore feed search results</value>
+  </data>
+  <data name="SettingsPage_Library_IgnoreFetchResult.Description" xml:space="preserve">
+    <value>While scanning library, whether a game, which can be found in feed, can be added into the library</value>
+  </data>
+  <data name="UpdateContentPage_Title.Text" xml:space="preserve">
+    <value>Recently Updated</value>
+  </data>
+  <data name="UpdateContentPage_Refresh.Label" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="UpdateContentPage_CurrentVersion" xml:space="preserve">
+    <value>Current Version:</value>
+  </data>
+  <data name="UpdateContentPage_MainTitle.Text" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="Shell_Settings.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsPage_UpdateNotification_Title" xml:space="preserve">
+    <value>Updates available!</value>
+  </data>
+  <data name="SettingsPage_UpdateNotification_Msg" xml:space="preserve">
+    <value>New updates have been detected. You can update to the latest version in the Microsoft App Store!</value>
+  </data>
+  <data name="SettingsPage_SeeWhatsNew" xml:space="preserve">
+    <value>What's New</value>
+  </data>
+  <data name="GalgamePage_RunAsAdmin.Label" xml:space="preserve">
+    <value>Run as admin</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi.Content" xml:space="preserve">
+    <value>Bangumi</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#bangumi-%E7%95%AA%E7%BB%84%E8%AE%A1%E5%88%92</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB.Content" xml:space="preserve">
+    <value>VNDB</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#vndb</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E4%BF%A1%E6%81%AF%E6%BA%90#mixed</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed.Content" xml:space="preserve">
+    <value>Mixed Feeds</value>
+  </data>
+  <data name="SettingsPage_Rss_Bangumi_Description.Text" xml:space="preserve">
+    <value>The Bangumi Pu programme is a Chinese-language ACGN-Internet sharing and exchange project, under the CC BY-SA agreement, which keeps information from users on various ACG related events and figures, films, television theatres, etc., accessible to users and provides a BBC forum and message version for exchanges.</value>
+  </data>
+  <data name="SettingsPage_Rss_VNDB_Description.Text" xml:space="preserve">
+    <value>The visual novelty database (known as VNDB) is a web-based database, wiki and Web English language forum oriented to visual novels. As of May 2021, the visual novelty database contains some 29,000 visual novels, and its section also has approximately 190,000 registered users.</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Description.Text" xml:space="preserve">
+    <value>Mixed is a scraper that combines data from multiple sources and takes optimal values. Currently, combined data from VNDB and Bangumi.</value>
+  </data>
+  <data name="SettingsPage_Theme_Color.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="SettingsPage_Theme_Color_Description.Text" xml:space="preserve">
+    <value>Choose your favorite theme</value>
+  </data>
+  <data name="SettingsPage_Other.SettingTitle" xml:space="preserve">
+    <value>Additional settings</value>
+  </data>
+  <data name="SettingsPage_Other.SettingDescription" xml:space="preserve">
+    <value>Some other settings</value>
+  </data>
+  <data name="SettingsPage_Other_AppCenter.Title" xml:space="preserve">
+    <value>Upload anonymous event log</value>
+  </data>
+  <data name="SettingsPage_Other_AppCenter.Description" xml:space="preserve">
+    <value>The uploaded content does not contain any personal data and is only used to measure the use of features and report error tracking.</value>
+  </data>
+  <data name="SettingsPage_UpdateContent.Content" xml:space="preserve">
+    <value>Change log</value>
+  </data>
+  <data name="UpdateContentPage_AppCenterSuccess" xml:space="preserve">
+    <value>The anonymous log upload feature has been successfully enabled. Thank you for your contribution!</value>
+  </data>
+  <data name="EditableCategory_Add_AlreadyExist" xml:space="preserve">
+    <value>This game already exists in this category</value>
+  </data>
+  <data name="EditableCategory_Remove_NotExist" xml:space="preserve">
+    <value>This game is not in this category</value>
+  </data>
+  <data name="CategoryService_Developer" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="CategoryService_Status" xml:space="preserve">
+    <value>Play status</value>
+  </data>
   <data name="Shell_Category.Content" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="CategoryPage_Category_Edit.Text" xml:space="preserve">
+    <value>Edit category</value>
+  </data>
+  <data name="CategoryPage_Category_Delete.Text" xml:space="preserve">
+    <value>Delete category</value>
+  </data>
+  <data name="CategoryPage_Category_Combine.Text" xml:space="preserve">
+    <value>Merge categories</value>
+  </data>
+  <data name="CategoryPage_DeleteCategory_Title" xml:space="preserve">
+    <value>Delete category</value>
+  </data>
+  <data name="CategoryPage_DeleteCategory_Msg" xml:space="preserve">
+    <value>Are you sure to delete this category?</value>
+  </data>
+  <data name="CategoryPage_CombineCategory_Title" xml:space="preserve">
+    <value>Merge categories</value>
+  </data>
+  <data name="CategoryPage_CombineCategory_Msg" xml:space="preserve">
+    <value>This action will merge the currently selected category into the selected category below ( this category will be deleted)</value>
+  </data>
+  <data name="SettingsPage_Download_AutoCategory.Title" xml:space="preserve">
+    <value>Automatic categorization</value>
+  </data>
+  <data name="SettingsPage_Download_AutoCategory.Description" xml:space="preserve">
+    <value>Whether to automatically classify game by developer and play status</value>
+  </data>
+  <data name="SettingsPage_Download_CategoryNow.Title" xml:space="preserve">
+    <value>Categorize all games</value>
+  </data>
+  <data name="SettingsPage_Download_CategoryNow.Description" xml:space="preserve">
+    <value>The old game will have to be categorized manually by clicking the button. After this, new added game will be auto categorized</value>
+  </data>
+  <data name="SettingsPage_Start.SettingTitle" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="SettingsPage_Start.SettingDescription" xml:space="preserve">
+    <value>Settings related to app launch behavior</value>
+  </data>
+  <data name="SettingsPage_Start_Page.Description" xml:space="preserve">
+    <value>Set the start up page</value>
+  </data>
+  <data name="SettingsPage_Start_Page.Title" xml:space="preserve">
+    <value>Startup page</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Gaming</value>
+  </data>
+  <data name="Category" xml:space="preserve">
     <value>Category</value>
+  </data>
+  <data name="PlayType_None" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="PlayType_Playing" xml:space="preserve">
+    <value>Playing</value>
+  </data>
+  <data name="PlayType_Played" xml:space="preserve">
+    <value>Finished</value>
+  </data>
+  <data name="PlayType_Shelved" xml:space="preserve">
+    <value>Stalled</value>
+  </data>
+  <data name="PlayType_Abandoned" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="GalgamePage_PlayStatus.Label" xml:space="preserve">
+    <value>Play status</value>
+  </data>
+  <data name="CategoryPage_CategoryGroup.Label" xml:space="preserve">
+    <value>Category groups</value>
   </data>
   <data name="SettingsPage_Start_AuthenticationType.Title" xml:space="preserve">
     <value>Authentication type</value>
   </data>
   <data name="SettingsPage_Start_AuthenticationType.Description" xml:space="preserve">
-    <value>Set the authentication type on application startup</value>
+    <value>Set the authentication type on app startup</value>
   </data>
   <data name="AuthenticateUserMessage" xml:space="preserve">
-    <value>For security, PotatoVN needs to verify your identity</value>
+    <value>PotatoVN needs to verify your identity for security reasons</value>
   </data>
   <data name="NoAuthentication" xml:space="preserve">
-    <value>No authentication</value>
+    <value>No Authorization</value>
   </data>
   <data name="WindowsHello" xml:space="preserve">
-    <value>Windows Hello (Suggested)</value>
+    <value>Windows Hello (recommended)</value>
   </data>
   <data name="CustomPassword" xml:space="preserve">
-    <value>Login by custom password</value>
+    <value>Custom password</value>
   </data>
   <data name="EnterYourPasswordLiteral" xml:space="preserve">
-    <value>Please enter your password</value>
+    <value>Enter your password</value>
   </data>
   <data name="PasswordLiteral" xml:space="preserve">
     <value>Password</value>
   </data>
   <data name="ConfirmLiteral" xml:space="preserve">
-    <value>Confirm</value>
+    <value>OK</value>
   </data>
   <data name="SetYourPasswordLiteral" xml:space="preserve">
     <value>Set your password</value>
   </data>
   <data name="SaveYourPasswordCarefullyLiteral" xml:space="preserve">
-    <value>Take care of your password.</value>
+    <value>Please save your password properly.</value>
   </data>
   <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>If you forget your password, go to Credential Manager to access your password.</value>
+    <value>If you forget your password, check your password in the system credentials manager.</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Title" xml:space="preserve">
+    <value>Play status</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithChinese.Description" xml:space="preserve">
+    <value>Whether to overwrite the local name of visual novel's name from the feeds</value>
+  </data>
+  <data name="SettingsPage_Download_OverrideNameWithChinese.Title" xml:space="preserve">
+    <value>Overwrite name with Chinese name</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
+    <value>Not logged in, need to log in to Bangumi account in settings</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_NoId" xml:space="preserve">
+    <value>There is currently no Bangumi ID for this game. Please set one manually in the edit page.</value>
+  </data>
+  <data name="BgmPhraser_UploadAsync_Success" xml:space="preserve">
+    <value>Play status successfully synchronized to Bangumi</value>
+  </data>
+  <data name="HomePage_UploadingToBgm" xml:space="preserve">
+    <value>Sync play status to Bangumi</value>
+  </data>
+  <data name="HomePage_FixHorizontalPicture.Label" xml:space="preserve">
+    <value>Crop horizontal cover image</value>
+  </data>
+  <data name="HomePage_DisplayPlayType.Label" xml:space="preserve">
+    <value>Play status mark</value>
+  </data>
+  <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Title" xml:space="preserve">
+    <value>Download play status</value>
+  </data>
+  <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Description" xml:space="preserve">
+    <value>Whether to download the play status while fetching information (login to third party accounts)</value>
+  </data>
+  <data name="BgmAccount_NoName" xml:space="preserve">
+    <value>Akkarin</value>
+  </data>
+  <data name="BgmOAuthService_NoLogin" xml:space="preserve">
+    <value>Not yet logged in to Bangumi account!</value>
+  </data>
+  <data name="BgmOAuthService_Id" xml:space="preserve">
+    <value>User ID:</value>
+  </data>
+  <data name="BgmOAuthService_AuthLimit" xml:space="preserve">
+    <value>, Authorize to:</value>
+  </data>
+  <data name="OAuthResult_Done" xml:space="preserve">
+    <value>Login successful</value>
+  </data>
+  <data name="OAuthResult_Failed" xml:space="preserve">
+    <value>Failed due to reasons:</value>
+  </data>
+  <data name="OAuthResult_FetchingToken" xml:space="preserve">
+    <value>Fetching token, please wait</value>
+  </data>
+  <data name="OAuthResult_FetchingAccount" xml:space="preserve">
+    <value>Fetching account info, please wait</value>
+  </data>
+  <data name="GalgamePage_SyncStatus.Label" xml:space="preserve">
+    <value>Sync Status</value>
+  </data>
+  <data name="GalgamePage_SyncStatus_Bangumi.Text" xml:space="preserve">
+    <value>Sync play status from Bangumi</value>
+  </data>
+  <data name="BgmPhraser_DownloadAsync_Success" xml:space="preserve">
+    <value>Play status successfully synchronized</value>
+  </data>
+  <data name="HomePage_Downloading" xml:space="preserve">
+    <value>Synchronizing play status</value>
+  </data>
+  <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Title" xml:space="preserve">
+    <value>Sync play status from Bangumi</value>
+  </data>
+  <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Description" xml:space="preserve">
+    <value>Get play status from Bangumi immediately. This need a valid Bangumi account.</value>
+  </data>
+  <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
+    <value>Successfully downloaded {0} games</value>
+  </data>
+  <data name="GalgamePage_ReleaseDate.Text" xml:space="preserve">
+    <value>Release date</value>
+  </data>
+  <data name="CategorySettingPage_CategoryName.Text" xml:space="preserve">
+    <value>Category name</value>
+  </data>
+  <data name="SelectImage.Content" xml:space="preserve">
+    <value>Select image</value>
+  </data>
+  <data name="CategorySettingPage_CategoryImage.Text" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="CategorySettingPage_CategoryGroups.Text" xml:space="preserve">
+    <value>Category group</value>
+  </data>
+  <data name="CategorySettingPage_Games.Text" xml:space="preserve">
+    <value>Include games</value>
+  </data>
+  <data name="CategorySettingPage_AtLeastOnCategoryGroup" xml:space="preserve">
+    <value>Select at least one category group, otherwise you can't find it again</value>
+  </data>
+  <data name="CategorySettingPage_StatusGroupCannotSelect" xml:space="preserve">
+    <value>Play status group is dynamic, this setting will lose after restart</value>
+  </data>
+  <data name="CategorySettingPage_HavePutInQueue" xml:space="preserve">
+    <value>Added to queue</value>
+  </data>
+  <data name="CategorySettingPage_CommandBar_DownloadImg.Label" xml:space="preserve">
+    <value>Download developer image</value>
+  </data>
+  <data name="GalgameSettingPage_GetInfoFromRss.Label" xml:space="preserve">
+    <value>Update data from feeds</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameName.Title" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameId.Text" xml:space="preserve">
+    <value>Game ID</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameRssType.Text" xml:space="preserve">
+    <value>Feeds</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameSavePosition.Text" xml:space="preserve">
+    <value>Save location</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameRating.Title" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameDeveloper.Title" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameExpectedPlayTime.Title" xml:space="preserve">
+    <value>Estimated game duration</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameDescription.Title" xml:space="preserve">
+    <value>Introduction</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameImagePath.Title" xml:space="preserve">
+    <value>Cover</value>
+  </data>
+  <data name="GalgameSettingPage_PickImage.Content" xml:space="preserve">
+    <value>Select image</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Status.Text" xml:space="preserve">
+    <value>Play status</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Rating.Text" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="ChangePlayStatusDialog_SyncToBgm.Content" xml:space="preserve">
+    <value>Sync to Bangumi</value>
+  </data>
+  <data name="ChangePlayStatusDialog_SyncToVNDB.Content" xml:space="preserve">
+    <value>Sync to VNDB</value>
+  </data>
+  <data name="ChangePlayStatusDialog_Private.Content" xml:space="preserve">
+    <value>Private</value>
+  </data>
+  <data name="CategoryPage_AddCategoryDialog_Title" xml:space="preserve">
+    <value>Add category</value>
+  </data>
+  <data name="CategoryPage_AddCategory.Label" xml:space="preserve">
+    <value>Add category</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroup.Label" xml:space="preserve">
+    <value>Add category group</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroupDialog_Title" xml:space="preserve">
+    <value>Add category group</value>
+  </data>
+  <data name="CategoryPage_AddCategoryGroupDialog_Msg" xml:space="preserve">
+    <value>Group name</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroup.Label" xml:space="preserve">
+    <value>Delete category group</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroupDialog_Title" xml:space="preserve">
+    <value>Delete category group</value>
+  </data>
+  <data name="CategoryPage_DeleteCategoryGroupDialog_Msg" xml:space="preserve">
+    <value>Are you sure you want to delete this category group?</value>
+  </data>
+  <data name="CategoryPage_AddCategoryDialog_Msg" xml:space="preserve">
+    <value>Category name</value>
+  </data>
+  <data name="HomePage_DragDrop.Text" xml:space="preserve">
+    <value>Drag the game's executable here to add the game</value>
+  </data>
+  <data name="UpdateContentPage_CategoryNow" xml:space="preserve">
+    <value>All games categorized by game developer</value>
+  </data>
+  <data name="Shell_UpdateContent.Content" xml:space="preserve">
+    <value>Change log</value>
+  </data>
+  <data name="ActivationService_FontPopup_Msg" xml:space="preserve">
+    <value>This app needs to install the font "Segoe Fluent Icons" to display icons. Do you want to install it now?</value>
+  </data>
+  <data name="ActivationService_FontPopup_Title" xml:space="preserve">
+    <value>Font not installed</value>
+  </data>
+  <data name="ActivationService_FontPopup_NoLongerDisplay" xml:space="preserve">
+    <value>Don't show this popup again</value>
+  </data>
+  <data name="Galgame_SavePath_Local" xml:space="preserve">
+    <value>Local</value>
+  </data>
+  <data name="Galgame_SavePath_Remote" xml:space="preserve">
+    <value>Cloud</value>
+  </data>
+  <data name="YesButton.Content" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="SelectProcessDialog_Title" xml:space="preserve">
+    <value>Select game process</value>
+  </data>
+  <data name="SelectProcessDialog_Msg.Text" xml:space="preserve">
+    <value>Oops! It looks like the automatic game thread detection failed.
+If the game is not closed, please manually choose thread to count play time correctly.
+If play time can record correctly, just cancel this popup.
+</value>
+  </data>
+  <data name="HomePage_ProcessNameSet" xml:space="preserve">
+    <value>The game process has been successfully specified. Restart this game to take effect</value>
+  </data>
+  <data name="AccountPage_Pvn_SyncGame.Title" xml:space="preserve">
+    <value>Game sync</value>
+  </data>
+  <data name="AccountPage_Pvn_SyncGame.Description" xml:space="preserve">
+    <value>Whether to upload the game status (add/play/delete, etc.) to the cloud archive root and sync across computer</value>
+  </data>
+  <data name="HomePage_Filter_DisplayVirtualGames.Label" xml:space="preserve">
+    <value>Show non-installed games</value>
+  </data>
+  <data name="HomePage_SpecialDisplayVirtualGame.Label" xml:space="preserve">
+    <value>Special display non-installed games</value>
+  </data>
+  <data name="GalgamePage_PathAlreadyExist" xml:space="preserve">
+    <value>This path has been bound to other games</value>
+  </data>
+  <data name="GalgamePage_PathSet" xml:space="preserve">
+    <value>Successfully set local path for this game</value>
+  </data>
+  <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
+    <value>Set path</value>
+  </data>
+  <data name="HomePage_Syncing" xml:space="preserve">
+    <value>Syncing game history  {0}/{1}</value>
+  </data>
+  <data name="HomePage_Synced" xml:space="preserve">
+    <value>Synchronized {0} game history changes</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread.Label" xml:space="preserve">
+    <value>Remove process specified</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="SettingsPage_Other_Memory.Title" xml:space="preserve">
+    <value>Optimize memory usage</value>
+  </data>
+  <data name="SettingsPage_Other_Memory.Description" xml:space="preserve">
+    <value>Reduces memory usage, but it will slightly increase CPU usage when switching pages.</value>
+  </data>
+  <data name="EditPlayTimeDialog_Title" xml:space="preserve">
+    <value>Edit play time</value>
+  </data>
+  <data name="Edit.Label" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="SettingsPage_Game.SettingTitle" xml:space="preserve">
+    <value>Gaming</value>
+  </data>
+  <data name="SettingsPage_Game.SettingDescription" xml:space="preserve">
+    <value>Settings related to gaming</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Title" xml:space="preserve">
+    <value>Record only foreground time</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Description" xml:space="preserve">
+    <value>When game window is not focused (minimized or in other windows), it will be not counted in play time.</value>
+  </data>
+  <data name="Shell_SystemTray_Item1.Text" xml:space="preserve">
+    <value>Restore window</value>
+  </data>
+  <data name="Shell_SystemTray_Item2.Text" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="CloseConfirmDialog_Title" xml:space="preserve">
+    <value>Closing</value>
+  </data>
+  <data name="CloseConfirmDialog_SystemTray" xml:space="preserve">
+    <value>Minimize to tray</value>
+  </data>
+  <data name="CloseConfirmDialog_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="CloseConfirmDialog_Remember.Content" xml:space="preserve">
+    <value>Remember my choice</value>
+  </data>
+  <data name="WindowMode_Normal" xml:space="preserve">
+    <value>No set</value>
+  </data>
+  <data name="WindowMode_Close" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="WindowMode_SystemTray" xml:space="preserve">
+    <value>Minimize to System Tray</value>
+  </data>
+  <data name="SettingsPage_Other_CloseMode.Title" xml:space="preserve">
+    <value>Closing behavior</value>
+  </data>
+  <data name="SettingsPage_Other_CloseMode.Description" xml:space="preserve">
+    <value>Select the behavior of the app when you click the close button</value>
+  </data>
+  <data name="WindowMode_Minimize" xml:space="preserve">
+    <value>Minimize to system tray</value>
+  </data>
+  <data name="SettingsPage_Game_PlayingWindowMode.Title" xml:space="preserve">
+    <value>App behavior while gaming</value>
+  </data>
+  <data name="SettingsPage_Game_PlayingWindowMode.Description" xml:space="preserve">
+    <value>App behavior while gaming</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Progress" xml:space="preserve">
+    <value>Scanning path: {0}</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Done" xml:space="preserve">
+    <value>Scan finished, adding {0} games</value>
+  </data>
+  <data name="SettingsPage_Notification.SettingTitle" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="SettingsPage_Notification.SettingDescription" xml:space="preserve">
+    <value>Manage notification settings when applications are minimized to tray</value>
+  </data>
+  <data name="SettingsPage_Notification_GetGalgameFolder.Title" xml:space="preserve">
+    <value>Complete game scan notifications</value>
+  </data>
+  <data name="SettingsPage_Notification_GetGalgameFolder.Description" xml:space="preserve">
+    <value>Whether to enable the game folder scan completed notifications</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Done" xml:space="preserve">
+    <value>Unpacking finished, searching the game</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Start" xml:space="preserve">
+    <value>Start extracting, please wait</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PasswordRequired" xml:space="preserve">
+    <value>Please enter the zip's password</value>
+  </data>
+  <data name="UnpackDialog_Select.Content" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="UnpackDialog_GameName.Text" xml:space="preserve">
+    <value>Name of the game</value>
+  </data>
+  <data name="UnpackDialog_GameDescription.Text" xml:space="preserve">
+    <value>To improve the accuracy of identification, the game name should be as accurate as possible (official) and remove unnecessary content (e.g. version, etc.)</value>
+  </data>
+  <data name="UnpackDialog_Password.Text" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="UnpackDialog_Password_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Don't fill it if no password</value>
+  </data>
+  <data name="UnpackDialog_Title" xml:space="preserve">
+    <value>Add Game</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Error" xml:space="preserve">
+    <value>The archive is corrupted or the password is incorrect</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Title" xml:space="preserve">
+    <value>Finish extract notifications</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Description" xml:space="preserve">
+    <value>Whether to notify when unpack is done.</value>
+  </data>
+  <data name="UnpackGameTask_Done_Title" xml:space="preserve">
+    <value>Unzip completed</value>
+  </data>
+  <data name="UnpackGameTask_Done_Msg" xml:space="preserve">
+    <value>{0} has been unpacked to {1} and added to library</value>
+  </data>
+  <data name="GalgameFolderPage_AutoScan.Label" xml:space="preserve">
+    <value>Auto scan on startup</value>
+  </data>
+  <data name="GalgameFolderPage_AddManually.Label" xml:space="preserve">
+    <value>Add game manually</value>
+  </data>
+  <data name="GalgameFolderPage_AddFromZip.Label" xml:space="preserve">
+    <value>Add Game (Compress)</value>
+  </data>
+  <data name="GalgameFolderPage_Refresh.Label" xml:space="preserve">
+    <value>Auto-find game</value>
+  </data>
+  <data name="LibraryPage_AddGalgameFolder.Label" xml:space="preserve">
+    <value>Add library</value>
+  </data>
+  <data name="LibraryPage_ScanAll.Label" xml:space="preserve">
+    <value>Scan all libraries</value>
+  </data>
+  <data name="LibraryPage_ScanAll_Success" xml:space="preserve">
+    <value>Scan tasks for {0} libraries started</value>
+  </data>
+  <data name="GalgameFolderPage_Log.Label" xml:space="preserve">
+    <value>Open scan record</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Saving" xml:space="preserve">
+    <value>Scan finished, saving record</value>
+  </data>
+  <data name="UpdateContentPage_Download_Success" xml:space="preserve">
+    <value>The latest change log has been downloaded successfully</value>
+  </data>
+  <data name="SettingsPage_About_UpdateAvailable.Text" xml:space="preserve">
+    <value>New version available!</value>
+  </data>
+  <data name="GalgamePage_SelectThread.Label" xml:space="preserve">
+    <value>Manually specify game process</value>
+  </data>
+  <data name="VirtualGameFilter" xml:space="preserve">
+    <value>Local game</value>
+  </data>
+  <data name="HomePage_FilterInputBox.PlaceholderText" xml:space="preserve">
+    <value>Tag/Developer/Play status/Category</value>
+  </data>
+  <data name="HomePage_Filter_Not_Found" xml:space="preserve">
+    <value>No matching filters found</value>
+  </data>
+  <data name="HomePage_KeepFilters.Label" xml:space="preserve">
+    <value>Keep filters</value>
+  </data>
+  <data name="GalgameCollectionService_PhraseFileFailed" xml:space="preserve">
+    <value>Failed to parse .PotatoVN backup. Please manually delete the .PotatoVN folder or modify meta.json as a valid json file.</value>
+  </data>
+  <data name="SelectFileDialog_NoFound" xml:space="preserve">
+    <value>None of {1} file are founded in {0}</value>
+  </data>
+  <data name="GalgamePage_OpenText.Label" xml:space="preserve">
+    <value>Open text</value>
+  </data>
+  <data name="GalgamePage_SelectText_Title" xml:space="preserve">
+    <value>Select text to open</value>
+  </data>
+  <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
+    <value>Clear selection</value>
+  </data>
+  <data name="Shell_Account.Content" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Shell_Info.Content" xml:space="preserve">
+    <value>Info</value>
   </data>
 </root>

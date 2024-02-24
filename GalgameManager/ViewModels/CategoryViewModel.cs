@@ -18,6 +18,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     private readonly CategoryService _categoryService;
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IFilterService _filterService;
     // ReSharper disable once CollectionNeverQueried.Global
     public readonly ObservableCollection<Category> Source = new();
     private ObservableCollection<CategoryGroup> _categoryGroups = new();
@@ -26,17 +27,20 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _canAddCategory; //能否添加分类（状态分类组不能添加）
 
     public CategoryViewModel(ICategoryService categoryService, INavigationService navigationService,
-        ILocalSettingsService localSettingsService)
+        ILocalSettingsService localSettingsService, IFilterService filterService)
     {
         _categoryService = (categoryService as CategoryService)!;
         _localSettingsService = localSettingsService;
         _navigationService = navigationService;
+        _filterService = filterService;
     }
 
     [RelayCommand]
     private void OnItemClick(Category category)
     {
-        _navigationService.NavigateTo(typeof(HomeViewModel).FullName!, new CategoryFilter(category));
+        _filterService.ClearFilters();
+        _filterService.AddFilter(new CategoryFilter(category));
+        _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -84,7 +88,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         var delete = false;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_DeleteCategory_Title".GetLocalized(),
             Content = "CategoryPage_DeleteCategory_Msg".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
@@ -115,7 +119,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         public Category? Target;
         public CombineCategoryDialog(CategoryGroup group, Category source)
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot;
+            XamlRoot = App.MainWindow!.Content.XamlRoot;
             Title = "CategoryPage_CombineCategory_Title".GetLocalized();
 
             StackPanel panel = new();
@@ -166,7 +170,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         var name = string.Empty;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_AddCategoryDialog_Title".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
             SecondaryButtonText = "Cancel".GetLocalized(),
@@ -195,7 +199,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
         var name = string.Empty;
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_AddCategoryGroupDialog_Title".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
             SecondaryButtonText = "Cancel".GetLocalized(),
@@ -222,7 +226,7 @@ public partial class CategoryViewModel : ObservableRecipient, INavigationAware
     {
         ContentDialog dialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "CategoryPage_DeleteCategoryGroupDialog_Title".GetLocalized(),
             Content = "CategoryPage_DeleteCategoryGroupDialog_Msg".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),

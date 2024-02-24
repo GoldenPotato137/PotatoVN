@@ -5,7 +5,6 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers.API;
 using GalgameManager.Models;
 using Newtonsoft.Json.Linq;
-using SharpCompress;
 
 namespace GalgameManager.Helpers.Phrase;
 
@@ -14,7 +13,7 @@ public class VndbPhraser : IGalInfoPhraser
     private readonly VndbApi _vndb = new();
     private readonly Dictionary<int, JToken> _tagDb = new();
     private bool _init;
-    private const string TagDbFile = @"Assets\Data\vndb-tags-2023-04-15.json";
+    private const string TagDbFile = @"Assets\Data\vndb-tags-latest.json";
     /// <summary>
     /// id eg:g530[1..]=530=(int)530
     /// </summary>
@@ -109,7 +108,7 @@ public class VndbPhraser : IGalInfoPhraser
             // id eg: v16044 -> 16044
             var id = rssItem.Id! ;
             result.Id = id.StartsWith("v")?id[1..]:id;
-            result.Rating = rssItem.Rating / 10 ?? 0;
+            result.Rating =(float)Math.Round(rssItem.Rating / 10 ?? 0.0D, 1);
             result.ExpectedPlayTime = GetLength(rssItem.Lenth,rssItem.LengthMinutes);
             result.ImageUrl = rssItem.Image != null ? rssItem.Image.Url! :"";
             // Developers
@@ -131,12 +130,12 @@ public class VndbPhraser : IGalInfoPhraser
             if (rssItem.Tags != null)
             {
                 IOrderedEnumerable<VndbTag> tmpTags = rssItem.Tags.OrderByDescending(t => t.Rating);
-                tmpTags.ForEach(tag =>
+                foreach (VndbTag tag in tmpTags)
                 {
-                    if (!int.TryParse(tag.Id![1..], out var i)) return;
+                    if (!int.TryParse(tag.Id![1..], out var i)) continue;
                     if (_tagDb.TryGetValue(i, out JToken? tagInfo))
                         result.Tags.Value.Add(tagInfo["name"]!.ToString() ?? "");
-                });
+                }
             }
         }
         catch (Exception)

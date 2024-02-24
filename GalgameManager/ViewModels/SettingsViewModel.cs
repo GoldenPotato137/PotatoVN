@@ -31,8 +31,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly IBgmOAuthService _bgmOAuthService;
     private string _versionDescription;
 
-    #region UI_STRINGS
-
+    #region UI_STRINGS //历史遗留，不要继续使用这种方式获取字符串
+    
     private static readonly ResourceLoader ResourceLoader = new();
     public readonly string UiThemeTitle = ResourceLoader.GetString("SettingsPage_ThemeTitle");
     public readonly string UiThemeDescription = ResourceLoader.GetString("SettingsPage_ThemeDescription");
@@ -77,16 +77,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     
     public async void OnNavigatedTo(object parameter)
     {
-        if (_shouldDisplayUpdateNotification)
-        {
-            await ShowUpdateNotification();
-            await _updateService.UpdateSettingsBadgeAsync();
-        }
-
+        await _updateService.UpdateSettingsBadgeAsync();
+        UpdateAvailable = await _updateService.CheckUpdateAsync();
         await LoadBgmAccountAsync(await _bgmOAuthService.GetBgmAccountWithCache());
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+        _updateService.SettingBadgeEvent -= HandelSettingBadgeEvent;
+        _bgmOAuthService.OnAuthResultChange -= BgmAuthResultNotify;
+        _galgameCollectionService.MetaSavedEvent -= SetSaveMetaPopUp;
+        _localSettingsService.OnSettingChanged -= OnSettingChange;
+    }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
@@ -97,8 +99,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _navigationService = navigationService;
         _updateService = updateService;
         _bgmOAuthService = bgmOAuthService;
-        updateService.SettingBadgeEvent += result => _shouldDisplayUpdateNotification = result;
-        updateService.UpdateSettingsBadgeAsync(); //只是为了触发事件，原地TP，先这么写吧
+        updateService.SettingBadgeEvent += HandelSettingBadgeEvent;
         _versionDescription = GetVersionDescription();
         _localSettingsService = localSettingsService;
         
@@ -107,6 +108,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         //OAUTH
         _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
+        //GAME
+        _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
+        _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
+        PlayingWindowModes = new[] {WindowMode.Minimize, WindowMode.SystemTray };
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
         //DOWNLOAD_BEHAVIOR
@@ -132,9 +137,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _startPage = _localSettingsService.ReadSettingAsync<PageEnum>(KeyValues.StartPage).Result;
         QuitStart = _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart).Result;
         _authenticationType = _localSettingsService.ReadSettingAsync<AuthenticationType>(KeyValues.AuthenticationType).Result;
-        //UPLOAD
+        //Notification
+        NotifyWhenGetGalgameInFolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.NotifyWhenGetGalgameInFolder).Result;
+        NotifyWhenUnpackGame = _localSettingsService.ReadSettingAsync<bool>(KeyValues.NotifyWhenUnpackGame).Result;
+        _eventPvnSync = _localSettingsService.ReadSettingAsync<bool>(KeyValues.EventPvnSyncNotify).Result;
+        _eventPvnSyncEmpty = _localSettingsService.ReadSettingAsync<bool>(KeyValues.EventPvnSyncEmptyNotify).Result;
+        //Other
         UploadToAppCenter = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UploadData).Result;
-
+        MemoryImprove = _localSettingsService.ReadSettingAsync<bool>(KeyValues.MemoryImprove).Result;
+        WindowModes = new[] { WindowMode.Normal, WindowMode.Close, WindowMode.SystemTray };
+        CloseMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
+        DevelopmentMode = _localSettingsService.ReadSettingAsync<bool>(KeyValues.DevelopmentMode).Result;
+        
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
@@ -171,13 +185,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #region UPDATE
 
-    private bool _shouldDisplayUpdateNotification;
+    [ObservableProperty] private bool _updateAvailable;
     
     private async Task ShowUpdateNotification()
     {
         ContentDialog updateDialog = new()
         {
-            XamlRoot = App.MainWindow.Content.XamlRoot,
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
             Title = "SettingsPage_UpdateNotification_Title".GetLocalized(),
             Content = "SettingsPage_UpdateNotification_Msg".GetLocalized(),
             PrimaryButtonText = "SettingsPage_SeeWhatsNew".GetLocalized(),
@@ -188,6 +202,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             _navigationService.NavigateTo(typeof(UpdateContentViewModel).FullName!);
         await _localSettingsService.SaveSettingAsync(KeyValues.LastNoticeUpdateVersion, RuntimeHelper.GetVersion());
         await updateDialog.ShowAsync();
+    }
+    
+    private async void HandelSettingBadgeEvent(bool result)
+    {
+        if (result == false) return;
+        await ShowUpdateNotification();
+        await _updateService.UpdateSettingsBadgeAsync();
     }
     
     #endregion
@@ -261,24 +282,36 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
     }
     
-    private async void BgmAuthResultNotify((OAuthResult, string) arg)
+    private async void BgmAuthResultNotify(OAuthResult result, string msg)
     {
-        switch (arg.Item1)
+        switch (result)
         {
             case OAuthResult.Done:
             case OAuthResult.Failed:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2);
+                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
                 break;
             case OAuthResult.FetchingAccount: 
             case OAuthResult.FetchingToken:
             default:
-                await DisplayMsgAsync(arg.Item1.ToInfoBarSeverity(), arg.Item2, 1000 * 60);
+                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg, 1000 * 60);
                 break;
         }
     }
 
     #endregion
 
+    #region GAME
+
+    [ObservableProperty] private bool _recordOnlyForeground;
+    [ObservableProperty] private WindowMode _playingWindowMode;
+    public WindowMode[] PlayingWindowModes;
+    
+    partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
+    
+    partial void OnPlayingWindowModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.PlayingWindowMode, value);
+
+    #endregion
+    
     #region RSS
 
     [ObservableProperty] private RssType _rssType;
@@ -384,11 +417,11 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async Task SelectRemoteFolder()
     {
         FolderPicker openPicker = new();
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
         openPicker.SuggestedStartLocation = PickerLocationId.HomeGroup;
         openPicker.FileTypeFilter.Add("*");
         StorageFolder? folder = await openPicker.PickSingleFolderAsync();
-        RemoteFolder = folder?.Path;
+        RemoteFolder = folder?.Path ?? RemoteFolder;
     }
 
     #endregion
@@ -452,11 +485,43 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    #region UPLOAD
+    #region Other
 
     [ObservableProperty] private bool _uploadToAppCenter;
+    [ObservableProperty] private bool _memoryImprove;
+    [ObservableProperty] private WindowMode _closeMode;
+    [ObservableProperty] private bool _developmentMode;
+    public readonly WindowMode[] WindowModes;
     
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
+    
+    partial void OnMemoryImproveChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.MemoryImprove, value);
+
+    partial void OnCloseModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.CloseMode, value);
+    
+    partial void OnDevelopmentModeChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.DevelopmentMode, value);
+
+    #endregion
+
+    #region Notification
+
+    [ObservableProperty] private bool _notifyWhenGetGalgameInFolder;
+    [ObservableProperty] private bool _notifyWhenUnpackGame;
+    [ObservableProperty] private bool _eventPvnSync;
+    [ObservableProperty] private bool _eventPvnSyncEmpty;
+    
+    partial void OnNotifyWhenGetGalgameInFolderChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.NotifyWhenGetGalgameInFolder, value);
+    
+    partial void OnNotifyWhenUnpackGameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.NotifyWhenUnpackGame, value);
+    
+    partial void OnEventPvnSyncChanged(bool value)
+    {
+        _localSettingsService.SaveSettingAsync(KeyValues.EventPvnSyncNotify, value);
+        if (value == false)
+            EventPvnSyncEmpty = false;
+    }
+
+    partial void OnEventPvnSyncEmptyChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.EventPvnSyncEmptyNotify, value);
 
     #endregion
 
@@ -466,7 +531,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async Task Rate()
     {
         StoreContext context = StoreContext.GetDefault();
-        WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow.GetWindowHandle());
+        WinRT.Interop.InitializeWithWindow.Initialize(context, App.MainWindow!.GetWindowHandle());
         await context.RequestRateAndReviewAppAsync();
     }
 

@@ -38,11 +38,13 @@ public class LocalSettingsService : ILocalSettingsService
         _localsettingsBackupFile = op.BackUpSettingsFile ?? ErrorFileName;
 
         _settings = new Dictionary<string, object>();
-        
-        App.MainWindow.AppWindow.Closing += async (_, _) =>
+
+        async void OnAppClosing()
         {
             await _fileService.WaitForWriteFinishAsync();
-        };
+        }
+
+        App.OnAppClosing += OnAppClosing;
         Upgrade().Wait();
     }
 
@@ -56,15 +58,28 @@ public class LocalSettingsService : ILocalSettingsService
         var retry = 0;
         while (true)
         {
-            if (retry > 3) throw new ConfigurationErrorsException("配置读取失败");
+            if (retry > 3) //配置读取失败且无法回复，全新启动
+            {
+                _settings = new Dictionary<string, object>();
+                return;
+            }
 
             await UpgradeSaveFormat();
+
+            var reset = false;
+            try
+            {
+                _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
+                            new Dictionary<string, object>();
+            }
+            catch
+            {
+                reset = true;
+            }
             
-            _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
-                        new Dictionary<string, object>();
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
-            if (CheckSettings() == false)
+            if (reset || CheckSettings() == false)
             {
                 // 恢复最后一个正确的配置
                 if (File.Exists(Path.Combine(_applicationDataFolder, _localsettingsBackupFile))) 
@@ -188,12 +203,20 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)true;
             case KeyValues.OverrideLocalNameWithChinese:
                 return (T?)(object)false;
+            case KeyValues.MemoryImprove:
+                return (T?)(object)true;
+            case KeyValues.PlayingWindowMode:
+                return (T?)(object)WindowMode.Minimize;
+            case KeyValues.NotifyWhenGetGalgameInFolder:
+            case KeyValues.NotifyWhenUnpackGame:
+            case KeyValues.EventPvnSyncNotify:
+                return (T?)(object)true;
             default:
                 return default;
         }
     }
 
-    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false)
+    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false, bool triggerEventWhenNull = false)
     {
         if (RuntimeHelper.IsMSIX && !isLarge)
         {
@@ -205,8 +228,10 @@ public class LocalSettingsService : ILocalSettingsService
             _settings[key] = value;
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
-        if(value != null)
+        if(value != null || triggerEventWhenNull)
+#pragma warning disable CS8604 // 引用类型参数可能为 null。
             OnSettingChanged?.Invoke(key, value);
+#pragma warning restore CS8604 // 引用类型参数可能为 null。
     }
     
     public async Task RemoveSettingAsync(string key)

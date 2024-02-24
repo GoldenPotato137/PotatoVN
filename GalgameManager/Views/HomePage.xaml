@@ -10,6 +10,9 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:filters="using:GalgameManager.Models.Filters"
+    xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d"
     x:Name="Page"
     NavigationCacheMode="Required">
@@ -18,6 +21,8 @@
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
+        <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
+        
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -37,42 +42,145 @@
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
                         Margin="0 -67 0 0">
+                <!-- 搜索 -->
                 <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <TextBox Width="200" Text="{x:Bind ViewModel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <AutoSuggestBox x:Uid="HomePage_Search" AllowFocusOnInteraction="True" MinWidth="250"
+                                            Text="{x:Bind ViewModel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{x:Bind ViewModel.SearchSuggestions, Mode=OneWay}">
                                 <interactivity:Interaction.Behaviors>
                                     <core:EventTriggerBehavior EventName="TextChanged">
-                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchCommand}"/>
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchChangeCommand}" />
+                                    </core:EventTriggerBehavior>
+                                    <core:EventTriggerBehavior EventName="QuerySubmitted">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchSubmittedCommand}" />
                                     </core:EventTriggerBehavior>
                                 </interactivity:Interaction.Behaviors>
-                            </TextBox>
+                            </AutoSuggestBox>
                         </Flyout>
                     </AppBarButton.Flyout>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="F" />
+                    </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton
-                    Icon="Add"
-                    Label="{x:Bind ViewModel.UiAddNewGame}"
-                    Command="{x:Bind ViewModel.AddGalgameCommand}"
-                    IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="{x:Bind ViewModel.UiSort}" Command="{x:Bind ViewModel.SortCommand}">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-                <AppBarButton Label="{x:Bind ViewModel.UiFilter}" IsEnabled="False">
+                <!-- 过滤 -->
+                <AppBarButton x:Uid="HomePage_Filter" Label="{x:Bind ViewModel.UiFilter, Mode=OneWay}">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
                     </AppBarButton.Icon>
+                    <AppBarButton.Flyout>
+                        <Flyout Placement="Bottom">
+                            <Grid Width="250">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <control:ObservableList Grid.Row="0"
+                                                        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
+                                                        AddCommand="{x:Bind ViewModel.SetFilterInputVisibleCommand}"
+                                                        Visibility="{x:Bind ViewModel.FilterListVisible, Mode=OneWay}">
+                                    <control:ObservableList.ItemTemplate>
+                                        <DataTemplate x:DataType="filters:FilterBase">
+                                            <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" 
+                                                  CornerRadius="10" Margin="5 7 5 7">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Padding="5" Text="{x:Bind ToString()}" 
+                                                           VerticalAlignment="Center"/>
+                                                <Button Grid.Column="1" Margin="2 0 0 0"
+                                                        Content="&#xE894;" FontFamily="{ThemeResource SymbolThemeFontFamily}" 
+                                                        Background="Transparent" BorderBrush="{x:Null}"
+                                                        CornerRadius="10" Padding="3"
+                                                        VerticalAlignment="Center" VerticalContentAlignment="Center"
+                                                        Loaded="FilterDeleteButton_OnLoaded"
+                                                        CommandParameter="{x:Bind}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </control:ObservableList.ItemTemplate>
+                                </control:ObservableList>
+                                <AutoSuggestBox Grid.Row="1" x:Uid="HomePage_FilterInputBox" 
+                                                AllowFocusOnInteraction="True"
+                                                Text="{x:Bind ViewModel.FilterInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                ItemsSource="{x:Bind ViewModel.FilterInputSuggestions, Mode=OneWay}"
+                                                Visibility="{x:Bind ViewModel.FilterInputVisible, Mode=OneWay}"
+                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}"
+                                                Transitions="{x:Bind ViewModel.FilterFlyoutTransitions}">
+                                    <interactivity:Interaction.Behaviors>
+                                        <core:EventTriggerBehavior EventName="TextChanged">
+                                            <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTextChangeCommand}" />
+                                        </core:EventTriggerBehavior>
+                                        <core:EventTriggerBehavior EventName="QuerySubmitted">
+                                            <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputQuerySubmittedCommand}" />
+                                        </core:EventTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                    <animations:Implicit.ShowAnimations>
+                                        <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
+                                        <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
+                                    </animations:Implicit.ShowAnimations>
+                                </AutoSuggestBox>
+                            </Grid>
+                            <interactivity:Interaction.Behaviors>
+                                <core:EventTriggerBehavior EventName="Opening">
+                                    <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterFlyoutOpeningCommand}" />
+                                </core:EventTriggerBehavior>
+                            </interactivity:Interaction.Behaviors>
+                        </Flyout>
+                    </AppBarButton.Flyout>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="K"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <!-- 添加游戏 -->
+                <AppBarButton
+                    Icon="Add"
+                    x:Uid="HomePage_AddNewGame"
+                    Command="{x:Bind ViewModel.AddGalgameCommand}"
+                    IsEnabled="{x:Bind ViewModel.IsPhrasing, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="N"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <!-- 排序 -->
+                <AppBarButton x:Uid="HomePage_Sort" Command="{x:Bind ViewModel.SortCommand}">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8CB;" />
+                    </AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="S"/>
+                    </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
+                    <!-- 裁剪横图 -->
                     <AppBarToggleButton x:Uid="HomePage_FixHorizontalPicture" Icon="Crop"
                                         IsChecked="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}"/>
+                    <!-- 游玩状态标记 -->
                     <AppBarToggleButton x:Uid="HomePage_DisplayPlayType" 
                                         IsChecked="{x:Bind ViewModel.DisplayPlayTypePolygon, Mode=TwoWay}"
                                         Visibility="{x:Bind ViewModel.FixHorizontalPicture, Mode=OneWay}">
                         <AppBarToggleButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE890;"/>
+                        </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                    <!-- 非本地游戏特殊显示 -->
+                    <AppBarToggleButton x:Uid="HomePage_SpecialDisplayVirtualGame"
+                                        IsChecked="{x:Bind ViewModel.SpecialDisplayVirtualGame, Mode=TwoWay}">
+                        <AppBarToggleButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FF;"/>
+                        </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                    <!-- 保留过滤器 -->
+                    <AppBarToggleButton x:Uid="HomePage_KeepFilters"
+                                        IsChecked="{x:Bind ViewModel.KeepFilters, Mode=TwoWay}"
+                                        Icon="{ui:FontIcon Glyph=&#xE74E;}">
+                    </AppBarToggleButton>
+                    <!-- 显示非本地游戏 -->
+                    <AppBarToggleButton x:Uid="HomePage_Filter_DisplayVirtualGames"
+                                        IsChecked="{x:Bind ViewModel.DisplayVirtualGame, Mode=TwoWay}">
+                        <AppBarToggleButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;"/>
                         </AppBarToggleButton.Icon>
                     </AppBarToggleButton>
                 </CommandBar.SecondaryCommands>
@@ -88,17 +196,17 @@
                 SelectionMode="None"
                 StretchContentForSingleRow="False"
                 animations:Connected.ListItemKey="galgameItem"
-                animations:Connected.ListItemElementName="connectedElement">
+                animations:Connected.ListItemElementName="ConnectedElement">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
                         <Grid
                             Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
                             <StackPanel HorizontalAlignment="Center">
-                                <Grid>
+                                <Grid x:Name="ConnectedElement"
+                                      Opacity="{x:Bind Converter={StaticResource GameToOpacityConverter}}">
                                     <Rectangle Height="209" Width="150"
                                                HorizontalAlignment="Center" 
                                                VerticalAlignment="Center"
-                                               x:Name="connectedElement"
                                                >
                                         <Rectangle.Fill>
                                             <ImageBrush 

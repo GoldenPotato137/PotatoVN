@@ -5,6 +5,10 @@ namespace GalgameManager.Contracts.Services;
 
 public interface IFaqService
 {
+    public event Action UpdateStatusChangeEvent;
+
+    public bool IsUpdating { get; }
+
     /// <summary>
     /// 获取常见问题列表
     /// </summary>

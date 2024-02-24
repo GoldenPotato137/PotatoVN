@@ -42,7 +42,7 @@ public class AuthenticationService : IAuthenticationService
 
     private static async Task<bool> StartWindowsHelloAuthentication()
     {
-        var hwnd = App.MainWindow.GetWindowHandle();
+        var hwnd = App.MainWindow!.GetWindowHandle();
         UserConsentVerificationResult consentResult = await UserConsentVerifierInterop.RequestVerificationForWindowAsync(hwnd, "AuthenticateUserMessage".GetLocalized());
 
         return consentResult switch

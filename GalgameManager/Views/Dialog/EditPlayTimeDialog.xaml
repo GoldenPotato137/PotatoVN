@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.EditPlayTimeDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GalgameManager.Views.Dialog"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <Grid MaxHeight="300">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <ListView Grid.Row="0" x:Name="ListView">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:DisplayPlayTime">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="{x:Bind Date}" VerticalAlignment="Center" MinWidth="100"/>
+                        <NumberBox Value="{x:Bind PlayedTime, Mode=TwoWay}" 
+                                   VerticalAlignment="Center" Margin="0 5 0 5" MinWidth="70"
+                                   SpinButtonPlacementMode="Inline" SmallChange="1" LargeChange="10"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        
+        <Grid Grid.Row="1" Margin="0 5 0 -15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Grid.Column="0" HorizontalAlignment="Stretch"
+                    Margin="10 0 10 0"> 
+                <SymbolIcon Symbol="Add"/>
+                <Button.Flyout>
+                    <DatePickerFlyout DatePicked="DatePickerFlyout_OnDatePicked"></DatePickerFlyout>
+                </Button.Flyout>
+            </Button>
+        
+            <Button Grid.Column="1" HorizontalAlignment="Stretch"
+                    Margin="10 0 10 0" 
+                    Click="ButtonDelete_OnClick">
+                <SymbolIcon Symbol="Delete"/>
+            </Button>
+        </Grid>
+        
+    </Grid>
+    
+</ContentDialog>

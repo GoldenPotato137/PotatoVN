@@ -10,6 +10,7 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <PlatformTarget>x64</PlatformTarget>
+        <EnableMsixTooling>true</EnableMsixTooling>
     </PropertyGroup>
 
     <ItemGroup>

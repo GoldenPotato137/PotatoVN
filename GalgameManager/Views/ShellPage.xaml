@@ -31,7 +31,8 @@
             IsSettingsVisible="False"
             ExpandedModeThresholdWidth="1280"
             DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay, FallbackValue={}}">
+            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay, FallbackValue={}}"
+            PointerPressed="NavigationViewControl_OnPointerPressed">
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="Shell_Home" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.HomeViewModel">
                     <NavigationViewItem.Icon>
@@ -55,9 +56,23 @@
             </NavigationView.MenuItems>
             
             <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Uid="Shell_Info" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.InfoViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE770;"/>
+                    </NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Value="{x:Bind ViewModel.InfoPageBadgeCount, Mode=OneWay}" 
+                                   Visibility="{x:Bind ViewModel.InfoPageBadgeVisibility, Mode=OneWay}"/>
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_Help" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.HelpViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE897;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_Account" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.AccountViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE77B;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_Settings" helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.SettingsViewModel">
@@ -82,7 +97,30 @@
             </NavigationView.HeaderTemplate>
             
             <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
-                <Frame x:Name="NavigationFrame" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Frame Grid.Row="0" x:Name="NavigationFrame" />
+                
+                <Grid Grid.Row="0" Margin="0 0 10 40" VerticalAlignment="Bottom">
+                    <StackPanel Spacing="7">
+                        <InfoBar Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}" 
+                                 Title="{x:Bind ViewModel.InfoBarTitle, Mode=OneWay}" 
+                                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" 
+                                 IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"/>
+                        <InfoBar Severity="{x:Bind ViewModel.EventInfoBarSeverity, Mode=OneWay}" 
+                                 Title="{x:Bind ViewModel.EventInfoBarTitle, Mode=OneWay}" 
+                                 Message="{x:Bind ViewModel.EventInfoBarMessage, Mode=OneWay}" 
+                                 IsOpen="{x:Bind ViewModel.IsEventInfoBarOpen, Mode=OneWay}">
+                            <InfoBar.ActionButton>
+                                <HyperlinkButton x:Uid="ShellPage_Info_Event" 
+                                                 Command="{x:Bind ViewModel.NavigateToInfoPageCommand}"
+                                                 Margin="0"/>
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </NavigationView>
     </Grid>

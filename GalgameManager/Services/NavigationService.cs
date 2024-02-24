@@ -4,6 +4,7 @@ using CommunityToolkit.WinUI.UI.Animations;
 
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +19,8 @@ public class NavigationService : INavigationService
     private readonly IPageService _pageService;
     private object? _lastParameterUsed;
     private Frame? _frame;
+    private bool _isMemoryImprove;
+    private (string pageKey, object? param, bool clearNavigation)? _lastFailedNavigation;
 
     public event NavigatedEventHandler? Navigated;
 
@@ -27,7 +30,7 @@ public class NavigationService : INavigationService
         {
             if (_frame == null)
             {
-                _frame = App.MainWindow.Content as Frame;
+                _frame = App.MainWindow!.Content as Frame;
                 RegisterFrameEvents();
             }
 
@@ -45,9 +48,22 @@ public class NavigationService : INavigationService
     [MemberNotNullWhen(true, nameof(Frame), nameof(_frame))]
     public bool CanGoBack => Frame != null && Frame.CanGoBack;
 
-    public NavigationService(IPageService pageService)
+    public NavigationService(IPageService pageService, ILocalSettingsService localSettingsService)
     {
         _pageService = pageService;
+        _pageService.OnInit += () =>
+        {
+            if (_lastFailedNavigation is null) return;
+            NavigateTo(_lastFailedNavigation.Value.pageKey, _lastFailedNavigation.Value.param,
+                _lastFailedNavigation.Value.clearNavigation);
+        };
+        localSettingsService.OnSettingChanged += OnSettingChanged;
+    }
+
+    private void OnSettingChanged(string key, object value)
+    {
+        if (key == KeyValues.MemoryImprove)
+            _isMemoryImprove = value is true;
     }
 
     private void RegisterFrameEvents()
@@ -99,11 +115,14 @@ public class NavigationService : INavigationService
                 {
                     navigationAware.OnNavigatedFrom();
                 }
+                if(_isMemoryImprove)
+                    GC.Collect(); //临时解决切换界面时内存不释放的问题（见：https://github.com/microsoft/microsoft-ui-xaml/issues/5978）
             }
 
             return navigated;
         }
 
+        _lastFailedNavigation = (pageKey, parameter, clearNavigation);
         return false;
     }
 

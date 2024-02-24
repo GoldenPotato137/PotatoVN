@@ -58,13 +58,13 @@ public class MixedPhraser : IGalInfoPhraser
         // 试图从Id中获取bgmId和vndbId
         try
         {
-            (string? bgmId, string ? vndbId) tmp = TryGetId(galgame.Id);
-            if (tmp.bgmId != null)
+            (string? bgmId, string ? vndbId) tmp = TryGetId(galgame.Ids[(int)RssType.Mixed]);
+            if (string.IsNullOrEmpty(tmp.bgmId) == false)
             {
                 bgm.RssType = RssType.Bangumi;
                 bgm.Id = tmp.bgmId;
             }
-            if (tmp.vndbId != null)
+            if (string.IsNullOrEmpty(tmp.vndbId) == false)
             {
                 vndb.RssType = RssType.Vndb;
                 vndb.Id = tmp.vndbId;
@@ -131,6 +131,14 @@ public class MixedPhraser : IGalInfoPhraser
         if (tmp[0] != "null") bgmId = tmp[0];
         if (tmp[1] != "null") vndbId = tmp[1];
         return (bgmId, vndbId);
+    }
+
+    public static string TrySetId(string str, string? bgmId, string? vndbId)
+    {
+        (string? bgmId, string? vndbId) lastId = TryGetId(str);
+        bgmId = bgmId ?? lastId.bgmId;
+        vndbId = vndbId ?? lastId.vndbId;
+        return $"bgm:{bgmId},vndb:{vndbId}";
     }
 
     public RssType GetPhraseType() => RssType.Mixed;

@@ -22,15 +22,6 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     public ICommand ItemClickCommand { get; }
     public ICommand AddLibraryCommand { get; }
     
-    [ObservableProperty]
-    private bool _isInfoBarOpen;
-
-    [ObservableProperty]
-    private string _infoBarMessage = string.Empty;
- 
-    [ObservableProperty]
-    private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
-    
     #region UI
 
     public readonly string UiDeleteFolder = "LibraryPage_DeleteFolder".GetLocalized();
@@ -68,7 +59,7 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
             FolderPicker folderPicker = new();
             folderPicker.FileTypeFilter.Add("*");
 
-            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow.GetWindowHandle());
+            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow!.GetWindowHandle());
 
             var folder = await folderPicker.PickSingleFolderAsync();
             if (folder != null)
@@ -78,11 +69,7 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
         }
         catch (Exception e)
         {
-            IsInfoBarOpen = true;
-            InfoBarMessage = e.Message;
-            InfoBarSeverity = InfoBarSeverity.Error;
-            await Task.Delay(3000);
-            IsInfoBarOpen = false;
+            _ = DisplayMsgAsync(InfoBarSeverity.Error, e.Message);
         }
     }
 
@@ -92,4 +79,37 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
         if (galgameFolder == null) return;
         await _galFolderService.DeleteGalgameFolderAsync(galgameFolder);
     }
+    
+    [RelayCommand]
+    private void ScanAll()
+    {
+        _galFolderService.ScanAll();
+        _ = DisplayMsgAsync(InfoBarSeverity.Success, "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
+    }
+    
+    #region INFO_BAR_CTRL
+
+    private int _infoBarIndex;
+    [ObservableProperty] private bool _isInfoBarOpen;
+    [ObservableProperty] private string _infoBarMessage = string.Empty;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+
+    /// <summary>
+    /// 使用InfoBar显示信息
+    /// </summary>
+    /// <param name="infoBarSeverity">信息严重程度</param>
+    /// <param name="msg">信息</param>
+    /// <param name="delayMs">显示时长(ms)</param>
+    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
+    {
+        var currentIndex = ++_infoBarIndex;
+        InfoBarSeverity = infoBarSeverity;
+        InfoBarMessage = msg;
+        IsInfoBarOpen = true;
+        await Task.Delay(delayMs);
+        if (currentIndex == _infoBarIndex)
+            IsInfoBarOpen = false;
+    }
+
+    #endregion
 }

@@ -1,0 +1,76 @@
+﻿<Page
+    x:Class="GalgameManager.Views.InfoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:viewModels="using:GalgameManager.ViewModels"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:models="using:GalgameManager.Models"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto" Margin="0 10 25 0">
+        <StackPanel>
+            <control:SettingExpander x:Uid="InfoPage_BgTask" SettingIcon="&#xE770;" 
+                                     IsExpanded="{x:Bind ViewModel.BgTaskExpanded}">
+                <control:SettingExpander.SettingContent>
+                    <Grid>
+                        <TextBlock x:Uid="InfoPage_NoBgTask" HorizontalAlignment="Center"
+                                   Style="{ThemeResource TitleTextBlockStyle}"
+                                   Margin="0 0 0 6"
+                                   Visibility="{x:Bind ViewModel.NoBgTaskVisibility, Mode=OneWay}" />
+
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.BgTasks}"
+                                       Visibility="{x:Bind ViewModel.NoBgTaskVisibility, Mode=OneWay,
+                                       Converter={StaticResource InverseVisibilityConverter}}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:BgTaskViewModel">
+                                    <control:Panel>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Title, Mode=OneWay}"
+                                                       Style="{ThemeResource BodyTextBlockStyle}" />
+                                            <TextBlock Text="{x:Bind Message, Mode=OneWay}"
+                                                       Style="{ThemeResource DescriptionTextStyle}" />
+                                        </StackPanel>
+                                    </control:Panel>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Grid>
+                </control:SettingExpander.SettingContent>
+            </control:SettingExpander>
+
+            <control:SettingExpander x:Uid="InfoPage_Info" SettingIcon="&#xE946;" 
+                                     IsExpanded="{x:Bind ViewModel.InfoExpanded}">
+                <control:SettingExpander.SettingContent>
+                    <Grid>
+                        <TextBlock x:Uid="InfoPage_NoInfo" HorizontalAlignment="Center"
+                                   Style="{ThemeResource TitleTextBlockStyle}"
+                                   Margin="0 0 0 6" 
+                                   Visibility="{x:Bind ViewModel.NoInfoVisibility, Mode=OneWay}"/>
+                        
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Infos, Mode=OneWay}"
+                                       Visibility="{x:Bind ViewModel.NoInfoVisibility, Mode=OneWay,
+                                       Converter={StaticResource InverseVisibilityConverter}}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="models:Info">
+                                    <InfoBar Severity="{x:Bind Severity}"
+                                             Title="{x:Bind Title}"
+                                             Message="{x:Bind Message}"
+                                             IsOpen="True" IsClosable="False"
+                                             Margin="0 0 0 10 "/>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Grid>
+                </control:SettingExpander.SettingContent>
+
+            </control:SettingExpander>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

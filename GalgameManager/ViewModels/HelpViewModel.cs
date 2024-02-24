@@ -4,20 +4,22 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
-using GalgameManager.Services;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
 public partial class HelpViewModel : ObservableRecipient, INavigationAware
 {
-    private readonly FaqService _faqService;
+    private readonly IFaqService _faqService;
+    private readonly IInfoService _infoService;
     [ObservableProperty] private ObservableCollection<Faq>? _faqs;
-    [ObservableProperty] private bool _infoBarVisibility;
     
-    public HelpViewModel(IFaqService faqService)
+    public HelpViewModel(IFaqService faqService, IInfoService infoService)
     {
-        _faqService = (faqService as FaqService)!;
+        _faqService = faqService;
+        _infoService = infoService;
         _faqService.UpdateStatusChangeEvent += ChangeInfoBar;
         ChangeInfoBar();
     }
@@ -29,11 +31,16 @@ public partial class HelpViewModel : ObservableRecipient, INavigationAware
 
     public void OnNavigatedFrom()
     {
+        _faqService.UpdateStatusChangeEvent -= ChangeInfoBar;
     }
 
     private void ChangeInfoBar()
     {
-        InfoBarVisibility = _faqService.IsUpdating;
+        if (_faqService.IsUpdating)
+            _infoService.Info(InfoBarSeverity.Informational, msg: "HelpPage_GettingFaq".GetLocalized(),
+                displayTimeMs: 100000);
+        else
+            _infoService.Info(InfoBarSeverity.Informational); // 关闭InfoBar
     }
 
     [RelayCommand]

@@ -174,10 +174,10 @@
   <data name="GalgamePage_Delete.Label" xml:space="preserve">
     <value>彻底删除游戏</value>
   </data>
-  <data name="HomePage_AddNewGame" xml:space="preserve">
+  <data name="HomePage_AddNewGame.Label" xml:space="preserve">
     <value>添加游戏</value>
   </data>
-  <data name="HomePage_Sort" xml:space="preserve">
+  <data name="HomePage_Sort.Label" xml:space="preserve">
     <value>排序</value>
   </data>
   <data name="HomePage_Filter" xml:space="preserve">
@@ -296,28 +296,28 @@
   <data name="GalgameCollectionService_FolderPickerDialog_ChoseAnotherFolder" xml:space="preserve">
     <value>选择其他文件夹</value>
   </data>
-  <data name="GalgamePage_Play" xml:space="preserve">
+  <data name="GalgamePage_Play.Label" xml:space="preserve">
     <value>开始游戏</value>
   </data>
-  <data name="GalgamePage_Edit" xml:space="preserve">
+  <data name="GalgamePage_Edit.Label" xml:space="preserve">
     <value>编辑</value>
   </data>
-  <data name="GalgamePage_ChangeSavePosition" xml:space="preserve">
+  <data name="GalgamePage_ChangeSavePosition.Label" xml:space="preserve">
     <value>转换存档位置</value>
   </data>
-  <data name="GalgamePage_Developers" xml:space="preserve">
+  <data name="GalgamePage_Developers.Text" xml:space="preserve">
     <value>开发商</value>
   </data>
-  <data name="GalgamePage_ExpectedPlayTime" xml:space="preserve">
+  <data name="GalgamePage_ExpectedPlayTime.Text" xml:space="preserve">
     <value>预计游戏时长</value>
   </data>
-  <data name="GalgamePage_SavePosition" xml:space="preserve">
+  <data name="GalgamePage_SavePosition.Text" xml:space="preserve">
     <value>存档位置</value>
   </data>
-  <data name="GalgamePage_LastPlayTime" xml:space="preserve">
+  <data name="GalgamePage_LastPlayTime.Text" xml:space="preserve">
     <value>上次游玩</value>
   </data>
-  <data name="GalgamePage_Description" xml:space="preserve">
+  <data name="GalgamePage_Description.Text" xml:space="preserve">
     <value>简介</value>
   </data>
   <data name="GalgameCollectionService_SelectSavePosition" xml:space="preserve">
@@ -329,7 +329,7 @@
   <data name="GalgameCollectionService_SelectExe" xml:space="preserve">
     <value>选择可执行文件</value>
   </data>
-  <data name="GalgamePage_UiPlayFlyOutTitle" xml:space="preserve">
+  <data name="GalgamePage_UiPlayFlyOutTitle.Text" xml:space="preserve">
     <value>重置exe路径？</value>
   </data>
   <data name="SettingsPage_Start_AutoStartGame.Title" xml:space="preserve">
@@ -417,7 +417,7 @@
   <data name="App_UnhandledException_Hyperlink" xml:space="preserve">
     <value>点此复制错误信息并报告这个问题</value>
   </data>
-  <data name="HelpPage_InfoBar.Message" xml:space="preserve">
+  <data name="HelpPage_GettingFaq" xml:space="preserve">
     <value>正在从网络上获取最新FAQ中</value>
   </data>
   <data name="HelpPage_NewFeature.Label" xml:space="preserve">
@@ -557,16 +557,16 @@
   <data name="SettingsPage_Theme_Color_Description.Text" xml:space="preserve">
     <value>选择你喜欢的应用主题吧</value>
   </data>
-  <data name="SettingsPage_Upload.SettingTitle" xml:space="preserve">
-    <value>上传设置</value>
+  <data name="SettingsPage_Other.SettingTitle" xml:space="preserve">
+    <value>其他设置</value>
   </data>
-  <data name="SettingsPage_Upload.SettingDescription" xml:space="preserve">
-    <value>与上传数据有关的设置</value>
+  <data name="SettingsPage_Other.SettingDescription" xml:space="preserve">
+    <value>一些不太好分类的设置</value>
   </data>
-  <data name="SettingsPage_Upload_AppCenter.Title" xml:space="preserve">
+  <data name="SettingsPage_Other_AppCenter.Title" xml:space="preserve">
     <value>上传匿名事件日志</value>
   </data>
-  <data name="SettingsPage_Upload_AppCenter.Description" xml:space="preserve">
+  <data name="SettingsPage_Other_AppCenter.Description" xml:space="preserve">
     <value>上传的内容不包含任何个人数据，且仅用于统计各功能使用情况以及报错跟踪</value>
   </data>
   <data name="SettingsPage_UpdateContent.Content" xml:space="preserve">
@@ -747,7 +747,7 @@
     <value>登录成功</value>
   </data>
   <data name="OAuthResult_Failed" xml:space="preserve">
-    <value>因为以下原因登录失败：</value>
+    <value>因为以下原因Bangumi登录失败：</value>
   </data>
   <data name="OAuthResult_FetchingToken" xml:space="preserve">
     <value>获取Token中，请稍后</value>
@@ -776,7 +776,7 @@
   <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
     <value>已成功下载{0}个游戏的游玩状态</value>
   </data>
-  <data name="GalgamePage_ReleaseDate" xml:space="preserve">
+  <data name="GalgamePage_ReleaseDate.Text" xml:space="preserve">
     <value>发布日期</value>
   </data>
   <data name="CategorySettingPage_CategoryName.Text" xml:space="preserve">
@@ -898,5 +898,488 @@
   </data>
   <data name="ActivationService_FontPopup_NoLongerDisplay" xml:space="preserve">
     <value>不再显示此弹窗</value>
+  </data>
+  <data name="Galgame_SavePath_Local" xml:space="preserve">
+    <value>本地</value>
+  </data>
+  <data name="Galgame_SavePath_Remote" xml:space="preserve">
+    <value>云端</value>
+  </data>
+  <data name="YesButton.Content" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="SelectProcessDialog_Title" xml:space="preserve">
+    <value>选择游戏进程</value>
+  </data>
+  <data name="SelectProcessDialog_Msg.Text" xml:space="preserve">
+    <value>oops!好像自动检测游戏进程失败了
+如果游戏尚未关闭，请手动指定游戏进程以正确统计游玩时长
+如果这个游戏游玩时长能正常记录，取消这个选择框即可
+</value>
+  </data>
+  <data name="HomePage_ProcessNameSet" xml:space="preserve">
+    <value>已成功指定游戏进程，重启游戏后生效</value>
+  </data>
+  <data name="AccountPage_Pvn_SyncGame.Title" xml:space="preserve">
+    <value>游戏同步</value>
+  </data>
+  <data name="AccountPage_Pvn_SyncGame.Description" xml:space="preserve">
+    <value>是否将游戏状态(添加/游玩/删除等)上传到云存档根目录，并跨电脑同步</value>
+  </data>
+  <data name="HomePage_Filter_DisplayVirtualGames.Label" xml:space="preserve">
+    <value>显示非本机游戏</value>
+  </data>
+  <data name="HomePage_SpecialDisplayVirtualGame.Label" xml:space="preserve">
+    <value>特殊显示非本地游戏</value>
+  </data>
+  <data name="GalgamePage_PathAlreadyExist" xml:space="preserve">
+    <value>这个路径的游戏已经被绑定到其他游戏上了</value>
+  </data>
+  <data name="GalgamePage_PathSet" xml:space="preserve">
+    <value>成功设置本游戏本地路径</value>
+  </data>
+  <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
+    <value>设置本地路径</value>
+  </data>
+  <data name="HomePage_Syncing" xml:space="preserve">
+    <value>同步游戏记录中  {0}/{1}</value>
+  </data>
+  <data name="HomePage_Synced" xml:space="preserve">
+    <value>已同步{0}条游戏记录更改</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread.Label" xml:space="preserve">
+    <value>移除进程指定</value>
+  </data>
+  <data name="GalgamePage_RemoveSelectedThread_Success" xml:space="preserve">
+    <value>已成功移除手动线程指定</value>
+  </data>
+  <data name="SettingsPage_Other_Memory.Title" xml:space="preserve">
+    <value>优化内存占用</value>
+  </data>
+  <data name="SettingsPage_Other_Memory.Description" xml:space="preserve">
+    <value>减少切换界面后内存使用，但会轻微增加切换界面时cpu使用量</value>
+  </data>
+  <data name="EditPlayTimeDialog_Title" xml:space="preserve">
+    <value>编辑游玩时长</value>
+  </data>
+  <data name="Edit.Label" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="SettingsPage_Game.SettingTitle" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="SettingsPage_Game.SettingDescription" xml:space="preserve">
+    <value>与游玩游戏相关的设置</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Title" xml:space="preserve">
+    <value>只记录前台游玩时间</value>
+  </data>
+  <data name="SettingsPage_Game_RecordOnlyForeground.Description" xml:space="preserve">
+    <value>游戏窗口不聚焦（最小化或在操作其他窗口）的时间不计入游玩时间</value>
+  </data>
+  <data name="Shell_SystemTray_Item1.Text" xml:space="preserve">
+    <value>恢复窗口</value>
+  </data>
+  <data name="Shell_SystemTray_Item2.Text" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="CloseConfirmDialog_Title" xml:space="preserve">
+    <value>关闭提示</value>
+  </data>
+  <data name="CloseConfirmDialog_SystemTray" xml:space="preserve">
+    <value>最小化到系统托盘</value>
+  </data>
+  <data name="CloseConfirmDialog_Exit" xml:space="preserve">
+    <value>退出应用</value>
+  </data>
+  <data name="CloseConfirmDialog_Remember.Content" xml:space="preserve">
+    <value>记住我的选择</value>
+  </data>
+  <data name="WindowMode_Normal" xml:space="preserve">
+    <value>无设置</value>
+  </data>
+  <data name="WindowMode_Close" xml:space="preserve">
+    <value>关闭应用</value>
+  </data>
+  <data name="WindowMode_SystemTray" xml:space="preserve">
+    <value>最小化至系统托盘</value>
+  </data>
+  <data name="SettingsPage_Other_CloseMode.Title" xml:space="preserve">
+    <value>关闭模式</value>
+  </data>
+  <data name="SettingsPage_Other_CloseMode.Description" xml:space="preserve">
+    <value>选择按下关闭按钮后应用的行为</value>
+  </data>
+  <data name="WindowMode_Minimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="SettingsPage_Game_PlayingWindowMode.Title" xml:space="preserve">
+    <value>游玩时窗口状态</value>
+  </data>
+  <data name="SettingsPage_Game_PlayingWindowMode.Description" xml:space="preserve">
+    <value>游戏进行时的PotatoVN的窗口状态</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Progress" xml:space="preserve">
+    <value>正在扫描路径:{0}</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Done" xml:space="preserve">
+    <value>扫描完成, 共添加了{0}个游戏</value>
+  </data>
+  <data name="SettingsPage_Notification.SettingTitle" xml:space="preserve">
+    <value>消息通知</value>
+  </data>
+  <data name="SettingsPage_Notification.SettingDescription" xml:space="preserve">
+    <value>管理应用最小化到托盘时的通知设置</value>
+  </data>
+  <data name="SettingsPage_Notification_GetGalgameFolder.Title" xml:space="preserve">
+    <value>完成游戏扫描通知</value>
+  </data>
+  <data name="SettingsPage_Notification_GetGalgameFolder.Description" xml:space="preserve">
+    <value>是否开启游戏文件夹扫描完成的通知</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Done" xml:space="preserve">
+    <value>解压完成，识别游戏中</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Start" xml:space="preserve">
+    <value>开始解压，请稍后</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PasswordRequired" xml:space="preserve">
+    <value>请输入压缩包解压密码</value>
+  </data>
+  <data name="UnpackDialog_Select.Content" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="UnpackDialog_GameName.Text" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="UnpackDialog_GameDescription.Text" xml:space="preserve">
+    <value>为提高识别准确度，游戏名应尽可能准确(正式名)并去除不必要的内容(如版本、汉化组名等)</value>
+  </data>
+  <data name="UnpackDialog_Password.Text" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="UnpackDialog_Password_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>若没有密码可不填</value>
+  </data>
+  <data name="UnpackDialog_Title" xml:space="preserve">
+    <value>一键添加游戏</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_Error" xml:space="preserve">
+    <value>压缩包损坏或密码不正确</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Title" xml:space="preserve">
+    <value>完成解压通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Unpack.Description" xml:space="preserve">
+    <value>是否开启解压游戏完成的通知</value>
+  </data>
+  <data name="UnpackGameTask_Done_Title" xml:space="preserve">
+    <value>解压完成</value>
+  </data>
+  <data name="UnpackGameTask_Done_Msg" xml:space="preserve">
+    <value>{0}已解压到{1}并已添加到库中</value>
+  </data>
+  <data name="GalgameFolderPage_AutoScan.Label" xml:space="preserve">
+    <value>启动时自动扫描</value>
+  </data>
+  <data name="GalgameFolderPage_AddManually.Label" xml:space="preserve">
+    <value>手动添加游戏</value>
+  </data>
+  <data name="GalgameFolderPage_AddFromZip.Label" xml:space="preserve">
+    <value>添加游戏(压缩包)</value>
+  </data>
+  <data name="GalgameFolderPage_Refresh.Label" xml:space="preserve">
+    <value>自动寻找游戏</value>
+  </data>
+  <data name="LibraryPage_AddGalgameFolder.Label" xml:space="preserve">
+    <value>新增库</value>
+  </data>
+  <data name="LibraryPage_ScanAll.Label" xml:space="preserve">
+    <value>扫描所有库</value>
+  </data>
+  <data name="LibraryPage_ScanAll_Success" xml:space="preserve">
+    <value>已启动{0}个库的扫描任务</value>
+  </data>
+  <data name="GalgameFolderPage_Log.Label" xml:space="preserve">
+    <value>打开扫描记录</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_Saving" xml:space="preserve">
+    <value>扫描完成，保存记录中</value>
+  </data>
+  <data name="UpdateContentPage_Download_Success" xml:space="preserve">
+    <value>已成功下载最新更新记录文档</value>
+  </data>
+  <data name="SettingsPage_About_UpdateAvailable.Text" xml:space="preserve">
+    <value>有新版本 ヾ(✿ﾟ▽ﾟ)ノ</value>
+  </data>
+  <data name="GalgamePage_SelectThread.Label" xml:space="preserve">
+    <value>手动指定游戏进程</value>
+  </data>
+  <data name="VirtualGameFilter" xml:space="preserve">
+    <value>本地游戏</value>
+  </data>
+  <data name="HomePage_FilterInputBox.PlaceholderText" xml:space="preserve">
+    <value>Tag/开发商/游玩状态/分类</value>
+  </data>
+  <data name="HomePage_Filter_Not_Found" xml:space="preserve">
+    <value>找不到匹配的过滤器</value>
+  </data>
+  <data name="HomePage_KeepFilters.Label" xml:space="preserve">
+    <value>保留过滤器</value>
+  </data>
+  <data name="GalgameCollectionService_PhraseFileFailed" xml:space="preserve">
+    <value>解析.PotatoVN备份文件失败，请手动删除游戏目录下.PotatoVN文件夹或修改meta.json为合法的json文件后重试。</value>
+  </data>
+  <data name="SelectFileDialog_NoFound" xml:space="preserve">
+    <value>在{0}中没有找到任何{1}文件</value>
+  </data>
+  <data name="GalgamePage_OpenText.Label" xml:space="preserve">
+    <value>打开文本</value>
+  </data>
+  <data name="GalgamePage_SelectText_Title" xml:space="preserve">
+    <value>选择文本打开</value>
+  </data>
+  <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
+    <value>清除选择记录？</value>
+  </data>
+  <data name="HomePage_Search.PlaceholderText" xml:space="preserve">
+    <value>支持拼音/拼音首字母搜索</value>
+  </data>
+  <data name="Shell_Account.Content" xml:space="preserve">
+    <value>账户</value>
+  </data>
+  <data name="PvnServerType_OfficialServer" xml:space="preserve">
+    <value>官方服务器</value>
+  </data>
+  <data name="PvnServerType_CustomServer" xml:space="preserve">
+    <value>自定义服务器</value>
+  </data>
+  <data name="SelectPvnServerDialog_Title" xml:space="preserve">
+    <value>自定义服务器</value>
+  </data>
+  <data name="SelectPvnServerDialog_Placeholder" xml:space="preserve">
+    <value>服务器Url，如: https://114514.moe:1919</value>
+  </data>
+  <data name="SelectPvnServerDialog_Checking" xml:space="preserve">
+    <value>检测连接中</value>
+  </data>
+  <data name="SelectPvnServerDialog_Check" xml:space="preserve">
+    <value>检查</value>
+  </data>
+  <data name="AccountPage_Pvn_ServerType.Title" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="AccountPage_Pvn_ServerType.Description" xml:space="preserve">
+    <value>选择要连接至哪一个服务器</value>
+  </data>
+  <data name="AccountPage_Pvn_AccountStatus.Title" xml:space="preserve">
+    <value>账号状态</value>
+  </data>
+  <data name="AccountPage_Pvn_AccountStatus_Unlogin" xml:space="preserve">
+    <value>还没有登录PotatoVN账号呢~</value>
+  </data>
+  <data name="PvnLoginDialog.Title" xml:space="preserve">
+    <value>登录PotatoVN账号</value>
+  </data>
+  <data name="PvnLoginDialog_Account.Text" xml:space="preserve">
+    <value>账号</value>
+  </data>
+  <data name="PvnLoginDialog_Password.Text" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>注册</value>
+  </data>
+  <data name="PvnLoginDialog_UseThirdParty.Text" xml:space="preserve">
+    <value>或使用第三方账号来注册或登录：</value>
+  </data>
+  <data name="PvnLoginDialog_GettingServerInfo.Text" xml:space="preserve">
+    <value>获取服务器信息中...</value>
+  </data>
+  <data name="PvnService_PasswordIncorrect" xml:space="preserve">
+    <value>账户不存在或密码不正确</value>
+  </data>
+  <data name="PvnService_ServerUnavailable" xml:space="preserve">
+    <value>服务器不允许此方式登录或注册</value>
+  </data>
+  <data name="AccountPage_Pvn_ConnectTo" xml:space="preserve">
+    <value>连接至服务器：{0}</value>
+  </data>
+  <data name="AccountPage_Pvn_LoginSuccess" xml:space="preserve">
+    <value>登录成功 </value>
+  </data>
+  <data name="AccountPage_Pvn_Logout" xml:space="preserve">
+    <value>登出成功</value>
+  </data>
+  <data name="AccountPage_Pvn_AccountStatus_Login" xml:space="preserve">
+    <value>用户ID:{0}, 登录方式:{1}</value>
+  </data>
+  <data name="LoginMethodEnum_Default" xml:space="preserve">
+    <value>账户密码</value>
+  </data>
+  <data name="LoginMethodEnum_Bangumi" xml:space="preserve">
+    <value>Bangumi</value>
+  </data>
+  <data name="PvnService_UserNameAlreadyTaken" xml:space="preserve">
+    <value>该用户名已被占用</value>
+  </data>
+  <data name="AccountPage_Pvn_RegisterSuccess" xml:space="preserve">
+    <value>注册并登录成功</value>
+  </data>
+  <data name="PvnService_NoBgmAccount" xml:space="preserve">
+    <value>登录Bangumi账户失败</value>
+  </data>
+  <data name="PvnService_ServerCannotConnectBgm" xml:space="preserve">
+    <value>服务器无法访问Bangumi服务器，请稍后重试</value>
+  </data>
+  <data name="AccountPage_Pvn_Logging" xml:space="preserve">
+    <value>正在连接至服务器，请稍后</value>
+  </data>
+  <data name="AccountPage_Pvn_SetAccount.Title" xml:space="preserve">
+    <value>账号管理</value>
+  </data>
+  <data name="AccountPage_Pvn_SetAccount.Description" xml:space="preserve">
+    <value>修改账号头像、昵称、密码等</value>
+  </data>
+  <data name="AccountPage_Pvn_SetAccount_Button.Content" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="PvnSetAccountDialog_UserDisplayName.Text" xml:space="preserve">
+    <value>昵称</value>
+  </data>
+  <data name="PvnSetAccountDialog_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>填入新值来更改，留空则不变</value>
+  </data>
+  <data name="PvnSetAccountDialog_SetImgButton.Content" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="PvnSetAccountDialog_Avatar.Text" xml:space="preserve">
+    <value>头像</value>
+  </data>
+  <data name="PvnServiceStatus_UploadingAvatar" xml:space="preserve">
+    <value>上传头像中...</value>
+  </data>
+  <data name="PvnServiceStatus_UploadingUserInfo" xml:space="preserve">
+    <value>更新用户信息中...</value>
+  </data>
+  <data name="AccountPage_Pvn_Modified" xml:space="preserve">
+    <value>更新用户信息成功！</value>
+  </data>
+  <data name="PvnServiceStatus_DownloadingAvatar" xml:space="preserve">
+    <value>下载PotatoVN用户头像中</value>
+  </data>
+  <data name="Shell_Info.Content" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="InfoPage_BgTask.SettingTitle" xml:space="preserve">
+    <value>后台任务</value>
+  </data>
+  <data name="InfoPage_BgTask.SettingDescription" xml:space="preserve">
+    <value>这些任务会在最小化到系统托盘后继续运行</value>
+  </data>
+  <data name="InfoPage_Info.SettingTitle" xml:space="preserve">
+    <value>运行消息</value>
+  </data>
+  <data name="InfoPage_Info.SettingDescription" xml:space="preserve">
+    <value>在这里显示所有的程序运行消息，如报错、报告等</value>
+  </data>
+  <data name="InfoPage_NoBgTask.Text" xml:space="preserve">
+    <value>暂无后台任务</value>
+  </data>
+  <data name="InfoPage_NoInfo.Text" xml:space="preserve">
+    <value>暂无运行消息</value>
+  </data>
+  <data name="GetGalgameInFolderTask_Title" xml:space="preserve">
+    <value>扫描文件夹任务</value>
+  </data>
+  <data name="RecordPlayTimeTask_Title" xml:space="preserve">
+    <value>记录游戏时长任务</value>
+  </data>
+  <data name="UnpackGameTask_Title" xml:space="preserve">
+    <value>解压游戏任务</value>
+  </data>
+  <data name="RecordPlayTimeTask_ProgressMsg" xml:space="preserve">
+    <value>正在记录游玩时间：{0}</value>
+  </data>
+  <data name="SettingsPage_Other_DevelopmentMode_Description.Text" xml:space="preserve">
+    <value>是否开启开发者模式</value>
+  </data>
+  <data name="SettingsPage_Other_DevelopmentMode.Content" xml:space="preserve">
+    <value>开发者模式</value>
+  </data>
+  <data name="SettingsPage_Other_DevelopmentMode.NavigateUri" xml:space="preserve">
+    <value>https://github.com/GoldenPotato137/PotatoVN/wiki/%E5%BC%80%E5%8F%91%E8%80%85%E6%A8%A1%E5%BC%8F</value>
+  </data>
+  <data name="PvnSyncTask_Title" xml:space="preserve">
+    <value>PotatoVN同步任务</value>
+  </data>
+  <data name="PvnSyncTask_Error" xml:space="preserve">
+    <value>Pvn同步失败</value>
+  </data>
+  <data name="PvnSyncTask_GettingModifiedTimestamp" xml:space="preserve">
+    <value>正在查询Pvn服务器修改</value>
+  </data>
+  <data name="PvnSyncTask_GettingModifiedList" xml:space="preserve">
+    <value>获取更改列表中</value>
+  </data>
+  <data name="PvnSyncTask_Downloading" xml:space="preserve">
+    <value>正在更新游戏{0}(ID:{1})的信息</value>
+  </data>
+  <data name="PvnSyncTask_Uploading" xml:space="preserve">
+    <value>正在上传游戏:{0}</value>
+  </data>
+  <data name="PvnSyncTask_Error_Upload" xml:space="preserve">
+    <value>Pvn同步(上传)失败</value>
+  </data>
+  <data name="PvnSyncTask_Completed" xml:space="preserve">
+    <value>PotaotVN同步完成</value>
+  </data>
+  <data name="PvnSyncTask_Error_NotLogin" xml:space="preserve">
+    <value>未登录</value>
+  </data>
+  <data name="PvnSyncTask_Error_Network" xml:space="preserve">
+    <value>无法连接至服务器</value>
+  </data>
+  <data name="BgmOAuthService_RefreshFailed" xml:space="preserve">
+    <value>更新Bangumi Token失败</value>
+  </data>
+  <data name="PvnSyncTask_Error_Upload_SaveSyncTime" xml:space="preserve">
+    <value>Pvn同步保存修改时间失败</value>
+  </data>
+  <data name="PvnSyncTask_Pull_Added" xml:space="preserve">
+    <value>从远端下载：{0} (id:{1})</value>
+  </data>
+  <data name="PvnSyncTask_Pull_Updated" xml:space="preserve">
+    <value>从远端更新：{0} (id:{1})</value>
+  </data>
+  <data name="PvnSyncTask_Pull_Deleted" xml:space="preserve">
+    <value>随远端删除：{0} (id:{1})</value>
+  </data>
+  <data name="PvnSyncTask_Commit" xml:space="preserve">
+    <value>上传游戏: {0} (id:{1}) / Type:{2}</value>
+  </data>
+  <data name="PvnSyncTask_NoChange" xml:space="preserve">
+    <value>已同步至最新状态，无更改</value>
+  </data>
+  <data name="ShellPage_Info_Event.Content" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn.Title" xml:space="preserve">
+    <value>Pvn同步事件通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn.Description" xml:space="preserve">
+    <value>是否启用Pvn同步事件(如同步完成/同步失败)通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn_Empty.Title" xml:space="preserve">
+    <value>Pvn同步空事件通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn_Empty.Description" xml:space="preserve">
+    <value>是否启用Pvn同步空事件（即已是最新状态，什么都没有做）的通知</value>
+  </data>
+  <data name="FaqService_LoadError" xml:space="preserve">
+    <value>加载FAQ文件失败</value>
+  </data>
+  <data name="FaqService_DownloadError" xml:space="preserve">
+    <value>下载FAQ失败</value>
   </data>
 </root>

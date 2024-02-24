@@ -4,14 +4,15 @@ namespace GalgameManager.Helpers;
 
 public static class UiThreadInvokeHelper
 {
-    public static async Task InvokeAsync(Action action)
+    public static async Task InvokeAsync(Action? action)
     {
-        await App.MainWindow.DispatcherQueue.EnqueueAsync(action);
+        if(action is null) return;
+        await App.DispatcherQueue.EnqueueAsync(action);
     }
 
     public static async Task InvokeAsync(Func<Task> action)
     {
-        await App.MainWindow.DispatcherQueue.EnqueueAsync(async () =>
+        await App.DispatcherQueue.EnqueueAsync(async () =>
         {
             await action();
         });
@@ -19,7 +20,7 @@ public static class UiThreadInvokeHelper
     
     public static void Invoke(Func<Task> action)
     {
-        App.MainWindow.DispatcherQueue.EnqueueAsync(async () =>
+        App.DispatcherQueue.EnqueueAsync(async () =>
         {
             await action();
         });
@@ -27,6 +28,6 @@ public static class UiThreadInvokeHelper
     
     public static void Invoke(Action action)
     {
-        App.MainWindow.DispatcherQueue.EnqueueAsync(action);
+        App.DispatcherQueue.EnqueueAsync(action);
     }
 }

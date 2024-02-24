@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -11,11 +10,14 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject, IComparable<Galgame>
+public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneable
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
     public const string MetaPath = ".PotatoVN";
+    
+    public event GenericDelegate<(Galgame, string)>? GalPropertyChanged;
+    public event GenericDelegate<Exception>? ErrorOccurred; //非致命异常产生时触发
     
     public string Path
     {
@@ -25,7 +27,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
-    public string? ImageUrl;
+    [JsonIgnore] public string? ImageUrl;
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> PlayedTime = new(); //ShortDateString() -> PlayedTime, 分钟
     [ObservableProperty] private LockableProperty<string> _name = "";
@@ -36,22 +38,29 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private LockableProperty<DateTime> _releaseDate;
-    [JsonIgnore][ObservableProperty] private string _savePosition = "本地";
+    [JsonIgnore][ObservableProperty] private string _savePosition = string.Empty;
     [ObservableProperty] private string? _exePath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
-    private bool _isSaveInCloud;
     private RssType _rssType = RssType.None;
     [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
-    [JsonIgnore] public ObservableCollection<Category> Categories = new();
+    [JsonIgnore] public readonly ObservableCollection<Category> Categories = new();
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论
+    private string? _savePath; //云端存档本地路径
+    public string? ProcessName; //手动指定的进程名，用于正确获取游戏进程
+    public string? TextPath; //记录的要打开的文本的路径
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    public Dictionary<string, int> SyncTo = new(); //mac, lastId, 每台电脑同步到的最后一个id （防止重装软件后同步状态丢失）
+    public bool PvnUpdate; //是否需要更新
+    public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
 
+    [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     [JsonIgnore] public static SortKeys[] SortKeysList
     {
         get;
@@ -79,9 +88,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             }
         }
     }
-
-    public event GenericDelegate<(Galgame, string)>? GalPropertyChanged;
-
+    
     public RssType RssType
     {
         get => _rssType;
@@ -95,13 +102,17 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             }
         }
     }
-
-    private bool IsSaveInCloud
+    
+    public string? SavePath
     {
+        get => _savePath;
         set
         {
-            _isSaveInCloud = value;
-            SavePosition = _isSaveInCloud ? "云端" : "本地";
+            _savePath = value;
+            UiThreadInvokeHelper.Invoke(() =>
+            {
+                SavePosition = _savePath is null ? "Galgame_SavePath_Local".GetLocalized() : "Galgame_SavePath_Remote".GetLocalized();
+            });
         }
     }
 
@@ -130,22 +141,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     }
 
     /// <summary>
-    /// 更新游戏存档位置（云端/本地）信息
-    /// <returns>如果存档在云端返回true，本地返回false</returns>
-    /// </summary>
-    public bool CheckSavePosition()
-    {
-        DirectoryInfo directoryInfo = new(Path);
-        if (directoryInfo.GetDirectories().Any(IsSymlink))
-        {
-            IsSaveInCloud = true;
-            return true;
-        }
-        IsSaveInCloud = false;
-        return false;
-    }
-
-    /// <summary>
     /// 删除游戏文件夹
     /// </summary>
     public void Delete()
@@ -158,7 +153,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     /// </summary>
     /// <param name="time">年/月/日</param>
     /// <returns></returns>
-    private static long GetTime(string time)
+    public static long GetTime(string time)
     {
         if (time == DefaultString)
             return 0;
@@ -227,21 +222,44 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         }
         return 0;
     }
-    public override bool Equals(object? obj) => obj is Galgame galgame && Path == galgame.Path;
     
-    // ReSharper disable once NonReadonlyMemberInGetHashCode
-    public override int GetHashCode() => Path.GetHashCode();
-    
-    private static bool IsSymlink(FileSystemInfo fileInfo)
+    public object Clone()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        Dictionary<string, int> playTime = new();
+        foreach (var (key, value) in PlayedTime)
+            playTime.Add(key, value);
+        Galgame result = new()
         {
-            const FileAttributes symlinkAttribute = FileAttributes.ReparsePoint;
-            return (fileInfo.Attributes & symlinkAttribute) == symlinkAttribute;
-        }
-        throw new NotSupportedException("Unsupported operating system.");
+            Path = "..\\",
+            ImagePath = ImagePath.Value is null or DefaultImagePath ? DefaultImagePath :
+                ".\\" + SystemPath.GetFileName(ImagePath),
+            PlayedTime = playTime,
+            Name = Name.Value ?? string.Empty,
+            CnName = CnName,
+            Description = Description.Value ?? string.Empty,
+            Developer = Developer.Value ?? DefaultString,
+            LastPlay = LastPlay.Value ?? DefaultString,
+            ExpectedPlayTime = ExpectedPlayTime.Value ?? DefaultString,
+            Rating = Rating.Value,
+            ReleaseDate = ReleaseDate.Value,
+            ExePath = "..\\" + SystemPath.GetFileName(ExePath),
+            Tags = new ObservableCollection<string>(Tags.Value!.ToList()),
+            TotalPlayTime = TotalPlayTime,
+            RunAsAdmin = RunAsAdmin,
+            PlayType = PlayType,
+            Ids = (string[])Ids.Clone(),
+            RssType = RssType,
+            Comment = Comment,
+            MyRate = MyRate,
+            PrivateComment = PrivateComment,
+            SavePath = SavePath,
+            ProcessName = ProcessName,
+            SyncTo = SyncTo,
+            TextPath =  TextPath,
+        };
+        return result;
     }
-    
+
     /// <summary>
     /// 获取游戏文件夹下的所有exe以及bat文件
     /// </summary>
@@ -250,6 +268,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     {
         List<string> result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
         result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".bat")));
+        result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".lnk")));
         return result;
     }
     
@@ -274,18 +293,18 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             while (!process.HasExited)
             {
                 Thread.Sleep(1000 * 60);
-                if (!process.HasExited)
+                if (process.HasExited || 
+                    (RecordOnlyWhenForeground && (process.IsMainWindowMinimized() || !process.IsMainWindowActive())))
+                    continue;
+                UiThreadInvokeHelper.Invoke(() =>
                 {
-                    UiThreadInvokeHelper.Invoke(() =>
-                    {
-                        TotalPlayTime++;
-                    });
-                    var now = DateTime.Now.ToString("yyyy/M/d");
-                    if (PlayedTime.ContainsKey(now))
-                        PlayedTime[now]++;
-                    else
-                        PlayedTime.Add(now, 1);
-                }
+                    TotalPlayTime++;
+                });
+                var now = DateTime.Now.ToString("yyyy/M/d");
+                if (PlayedTime.ContainsKey(now))
+                    PlayedTime[now]++;
+                else
+                    PlayedTime.Add(now, 1);
             }
         });
     }
@@ -305,18 +324,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     /// <returns></returns>
     public Galgame GetMetaCopy()
     {
-        Galgame result = (Galgame)MemberwiseClone();
-        if(ExePath != null)
-            result.ExePath = "..\\" + SystemPath.GetFileName(ExePath);
-        result.Path = "..\\";
-#pragma warning disable MVVMTK0034
-        result._imagePath = new LockableProperty<string>();
-#pragma warning restore MVVMTK0034
-        if (ImagePath.Value == DefaultImagePath)
-            result.ImagePath.Value = DefaultImagePath;
-        else
-            result.ImagePath.Value = ".\\" + SystemPath.GetFileName(ImagePath);
-        return result;
+        return (Galgame) Clone();
     }
 
     /// <summary>
@@ -330,10 +338,20 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)
+        {
             meta.ImagePath.Value = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ImagePath.Value!));
+            if(File.Exists(meta.ImagePath) == false)
+                meta.ImagePath.Value = DefaultImagePath;
+        }
         if (meta.ExePath != null)
+        {
             meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
+            if (File.Exists(meta.ExePath) == false)
+                meta.ExePath = null;
+        }
+        meta.SavePath = Directory.Exists(meta.SavePath) ? meta.SavePath : null; //检查存档路径是否存在并设置SavePosition字段
         meta.UpdateIdFromMixed();
+        meta.FindSaveInPath();
         return meta;
     }
 
@@ -353,6 +371,30 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             Ids[(int)RssType.Bangumi] = tmp.bgmId;
         if (tmp.vndbId != null) 
             Ids[(int)RssType.Vndb] = tmp.vndbId;
+    }
+
+    /// <summary>
+    /// 试图从游戏根目录中找到存档位置（仅能找到已同步到服务器的存档）
+    /// </summary>
+    public void FindSaveInPath()
+    {
+        try
+        {
+            var cnt = 0;
+            string? result = null;
+            foreach (var subDir in Directory.GetDirectories(Path))
+                if (FolderOperations.IsSymbolicLink(subDir))
+                {
+                    cnt++;
+                    result = subDir;
+                }
+            if (cnt == 1)
+                SavePath = result;
+        }
+        catch (Exception e)
+        {
+            ErrorOccurred?.Invoke(e);
+        }
     }
 }
 

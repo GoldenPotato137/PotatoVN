@@ -14,7 +14,7 @@
         <converter:ElementThemeToStringConverter x:Key="ElementThemeToStringConverter"/>
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
-        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter"/>
+        <converter:WindowModeToStringConverter x:Key="WindowModeToStringConverter"/>
         <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
@@ -101,6 +101,36 @@
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                     
+                </control:SettingExpander>
+                
+                <!-- 游玩 -->
+                <control:SettingExpander 
+                    x:Uid="SettingsPage_Game"
+                    SettingIcon="&#xE7FC;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 只记录前台时间 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch
+                                    x:Uid="SettingsPage_Game_RecordOnlyForeground"
+                                    IsOn="{x:Bind ViewModel.RecordOnlyForeground, Mode=TwoWay}" />
+                            </control:Panel>
+                            <!-- 游玩时窗口状态 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Game_PlayingWindowMode">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.PlayingWindowModes}"
+                                              SelectedItem="{x:Bind ViewModel.PlayingWindowMode, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:WindowMode">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource WindowModeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
                 <!-- 信息源 -->
@@ -329,23 +359,28 @@
                     SettingDescription="{x:Bind ViewModel.UiCloudSyncDescription}"
                     SettingIcon="&#xE753;">
                     <control:SettingExpander.SettingContent>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.UiCloudSyncRoot}" Margin="0 0 25 0"
-                                       VerticalAlignment="Center" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="{x:Bind ViewModel.RemoteFolder, Mode=OneWay}"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                Margin="0 0 25 0" />
-                            <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}"
-                                    Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
-                        </Grid>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 云同步根目录 -->
+                            <control:Panel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.UiCloudSyncRoot}" Margin="0 0 25 0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{x:Bind ViewModel.RemoteFolder, Mode=OneWay}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
+                                        Margin="0 0 25 0" />
+                                    <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}" MinWidth="75"
+                                            Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
+                                </Grid>
+                            </control:Panel>
+                        </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
 
@@ -392,12 +427,76 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
                 
-                <!-- 上传设置 -->
-                <control:SettingExpander x:Uid="SettingsPage_Upload" SettingIcon="&#xE898;">
+                <!-- 消息通知 -->
+                <control:SettingExpander x:Uid="SettingsPage_Notification" SettingIcon="&#xEA8F;">
                     <control:SettingExpander.SettingContent>
-                        <StackPanel>
-                            <local:SettingToggleSwitch x:Uid="SettingsPage_Upload_AppCenter"
-                                                       IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 完成游戏扫描通知 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_GetGalgameFolder"
+                                                           IsOn="{x:Bind ViewModel.NotifyWhenGetGalgameInFolder, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 完成游戏解压通知 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Unpack"
+                                                           IsOn="{x:Bind ViewModel.NotifyWhenUnpackGame, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- Pvn同步事件通知 -->
+                            <control:Panel>
+                                <StackPanel>
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Pvn" 
+                                                               IsOn="{x:Bind ViewModel.EventPvnSync, Mode=TwoWay}"/>
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Pvn_Empty"
+                                                               Margin="{ThemeResource SmallTopMargin}"
+                                                               Visibility="{x:Bind ViewModel.EventPvnSync, Mode=OneWay}"
+                                                               IsOn="{x:Bind ViewModel.EventPvnSyncEmpty, Mode=TwoWay}"/>
+                                </StackPanel>
+                            </control:Panel>
+                        </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+                
+                <!-- 其他设置 -->
+                <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE713;">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 上传匿名事件日志 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Other_AppCenter"
+                                                           IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 关闭模式 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="SettingsPage_Other_CloseMode">
+                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                              ItemsSource="{x:Bind ViewModel.WindowModes}"
+                                              SelectedItem="{x:Bind ViewModel.CloseMode, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="enums:WindowMode">
+                                                <TextBlock Text="{x:Bind Converter={StaticResource WindowModeToStringConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </control:Setting>
+                            </control:Panel>
+                            <!-- 优化内存占用 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch x:Uid="SettingsPage_Other_Memory"
+                                                           IsOn="{x:Bind ViewModel.MemoryImprove, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 开发者模式 -->
+                            <control:Panel>
+                                <RelativePanel HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Vertical">
+                                        <HyperlinkButton x:Uid="SettingsPage_Other_DevelopmentMode" Padding="0"/>
+                                        <TextBlock x:Uid="SettingsPage_Other_DevelopmentMode_Description"
+                                                   FontSize="12" Opacity="0.6" />
+                                    </StackPanel>
+                                    <ToggleSwitch IsOn="{x:Bind ViewModel.DevelopmentMode, Mode=TwoWay}"
+                                                  Margin="0,0,-80,0"
+                                                  RelativePanel.AlignRightWithPanel="True" />
+                                </RelativePanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -405,12 +504,21 @@
                 <!-- 关于 -->
                 <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
                 <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                    <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}"
-                               Style="{ThemeResource BodyTextBlockStyle}" />
-                    <!-- <TextBlock -->
-                    <!--     Text="{x:Bind ViewModel.UiAbout}" -->
-                    <!--     Margin="{StaticResource XSmallTopMargin}" -->
-                    <!--     Style="{ThemeResource BodyTextBlockStyle}" /> -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- PotatoVN-版本 -->
+                        <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}"
+                                   Style="{ThemeResource BodyTextBlockStyle}" VerticalAlignment="Center"/>
+                        <!-- 更新提醒 -->
+                        <Grid Grid.Column="1" Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" 
+                              CornerRadius="10" VerticalAlignment="Center" Margin="10 0 0 0"
+                              Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}">
+                            <TextBlock Padding="10 0 10 0" x:Uid="SettingsPage_About_UpdateAvailable" />
+                    </Grid>
+                    </Grid>
                     <StackPanel Orientation="Horizontal">
                         <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink"
                                          Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />

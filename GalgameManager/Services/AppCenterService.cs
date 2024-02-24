@@ -40,4 +40,26 @@ public class AppCenterService : IAppCenterService
             // ignored
         }
     }
+    
+    /// <summary>
+    /// 记录异常
+    /// </summary>
+    public void UploadError(Exception exception)
+    {
+        if (!_isStarted) return;
+        Crashes.TrackError(exception);
+    }
+
+    /// <summary>
+    /// 记录事件
+    /// </summary>
+    public void UploadEvent(string eventName, Exception? exception = null, string? msg = null)
+    {
+        if (!_isStarted) return;
+        Analytics.TrackEvent(eventName, new Dictionary<string, string>
+        {
+            {"Exception", exception?.ToString() ?? "null"},
+            {"Msg", msg ?? string.Empty}
+        });
+    }
 }
