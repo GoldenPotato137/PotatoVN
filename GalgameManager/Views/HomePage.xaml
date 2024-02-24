@@ -37,7 +37,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
@@ -236,12 +235,6 @@
                     </DataTemplate>
                 </controls:AdaptiveGridView.ItemTemplate>
             </controls:AdaptiveGridView>
-
-            <InfoBar
-                Grid.Row="2"
-                IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-                Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-                Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
             
             <!-- Drag&Drop(用于提示的区域) -->
             <Border Grid.Row="1" CornerRadius="5" 

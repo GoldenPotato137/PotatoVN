@@ -57,6 +57,7 @@ public static class KeyValues
     public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
     public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
     public const string PvnSyncTimestamp = "pvnSyncTimestamp"; //long, 上一次同步时间戳
+    public const string ToDeleteGames = "toDeleteGames"; //List<int>, 待删除的游戏id
     
     //主页显示相关
     public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 主页是否显示游玩状态的小三角形

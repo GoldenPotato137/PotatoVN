@@ -27,12 +27,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     private string _searchKey = string.Empty;
-    public delegate void GalgameDelegate(Galgame galgame);
-    public event GalgameDelegate? GalgameAddedEvent; //当有galgame添加时触发
-    public event GalgameDelegate? GalgameDeletedEvent; //当有galgame删除时触发
-    public event GalgameDelegate? MetaSavedEvent; //当有galgame元数据保存时触发
-    public event VoidDelegate? GalgameLoadedEvent; //当galgame列表加载完成时触发
-    public event VoidDelegate? PhrasedEvent; //当有galgame信息下载完成时触发
+    public event Action<Galgame>? GalgameAddedEvent; //当有galgame添加时触发
+    public event Action<Galgame>? GalgameDeletedEvent; //当有galgame删除时触发
+    public event Action<Galgame>? MetaSavedEvent; //当有galgame元数据保存时触发
+    public event Action? GalgameLoadedEvent; //当galgame列表加载完成时触发
+    public event Action? PhrasedEvent; //当有galgame信息下载完成时触发
     public event GenericDelegate<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
     public bool IsPhrasing;
 

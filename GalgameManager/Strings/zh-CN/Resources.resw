@@ -1382,4 +1382,13 @@
   <data name="FaqService_DownloadError" xml:space="preserve">
     <value>下载FAQ失败</value>
   </data>
+  <data name="PvnSyncTask_Error_Delete" xml:space="preserve">
+    <value>Pvn同步上传删除记录(id:{0})失败</value>
+  </data>
+  <data name="PvnSyncTask_Deleting" xml:space="preserve">
+    <value>正在上传删除记录(id:{0})</value>
+  </data>
+  <data name="PvnSyncTask_Commit_Delete" xml:space="preserve">
+    <value>删除游戏 id:{0}</value>
+  </data>
 </root>

@@ -42,6 +42,11 @@ public interface IPvnService
     /// <param name="galgame"></param>
     /// <returns>potatoVN id</returns>
     public Task<int> UploadInternal(Galgame galgame);
+    
+    /// <summary>
+    /// 不要调用它，这个函数只有PvnSyncTask才能调用
+    /// </summary>
+    public Task DeleteInternal(int pvnId);
 
     public Task LogOutAsync();
 }
