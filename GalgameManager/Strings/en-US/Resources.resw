@@ -417,7 +417,7 @@ Users who do not know the regular expression can understand: The name of the gam
   <data name="App_UnhandledException_Hyperlink" xml:space="preserve">
     <value>Click here to copy the error message and report this issue</value>
   </data>
-  <data name="HelpPage_InfoBar.Message" xml:space="preserve">
+  <data name="HelpPage_GettingFaq" xml:space="preserve">
     <value>Retrieving the latest FAQ from the network</value>
   </data>
   <data name="HelpPage_NewFeature.Label" xml:space="preserve">

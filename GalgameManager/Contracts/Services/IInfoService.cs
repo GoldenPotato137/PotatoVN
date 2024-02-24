@@ -13,6 +13,13 @@ public interface IInfoService
     
     public ObservableCollection<Info> Infos { get; }
 
+    /// <summary>
+    /// 使用InfoBar通知信息，若title与msg均为空则关闭InfoBar
+    /// </summary>
+    /// <param name="infoBarSeverity"></param>
+    /// <param name="title"></param>
+    /// <param name="msg"></param>
+    /// <param name="displayTimeMs"></param>
     public void Info(InfoBarSeverity infoBarSeverity, string? title = null, string? msg = null,int? displayTimeMs = 3000);
 
     /// <summary>

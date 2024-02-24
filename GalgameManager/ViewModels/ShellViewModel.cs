@@ -111,6 +111,12 @@ public partial class ShellViewModel : ObservableRecipient
     private async Task DisplayInfoMsgAsync(InfoBarSeverity infoBarSeverity, string? title, string? msg,
         int delayMs = 3000)
     {
+        if (title is null && msg is null)
+        {
+            IsInfoBarOpen = false;
+            return;
+        }
+        
         var currentIndex = ++_infoBarIndex;
         InfoBarSeverity = infoBarSeverity;
         InfoBarTitle = title;

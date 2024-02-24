@@ -6,4 +6,5 @@ public enum EventType
     PvnSyncEmptyEvent,
     BgmOAuthEvent,
     GalgameEvent,
+    FaqEvent,
 }

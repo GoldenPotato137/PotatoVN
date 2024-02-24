@@ -417,7 +417,7 @@
   <data name="App_UnhandledException_Hyperlink" xml:space="preserve">
     <value>点此复制错误信息并报告这个问题</value>
   </data>
-  <data name="HelpPage_InfoBar.Message" xml:space="preserve">
+  <data name="HelpPage_GettingFaq" xml:space="preserve">
     <value>正在从网络上获取最新FAQ中</value>
   </data>
   <data name="HelpPage_NewFeature.Label" xml:space="preserve">
@@ -1375,5 +1375,11 @@
   </data>
   <data name="SettingsPage_Notification_Pvn_Empty.Description" xml:space="preserve">
     <value>是否启用Pvn同步空事件（即已是最新状态，什么都没有做）的通知</value>
+  </data>
+  <data name="FaqService_LoadError" xml:space="preserve">
+    <value>加载FAQ文件失败</value>
+  </data>
+  <data name="FaqService_DownloadError" xml:space="preserve">
+    <value>下载FAQ失败</value>
   </data>
 </root>
