@@ -16,13 +16,15 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgmOAuthService _bgmService;
+    private readonly IInfoService _infoService;
     
     public AccountViewModel(ILocalSettingsService localSettingsService, IPvnService pvnService, 
-        IBgmOAuthService bgmService)
+        IBgmOAuthService bgmService, IInfoService infoService)
     {
         _localSettingsService = localSettingsService;
         _pvnService = pvnService;
         _bgmService = bgmService;
+        _infoService = infoService;
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -107,7 +109,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
     
     private void HandelPvnServiceStatusChanged(PvnServiceStatus status)
     {
-        _ = DisplayMsgAsync(InfoBarSeverity.Informational, status.GetLocalized());
+        _infoService.Info(InfoBarSeverity.Informational, msg:status.GetLocalized());
     }
 
     private async void PvnLogin()
@@ -121,35 +123,35 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
             if (dialog.GetInfoTaskException is not null) throw dialog.GetInfoTaskException;
 
             if (dialog.Type != PvnLoginType.None)
-                _ = DisplayMsgAsync(InfoBarSeverity.Informational, "AccountPage_Pvn_Logging".GetLocalized());
+                _infoService.Info(InfoBarSeverity.Informational, msg: "AccountPage_Pvn_Logging".GetLocalized());
             switch (dialog.Type)
             {
                 case PvnLoginType.DefaultLogin:
                     await _localSettingsService.SaveSettingAsync(KeyValues.PvnAccountUserName, dialog.UserName!);
                     await _pvnService.LoginAsync(dialog.UserName!, dialog.Password!);
-                    _ = DisplayMsgAsync(InfoBarSeverity.Success, "AccountPage_Pvn_LoginSuccess".GetLocalized());
+                    _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_LoginSuccess".GetLocalized());
                     break;
                 case PvnLoginType.DefaultRegister:
                     await _localSettingsService.SaveSettingAsync(KeyValues.PvnAccountUserName, dialog.UserName!);
                     await _pvnService.RegisterAsync(dialog.UserName!, dialog.Password!);
-                    _ = DisplayMsgAsync(InfoBarSeverity.Success, "AccountPage_Pvn_RegisterSuccess".GetLocalized());
+                    _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_RegisterSuccess".GetLocalized());
                     break;
                 case PvnLoginType.Bangumi:
                     await _pvnService.LoginViaBangumiAsync();
-                    _ = DisplayMsgAsync(InfoBarSeverity.Success, "AccountPage_Pvn_LoginSuccess".GetLocalized());
+                    _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_LoginSuccess".GetLocalized());
                     break;
             }
         }
         catch (Exception e)
         {
-            _ = DisplayMsgAsync(InfoBarSeverity.Error, e.Message);
+            _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
         }
     }
 
     private async void PvnLogout()
     {
         await _pvnService.LogOutAsync();
-        _ = DisplayMsgAsync(InfoBarSeverity.Success, "AccountPage_Pvn_Logout".GetLocalized());
+        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_Logout".GetLocalized());
     }
 
     [RelayCommand]
@@ -160,7 +162,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
         await dialog.ShowAsync();
         if(dialog.Canceled) return;
         await _pvnService.ModifyAccountAsync(dialog.UserDisplayName, dialog.AvatarPath);
-        _ = DisplayMsgAsync(InfoBarSeverity.Success, "AccountPage_Pvn_Modified".GetLocalized());
+        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_Modified".GetLocalized());
     }
 
     partial void OnPvnSyncGamesChanged(bool value)
@@ -174,46 +176,21 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
 
     #region BANUGMI_ACCOUNT
 
-    private async void BgmAuthResultNotify(OAuthResult result, string msg)
+    private void BgmAuthResultNotify(OAuthResult result, string msg)
     {
         switch (result)
         {
             case OAuthResult.Done:
             case OAuthResult.Failed:
-                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
+                _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
                 break;
             case OAuthResult.FetchingAccount: 
             case OAuthResult.FetchingToken:
             default:
-                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg, 1000 * 60);
+                _infoService.Info(result.ToInfoBarSeverity(), msg: msg, displayTimeMs: 1000 * 60);
                 break;
         }
     }
-    #endregion
-
-    #region INFO_BAR_CTRL
-
-    private int _infoBarIndex;
-    [ObservableProperty] private bool _isInfoBarOpen;
-    [ObservableProperty] private string _infoBarMessage = string.Empty;
-    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
-
-    /// <summary>
-    /// 使用InfoBar显示信息
-    /// </summary>
-    /// <param name="infoBarSeverity">信息严重程度</param>
-    /// <param name="msg">信息</param>
-    /// <param name="delayMs">显示时长(ms)</param>
-    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
-    {
-        var currentIndex = ++_infoBarIndex;
-        InfoBarSeverity = infoBarSeverity;
-        InfoBarMessage = msg;
-        IsInfoBarOpen = true;
-        await Task.Delay(delayMs);
-        if (currentIndex == _infoBarIndex)
-            IsInfoBarOpen = false;
-    }
-
+    
     #endregion
 }

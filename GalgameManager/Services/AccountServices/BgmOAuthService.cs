@@ -99,7 +99,7 @@ public class BgmOAuthService : IBgmOAuthService
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
                 OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message);
-                _infoService.Event(InfoBarSeverity.Error, OAuthResult.Failed.ToMsg(), e);
+                _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error, OAuthResult.Failed.ToMsg(), e);
             });
         }
     }
@@ -133,7 +133,8 @@ public class BgmOAuthService : IBgmOAuthService
         }
         catch(Exception e)
         {
-            _infoService.Event(InfoBarSeverity.Error, "BgmOAuthService_RefreshFailed".GetLocalized(), e);
+            _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error,
+                "BgmOAuthService_RefreshFailed".GetLocalized(), e);
             return false;
         }
     }

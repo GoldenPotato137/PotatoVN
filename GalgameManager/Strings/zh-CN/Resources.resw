@@ -1361,4 +1361,19 @@
   <data name="PvnSyncTask_NoChange" xml:space="preserve">
     <value>已同步至最新状态，无更改</value>
   </data>
+  <data name="ShellPage_Info_Event.Content" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn.Title" xml:space="preserve">
+    <value>Pvn同步事件通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn.Description" xml:space="preserve">
+    <value>是否启用Pvn同步事件(如同步完成/同步失败)通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn_Empty.Title" xml:space="preserve">
+    <value>Pvn同步空事件通知</value>
+  </data>
+  <data name="SettingsPage_Notification_Pvn_Empty.Description" xml:space="preserve">
+    <value>是否启用Pvn同步空事件（即已是最新状态，什么都没有做）的通知</value>
+  </data>
 </root>

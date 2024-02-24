@@ -441,6 +441,17 @@
                                 <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Unpack"
                                                            IsOn="{x:Bind ViewModel.NotifyWhenUnpackGame, Mode=TwoWay}"/>
                             </control:Panel>
+                            <!-- Pvn同步事件通知 -->
+                            <control:Panel>
+                                <StackPanel>
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Pvn" 
+                                                               IsOn="{x:Bind ViewModel.EventPvnSync, Mode=TwoWay}"/>
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Notification_Pvn_Empty"
+                                                               Margin="{ThemeResource SmallTopMargin}"
+                                                               Visibility="{x:Bind ViewModel.EventPvnSync, Mode=OneWay}"
+                                                               IsOn="{x:Bind ViewModel.EventPvnSyncEmpty, Mode=TwoWay}"/>
+                                </StackPanel>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>

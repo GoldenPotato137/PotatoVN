@@ -20,11 +20,6 @@
     </Page.Resources>
 
     <Grid Margin="{ThemeResource PageButtonMargin}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
         <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0 10 25 0">
                 <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
@@ -99,9 +94,5 @@
                 </Expander>
             </StackPanel>
         </ScrollViewer>
-
-        <InfoBar Grid.Row="1" IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-                 Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
     </Grid>
 </Page>

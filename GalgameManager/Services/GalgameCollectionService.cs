@@ -94,7 +94,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             if (g.CheckExist() == false)
                 g.Path = string.Empty;
             _galgameMap[g.Path] = g;
-            g.ErrorOccurred += e => _infoService.Event(InfoBarSeverity.Warning, "GalgameEvent", e);
+            g.ErrorOccurred += e =>
+                _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
         }
         GalgameLoadedEvent?.Invoke();
     }
@@ -203,7 +204,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
         UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
-        galgame.ErrorOccurred += e => _infoService.Event(InfoBarSeverity.Warning, "GalgameEvent", e);
+        galgame.ErrorOccurred += e =>
+            _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
         if (virtualGame is null)
             _ = Task.Run(() => CommitChange(CommitType.Add, galgame, null));
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
@@ -228,7 +230,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames.Add(galgame);
         GalgameAddedEvent?.Invoke(galgame);
         UpdateDisplay(UpdateType.Add, galgame);
-        galgame.ErrorOccurred += e => _infoService.Event(InfoBarSeverity.Warning, "GalgameEvent", e);
+        galgame.ErrorOccurred += e =>
+            _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
         return galgame;
     }
     

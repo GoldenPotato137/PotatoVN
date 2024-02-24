@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using Microsoft.UI.Xaml.Controls;
@@ -62,6 +63,9 @@ public partial class ShellViewModel : ObservableRecipient
             UpdateInfoPageBadge();
         };
         localSettingsService.OnSettingChanged += HandleLocalSettingChanged;
+        infoService.OnInfo += (severity, title, msg, displayTime) =>
+            _ = DisplayInfoMsgAsync(severity, title, msg, displayTime);
+        infoService.OnEvent += (severity, title, msg) => _ = DisplayEventMsgAsync(severity, title, msg);
         
         UpdateInfoPageBadge();
     }
@@ -75,6 +79,8 @@ public partial class ShellViewModel : ObservableRecipient
         {
             Selected = selectedItem;
         }
+
+        IsInfoBarOpen = false;
     }
 
     private void HandleLocalSettingChanged(string key, object value)
@@ -88,4 +94,62 @@ public partial class ShellViewModel : ObservableRecipient
         InfoPageBadgeCount = _bgTaskService.GetBgTasks().Count() + _unreadInfos;
         InfoPageBadgeVisibility = _infoPageBadgeCount > 0;
     }
+    
+    #region INFO_BAR_CTRL
+
+    private int _infoBarIndex;
+    [ObservableProperty] private bool _isInfoBarOpen;
+    [ObservableProperty] private string? _infoBarTitle;
+    [ObservableProperty] private string? _infoBarMessage;
+    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
+    private int _eventInfoBarIndex;
+    [ObservableProperty] private bool _isEventInfoBarOpen;
+    [ObservableProperty] private string? _eventInfoBarTitle;
+    [ObservableProperty] private string? _eventInfoBarMessage;
+    [ObservableProperty] private InfoBarSeverity _eventInfoBarSeverity = InfoBarSeverity.Informational;
+
+    private async Task DisplayInfoMsgAsync(InfoBarSeverity infoBarSeverity, string? title, string? msg,
+        int delayMs = 3000)
+    {
+        var currentIndex = ++_infoBarIndex;
+        InfoBarSeverity = infoBarSeverity;
+        InfoBarTitle = title;
+        InfoBarMessage = msg;
+        IsInfoBarOpen = true;
+        await Task.Delay(delayMs);
+        if (currentIndex == _infoBarIndex)
+            IsInfoBarOpen = false;
+    }
+
+    private async Task DisplayEventMsgAsync(InfoBarSeverity infoBarSeverity, string? title, string? msg,
+        int delayMs = 3000)
+    {
+        if (msg?.Length >= 200)
+        {
+            msg = msg[..200];
+            if (msg.Count(c => c == '\n') > 1)
+            {
+                msg = string.Join('\n', msg.Split('\n').Take(2));
+                msg = msg[..^4];
+            }
+            msg += "...";
+        }
+
+        var currentIndex = ++_eventInfoBarIndex;
+        EventInfoBarSeverity = infoBarSeverity;
+        EventInfoBarTitle = title;
+        EventInfoBarMessage = msg;
+        IsEventInfoBarOpen = true;
+        await Task.Delay(delayMs);
+        if (currentIndex == _eventInfoBarIndex)
+            IsEventInfoBarOpen = false;
+    }
+    
+    [RelayCommand]
+    private void NavigateToInfoPage()
+    {
+        NavigationService.NavigateTo(typeof(InfoViewModel).FullName!);
+    }
+
+    #endregion
 }

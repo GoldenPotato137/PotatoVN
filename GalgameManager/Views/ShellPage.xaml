@@ -97,7 +97,30 @@
             </NavigationView.HeaderTemplate>
             
             <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
-                <Frame x:Name="NavigationFrame" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Frame Grid.Row="0" x:Name="NavigationFrame" />
+                
+                <Grid Grid.Row="0" Margin="0 0 10 40" VerticalAlignment="Bottom">
+                    <StackPanel Spacing="7">
+                        <InfoBar Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}" 
+                                 Title="{x:Bind ViewModel.InfoBarTitle, Mode=OneWay}" 
+                                 Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" 
+                                 IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"/>
+                        <InfoBar Severity="{x:Bind ViewModel.EventInfoBarSeverity, Mode=OneWay}" 
+                                 Title="{x:Bind ViewModel.EventInfoBarTitle, Mode=OneWay}" 
+                                 Message="{x:Bind ViewModel.EventInfoBarMessage, Mode=OneWay}" 
+                                 IsOpen="{x:Bind ViewModel.IsEventInfoBarOpen, Mode=OneWay}">
+                            <InfoBar.ActionButton>
+                                <HyperlinkButton x:Uid="ShellPage_Info_Event" 
+                                                 Command="{x:Bind ViewModel.NavigateToInfoPageCommand}"
+                                                 Margin="0"/>
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </NavigationView>
     </Grid>

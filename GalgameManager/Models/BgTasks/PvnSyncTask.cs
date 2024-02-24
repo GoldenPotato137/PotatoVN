@@ -43,7 +43,7 @@ public class PvnSyncTask : BgTaskBase
                 InfoBarSeverity severity = InfoBarSeverity.Error;
                 if (e is HttpRequestException)
                     severity = InfoBarSeverity.Warning;
-                infoService.Event(severity, "PvnSyncTask_Error".GetLocalized(), e);
+                infoService.Event(EventType.PvnSyncEvent, severity, "PvnSyncTask_Error".GetLocalized(), e);
                 var failedReason = "PvnSyncTask_Error".GetLocalized();
                 if (e is HttpRequestException)
                     failedReason = "PvnSyncTask_Error_Network".GetLocalized();
@@ -52,11 +52,16 @@ public class PvnSyncTask : BgTaskBase
             }
 
             await CommitChanges(gameService, pvnService, infoService, settingsService);
-
+            
             ChangeProgress(1, 1, "PvnSyncTask_Completed".GetLocalized());
-            if (Result.IsNullOrEmpty()) Result = "PvnSyncTask_NoChange".GetLocalized();
+            EventType type = EventType.PvnSyncEvent;
+            if (Result.IsNullOrEmpty())
+            {
+                Result = "PvnSyncTask_NoChange".GetLocalized();
+                type = EventType.PvnSyncEmptyEvent;
+            }
             if (Result.EndsWith('\n')) Result = Result[..^1];
-            infoService.Event(InfoBarSeverity.Success, "PvnSyncTask_Completed".GetLocalized(), null, Result);
+            infoService.Event(type, InfoBarSeverity.Success, "PvnSyncTask_Completed".GetLocalized(), null, Result);
             await Task.Delay(500);
         });
     }
@@ -169,7 +174,7 @@ public class PvnSyncTask : BgTaskBase
                 }
                 catch (Exception e)
                 {
-                    infoService.Event(InfoBarSeverity.Warning, "PvnSyncTask_Error_Upload", e);
+                    infoService.Event(EventType.PvnSyncEvent, InfoBarSeverity.Warning, "PvnSyncTask_Error_Upload", e);
                     ignore.Add(game);
                 }
             }
@@ -183,7 +188,8 @@ public class PvnSyncTask : BgTaskBase
         }
         catch (Exception e)
         {
-            infoService.Event(InfoBarSeverity.Warning, "PvnSyncTask_Error_Upload_SaveSyncTime", e);
+            infoService.Event(EventType.PvnSyncEvent, InfoBarSeverity.Warning,
+                "PvnSyncTask_Error_Upload_SaveSyncTime", e);
         }
     }
 }
