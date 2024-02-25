@@ -28,6 +28,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
     private GetGalgameInFolderTask? _getGalInFolderTask;
+    private GetGalgameInfoFromRss? _getGalgameInfoFromRss;
     private UnpackGameTask? _unpackGameTask;
     public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
     
@@ -97,6 +98,12 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
             _unpackGameTask.OnProgress += UpdateNotifyUnpack;
             UpdateNotifyUnpack(_unpackGameTask.CurrentProgress);
         }
+        _getGalgameInfoFromRss = _bgTaskService.GetBgTask<GetGalgameInfoFromRss>(Item.Path);
+        if (_getGalgameInfoFromRss != null)
+        {
+            _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
+            UpdateNotifyGetGalInFolder(_getGalgameInfoFromRss.CurrentProgress);
+        }
         Update();
     }
 
@@ -104,6 +111,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
         _galgameService.GalgameAddedEvent -= ReloadGalgameList;
         if (_getGalInFolderTask != null) _getGalInFolderTask.OnProgress -= UpdateNotifyGetGalInFolder;
+        if (_getGalgameInfoFromRss != null) _getGalgameInfoFromRss.OnProgress -= UpdateNotifyGetInfoFromRss;
         if (_unpackGameTask != null)
         {
             _unpackGameTask.OnProgress -= UpdateNotifyGetGalInFolder;
@@ -128,6 +136,17 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     private void UpdateNotifyGetGalInFolder(Progress progress)
+    {
+        if(Item == null) return;
+        Update();
+        _ = DisplayMsgAsync(progress.ToSeverity(), progress.Message, progress.ToSeverity() switch
+        {
+            InfoBarSeverity.Informational => 300000,
+            _ => 3000
+        });
+    }
+    
+    private void UpdateNotifyGetInfoFromRss(Progress progress)
     {
         if(Item == null) return;
         Update();
@@ -208,13 +227,21 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
-    private async Task GetInfoFromRss()
+    private void GetInfoFromRss()
     {
-        if (Item == null) return;
+        if (_item == null) return;
         if (_selectedGalgames.Count == 0)
-            await Item.GetInfoFromRss();
+        {
+            _getGalgameInfoFromRss = new GetGalgameInfoFromRss(_item);
+            _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
+            _ = _bgTaskService.AddBgTask(_getGalgameInfoFromRss);
+        }
         else
-            await Item.GetInfoFromRss(_selectedGalgames);
+        {
+            _getGalgameInfoFromRss = new GetGalgameInfoFromRss(_item, _selectedGalgames);
+            _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
+            _ = _bgTaskService.AddBgTask(_getGalgameInfoFromRss);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]

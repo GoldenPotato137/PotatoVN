@@ -9,6 +9,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:models="using:GalgameManager.Models"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -291,8 +292,12 @@
                             DesiredWidth="100"
                             ItemHeight="160"
                             ItemsSource="{x:Bind ViewModel.Item.Characters,Mode=OneWay,FallbackValue={}}"
+                            IsItemClickEnabled="True"
+                            ItemClickCommand="{x:Bind ViewModel.CharacterClickCommand}"
                             SelectionMode="None"
-                            StretchContentForSingleRow="False">
+                            StretchContentForSingleRow="False"
+                            animations:Connected.ListItemKey="galgameCharacter"
+                            animations:Connected.ListItemElementName="ConnectedElement">
                             <controls:AdaptiveGridView.ItemTemplate>
                                 <DataTemplate x:DataType="models:GalgameCharacter">
                                     <Grid
@@ -301,10 +306,11 @@
                                             <Rectangle Height="75" Width="75"
                                                        HorizontalAlignment="Center" 
                                                        VerticalAlignment="Center"
+                                                       x:Name="ConnectedElement"
                                             >
                                                 <Rectangle.Fill>
                                                     <ImageBrush 
-                                                        ImageSource="{x:Bind ImagePath, 
+                                                        ImageSource="{x:Bind PreviewImagePath, 
                                                 Mode=OneWay, 
                                                 Converter={StaticResource ImagePathConverter}}"
                                                         Stretch="UniformToFill"
