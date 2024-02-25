@@ -1,4 +1,5 @@
-﻿using GalgameManager.Contracts.Phrase;
+﻿using System.Collections.ObjectModel;
+using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 
@@ -96,7 +97,8 @@ public class MixedPhraser : IGalInfoPhraser
             // imageUrl
             ImageUrl = vndb != null ? vndb.ImageUrl : bgm!.ImageUrl,
             // release date
-            ReleaseDate = bgm?.ReleaseDate ?? vndb!.ReleaseDate
+            ReleaseDate = bgm?.ReleaseDate ?? vndb!.ReleaseDate,
+            Characters =  (bgm?.Characters.Count > 0 ? bgm?.Characters : vndb?.Characters) ?? new ObservableCollection<GalgameCharacter>()
         };
 
         // Chinese name

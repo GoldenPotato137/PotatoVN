@@ -147,8 +147,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         }
         
         if (id == null) return null;
-        var url = "https://api.bgm.tv/v0/subjects/" + id;
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        HttpResponseMessage response = await _httpClient.GetAsync($"https://api.bgm.tv/v0/subjects/{id}");
         if (!response.IsSuccessStatusCode) return null;
         
         JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
@@ -198,6 +197,20 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
                     break;
             }
         }
+        var charactersUrl = $"https://api.bgm.tv/v0/subjects/{id}/characters";
+        HttpResponseMessage charactersResponse = await _httpClient.GetAsync(charactersUrl);
+        if (!charactersResponse.IsSuccessStatusCode) return result;
+        List<JToken>? charactersList = JToken.Parse(await charactersResponse.Content.ReadAsStringAsync())?.ToObject<List<JToken>>();
+        result.Characters = new ObservableCollection<GalgameCharacter>();
+        if (charactersList == null) return result;
+        foreach (JToken character in charactersList)
+        {
+            if (character["id"]?.ToObject<string>() == null) continue;
+            GalgameCharacter c = (await GetCharacterById(character["id"]!.ToObject<string>()!)) ?? new GalgameCharacter();
+            c.Relation = character["relation"]?.ToObject<string>() ?? "";
+            result.Characters.Add(c);
+        }
+
         return result;
     }
 
@@ -284,6 +297,58 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             await Task.Delay(500);
             if (retry < 3)
                 return await GetDeveloperImageUrlById(id, retry + 1);
+            return null;
+        }
+    }
+
+    private async Task<GalgameCharacter?> GetCharacterById(string id)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync($"https://api.bgm.tv/v0/characters/{id}");
+        if (!response.IsSuccessStatusCode) return null;
+        try
+        {
+            JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
+            GalgameCharacter character = new GalgameCharacter()
+            {
+                Name = jsonToken["name"]?.ToObject<string?>() ?? "",
+                BirthDay = jsonToken["birth_day"]?.ToObject<int?>(),
+                BirthMon = jsonToken["birth_mon"]?.ToObject<int?>(),
+                BirthYear = jsonToken["birth_year"]?.ToObject<int?>(),
+                Summary = jsonToken["summary"]?.ToObject<string?>() ?? "-", 
+                BloodType = jsonToken["blood_type"]?.ToObject<string?>(),
+                PreviewImageUrl = jsonToken["images"]?["large"]?.ToObject<string?>()?.Replace("/l/", "/g/"),
+                ImageUrl = jsonToken["images"]?["large"]?.ToObject<string?>()
+            };
+            // 对血型做特殊处理，blood_type可能为空
+            List<JToken>? infoBox = jsonToken["infobox"]?.ToObject<List<JToken>>();
+            JToken? bloodTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("血型") ?? false);
+            if (bloodTypeInfoBox?["value"] != null)
+            {
+                character.BloodType = bloodTypeInfoBox!["value"]!.ToObject<string>();
+            }
+            
+            JToken? heightTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("身高") ?? false);
+            if (heightTypeInfoBox?["value"] != null)
+            {
+                character.Height = heightTypeInfoBox!["value"]!.ToObject<string>();
+            }
+            
+            JToken? weightTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("体重") ?? false);
+            if (weightTypeInfoBox?["value"] != null)
+            {
+                character.Weight = weightTypeInfoBox!["value"]!.ToObject<string>();
+            }
+            
+            JToken? BWHTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("BWH") ?? false);
+            if (BWHTypeInfoBox?["value"] != null)
+            {
+                character.BWH = BWHTypeInfoBox!["value"]!.ToObject<string>();
+            }
+
+            return character;
+        }
+        catch
+        {
             return null;
         }
     }

@@ -1382,6 +1382,9 @@
   <data name="FaqService_DownloadError" xml:space="preserve">
     <value>下载FAQ失败</value>
   </data>
+  <data name="GalgamePage_Characters.Text" xml:space="preserve">
+    <value>角色</value>
+  </data>
   <data name="PvnSyncTask_Error_Delete" xml:space="preserve">
     <value>Pvn同步上传删除记录(id:{0})失败</value>
   </data>
