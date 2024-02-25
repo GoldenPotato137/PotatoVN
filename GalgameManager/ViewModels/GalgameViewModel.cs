@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Windows.Input;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -42,6 +43,19 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _infoBarMsg = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
+    public ICommand CharacterClickCommand
+    {
+        get;
+    }
+    
+    private void OnCharacterClick(GalgameCharacter? clickedItem)
+    {
+        if (clickedItem != null)
+        {
+            _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
+            _navigationService.NavigateTo(typeof(GalgameCharacterViewModel).FullName!, new GalgameCharacterParameter() {GalgameCharacter = clickedItem});
+        }
+    }
 
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, 
         IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
@@ -54,6 +68,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _localSettingsService = localSettingsService;
         _bgTaskService = bgTaskService;
         _pvnService = pvnService;
+        CharacterClickCommand = new RelayCommand<GalgameCharacter>(OnCharacterClick);
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -387,4 +402,9 @@ public class GalgamePageParameter
     public bool StartGame;
     /// 显示手动选择线程弹窗
     public bool SelectProgress;
+}
+
+public class GalgameCharacterParameter
+{
+    [Required] public GalgameCharacter GalgameCharacter = null!;
 }

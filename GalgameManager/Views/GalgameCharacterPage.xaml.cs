@@ -10,20 +10,20 @@ using GalgameManager.Models;
 
 namespace GalgameManager.Views;
 
-public sealed partial class HomeDetailPage : Page
+public sealed partial class GalgameCharacterPage : Page
 {
-    public GalgameViewModel ViewModel
+    public GalgameCharacterViewModel ViewModel
     {
         get;
     }
 
-    public HomeDetailPage()
+    public GalgameCharacterPage()
     {
-        ViewModel = App.GetService<GalgameViewModel>();
+        ViewModel = App.GetService<GalgameCharacterViewModel>();
         InitializeComponent();
         //由于某种奇怪的Bug，直接在DetailImage处指定animations:Connected.Key=“galgameItem”没有动画效果
         //所以采用这种写法
-        this.RegisterElementForConnectedAnimation("galgameItem", DetailImage, 
+        this.RegisterElementForConnectedAnimation("galgameCharacter", DetailImage, 
             new []{InfoPanel}); 
         this.AttachAnchorElementForConnectedAnimation(InfoPanel, DetailImage);
     }
@@ -35,9 +35,9 @@ public sealed partial class HomeDetailPage : Page
         {
             var navigationService = App.GetService<INavigationService>();
 
-            if (ViewModel.Item != null)
+            if (ViewModel.Character != null)
             {
-                navigationService.SetListDataItemForNextConnectedAnimation(ViewModel.Item);
+                navigationService.SetListDataItemForNextConnectedAnimation(ViewModel.Character);
             }
         }
     }

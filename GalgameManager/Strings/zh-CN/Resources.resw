@@ -1394,4 +1394,31 @@
   <data name="PvnSyncTask_Commit_Delete" xml:space="preserve">
     <value>删除游戏 id:{0}</value>
   </data>
+  <data name="GalgameCharacterPage_BirthDate.Text" xml:space="preserve">
+    <value>生日</value>
+  </data>
+  <data name="GalgameCharacterPage_Relation.Text" xml:space="preserve">
+    <value>关系</value>
+  </data>
+  <data name="GalgameCharacterPage_Gender.Text" xml:space="preserve">
+    <value>性别</value>
+  </data>
+  <data name="Gender_Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Gender_Male" xml:space="preserve">
+    <value>男性</value>
+  </data>
+  <data name="Gender_Female" xml:space="preserve">
+    <value>女性</value>
+  </data>
+  <data name="GalgameFolder_GetGalgameInfo_Saving" xml:space="preserve">
+    <value>从RSS获取信息完成，保存记录中</value>
+  </data>
+  <data name="GalgameFolder_GetGalgameInfo_Done" xml:space="preserve">
+    <value>保存完成</value>
+  </data>
+  <data name="GetGalgameInfoTask_Title" xml:space="preserve">
+    <value>下载游戏数据任务</value>
+  </data>
 </root>

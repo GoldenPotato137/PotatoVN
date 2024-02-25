@@ -308,7 +308,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         try
         {
             JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
-            GalgameCharacter character = new GalgameCharacter()
+            GalgameCharacter character = new()
             {
                 Name = jsonToken["name"]?.ToObject<string?>() ?? "",
                 BirthDay = jsonToken["birth_day"]?.ToObject<int?>(),
@@ -317,7 +317,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
                 Summary = jsonToken["summary"]?.ToObject<string?>() ?? "-", 
                 BloodType = jsonToken["blood_type"]?.ToObject<string?>(),
                 PreviewImageUrl = jsonToken["images"]?["large"]?.ToObject<string?>()?.Replace("/l/", "/g/"),
-                ImageUrl = jsonToken["images"]?["large"]?.ToObject<string?>()
+                ImageUrl = jsonToken["images"]?["large"]?.ToObject<string?>(),
             };
             // 对血型做特殊处理，blood_type可能为空
             List<JToken>? infoBox = jsonToken["infobox"]?.ToObject<List<JToken>>();
@@ -344,6 +344,19 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
             {
                 character.BWH = BWHTypeInfoBox!["value"]!.ToObject<string>();
             }
+            
+            JToken? birthDateTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("生日") ?? false);
+            if (birthDateTypeInfoBox?["value"] != null)
+            {
+                character.BirthDate = birthDateTypeInfoBox!["value"]!.ToObject<string>();
+            }
+
+            character.Gender = jsonToken["gender"]?.ToObject<string?>() switch
+            {
+                "male" => Gender.Male,
+                "female" => Gender.Female,
+                _ => Gender.Unknown
+            };
 
             return character;
         }

@@ -291,7 +291,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.ReleaseDate = tmp.ReleaseDate.Value;
         foreach (GalgameCharacter character in galgame.Characters)
         {
-            character.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.ImageUrl) ?? Galgame.DefaultImagePath;
+            character.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.ImageUrl, 
+                fileNameWithoutExtension:$"{character.Name}_Large") ?? Galgame.DefaultImagePath;
+            character.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.PreviewImageUrl, 
+                                            fileNameWithoutExtension:$"{character.Name}_Preview") ??
+                                        Galgame.DefaultImagePath;
         }
         return galgame;
     }
