@@ -30,6 +30,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
+    private readonly IInfoService _infoService;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
     [ObservableProperty] private bool _fixHorizontalPicture; // 是否修复横向图片（截断为标准的长方形）
@@ -52,13 +53,14 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
-        ILocalSettingsService localSettingsService, IFilterService filterService)
+        ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
     {
         _navigationService = navigationService;
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)_dataCollectionService;
         _localSettingsService = localSettingsService;
         _filterService = filterService;
+        _infoService = infoService;
 
         ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
@@ -211,7 +213,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             if (result.Count > 1)
                 _filterService.AddFilter(result[0]);
             else
-                _ = DisplayMsgAsync(InfoBarSeverity.Error, "HomePage_Filter_Not_Found".GetLocalized());
+                _infoService.Info(InfoBarSeverity.Error, msg: "HomePage_Filter_Not_Found".GetLocalized());
         }
         FilterInputText = string.Empty;
     }
@@ -312,15 +314,23 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             msg = e.Message;
         }
         IsPhrasing = false;
-        _ = DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
+        _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
     }
 
     private void OnSyncChanged((int cnt, int total) tuple)
     {
         if (tuple.total == 0) return;
-        _ = tuple.cnt == tuple.total
-            ? DisplayMsgAsync(InfoBarSeverity.Success, string.Format("HomePage_Synced".GetLocalized(), tuple.total))
-            : DisplayMsgAsync(InfoBarSeverity.Informational, string.Format("HomePage_Syncing".GetLocalized(), tuple.cnt, tuple.total), 120*1000);
+        if (tuple.cnt == tuple.total)
+        {
+            _infoService.Info(InfoBarSeverity.Success,
+                msg: string.Format("HomePage_Synced".GetLocalized(), tuple.total));
+        }
+        else
+        {
+            _infoService.Info(InfoBarSeverity.Informational,
+                msg: string.Format("HomePage_Syncing".GetLocalized(), tuple.cnt, tuple.total),
+                displayTimeMs: 120 * 1000);
+        }
     }
     
     private void OnGalgameServicePhrased() => IsPhrasing = false;
@@ -347,7 +357,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         }
         catch (Exception e)
         {
-            _ = DisplayMsgAsync(InfoBarSeverity.Error, e.Message);
+            _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
         }
     }
     
@@ -414,30 +424,4 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         GameToOpacityConverter.SpecialDisplayVirtualGame = value;
         _galgameService.RefreshDisplay();
     }
-
-    #region INFO_BAR_CTRL
-
-    private int _infoBarIndex;
-    [ObservableProperty] private bool _isInfoBarOpen;
-    [ObservableProperty] private string _infoBarMessage = string.Empty;
-    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
-
-    /// <summary>
-    /// 使用InfoBar显示信息
-    /// </summary>
-    /// <param name="infoBarSeverity">信息严重程度</param>
-    /// <param name="msg">信息</param>
-    /// <param name="delayMs">显示时长(ms)</param>
-    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
-    {
-        var currentIndex = ++_infoBarIndex;
-        InfoBarSeverity = infoBarSeverity;
-        InfoBarMessage = msg;
-        IsInfoBarOpen = true;
-        await Task.Delay(delayMs);
-        if (currentIndex == _infoBarIndex)
-            IsInfoBarOpen = false;
-    }
-
-    #endregion
 }

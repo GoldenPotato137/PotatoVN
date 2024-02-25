@@ -1385,6 +1385,15 @@
   <data name="GalgamePage_Characters.Text" xml:space="preserve">
     <value>角色</value>
   </data>
+  <data name="PvnSyncTask_Error_Delete" xml:space="preserve">
+    <value>Pvn同步上传删除记录(id:{0})失败</value>
+  </data>
+  <data name="PvnSyncTask_Deleting" xml:space="preserve">
+    <value>正在上传删除记录(id:{0})</value>
+  </data>
+  <data name="PvnSyncTask_Commit_Delete" xml:space="preserve">
+    <value>删除游戏 id:{0}</value>
+  </data>
   <data name="GalgameCharacterPage_BirthDate.Text" xml:space="preserve">
     <value>生日</value>
   </data>
