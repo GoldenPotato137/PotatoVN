@@ -153,6 +153,26 @@ public class PvnSyncTask : BgTaskBase
         IInfoService infoService,
         ILocalSettingsService settingsService)
     {
+        List<int> toDelete = await settingsService.ReadSettingAsync<List<int>>(KeyValues.ToDeleteGames) ?? new();
+        List<int> toDeleteCopy = new(toDelete);
+        for (var index = 0; index < toDeleteCopy.Count; index++)
+        {
+            var id = toDeleteCopy[index];
+            try
+            {
+                ChangeProgress(index, toDeleteCopy.Count, "PvnSyncTask_Deleting".GetLocalized(id));
+                await pvnService.DeleteInternal(id);
+                toDelete.Remove(id);
+                await settingsService.SaveSettingAsync(KeyValues.ToDeleteGames, toDelete);
+                Result += "PvnSyncTask_Commit_Delete".GetLocalized(id) + "\n";
+            }
+            catch (Exception e)
+            {
+                infoService.Event(EventType.PvnSyncEvent, InfoBarSeverity.Warning,
+                    "PvnSyncTask_Error_Delete".GetLocalized(id), e);
+            }
+        }
+
         List<Galgame> toUpdate;
         HashSet<Galgame> ignore = new();
         do

@@ -51,6 +51,15 @@ public class PvnService : IPvnService
                 await _gameService.SaveGalgamesAsync();
             }
         };
+        _gameService.GalgameAddedEvent += _ => SyncGames();
+        _gameService.GalgameDeletedEvent += async galgame =>
+        {
+            List<int> list = await _settingsService.ReadSettingAsync<List<int>>(KeyValues.ToDeleteGames) ?? new();
+            if(galgame.Ids[(int)RssType.PotatoVn] is null) return;
+            list.Add(Convert.ToInt32(galgame.Ids[(int)RssType.PotatoVn]));
+            await _settingsService.SaveSettingAsync(KeyValues.ToDeleteGames, list);
+            SyncGames();
+        };
     }
     
     public void Startup()
@@ -333,6 +342,14 @@ public class PvnService : IPvnService
         galgame.PvnUpdate = false;
         galgame.PvnUploadProperties = PvnUploadProperties.None;
         return JToken.Parse(await result.Content.ReadAsStringAsync())["id"]!.Value<int>();
+    }
+
+    public async Task DeleteInternal(int pvnId)
+    {
+        PvnAccount? account = _settingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount).Result;
+        if (account is null) throw new InvalidOperationException("PotatoVN account is not login."); //不应该发生
+        HttpClient client = Utils.GetDefaultHttpClient().AddToken(account.Token);
+        await client.DeleteAsync(new Uri(BaseUri, $"galgame/{pvnId}"));
     }
 
     public async Task LogOutAsync()
