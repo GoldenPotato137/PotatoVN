@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Windows.Input;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -34,6 +33,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
+    [ObservableProperty] private Visibility _isCharacterVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isRemoveSelectedThreadVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isSelectProcessVisible = Visibility.Collapsed;
     [ObservableProperty] private bool _canOpenInBgm;
@@ -43,11 +43,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private string _infoBarMsg = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
-    public ICommand CharacterClickCommand
-    {
-        get;
-    }
     
+    [RelayCommand]
     private void OnCharacterClick(GalgameCharacter? clickedItem)
     {
         if (clickedItem != null)
@@ -68,7 +65,6 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _localSettingsService = localSettingsService;
         _bgTaskService = bgTaskService;
         _pvnService = pvnService;
-        CharacterClickCommand = new RelayCommand<GalgameCharacter>(OnCharacterClick);
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -102,6 +98,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     {
         IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
+        IsCharacterVisible = Item?.Characters.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
         CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
         IsRemoveSelectedThreadVisible = Item?.ProcessName is not null ? Visibility.Visible : Visibility.Collapsed;

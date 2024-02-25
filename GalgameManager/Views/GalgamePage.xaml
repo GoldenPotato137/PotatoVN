@@ -286,9 +286,11 @@
                         <TextBlock
                             Margin="{StaticResource SmallTopBottomMargin}"
                             Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Visibility="{x:Bind ViewModel.IsCharacterVisible, Mode=OneWay}"
                             x:Uid="GalgamePage_Characters" />
                         
                         <controls:AdaptiveGridView
+                            Visibility="{x:Bind ViewModel.IsCharacterVisible, Mode=OneWay}"
                             DesiredWidth="100"
                             ItemHeight="160"
                             ItemsSource="{x:Bind ViewModel.Item.Characters,Mode=OneWay,FallbackValue={}}"
