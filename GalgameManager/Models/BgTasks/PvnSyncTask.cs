@@ -3,6 +3,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Phrase;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml.Controls;
 
@@ -102,6 +103,8 @@ public class PvnSyncTask : BgTaskBase
                 game.Ids[(int)RssType.PotatoVn] = dto.id.ToString();
                 game.Ids[(int)RssType.Bangumi] = dto.bgmId ?? game.Ids[(int)RssType.Bangumi];
                 game.Ids[(int)RssType.Vndb] = dto.vndbId ?? game.Ids[(int)RssType.Vndb];
+                game.Ids[(int)RssType.Mixed] = MixedPhraser.TrySetId(game.Ids[(int)RssType.Mixed] ?? string.Empty,
+                    game.Ids[(int)RssType.Bangumi], game.Ids[(int)RssType.Vndb]);
                 game.Name = dto.name ?? game.Name.Value ?? string.Empty;
                 game.CnName = dto.cnName ?? game.CnName;
                 game.Description = dto.description ?? game.Description.Value ?? string.Empty;
@@ -127,6 +130,8 @@ public class PvnSyncTask : BgTaskBase
                     foreach (PlayLogDto time in dto.playTime)
                         game.PlayedTime[time.dateTimeStamp.ToDateTime().ToLocalTime().ToStringDefault()] = time.minute;
                     game.TotalPlayTime = game.PlayedTime.Values.Sum();
+                    if(dto.playTime.Count > 0)
+                        game.LastPlay = dto.playTime[^1].dateTimeStamp.ToDateTime().ToLocalTime().ToStringDefault();
                 }
 
                 game.PlayType = dto.playType;

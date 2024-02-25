@@ -187,20 +187,12 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             }
             _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
             await _jumpListService.AddToJumpListAsync(Item);
-            Dictionary<string, int> oldPlayTime = new(Item.PlayedTime);
             
             await Task.Delay(1000); //等待1000ms，让游戏进程启动后再最小化
             if(process.HasExited == false)
                 App.SetWindowMode(await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
             
             await process.WaitForExitAsync();
-
-
-            foreach(var date in Item.PlayedTime.Keys)
-            {
-                if (oldPlayTime.TryGetValue(date, out var oldValue) && oldValue == Item.PlayedTime[date]) continue;
-                await _galgameService.CommitChange(CommitType.Play, Item, (date, Item.PlayedTime[date] - oldValue));
-            }
         }
         catch
         {

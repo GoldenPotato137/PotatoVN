@@ -84,7 +84,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
-        _galgameService.SyncProgressChanged += OnSyncChanged;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
         UpdateFilterPanelDisplay(null,null!);
     }
@@ -105,7 +104,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
             _filterService.ClearFilters();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
-        _galgameService.SyncProgressChanged -= OnSyncChanged;
         _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
         Filters.CollectionChanged -= UpdateFilterPanelDisplay;
         _localSettingsService.OnSettingChanged -= OnSettingChanged;

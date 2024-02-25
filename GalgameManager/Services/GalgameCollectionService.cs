@@ -142,8 +142,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             galgame.Delete();
         GalgameDeletedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
-        if (commitSync)
-            await CommitChange(CommitType.Delete, galgame, null);
     }
 
     /// <summary>
@@ -205,8 +203,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
         galgame.ErrorOccurred += e =>
             _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
-        if (virtualGame is null)
-            _ = Task.Run(() => CommitChange(CommitType.Add, galgame, null));
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
     }
 
