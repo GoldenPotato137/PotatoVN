@@ -10,7 +10,7 @@ namespace GalgameManager.Server.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class OssController(IOssService ossService, ILogger<OssController> logger, UserRepository userRepository)
+public class OssController(IOssService ossService, ILogger<OssController> logger, IUserRepository userRepository)
     : ControllerBase
 {
     /// <summary>获取oss预签名上传路径</summary>
