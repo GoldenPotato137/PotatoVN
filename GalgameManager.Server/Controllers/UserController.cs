@@ -112,6 +112,7 @@ public class UserController(
                 DisplayUserName = account.UserDisplayName,
                 BangumiId = account.Id,
                 Type = UserType.User,
+                TotalSpace = ossService.SpacePerUser,
             };
             await userRepository.AddUserAsync(user);
         }
@@ -138,6 +139,7 @@ public class UserController(
             DisplayUserName = payload.UserName,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(payload.Password),
             Type = UserType.User,
+            TotalSpace = ossService.SpacePerUser,
         };
         await userRepository.AddUserAsync(user);
         var token = userService.GetToken(user);

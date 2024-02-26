@@ -1,12 +1,11 @@
 ﻿using GalgameManager.Core.Helpers;
 using GalgameManager.Server.Contracts;
-using GalgameManager.Server.Helpers;
 using GalgameManager.Server.Models;
 
 namespace GalgameManager.Server.Services;
 
 public class GalgameService(IGalgameRepository galRep, IGalgameDeletedRepository galDeletedRep, 
-    IPlayLogRepository playLogRep, IUserService userService)
+    IPlayLogRepository playLogRep, IUserService userService, IOssService ossService)
     : IGalgameService
 {
     public async Task<Galgame?> GetGalgameAsync(int id)
@@ -120,11 +119,15 @@ public class GalgameService(IGalgameRepository galRep, IGalgameDeletedRepository
             UserId = gal.UserId
         });
         await userService.UpdateLastModifiedAsync(gal.UserId, timestamp);
+        if(gal.ImageLoc is not null) await ossService.DeleteObjectAsync(userId, gal.ImageLoc);
     }
 
     public async Task DeleteGalgamesAsync(int userId)
     {
         var timestamp = DateTime.Now.ToUnixTime();
+        PagedResult<Galgame> gals = await galRep.GetGalgamesAsync(userId, 0, 0, 1000000);
+        foreach (Galgame game in gals.Items.Where(g => g.ImageLoc is not null))
+            await ossService.DeleteObjectAsync(userId, game.ImageLoc!);
         List<int> ids = await galRep.DeleteGalgamesAsync(userId);
         foreach (var id in ids)
             await galDeletedRep.AddGalgameDeletedAsync(new GalgameDeleted

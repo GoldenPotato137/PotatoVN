@@ -13,6 +13,8 @@ public class UserDto(User user)
     public int BangumiId { get; set; } = user.BangumiId;
     /// <summary>用户头像URL，可能为null</summary>>
     public string? Avatar { get; set; }
+    public long UsedSpace { get; set; } = user.UsedSpace;
+    public long TotalSpace { get; set; } = user.TotalSpace;
 
     public long LastGalChangedTimeStamp { get; set; } = user.LastGalChangedTimeStamp;
 

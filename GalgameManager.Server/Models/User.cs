@@ -12,6 +12,9 @@ public class User
     public UserType Type { get; set; }
     [MaxLength(30)] public string AvatarLoc { get; set; } = string.Empty;
     
+    public long UsedSpace { get; set; }
+    public required long TotalSpace { get; set; }
+    
     public long LastGalChangedTimeStamp { get; set; }
     public List<Galgame>? Galgames { get; set; }
 

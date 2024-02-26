@@ -34,6 +34,7 @@ public class Program
         builder.Services.AddScoped<IGalgameRepository, GalgameRepository>();
         builder.Services.AddScoped<IGalgameDeletedRepository, GalgameDeletedRepository>();
         builder.Services.AddScoped<IPlayLogRepository, PlayLogRepository>();
+        builder.Services.AddScoped<IOssRecordRepository, OssRecordRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IOssService, OssService>();
         builder.Services.AddScoped<IBangumiService, BangumiService>();
@@ -115,6 +116,7 @@ public class Program
         result = Check("AppSettings:Minio:EndPoint") && result;
         result = Check("AppSettings:Minio:AccessKey") && result;
         result = Check("AppSettings:Minio:SecretKey") && result;
+        result = Check("AppSettings:Minio:EventToken") && result;
         
         result = CheckBoolValue("AppSettings:Minio:UseSSL", out _) && result;
         result = CheckBoolValue("AppSettings:Bangumi:OAuth2Enable", out var isBgmOAuth2Enable) && result;
@@ -126,6 +128,7 @@ public class Program
         }
         result = CheckBoolValue("AppSettings:User:Bangumi", out _) && result;
         result = CheckBoolValue("AppSettings:User:Default", out _) && result;
+        result = CheckLongValue("AppSettings:User:OssSize", out _) && result;
         
         return result;
 
@@ -149,6 +152,19 @@ public class Program
                 return false;
             }
             value = Convert.ToBoolean(builder.Configuration[key]);
+            return true;
+        }
+
+        bool CheckLongValue(string key, out long value)
+        {
+            if (string.IsNullOrEmpty(builder.Configuration[key]) == false &&
+                long.TryParse(builder.Configuration[key], out _) == false)
+            {
+                Console.WriteLine($"{key} is is not a valid number(long) value.");
+                value = 0;
+                return false;
+            }
+            value = Convert.ToInt64(builder.Configuration[key]);
             return true;
         }
     }

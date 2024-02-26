@@ -10,4 +10,5 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<GalgameDeleted> GalgameDeleted { get; init; } = null!;
     public DbSet<PlayLog> GalPlayLog { get; init; } = null!;
     public DbSet<Category> Category { get; init; } = null!;
+    public DbSet<OssRecord> OssRecords { get; set; } = null!;
 }
