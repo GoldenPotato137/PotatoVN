@@ -45,8 +45,11 @@ public partial class GalgameSettingViewModel : ObservableRecipient, INavigationA
 
     public async void OnNavigatedFrom()
     {
+        if (Gal.ImagePath.Value != Galgame.DefaultImagePath && File.Exists(Gal.ImagePath.Value) == false)
+            Gal.ImagePath.Value = Galgame.DefaultImagePath;
         await _galService.SaveGalgamesAsync(Gal);
         _pvnService.Upload(Gal, PvnUploadProperties.Infos | PvnUploadProperties.ImageLoc);
+        _galService.PhrasedEvent -= UpdateIsPhrasing;
     }
 
     public void OnNavigatedTo(object parameter)
