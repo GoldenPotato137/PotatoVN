@@ -67,7 +67,7 @@ public class BgTaskService : IBgTaskService
             _bgTasks.Remove(bgTask);
             UiThreadInvokeHelper.Invoke(() => BgTaskRemoved?.Invoke(bgTask));
         });
-        BgTaskAdded?.Invoke(bgTask);
+        UiThreadInvokeHelper.Invoke(()=>BgTaskAdded?.Invoke(bgTask));
         return t;
     }
 }

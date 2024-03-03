@@ -46,10 +46,12 @@ public class GetGalgameInfoFromRss : BgTaskBase
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+        IBgTaskService bgTaskService = App.GetService<IBgTaskService>();
         var log = string.Empty;
         
         return Task.Run((async Task () =>
         {
+            List<Task> characterTasks = new List<Task>();
             log += $"{DateTime.Now}\n{GalgameFolderPath}\n\n";
 
             _galgameFolder.IsRunning = true;
@@ -64,13 +66,14 @@ public class GetGalgameInfoFromRss : BgTaskBase
                     Galgame result = await galgameService.PhraseGalInfoAsync(galgame);
                     log += $"{result.Name} Done";
                 });
-                
+                characterTasks.Add(bgTaskService.AddBgTask(new GetGalgameCharactersFromRss(galgame)));
             }
             
             ChangeProgress(0, 1, "GalgameFolder_GetGalgameInfo_Saving".GetLocalized());
             FileHelper.SaveWithoutJson(_galgameFolder.GetLogName(), log, "Logs");
             await Task.Delay(1000); //等待文件保存
-            
+            ChangeProgress(0, 1, "GalgameFolder_GetGalgameInfo_Waiting".GetLocalized());
+            await Task.WhenAll(characterTasks.ToArray());
             ChangeProgress(1, 1, "GalgameFolder_GetGalgameInfo_Done".GetLocalized());
             _galgameFolder.IsRunning = false;
             if (App.MainWindow is null && await localSettings.ReadSettingAsync<bool>(KeyValues.NotifyWhenGetGalgameInFolder))

@@ -1425,12 +1425,30 @@
     <value>女性</value>
   </data>
   <data name="GalgameFolder_GetGalgameInfo_Saving" xml:space="preserve">
-    <value>从RSS获取信息完成，保存记录中</value>
+    <value>从RSS获取游戏信息完成，保存记录中</value>
   </data>
   <data name="GalgameFolder_GetGalgameInfo_Done" xml:space="preserve">
     <value>保存完成</value>
   </data>
   <data name="GetGalgameInfoTask_Title" xml:space="preserve">
     <value>下载游戏数据任务</value>
+  </data>
+  <data name="Galgame_GetCharacterInfo_Saving" xml:space="preserve">
+    <value>从RSS获取角色信息完成，保存记录中</value>
+  </data>
+  <data name="Galgame_GetCharacterInfo_Done" xml:space="preserve">
+    <value>保存完成</value>
+  </data>
+  <data name="GetCharacterInfoTask_Title" xml:space="preserve">
+    <value>下载角色数据任务</value>
+  </data>
+  <data name="Galgame_GetCharacterInfo_GettingInfo" xml:space="preserve">
+    <value>正在获取 {0}({1}) 的信息</value>
+  </data>
+  <data name="Galgame_GetCharacterInfo_GottenInfo" xml:space="preserve">
+    <value>成功获取 {0}({1}) 的信息</value>
+  </data>
+  <data name="GalgameFolder_GetGalgameInfo_Waiting" xml:space="preserve">
+    <value>等待角色信息下载完成</value>
   </data>
 </root>

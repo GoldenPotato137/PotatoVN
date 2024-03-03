@@ -1180,4 +1180,16 @@ If play time can record correctly, just cancel this popup.
   <data name="GetGalgameInfoTask_Title" xml:space="preserve">
     <value>Get Galgame Info Task</value>
   </data>
+  <data name="Galgame_GetCharacterInfo_Saving" xml:space="preserve">
+    <value>Done getting character info from RSS, saving</value>
+  </data>
+  <data name="Galgame_GetCharacterInfo_Done" xml:space="preserve">
+    <value>Done saving</value>
+  </data>
+  <data name="GetCharacterInfoTask_Title" xml:space="preserve">
+    <value>Get Character Info Task</value>
+  </data>
+  <data name="GalgameFolder_GetGalgameInfo_Waiting" xml:space="preserve">
+    <value>Waiting for character info to be downloaded</value>
+  </data>
 </root>
