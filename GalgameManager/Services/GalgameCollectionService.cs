@@ -251,6 +251,24 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         PhrasedEvent2?.Invoke(galgame);
         return result;
     }
+    
+    public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter, RssType rssType = RssType.None)
+    {
+        GalgameCharacter result = await PhraserCharacterAsync(galgameCharacter, PhraserList[(int)rssType]);
+        return result;
+    }
+
+    private static async Task<GalgameCharacter> PhraserCharacterAsync(GalgameCharacter galgameCharacter, IGalInfoPhraser phraser)
+    {
+        if (phraser is not IGalCharacterPhraser characterPhraser) return galgameCharacter;
+        GalgameCharacter? tmp = await characterPhraser.GetGalgameCharacter(galgameCharacter);
+        galgameCharacter.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(galgameCharacter.ImageUrl, 
+            fileNameWithoutExtension:$"{galgameCharacter.Name}_Large") ?? Galgame.DefaultImagePath;
+        galgameCharacter.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(galgameCharacter.PreviewImageUrl, 
+                                                fileNameWithoutExtension:$"{galgameCharacter.Name}_Preview") ??
+                                            Galgame.DefaultImagePath;
+        return galgameCharacter;
+    }
 
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)
     {
@@ -285,14 +303,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.Characters = tmp.Characters;
         galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.ReleaseDate = tmp.ReleaseDate.Value;
-        foreach (GalgameCharacter character in galgame.Characters)
-        {
-            character.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.ImageUrl, 
-                fileNameWithoutExtension:$"{character.Name}_Large") ?? Galgame.DefaultImagePath;
-            character.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.PreviewImageUrl, 
-                                            fileNameWithoutExtension:$"{character.Name}_Preview") ??
-                                        Galgame.DefaultImagePath;
-        }
         return galgame;
     }
     

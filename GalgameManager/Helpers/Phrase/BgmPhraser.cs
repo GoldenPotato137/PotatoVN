@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
 
-public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
+public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
 {
     private HttpClient _httpClient;
     private bool _authed;
@@ -205,9 +205,14 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
         if (charactersList == null) return result;
         foreach (JToken character in charactersList)
         {
-            if (character["id"]?.ToObject<string>() == null) continue;
-            GalgameCharacter c = (await GetCharacterById(character["id"]!.ToObject<string>()!)) ?? new GalgameCharacter();
-            c.Relation = character["relation"]?.ToObject<string>() ?? "";
+            var cid = character["id"]?.ToObject<string>();
+            if (cid == null) continue;
+            GalgameCharacter c = new GalgameCharacter()
+            {
+                Name = character["name"]?.ToObject<string>() ?? "", 
+                Relation = character["relation"]?.ToObject<string>() ?? ""
+            };
+            c.Ids[(int)GetPhraseType()] = cid;
             result.Characters.Add(c);
         }
 
@@ -215,6 +220,13 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync
     }
 
     public RssType GetPhraseType() => RssType.Bangumi;
+
+    public async Task<GalgameCharacter?> GetGalgameCharacter(GalgameCharacter galgameCharacter)
+    {
+        var id = galgameCharacter.Ids[(int)GetPhraseType()];
+        if (id == null) return null;
+        return await GetCharacterById(id);
+    }
 
     /// <summary>
     /// 获取开发商的图片链接
