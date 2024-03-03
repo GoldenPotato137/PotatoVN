@@ -1159,6 +1159,18 @@ If play time can record correctly, just cancel this popup.
   <data name="GalgameCharacterPage_Gender.Text" xml:space="preserve">
     <value>Gender</value>
   </data>
+  <data name="GalgameCharacterPage_Height.Text" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="GalgameCharacterPage_Weight.Text" xml:space="preserve">
+    <value>Weight</value>
+  </data>
+  <data name="GalgameCharacterPage_BWH.Text" xml:space="preserve">
+    <value>BWH</value>
+  </data>
+  <data name="GalgameCharacterPage_BloodType.Text" xml:space="preserve">
+    <value>BloodType</value>
+  </data>
   <data name="GalgameFolder_GetGalgameInfo_Saving" xml:space="preserve">
     <value>Done getting galgame info from RSS, saving</value>
   </data>

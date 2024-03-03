@@ -1403,6 +1403,18 @@
   <data name="GalgameCharacterPage_Gender.Text" xml:space="preserve">
     <value>性别</value>
   </data>
+  <data name="GalgameCharacterPage_Height.Text" xml:space="preserve">
+    <value>身高</value>
+  </data>
+  <data name="GalgameCharacterPage_Weight.Text" xml:space="preserve">
+    <value>体重</value>
+  </data>
+  <data name="GalgameCharacterPage_BWH.Text" xml:space="preserve">
+    <value>三围</value>
+  </data>
+  <data name="GalgameCharacterPage_BloodType.Text" xml:space="preserve">
+    <value>血型</value>
+  </data>
   <data name="Gender_Unknown" xml:space="preserve">
     <value>未知</value>
   </data>

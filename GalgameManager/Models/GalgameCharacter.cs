@@ -5,12 +5,15 @@ namespace GalgameManager.Models;
 
 public partial class GalgameCharacter: ObservableObject
 {
+    // ReSharper disable once MemberCanBePrivate.Global
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _relation = "";
     [ObservableProperty] private string _previewImagePath = Galgame.DefaultImagePath;
     [ObservableProperty] private string _imagePath = Galgame.DefaultImagePath;
     [ObservableProperty] private string _summary = "";
-    [ObservableProperty] private Gender _gender = Models.Gender.Unknown;
+    [ObservableProperty] private Gender _gender = Gender.Unknown;
     [ObservableProperty] private int? _birthYear;
     [ObservableProperty] private int? _birthMon;
     [ObservableProperty] private int? _birthDay;
