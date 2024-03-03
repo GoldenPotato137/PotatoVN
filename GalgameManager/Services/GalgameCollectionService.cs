@@ -251,7 +251,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         PhrasedEvent2?.Invoke(galgame);
         return result;
     }
-    
     public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter, RssType rssType = RssType.None)
     {
         GalgameCharacter result = await PhraserCharacterAsync(galgameCharacter, PhraserList[(int)rssType]);
@@ -262,9 +261,22 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         if (phraser is not IGalCharacterPhraser characterPhraser) return galgameCharacter;
         GalgameCharacter? tmp = await characterPhraser.GetGalgameCharacter(galgameCharacter);
-        galgameCharacter.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(galgameCharacter.ImageUrl, 
+        if (tmp == null) return galgameCharacter;
+        galgameCharacter.Name = tmp.Name;
+        galgameCharacter.Summary = tmp.Summary;
+        galgameCharacter.Gender = tmp.Gender;
+        galgameCharacter.BirthDay = tmp.BirthDay;
+        galgameCharacter.BirthMon = tmp.BirthMon;
+        galgameCharacter.BirthYear = tmp.BirthYear;
+        galgameCharacter.BirthDate = tmp.BirthDate;
+        galgameCharacter.BloodType = tmp.BloodType;
+        galgameCharacter.Height = tmp.Height;
+        galgameCharacter.Weight = tmp.Weight;
+        galgameCharacter.BWH = tmp.BWH;
+        
+        galgameCharacter.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(tmp.ImageUrl, 
             fileNameWithoutExtension:$"{galgameCharacter.Name}_Large") ?? Galgame.DefaultImagePath;
-        galgameCharacter.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(galgameCharacter.PreviewImageUrl, 
+        galgameCharacter.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(tmp.PreviewImageUrl, 
                                                 fileNameWithoutExtension:$"{galgameCharacter.Name}_Preview") ??
                                             Galgame.DefaultImagePath;
         return galgameCharacter;
