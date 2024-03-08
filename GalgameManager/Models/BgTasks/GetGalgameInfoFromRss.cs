@@ -72,8 +72,6 @@ public class GetGalgameInfoFromRss : BgTaskBase
             ChangeProgress(0, 1, "GalgameFolder_GetGalgameInfo_Saving".GetLocalized());
             FileHelper.SaveWithoutJson(_galgameFolder.GetLogName(), log, "Logs");
             await Task.Delay(1000); //等待文件保存
-            ChangeProgress(0, 1, "GalgameFolder_GetGalgameInfo_Waiting".GetLocalized());
-            await Task.WhenAll(characterTasks.ToArray());
             ChangeProgress(1, 1, "GalgameFolder_GetGalgameInfo_Done".GetLocalized());
             _galgameFolder.IsRunning = false;
             if (App.MainWindow is null && await localSettings.ReadSettingAsync<bool>(KeyValues.NotifyWhenGetGalgameInFolder))
