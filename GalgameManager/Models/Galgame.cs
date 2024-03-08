@@ -394,6 +394,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             ErrorOccurred?.Invoke(e);
         }
     }
+    
+    public string GetLogName() => $"Galgame_{Path.ToBase64().Replace("/", "").Replace("=", "")}.txt";
 }
 
 

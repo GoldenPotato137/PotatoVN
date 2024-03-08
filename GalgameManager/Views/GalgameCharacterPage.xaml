@@ -29,9 +29,12 @@
                         <AdaptiveTrigger MinWindowWidth="641" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="CharacterInfoBlock.(RelativePanel.RightOf)" Value="ImageBlock" />
-                        <Setter Target="CharacterInfoBlock.(RelativePanel.Below)" Value="TitleBlock" />
-                        <Setter Target="CharacterInfoBlock.Width" Value="180" />
+                        <Setter Target="CharacterInfoBlockLeft.(RelativePanel.RightOf)" Value="ImageBlock" />
+                        <Setter Target="CharacterInfoBlockLeft.(RelativePanel.Below)" Value="TitleBlock" />
+                        <Setter Target="CharacterInfoBlockLeft.Width" Value="180" />
+                        <Setter Target="CharacterInfoBlockRight.(RelativePanel.RightOf)" Value="CharacterInfoBlockLeft" />
+                        <Setter Target="CharacterInfoBlockRight.(RelativePanel.Below)" Value="TitleBlock" />
+                        <Setter Target="CharacterInfoBlockRight.Width" Value="180" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -94,7 +97,7 @@
                             Text="{x:Bind ViewModel.Character.Name, Mode=OneWay, FallbackValue={}}" 
                             />
 
-                        <StackPanel x:Name="CharacterInfoBlock" RelativePanel.Below="ImageBlock">
+                        <StackPanel x:Name="CharacterInfoBlockLeft" RelativePanel.Below="ImageBlock">
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
                                            x:Uid="GalgameCharacterPage_BirthDate" />
@@ -116,6 +119,38 @@
                                            Text="{x:Bind ViewModel.Character.Gender, 
                                            Mode=OneWay, FallbackValue={}, 
                                            Converter={StaticResource EnumToStringConverter}}" />
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <StackPanel x:Name="CharacterInfoBlockRight" RelativePanel.Below="CharacterInfoBlockLeft">
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           x:Uid="GalgameCharacterPage_Height" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Character.Height, 
+                                           Mode=OneWay, FallbackValue={}, TargetNullValue='-'}" />
+                            </StackPanel>
+
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           x:Uid="GalgameCharacterPage_Weight" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Character.Weight, 
+                                           Mode=OneWay, FallbackValue={}, TargetNullValue='-'}" />
+                            </StackPanel>
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           x:Uid="GalgameCharacterPage_BWH" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Character.BWH, 
+                                           Mode=OneWay, FallbackValue={}, TargetNullValue='-'}" />
+                            </StackPanel>
+                            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                           x:Uid="GalgameCharacterPage_BloodType" />
+                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                           Text="{x:Bind ViewModel.Character.BloodType, 
+                                           Mode=OneWay, FallbackValue={}, TargetNullValue='-'}" />
                             </StackPanel>
                         </StackPanel>
 

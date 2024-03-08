@@ -5,7 +5,7 @@ using GalgameManager.Models;
 
 namespace GalgameManager.Helpers.Phrase;
 
-public class MixedPhraser : IGalInfoPhraser
+public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
 {
     private readonly BgmPhraser _bgmPhraser;
     private readonly VndbPhraser _vndbPhraser;
@@ -144,6 +144,11 @@ public class MixedPhraser : IGalInfoPhraser
     }
 
     public RssType GetPhraseType() => RssType.Mixed;
+
+    public async Task<GalgameCharacter?> GetGalgameCharacter(GalgameCharacter galgameCharacter)
+    {
+        return await _bgmPhraser.GetGalgameCharacter(galgameCharacter);
+    }
 }
 
 public class MixedPhraserData : IGalInfoPhraserData

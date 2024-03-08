@@ -98,6 +98,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         }
         GalgameLoadedEvent?.Invoke();
     }
+    
+    public Galgame GetGalgameByName(string name)
+    {
+        return _galgames.Where(g => g.Name == name).ToList()[0];
+    }
 
     /// <summary>
     /// 可能不同版本行为不同，需要对已存储的galgame进行升级
@@ -251,6 +256,36 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         PhrasedEvent2?.Invoke(galgame);
         return result;
     }
+    public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter, RssType rssType = RssType.None)
+    {
+        GalgameCharacter result = await PhraserCharacterAsync(galgameCharacter, PhraserList[(int)rssType]);
+        return result;
+    }
+
+    private static async Task<GalgameCharacter> PhraserCharacterAsync(GalgameCharacter galgameCharacter, IGalInfoPhraser phraser)
+    {
+        if (phraser is not IGalCharacterPhraser characterPhraser) return galgameCharacter;
+        GalgameCharacter? tmp = await characterPhraser.GetGalgameCharacter(galgameCharacter);
+        if (tmp == null) return galgameCharacter;
+        galgameCharacter.Name = tmp.Name;
+        galgameCharacter.Summary = tmp.Summary;
+        galgameCharacter.Gender = tmp.Gender;
+        galgameCharacter.BirthDay = tmp.BirthDay;
+        galgameCharacter.BirthMon = tmp.BirthMon;
+        galgameCharacter.BirthYear = tmp.BirthYear;
+        galgameCharacter.BirthDate = tmp.BirthDate;
+        galgameCharacter.BloodType = tmp.BloodType;
+        galgameCharacter.Height = tmp.Height;
+        galgameCharacter.Weight = tmp.Weight;
+        galgameCharacter.BWH = tmp.BWH;
+        
+        galgameCharacter.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(tmp.ImageUrl, 
+            fileNameWithoutExtension:$"{galgameCharacter.Name}_Large") ?? Galgame.DefaultImagePath;
+        galgameCharacter.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(tmp.PreviewImageUrl, 
+                                                fileNameWithoutExtension:$"{galgameCharacter.Name}_Preview") ??
+                                            Galgame.DefaultImagePath;
+        return galgameCharacter;
+    }
 
     private static async Task<Galgame> PhraserAsync(Galgame galgame, IGalInfoPhraser phraser)
     {
@@ -285,14 +320,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         galgame.Characters = tmp.Characters;
         galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.ReleaseDate = tmp.ReleaseDate.Value;
-        foreach (GalgameCharacter character in galgame.Characters)
-        {
-            character.ImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.ImageUrl, 
-                fileNameWithoutExtension:$"{character.Name}_Large") ?? Galgame.DefaultImagePath;
-            character.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageAsync(character.PreviewImageUrl, 
-                                            fileNameWithoutExtension:$"{character.Name}_Preview") ??
-                                        Galgame.DefaultImagePath;
-        }
         return galgame;
     }
     
