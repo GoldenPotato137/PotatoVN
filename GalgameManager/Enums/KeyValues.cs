@@ -38,7 +38,6 @@ public static class KeyValues
     public const string PvnServerType = "pvnServerType"; //enum: PvnServerType, 服务器类型（官方/自定义）
     public const string PvnServerEndpoint = "pvnServerEndpoint"; //string, 自定义服务器Url
     public const string PvnAccount = "pvnAccount"; //PvnAccount, PotatoVN账户
-    public const string PvnLastAccount = "pvnLastAccount"; //PvnAccount, 上次登录的PotatoVN账户(用来判断是否切换账户,若切换账户则清除游戏PvnId)
     public const string PvnAccountUserName = "pvnAccountUserName"; //string, PotatoVN账户名
     
     //游玩相关

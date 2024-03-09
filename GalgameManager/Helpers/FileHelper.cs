@@ -44,6 +44,11 @@ public static class FileHelper
         FileService.SaveWithoutJson(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, content);
     }
     
+    public static void SaveNow<T> (string fileName, T content, string? subFolder = null)
+    {
+        FileService.SaveNow(Path.Combine(_appDataPath, subFolder ?? string.Empty), fileName, content);
+    }
+    
     /// <summary>
     /// 读取某个文件，该文件必须是json格式
     /// </summary>

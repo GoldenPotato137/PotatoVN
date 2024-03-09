@@ -1451,4 +1451,22 @@
   <data name="GalgameFolder_GetGalgameInfo_Waiting" xml:space="preserve">
     <value>等待角色信息下载完成</value>
   </data>
+  <data name="PvnService_UploadImageFailed" xml:space="preserve">
+    <value>上传游戏{0}封面失败</value>
+  </data>
+  <data name="AccountPage_Pvn_CloudStorage.Title" xml:space="preserve">
+    <value>Pvn云存储空间</value>
+  </data>
+  <data name="AccountPage_Pvn_CloudStorage.Description" xml:space="preserve">
+    <value>这些空间用来放同步到云端的游戏封面</value>
+  </data>
+  <data name="AccountPage_Pvn_SpaceUsedPercent" xml:space="preserve">
+    <value>已使用 {0}%</value>
+  </data>
+  <data name="PvnService_DownloadAvatarFailed" xml:space="preserve">
+    <value>下载Pvn账户头像失败</value>
+  </data>
+  <data name="PvnService_UploadAvatarFailed" xml:space="preserve">
+    <value>上传账户头像失败</value>
+  </data>
 </root>

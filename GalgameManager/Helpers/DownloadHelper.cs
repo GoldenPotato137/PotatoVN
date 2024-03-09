@@ -10,9 +10,10 @@ public static class DownloadHelper
     /// <param name="imageUrl">图片链接</param>
     /// <param name="retry">这是第几次重试</param>
     /// <param name="fileNameWithoutExtension">目标文件名（不带扩展名）</param>
+    /// <param name="onException">失败时回调，若为Http异常则等到重试次数满后触发，否则在有异常时立刻触发</param>
     /// <returns>本地文件路径, 如果下载失败则返回null</returns>
     public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl, int retry = 0, 
-        string? fileNameWithoutExtension = null)
+        string? fileNameWithoutExtension = null, Action<Exception>? onException = null)
     {
         try
         {
@@ -54,17 +55,19 @@ public static class DownloadHelper
             // 返回本地文件的路径
             return storageFile.Path;
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException e)
         {
             if (retry < 3)
             {
                 await Task.Delay(5000);
                 return await DownloadAndSaveImageAsync(imageUrl, retry + 1);
             }
+            onException?.Invoke(e);
             return null;
         }
-        catch(Exception)
+        catch(Exception e)
         {
+            onException?.Invoke(e);
             return null;
         }
     }

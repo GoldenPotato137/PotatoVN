@@ -9,6 +9,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
@@ -21,6 +22,7 @@ public class PvnService : IPvnService
     private readonly IBgTaskService _bgTaskService;
     private readonly HttpClient _httpClient;
     private readonly GalgameCollectionService _gameService;
+    private readonly IInfoService _infoService;
     public Uri BaseUri { get; private set; }
     public Action<PvnServiceStatus>? StatusChanged { get; set; }
     public PvnSyncTask? SyncTask { get; private set; }
@@ -28,7 +30,7 @@ public class PvnService : IPvnService
     private PvnServerInfo? _serverInfo;
 
     public PvnService(ILocalSettingsService settingsService, IConfiguration config, IBgmOAuthService bgmService,
-        IBgTaskService bgTaskService, IDataCollectionService<Galgame> gameService)
+        IBgTaskService bgTaskService, IDataCollectionService<Galgame> gameService, IInfoService infoService)
     {
         _settingsService = settingsService;
         _bgmService = bgmService;
@@ -37,6 +39,7 @@ public class PvnService : IPvnService
         _bgTaskService = bgTaskService;
         _gameService = (GalgameCollectionService)gameService;
         _httpClient = Utils.GetDefaultHttpClient();
+        _infoService = infoService;
 
         _settingsService.OnSettingChanged += async (key, _) =>
         {
@@ -45,10 +48,6 @@ public class PvnService : IPvnService
                 BaseUri = GetBaseUri();
                 _serverInfo = null;
                 await LogOutAsync();
-                await _settingsService.SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0);
-                foreach (Galgame galgame in _gameService.Galgames)
-                    galgame.Ids[(int)RssType.PotatoVn] = null;
-                await _gameService.SaveGalgamesAsync();
             }
         };
         _gameService.GalgameAddedEvent += _ => SyncGames();
@@ -166,10 +165,19 @@ public class PvnService : IPvnService
         var ossFilePath = string.Empty;
         if (avatarPath is not null)
         {
-            StatusChanged?.Invoke(PvnServiceStatus.UploadingAvatar);
-            (string presignedUrl, string ossFilePath) result = await GetPresignedUrl(avatarPath, "Avatar", client);
-            ossFilePath = result.ossFilePath;
-            await UploadFileAsync(result.presignedUrl, avatarPath);
+            try
+            {
+                StatusChanged?.Invoke(PvnServiceStatus.UploadingAvatar);
+                (string presignedUrl, string ossFilePath) result = await GetPresignedUrl(avatarPath, "Avatar", client);
+                ossFilePath = result.ossFilePath;
+                await UploadFileAsync(result.presignedUrl, avatarPath);
+            }
+            catch(Exception e)
+            {
+                _infoService.Event(EventType.PvnAccountEvent, InfoBarSeverity.Warning,
+                    "PvnService_UploadAvatarFailed".GetLocalized(), e);
+                avatarPath = null;
+            }
         }
 
         Dictionary<string, string> payload = new();
@@ -205,6 +213,13 @@ public class PvnService : IPvnService
             throw new AuthenticationException("PotatoVN account token invalid.");
         response.EnsureSuccessStatusCode();
         JToken jsonToken = JToken.Parse(await response.Content.ReadAsStringAsync());
+        //顺便更新用户信息
+        account.UserName = jsonToken["userName"]!.Value<string>()!;
+        account.UserDisplayName = jsonToken["userDisplayName"]!.Value<string>()!;
+        account.TotalSpace = jsonToken["totalSpace"]!.Value<long>();
+        account.UsedSpace = jsonToken["usedSpace"]!.Value<long>();
+        await _settingsService.SaveSettingAsync(KeyValues.PvnAccount, account);
+        
         return jsonToken["lastGalChangedTimeStamp"]!.Value<long>();
     }
 
@@ -306,9 +321,10 @@ public class PvnService : IPvnService
                 await UploadFileAsync(tmp.url, galgame.ImagePath!);
                 payload["imageLoc"] = tmp.path;
             }
-            catch
+            catch(Exception e)
             {
-                //ignore
+                _infoService.Event(EventType.PvnSyncEvent, InfoBarSeverity.Warning,
+                    "PvnService_UploadImageFailed".GetLocalized(galgame.Name.Value ?? string.Empty), e);
             }
         }
 
@@ -354,9 +370,12 @@ public class PvnService : IPvnService
 
     public async Task LogOutAsync()
     {
-        await _settingsService.SaveSettingAsync(KeyValues.PvnLastAccount, await 
-            _settingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount));
         await _settingsService.SaveSettingAsync<PvnAccount?>(KeyValues.PvnAccount, null, false, true);
+        await _settingsService.SaveSettingAsync(KeyValues.SyncGames, false);
+        await _settingsService.SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0);
+        foreach (Galgame gal in _gameService.Galgames)
+            gal.Ids[(int)RssType.PotatoVn] = null;
+        await _gameService.SaveGalgamesAsync();
     }
 
     private Uri GetBaseUri()
@@ -377,25 +396,23 @@ public class PvnService : IPvnService
             UserName = jsonToken["user"]!["userName"]!.Value<string>()!,
             UserDisplayName = jsonToken["user"]!["userDisplayName"]!.Value<string>()!,
             ExpireTimestamp = jsonToken["expire"]!.Value<long>(),
-            LoginMethod = loginType
+            LoginMethod = loginType,
+            TotalSpace = jsonToken["user"]!["totalSpace"]!.Value<long>(),
+            UsedSpace = jsonToken["user"]!["usedSpace"]!.Value<long>(),
         };
-        if (jsonToken["user"]!["avatar"] is not null)
+        if (jsonToken["user"]!["avatar"]?.Value<string>() is not null)
         {
             StatusChanged?.Invoke(PvnServiceStatus.DownloadingAvatar);
+            Exception? failedException = null;
             account.Avatar = await DownloadHelper.DownloadAndSaveImageAsync(jsonToken["user"]!["avatar"]!.Value<string>(),
-                0, "PvnAvatar");
-        }
-
-        PvnAccount? lastAccount = await _settingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnLastAccount);
-        if (lastAccount is not null && account.Id != lastAccount.Id)
-        {
-            foreach (Galgame gal in _gameService.Galgames)
-                gal.Ids[(int)RssType.PotatoVn] = null;
-            await _gameService.SaveGalgamesAsync();
-            await _settingsService.SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0);
+                0, "PvnAvatar", onException: e => failedException = e);
+            if (account.Avatar is null)
+            {
+                _infoService.Event(EventType.PvnAccountEvent, InfoBarSeverity.Warning,
+                    "PvnService_DownloadAvatarFailed".GetLocalized(), failedException);
+            }
         }
         
-        await _settingsService.SaveSettingAsync(KeyValues.SyncGames, false);
         await _settingsService.SaveSettingAsync(KeyValues.PvnAccount, account);
         return account;
     }
