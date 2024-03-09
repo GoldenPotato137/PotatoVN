@@ -98,11 +98,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         }
         GalgameLoadedEvent?.Invoke();
     }
-    
-    public Galgame GetGalgameByName(string name)
-    {
-        return _galgames.Where(g => g.Name == name).ToList()[0];
-    }
 
     /// <summary>
     /// 可能不同版本行为不同，需要对已存储的galgame进行升级
