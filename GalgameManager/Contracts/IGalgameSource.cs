@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Models;
+using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
 
@@ -7,8 +8,14 @@ namespace GalgameManager.Contracts;
 
 public interface IGalgameSource
 {
+    public string Url { get; set; }
     public Task<ObservableCollection<Galgame>> GetGalgameList();
     public Galgame GetGalgameByName(string name);
+    
+    [JsonIgnore] public bool IsRunning { get; set; }
+    [JsonIgnore] public bool IsUnpacking { get; set; }
+    
+    public bool ScanOnStart { get; set; }
 
     /// <summary>
     /// 向库中新增一个游戏

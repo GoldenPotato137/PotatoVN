@@ -19,6 +19,7 @@ using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using WindowExtensions = H.NotifyIcon.WindowExtensions;
 using Windows.ApplicationModel.DataTransfer;
+using GalgameManager.Contracts;
 
 namespace GalgameManager;
 
@@ -86,7 +87,7 @@ public partial class App : Application
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
-            services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
+            services.AddSingleton<IDataCollectionService<IGalgameSource>, GalgameSourceCollectionService>();
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<ICategoryService, CategoryService>();
@@ -118,7 +119,7 @@ public partial class App : Application
             services.AddTransient<PlayedTimeViewModel>();
             services.AddTransient<LibraryViewModel>();
             services.AddTransient<LibraryPage>();
-            services.AddTransient<GalgameFolderViewModel>();
+            services.AddTransient<GalgameSourceViewModel>();
             services.AddTransient<GalgameFolderPage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();

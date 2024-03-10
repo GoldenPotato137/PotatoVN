@@ -8,22 +8,27 @@ using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public class GalgameFolder: IGalgameSource
+public class LocalFolderSource: IGalgameSource
 {
     [JsonIgnore] public GalgameCollectionService GalgameService;
 
-    [JsonIgnore] public bool IsRunning;
-    [JsonIgnore] public bool IsUnpacking;
+    [JsonIgnore] public bool IsRunning { get; set; }
+    [JsonIgnore] public bool IsUnpacking { get; set; }
     private readonly List<Galgame> _galgames = new();
 
     public string Path { get; set; }
+    public string Url { get; set; }
     public bool ScanOnStart { get; set; }
 
-    public GalgameFolder(string path, IDataCollectionService<Galgame> service)
+    public LocalFolderSource(string url, IDataCollectionService<Galgame> service)
     {
-        Path = path;
+        if (url[..url.IndexOf("://", StringComparison.Ordinal)] != "local") throw new Exception();
+        Url = url;
+        Path = url[url.IndexOf("://", StringComparison.Ordinal)..];
         GalgameService = ((GalgameCollectionService?)service)!;
     }
+
+    public string GetUrl() => Url;
 
     public async Task<ObservableCollection<Galgame>> GetGalgameList()
     {
@@ -37,7 +42,7 @@ public class GalgameFolder: IGalgameSource
     }
 
     /// <summary>
-    /// 向库中新增一个游戏
+    /// 向库中新增一个游戏, 用于初始化
     /// </summary>
     /// <param name="galgame">游戏</param>
     public void AddGalgame(Galgame galgame)
@@ -79,7 +84,7 @@ public class GalgameFolder: IGalgameSource
     /// <summary>
     /// 获取这个库的日志路径（相对存储根目录）
     /// </summary>
-    public string GetLogPath() => StdPath.Combine("Logs", $"GalgameFolder_{Path.ToBase64()}.txt");
+    public string GetLogPath() => StdPath.Combine("Logs", $"GalgameFolder_{Url.ToBase64()}.txt");
     
-    public string GetLogName() => $"GalgameFolder_{Path.ToBase64()}.txt";
+    public string GetLogName() => $"GalgameFolder_{Url.ToBase64()}.txt";
 }

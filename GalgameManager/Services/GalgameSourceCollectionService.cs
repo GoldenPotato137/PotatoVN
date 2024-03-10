@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Contracts;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
@@ -10,14 +11,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
-public class GalgameFolderCollectionService : IDataCollectionService<GalgameFolder>
+public class GalgameSourceCollectionService : IDataCollectionService<IGalgameSource>
 {
-    private ObservableCollection<GalgameFolder> _galgameFolders = new();
+    private ObservableCollection<IGalgameSource> _galgameFolders = new();
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgTaskService _bgTaskService;
 
-    public GalgameFolderCollectionService(ILocalSettingsService localSettingsService, 
+    public GalgameSourceCollectionService(ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _localSettingsService = localSettingsService;
@@ -27,7 +28,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         _bgTaskService = bgTaskService;
     }
 
-    public async Task<ObservableCollection<GalgameFolder>> GetContentGridDataAsync()
+    public async Task<ObservableCollection<IGalgameSource>> GetContentGridDataAsync()
     {
         await Task.CompletedTask;
         return _galgameFolders;
@@ -35,13 +36,13 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
     public async Task InitAsync()
     {
-        _galgameFolders = await _localSettingsService.ReadSettingAsync<ObservableCollection<GalgameFolder>>(KeyValues.GalgameFolders, true)
-                          ?? new ObservableCollection<GalgameFolder>();
+        _galgameFolders = await _localSettingsService.ReadSettingAsync<ObservableCollection<IGalgameSource>>(KeyValues.GalgameFolders, true)
+                          ?? new ObservableCollection<IGalgameSource>();
         List<Galgame> galgames = _galgameService.Galgames;
 
         await Task.Run(() =>
         {
-            foreach (GalgameFolder galgameFolder in _galgameFolders)
+            foreach (LocalFolderSource galgameFolder in _galgameFolders)
             {
                 galgameFolder.GalgameService = _galgameService;
                 foreach(Galgame game in galgames.Where(galgame => galgameFolder.IsInSource(galgame)))
@@ -52,8 +53,13 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
 
     public Task StartAsync()
     {
-        foreach(GalgameFolder folder in _galgameFolders.Where(f => f.ScanOnStart)) 
-            _bgTaskService.AddBgTask(new GetGalgameInFolderTask(folder));
+        foreach (IGalgameSource source in _galgameFolders.Where(f => f.ScanOnStart))
+        {
+            if (source is LocalFolderSource localFolderSource)
+            {
+                _bgTaskService.AddBgTask(new GetGalgameInLocalFolderTask(localFolderSource));
+            }
+        }
         return Task.CompletedTask;
     }
 
@@ -84,25 +90,26 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
     /// <exception cref="Exception">库已经添加过了</exception>
     public async Task AddGalgameFolderAsync(string path, bool tryGetGalgame = true)
     {
-        if (_galgameFolders.Any(galFolder => galFolder.Path == path))
+        var url = $"local://{path}";
+        if (_galgameFolders.Any(galFolder => galFolder.Url == url))
         {
             throw new Exception($"这个galgame库{path}已经添加过了");
         }
 
-        GalgameFolder galgameFolder = new(path, _galgameService);
-        _galgameFolders.Add(galgameFolder);
+        LocalFolderSource localFolderSource = new(url, _galgameService);
+        _galgameFolders.Add(localFolderSource);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
         if (tryGetGalgame)
         {
-            await _bgTaskService.AddBgTask(new GetGalgameInFolderTask(galgameFolder));
+            await _bgTaskService.AddBgTask(new GetGalgameInLocalFolderTask(localFolderSource));
         }
     }
 
     /// <summary>
     /// 删除一个galgame库，其包含弹窗警告，若用户取消则什么都不做
     /// </summary>
-    /// <param name="galgameFolder"></param>
-    public async Task DeleteGalgameFolderAsync(GalgameFolder galgameFolder)
+    /// <param name="localFolderSource"></param>
+    public async Task DeleteGalgameFolderAsync(LocalFolderSource localFolderSource)
     {
         var delete = false;
         ContentDialog dialog = new()
@@ -117,19 +124,19 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         };
         await dialog.ShowAsync();
         
-        if (delete == false || !_galgameFolders.Contains(galgameFolder)) return;
-        foreach (Galgame galgame in await galgameFolder.GetGalgameList())
+        if (delete == false || !_galgameFolders.Contains(localFolderSource)) return;
+        foreach (Galgame galgame in await localFolderSource.GetGalgameList())
             await _galgameService.RemoveGalgame(galgame, true);
-        _galgameFolders.Remove(galgameFolder);
+        _galgameFolders.Remove(localFolderSource);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameFolders, true);
     }
     
     /// <summary>
     /// 找到一个galgame库，若不存在则返回null
     /// </summary>
-    public GalgameFolder? GetGalgameFolderFromPath(string path)
+    public IGalgameSource? GetGalgameFolderFromUrl(string url)
     {
-        return _galgameFolders.FirstOrDefault(folder => folder.Path == path);
+        return _galgameFolders.FirstOrDefault(folder => folder.Url == url);
     }
 
     /// <summary>
@@ -137,8 +144,13 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
     /// </summary>
     public void ScanAll()
     {
-        foreach(GalgameFolder f in _galgameFolders)
-            _bgTaskService.AddBgTask(new GetGalgameInFolderTask(f));
+        foreach (IGalgameSource f in _galgameFolders)
+        {
+            if (f is LocalFolderSource localFolderSource)
+            {
+                _bgTaskService.AddBgTask(new GetGalgameInLocalFolderTask(localFolderSource));
+            }
+        }
     }
 }
 

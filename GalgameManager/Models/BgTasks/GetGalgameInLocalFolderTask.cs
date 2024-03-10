@@ -1,4 +1,5 @@
-﻿using GalgameManager.Contracts.Services;
+﻿using GalgameManager.Contracts;
+using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -7,29 +8,29 @@ using H.NotifyIcon.Core;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class GetGalgameInFolderTask : BgTaskBase
+public class GetGalgameInLocalFolderTask : BgTaskBase
 {
     public string GalgameFolderPath = string.Empty;
-    private GalgameFolder? _galgameFolder;
+    private LocalFolderSource? _galgameFolderSource;
 
-    public GetGalgameInFolderTask() { }
+    public GetGalgameInLocalFolderTask() { }
 
-    public GetGalgameInFolderTask(GalgameFolder folder)
+    public GetGalgameInLocalFolderTask(LocalFolderSource folderSource)
     {
-        _galgameFolder = folder;
-        GalgameFolderPath = folder.Path;
+        _galgameFolderSource = folderSource;
+        GalgameFolderPath = folderSource.Path;
     }
     
     protected override Task RecoverFromJsonInternal()
     {
-        _galgameFolder = (App.GetService<IDataCollectionService<GalgameFolder>>() as GalgameFolderCollectionService)?.
-            GetGalgameFolderFromPath(GalgameFolderPath);
+        if ((App.GetService<IDataCollectionService<IGalgameSource>>() as GalgameSourceCollectionService)?.
+            GetGalgameFolderFromUrl(GalgameFolderPath) is LocalFolderSource localFolderSource) _galgameFolderSource = localFolderSource;
         return Task.CompletedTask;
     }
 
     public override Task Run()
     {
-        if (_galgameFolder is null || Directory.Exists(GalgameFolderPath) == false || _galgameFolder.IsRunning)
+        if (_galgameFolderSource is null || Directory.Exists(GalgameFolderPath) == false || _galgameFolderSource.IsRunning)
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
@@ -55,7 +56,7 @@ public class GetGalgameInFolderTask : BgTaskBase
                    $"fileShouldContain:{string.Join(",", fileShouldContain)}\n" +
                    $"ignoreFetchResult:{ignoreFetchResult}\n\n\n";
 
-            _galgameFolder.IsRunning = true;
+            _galgameFolderSource.IsRunning = true;
             var cnt = 0;
             Queue<(string Path, int Depth)> pathToCheck = new();
             pathToCheck.Enqueue((GalgameFolderPath, 0));
@@ -89,11 +90,11 @@ public class GetGalgameInFolderTask : BgTaskBase
                     pathToCheck.Enqueue((subPath, currentDepth + 1));
             }
             ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Saving".GetLocalized(cnt));
-            FileHelper.SaveWithoutJson(_galgameFolder.GetLogName(), log, "Logs");
+            FileHelper.SaveWithoutJson(_galgameFolderSource.GetLogName(), log, "Logs");
             await Task.Delay(1000); //等待文件保存
             
             ChangeProgress(1, 1, "GalgameFolder_GetGalInFolder_Done".GetLocalized(cnt));
-            _galgameFolder.IsRunning = false;
+            _galgameFolderSource.IsRunning = false;
             if (App.MainWindow is null && await localSettings.ReadSettingAsync<bool>(KeyValues.NotifyWhenGetGalgameInFolder))
             {
                 App.SystemTray?.ShowNotification(nameof(NotificationIcon.Info), 

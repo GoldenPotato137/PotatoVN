@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Contracts;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
@@ -16,9 +17,9 @@ namespace GalgameManager.ViewModels;
 public partial class LibraryViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private readonly GalgameFolderCollectionService _galFolderService;
+    private readonly GalgameSourceCollectionService _galSourceService;
     
-    public ObservableCollection<GalgameFolder> Source { get; private set; } = new();
+    public ObservableCollection<IGalgameSource> Source { get; private set; } = new();
     public ICommand ItemClickCommand { get; }
     public ICommand AddLibraryCommand { get; }
     
@@ -28,27 +29,27 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    public LibraryViewModel(INavigationService navigationService, IDataCollectionService<GalgameFolder> galFolderService)
+    public LibraryViewModel(INavigationService navigationService, IDataCollectionService<IGalgameSource> galFolderService)
     {
         _navigationService = navigationService;
-        _galFolderService = (GalgameFolderCollectionService) galFolderService;
+        _galSourceService = (GalgameSourceCollectionService) galFolderService;
 
-        ItemClickCommand = new RelayCommand<GalgameFolder>(OnItemClick);
+        ItemClickCommand = new RelayCommand<LocalFolderSource>(OnItemClick);
         AddLibraryCommand = new RelayCommand(AddLibrary);
     }
 
     public async void OnNavigatedTo(object parameter)
     {
-        Source = await _galFolderService.GetContentGridDataAsync();
+        Source = await _galSourceService.GetContentGridDataAsync();
     }
 
     public void OnNavigatedFrom(){}
     
-    private void OnItemClick(GalgameFolder? clickedItem)
+    private void OnItemClick(LocalFolderSource? clickedItem)
     {
         if (clickedItem != null)
         {
-            _navigationService.NavigateTo(typeof(GalgameFolderViewModel).FullName!, clickedItem.Path);
+            _navigationService.NavigateTo(typeof(GalgameSourceViewModel).FullName!, clickedItem.Path);
         }
     }
 
@@ -64,7 +65,7 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
             var folder = await folderPicker.PickSingleFolderAsync();
             if (folder != null)
             {
-                await _galFolderService.AddGalgameFolderAsync(folder.Path);
+                await _galSourceService.AddGalgameFolderAsync(folder.Path);
             }
         }
         catch (Exception e)
@@ -74,16 +75,16 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async Task DeleteFolder(GalgameFolder? galgameFolder)
+    private async Task DeleteFolder(LocalFolderSource? galgameFolder)
     {
         if (galgameFolder == null) return;
-        await _galFolderService.DeleteGalgameFolderAsync(galgameFolder);
+        await _galSourceService.DeleteGalgameFolderAsync(galgameFolder);
     }
     
     [RelayCommand]
     private void ScanAll()
     {
-        _galFolderService.ScanAll();
+        _galSourceService.ScanAll();
         _ = DisplayMsgAsync(InfoBarSeverity.Success, "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
     }
     

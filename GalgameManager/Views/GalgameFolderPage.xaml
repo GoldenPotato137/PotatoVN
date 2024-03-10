@@ -21,7 +21,7 @@
             </Grid.RowDefinitions>
 
             <RelativePanel Grid.Row="0">
-                <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}"
+                <TextBlock Text="{x:Bind ViewModel.Item.Url, FallbackValue={}}"
                            Style="{ThemeResource TitleTextBlockStyle}" 
                            MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"/>
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
