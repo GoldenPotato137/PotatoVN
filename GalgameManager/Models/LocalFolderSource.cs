@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Contracts;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
 using Newtonsoft.Json;
@@ -10,6 +11,8 @@ namespace GalgameManager.Models;
 
 public class LocalFolderSource: IGalgameSource
 {
+    public SourceType GetSourceType() => SourceType.LocalFolder;
+
     [JsonIgnore] public GalgameCollectionService GalgameService;
 
     [JsonIgnore] public bool IsRunning { get; set; }

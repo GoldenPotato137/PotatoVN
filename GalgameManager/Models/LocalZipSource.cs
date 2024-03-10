@@ -7,8 +7,10 @@ using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public class LocalZipSource: IZipSource
+public class LocalZipSource: IGalgameSource
 {
+    public SourceType GetSourceType() => SourceType.LocalZip;
+
     private readonly List<Galgame> _galgames = new();
 
     public string Path { get; set; }
@@ -80,5 +82,4 @@ public class LocalZipSource: IZipSource
     public string GetLogPath() => StdPath.Combine("Logs", $"GalgameSource_{Url.ToBase64()}.txt");
     
     public string GetLogName() => $"GalgameSource_{Url.ToBase64()}.txt";
-    public GalgameZipProtocol GetProtocol() => GalgameZipProtocol.Local;
 }

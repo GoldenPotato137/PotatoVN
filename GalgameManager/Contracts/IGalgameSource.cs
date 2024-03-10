@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
@@ -8,6 +9,7 @@ namespace GalgameManager.Contracts;
 
 public interface IGalgameSource
 {
+    public SourceType GetSourceType();
     public string Url { get; set; }
     public Task<ObservableCollection<Galgame>> GetGalgameList();
     public Galgame GetGalgameByName(string name);
