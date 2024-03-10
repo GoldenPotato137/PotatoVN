@@ -1,41 +1,41 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Contracts;
-using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
-using GalgameManager.Services;
-using Newtonsoft.Json;
-using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public class GalgameFolder: IGalgameSource
+public class GalgameZipSource: IGalgameSource
 {
-    [JsonIgnore] public GalgameCollectionService GalgameService;
-
-    [JsonIgnore] public bool IsRunning;
-    [JsonIgnore] public bool IsUnpacking;
+    public GalgameZipProtocol Protocol;
+    public string Url;
     private readonly List<Galgame> _galgames = new();
 
-    public string Path { get; set; }
-    public bool ScanOnStart { get; set; }
 
-    public GalgameFolder(string path, IDataCollectionService<Galgame> service)
+    public GalgameZipSource(string url)
     {
-        Path = path;
-        GalgameService = ((GalgameCollectionService?)service)!;
+        Url = url;
+        switch (url[..url.IndexOf("://", StringComparison.Ordinal)])
+        {
+            case "local":
+                Protocol = GalgameZipProtocol.Local;
+                break;
+            default:
+                throw new NotImplementedException();
+        }
     }
-
+    
     public async Task<ObservableCollection<Galgame>> GetGalgameList()
     {
         await Task.CompletedTask;
         return new ObservableCollection<Galgame>(_galgames);
     }
-
+    
     public Galgame GetGalgameByName(string name)
     {
         return _galgames.Where(g => g.Name == name).ToList()[0];
     }
-
+    
     /// <summary>
     /// 向库中新增一个游戏
     /// </summary>
@@ -44,7 +44,7 @@ public class GalgameFolder: IGalgameSource
     {
         _galgames.Add(galgame);
     }
-
+    
     /// <summary>
     /// 从库中删除一个游戏
     /// </summary>
@@ -53,17 +53,12 @@ public class GalgameFolder: IGalgameSource
     {
         _galgames.Remove(galgame);
     }
-
-    /// <summary>
-    /// 检查该游戏是否应该在这个库中
-    /// </summary>
-    /// <param name="galgame">游戏</param>
-    /// <returns></returns>
+    
     public bool IsInSource(Galgame galgame)
     {
-        if (galgame.CheckExist() == false)
+        if (galgame.GameType == GameType.Zip)
             return false;
-        return !string.IsNullOrEmpty(galgame.Path) && IsInSource(galgame.Path);
+        return !string.IsNullOrEmpty(galgame.ZipPath) && IsInSource(galgame.ZipPath);
     }
 
     /// <summary>
@@ -73,13 +68,13 @@ public class GalgameFolder: IGalgameSource
     /// <returns></returns>
     public bool IsInSource(string path)
     {
-        return path[..path.LastIndexOf('\\')] == Path ;
+        return path[..path.LastIndexOf('\\')] == Url ;
     }
-
+    
     /// <summary>
     /// 获取这个库的日志路径（相对存储根目录）
     /// </summary>
-    public string GetLogPath() => StdPath.Combine("Logs", $"GalgameFolder_{Path.ToBase64()}.txt");
+    public string GetLogPath() => Path.Combine("Logs", $"GalgameFolder_{Url.ToBase64()}.txt");
     
-    public string GetLogName() => $"GalgameFolder_{Path.ToBase64()}.txt";
+    public string GetLogName() => $"GalgameFolder_{Url.ToBase64()}.txt";
 }

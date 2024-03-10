@@ -44,7 +44,7 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
             foreach (GalgameFolder galgameFolder in _galgameFolders)
             {
                 galgameFolder.GalgameService = _galgameService;
-                foreach(Galgame game in galgames.Where(galgame => galgameFolder.IsInFolder(galgame)))
+                foreach(Galgame game in galgames.Where(galgame => galgameFolder.IsInSource(galgame)))
                     galgameFolder.AddGalgame(game);
             }
         });
@@ -68,12 +68,12 @@ public class GalgameFolderCollectionService : IDataCollectionService<GalgameFold
         {
             // ignored
         }
-        _galgameFolders.First(folder => folder.IsInFolder(galgame)).AddGalgame(galgame);
+        _galgameFolders.First(folder => folder.IsInSource(galgame)).AddGalgame(galgame);
     }
 
     private void OnGalgameDeleted(Galgame galgame)
     {
-        _galgameFolders.FirstOrDefault(folder => folder.IsInFolder(galgame))?.DeleteGalgame(galgame);
+        _galgameFolders.FirstOrDefault(folder => folder.IsInSource(galgame))?.DeleteGalgame(galgame);
     }
 
     /// <summary>

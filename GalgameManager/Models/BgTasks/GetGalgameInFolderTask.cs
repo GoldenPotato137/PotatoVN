@@ -74,7 +74,7 @@ public class GetGalgameInFolderTask : BgTaskBase
                     AddGalgameResult result = AddGalgameResult.Other;
                     await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                     {
-                        result = await galgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
+                        result = await galgameService.TryAddLocalGalgameAsync(currentPath, ignoreFetchResult);
                         if (result == AddGalgameResult.Success ||
                             (ignoreFetchResult && result == AddGalgameResult.NotFoundInRss))
                             cnt++;

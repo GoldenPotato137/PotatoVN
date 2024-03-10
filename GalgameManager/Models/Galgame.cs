@@ -24,6 +24,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         get;
         set;
     } = "";
+
+    public GameType GameType
+    {
+        get
+        {
+            if (Path.IsNullOrEmpty()) return GameType.Local;
+            return ZipPath.IsNullOrEmpty() ? GameType.Zip : GameType.Virtual;
+        }
+    }
     
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
@@ -41,6 +50,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     [ObservableProperty] private ObservableCollection<GalgameCharacter> _characters = new();
     [JsonIgnore][ObservableProperty] private string _savePosition = string.Empty;
     [ObservableProperty] private string? _exePath;
+    [ObservableProperty] private string? _zipPath;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
@@ -299,8 +309,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
                     TotalPlayTime++;
                 });
                 var now = DateTime.Now.ToString("yyyy/M/d");
-                if (PlayedTime.ContainsKey(now))
-                    PlayedTime[now]++;
+                if (PlayedTime.TryGetValue(now, out var value))
+                    PlayedTime[now] = ++value;
                 else
                     PlayedTime.Add(now, 1);
             }
@@ -406,4 +416,11 @@ public enum SortKeys
     Developer,
     Rating,
     ReleaseDate
+}
+
+public enum GameType
+{
+    Local,
+    Zip,
+    Virtual
 }

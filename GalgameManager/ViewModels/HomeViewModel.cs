@@ -131,8 +131,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             foreach (IStorageItem storageItem in items)
             {
                 StorageFile item = (StorageFile)storageItem;
-                var folder = item.Path.Substring(0, item.Path.LastIndexOf('\\'));
-                _ =  AddGalgameInternal(folder);
+                // var folder = item.Path.Substring(0, item.Path.LastIndexOf('\\'));
+                _ =  AddGalgameInternal(item.Path);
             }
         }
         DisplayDragArea = false;
@@ -304,7 +304,16 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         string msg;
         try
         {
-            result = await _galgameService.TryAddGalgameAsync(path, true);
+            if (path.ToLower().EndsWith(".exe") || path.ToLower().EndsWith(".bat"))
+            {
+                var folder = path[..path.LastIndexOf('\\')];
+                result = await _galgameService.TryAddLocalGalgameAsync(folder, true);
+            }
+            else
+            {
+                result = await _galgameService.TryAddZipGalgameAsync($"local://{path}", true);
+            }
+            
             msg = result.ToMsg();
         }
         catch (Exception e)
@@ -346,11 +355,14 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
             openPicker.FileTypeFilter.Add(".exe");
             openPicker.FileTypeFilter.Add(".bat");
             openPicker.FileTypeFilter.Add(".EXE");
+            openPicker.FileTypeFilter.Add(".zip");
+            openPicker.FileTypeFilter.Add(".7z");
+            openPicker.FileTypeFilter.Add(".rar");
+            openPicker.FileTypeFilter.Add(".001");
             StorageFile? file = await openPicker.PickSingleFileAsync();
             if (file is not null)
             {
-                var folder = file.Path[..file.Path.LastIndexOf('\\')];
-                await AddGalgameInternal(folder);
+                await AddGalgameInternal(file.Path);
             }
         }
         catch (Exception e)

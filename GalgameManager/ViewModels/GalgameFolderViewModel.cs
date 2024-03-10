@@ -169,7 +169,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         if (file != null)
         {
             var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
-            if (_item!.IsInFolder(folder) == false)
+            if (_item!.IsInSource(folder) == false)
             {
                 await ShowGameExistedInfoBar(new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）"));
                 return;
@@ -186,13 +186,19 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     {
         try
         {
-            var result = await _galgameService.TryAddGalgameAsync(folder, true);
-            if (result == AddGalgameResult.Success)
-                await ShowSuccessInfoBar();
-            else if (result == AddGalgameResult.AlreadyExists)
-                throw new Exception("库里已经有这个游戏了");
-            else //NotFoundInRss
-                await ShowNotFoundInfoBar();
+            AddGalgameResult result = await _galgameService.TryAddLocalGalgameAsync(folder, true);
+            switch (result)
+            {
+                case AddGalgameResult.Success:
+                    await ShowSuccessInfoBar();
+                    break;
+                case AddGalgameResult.AlreadyExists:
+                    throw new Exception("库里已经有这个游戏了");
+                //NotFoundInRss
+                default:
+                    await ShowNotFoundInfoBar();
+                    break;
+            }
         }
         catch (Exception e)
         {
