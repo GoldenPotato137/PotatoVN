@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Globalization;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
@@ -71,6 +72,10 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty] private ICommand? _pvnLoginButtonCommand;
     [ObservableProperty] private bool _isPvnLogin;
     [ObservableProperty] private bool _pvnSyncGames;
+    [ObservableProperty] private string? _usedSpace;
+    [ObservableProperty] private string? _totalSpace;
+    [ObservableProperty] private string? _usedPercent;
+    [ObservableProperty] private double _usedPercentValue;
     
     async partial void OnPvnServerTypeChanged(PvnServerType value)
     {
@@ -96,15 +101,25 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
     private async Task UpdateAccountDisplay()
     {
         PvnAccount? account = await _localSettingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount);
-        PvnAvatar = account?.Avatar;
-        PvnLoginButtonText = account is null ? "Login".GetLocalized() : "Logout".GetLocalized();
-        PvnLoginDescription = account is null
-            ? "AccountPage_Pvn_AccountStatus_Unlogin".GetLocalized()
-            : "AccountPage_Pvn_AccountStatus_Login".GetLocalized(account.Id, account.LoginMethod.GetLocalized());
-        PvnLoginButtonCommand = account is null ? new RelayCommand(PvnLogin) : new RelayCommand(PvnLogout);
-        PvnDisplayName = account?.UserDisplayName ?? "BgmAccount_NoName".GetLocalized();
-        PvnStateMsg = "AccountPage_Pvn_ConnectTo".GetLocalized(_pvnService.BaseUri.ToString());
-        IsPvnLogin = account is not null;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            PvnAvatar = account?.Avatar;
+            PvnLoginButtonText = account is null ? "Login".GetLocalized() : "Logout".GetLocalized();
+            PvnLoginDescription = account is null
+                ? "AccountPage_Pvn_AccountStatus_Unlogin".GetLocalized()
+                : "AccountPage_Pvn_AccountStatus_Login".GetLocalized(account.Id, account.LoginMethod.GetLocalized());
+            PvnLoginButtonCommand = account is null ? new RelayCommand(PvnLogin) : new RelayCommand(PvnLogout);
+            PvnDisplayName = account?.UserDisplayName ?? "BgmAccount_NoName".GetLocalized();
+            PvnStateMsg = "AccountPage_Pvn_ConnectTo".GetLocalized(_pvnService.BaseUri.ToString());
+            UsedSpace = $"{((double)(account?.UsedSpace ?? 0) / 1024 / 1024)
+                .ToString("F1", CultureInfo.InvariantCulture)} MB";
+            TotalSpace = $"{((double)(account?.TotalSpace ?? 0) / 1024 / 1024)
+                .ToString("F1", CultureInfo.InvariantCulture)} MB";
+            UsedPercentValue = (double)(account?.UsedSpace ?? 0) / (account?.TotalSpace ?? 1) * 100;
+            UsedPercent = "AccountPage_Pvn_SpaceUsedPercent".GetLocalized(UsedPercentValue
+                .ToString("F1", CultureInfo.InvariantCulture));
+            IsPvnLogin = account is not null;
+        });
     }
     
     private void HandelPvnServiceStatusChanged(PvnServiceStatus status)
@@ -161,8 +176,15 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
             new((await _localSettingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount))!);
         await dialog.ShowAsync();
         if(dialog.Canceled) return;
-        await _pvnService.ModifyAccountAsync(dialog.UserDisplayName, dialog.AvatarPath);
-        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_Modified".GetLocalized());
+        try
+        {
+            await _pvnService.ModifyAccountAsync(dialog.UserDisplayName, dialog.AvatarPath);
+            _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_Modified".GetLocalized());
+        }
+        catch (Exception e)
+        {
+            _infoService.Info(InfoBarSeverity.Error, msg: e.ToString());
+        }
     }
 
     partial void OnPvnSyncGamesChanged(bool value)

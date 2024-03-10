@@ -13,15 +13,15 @@
         <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
-        <Style x:Key="AccountStackPanelStyle" TargetType="StackPanel">
-            <Setter Property="Spacing" Value="13" />
+        <Style x:Key="AccountStackPanelStyle" TargetType="control:StackPanelWithSpacing">
+            <Setter Property="Space" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
         </Style>
     </Page.Resources>
 
     <Grid Margin="{ThemeResource PageButtonMargin}">
         <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="0 10 25 0">
+            <control:StackPanelWithSpacing Margin="0 10 25 0">
                 <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                           IsExpanded="True">
                     <Expander.Header>
@@ -51,7 +51,7 @@
                     </Expander.Header>
                     
                     <Expander.Content>
-                        <StackPanel Style="{StaticResource AccountStackPanelStyle}">
+                        <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
                             <!-- 账号状态 -->
                             <control:Panel>
                                 <control:Setting x:Uid="AccountPage_Pvn_AccountStatus" 
@@ -66,6 +66,33 @@
                                 <views:SettingToggleSwitch 
                                     x:Uid="AccountPage_Pvn_SyncGame" 
                                     IsOn="{x:Bind ViewModel.PvnSyncGames, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 云存储空间 -->
+                            <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
+                                <StackPanel Spacing="10">
+                                    <control:Setting x:Uid="AccountPage_Pvn_CloudStorage">
+                                        <Grid VerticalAlignment="Center" Margin="0 5 0 0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Style="{ThemeResource SubtitleTextBlockStyle}"
+                                                       Text="{x:Bind ViewModel.UsedSpace, Mode=OneWay}" 
+                                                       VerticalAlignment="Bottom"/>
+                                            <TextBlock Grid.Column="1" Text=" / "
+                                                       Style="{ThemeResource DescriptionTextStyle}"
+                                                       VerticalAlignment="Bottom" Margin="0 0 0 3"/>
+                                            <TextBlock Grid.Column="2" Style="{ThemeResource DescriptionTextStyle}"
+                                                       Text="{x:Bind ViewModel.TotalSpace, Mode=OneWay}" 
+                                                       VerticalAlignment="Bottom" Margin="0 0 0 3"/>
+                                        </Grid>
+                                    </control:Setting>
+                                    <TextBlock Style="{ThemeResource DescriptionTextStyle}" 
+                                               Text="{x:Bind ViewModel.UsedPercent, Mode=OneWay}"
+                                               Margin="0 2 0 -3"/>
+                                    <ProgressBar Value="{x:Bind ViewModel.UsedPercentValue, Mode=OneWay}"/>
+                                </StackPanel>
                             </control:Panel>
                             <!-- 账号管理 -->
                             <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
@@ -89,10 +116,10 @@
                                     </ComboBox>
                                 </control:Setting>
                             </control:Panel>
-                        </StackPanel>
+                        </control:StackPanelWithSpacing>
                     </Expander.Content>
                 </Expander>
-            </StackPanel>
+            </control:StackPanelWithSpacing>
         </ScrollViewer>
     </Grid>
 </Page>

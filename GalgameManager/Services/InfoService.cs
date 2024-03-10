@@ -33,9 +33,10 @@ public class InfoService : IInfoService
     {
         UiThreadInvokeHelper.Invoke(async () =>
         {
-            Infos.Insert(0, new Info(infoBarSeverity, title, exception?.ToString() ?? msg ?? string.Empty));
             if (await ShouldNotifyEvent(type))
                 OnEvent?.Invoke(infoBarSeverity, title, exception?.ToString() ?? msg);
+            // 下面这句话有时会抛出System.Runtime.InteropServices.COMException (0x80004005)，但容器却能正常插入
+            Infos.Insert(0, new Info(infoBarSeverity, title, exception?.ToString() ?? msg ?? string.Empty));
         });
         _appCenterService.UploadEvent(title, exception, msg);
     }

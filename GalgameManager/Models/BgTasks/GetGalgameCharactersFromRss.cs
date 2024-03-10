@@ -23,7 +23,7 @@ public class GetGalgameCharactersFromRss : BgTaskBase
     
     protected override Task RecoverFromJsonInternal()
     {
-        _galgame =  (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)?.GetGalgameByName(GalgamesName);
+        _galgame =  (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)?.GetGalgameFromName(GalgamesName);
         return Task.CompletedTask;
     }
 

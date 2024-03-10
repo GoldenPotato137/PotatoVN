@@ -186,6 +186,7 @@ public partial class App : Application
         catch
         {
             e.Handled = false;
+            FileHelper.SaveNow("UnhandledException.txt", e.Exception, "Logs");
         }
     }
     

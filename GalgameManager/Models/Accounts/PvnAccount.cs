@@ -9,7 +9,9 @@ public class PvnAccount
     public string? Avatar;
     public required long ExpireTimestamp;
     public required LoginMethodEnum LoginMethod;
-
+    public required long TotalSpace;
+    public required long UsedSpace;
+    
     public enum LoginMethodEnum
     {
         Default,

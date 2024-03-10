@@ -4,6 +4,7 @@ public enum EventType
 {
     PvnSyncEvent,
     PvnSyncEmptyEvent,
+    PvnAccountEvent,
     BgmOAuthEvent,
     GalgameEvent,
     FaqEvent,
