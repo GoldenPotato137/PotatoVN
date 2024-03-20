@@ -88,12 +88,12 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         UpdateFilterPanelDisplay(null,null!);
     }
 
-    private void OnSettingChanged(string key, object value)
+    private void OnSettingChanged(string key, object? value)
     {
         switch (key)
         {
             case KeyValues.DisplayVirtualGame:
-                DisplayVirtualGame = (bool)value;
+                DisplayVirtualGame = value is true;
                 break;
         }
     }
@@ -315,22 +315,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
     }
 
-    private void OnSyncChanged((int cnt, int total) tuple)
-    {
-        if (tuple.total == 0) return;
-        if (tuple.cnt == tuple.total)
-        {
-            _infoService.Info(InfoBarSeverity.Success,
-                msg: string.Format("HomePage_Synced".GetLocalized(), tuple.total));
-        }
-        else
-        {
-            _infoService.Info(InfoBarSeverity.Informational,
-                msg: string.Format("HomePage_Syncing".GetLocalized(), tuple.cnt, tuple.total),
-                displayTimeMs: 120 * 1000);
-        }
-    }
-    
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
     private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetContentGridDataAsync();

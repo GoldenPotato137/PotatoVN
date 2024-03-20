@@ -229,9 +229,7 @@ public class LocalSettingsService : ILocalSettingsService
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
         if(value != null || triggerEventWhenNull)
-#pragma warning disable CS8604 // 引用类型参数可能为 null。
             OnSettingChanged?.Invoke(key, value);
-#pragma warning restore CS8604 // 引用类型参数可能为 null。
     }
     
     public async Task RemoveSettingAsync(string key)

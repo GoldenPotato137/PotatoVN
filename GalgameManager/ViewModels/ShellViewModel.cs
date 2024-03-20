@@ -83,10 +83,10 @@ public partial class ShellViewModel : ObservableRecipient
         IsInfoBarOpen = false;
     }
 
-    private void HandleLocalSettingChanged(string key, object value)
+    private void HandleLocalSettingChanged(string key, object? value)
     {
-        if(key == KeyValues.DevelopmentMode)
-            _isDeveloperMode = (bool)value;
+        if (key == KeyValues.DevelopmentMode)
+            _isDeveloperMode = value as bool? ?? false;
     }
     
     private void UpdateInfoPageBadge()

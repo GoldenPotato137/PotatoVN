@@ -119,6 +119,9 @@
                         </control:StackPanelWithSpacing>
                     </Expander.Content>
                 </Expander>
+                
+                <control:AccountPanel Title="Bangumi" Description="This is a description"
+                                      UserName="UserName" DefaultAvatar="ms-appx:///Assets/Pictures/bangumi.png"/>
             </control:StackPanelWithSpacing>
         </ScrollViewer>
     </Grid>

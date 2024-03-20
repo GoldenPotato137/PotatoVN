@@ -18,7 +18,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using WindowExtensions = H.NotifyIcon.WindowExtensions;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace GalgameManager;
 
@@ -142,52 +141,12 @@ public partial class App : Application
         AppInstance.GetCurrent().Activated += OnActivated;
     }
 
-    private async void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
-        MainWindow ??= new WindowEx();
-        ContentDialog dialog = new()
-        {
-            XamlRoot = MainWindow.Content.XamlRoot,
-            Title = "App_UnhandledException_Oops".GetLocalized(),
-            PrimaryButtonText = "App_UnhandledException_BackToHome".GetLocalized(),
-            CloseButtonText = "App_UnhandledException_Exit".GetLocalized(),
-            DefaultButton = ContentDialogButton.Primary
-        };
-        StackPanel stackPanel = new();
-        stackPanel.Children.Add(new TextBlock
-        {
-            Text = e.Exception.ToString(),
-            TextWrapping = TextWrapping.WrapWholeWords
-        });
-        HyperlinkButton button = new()
-        {
-            Content = "App_UnhandledException_Hyperlink".GetLocalized(),
-            NavigateUri = new Uri("https://github.com/GoldenPotato137/GalgameManager/issues/new/choose"),
-        };
-        button.Click += (_, _) =>
-        {
-            DataPackage package = new();
-            package.SetText(e.Exception.ToString());
-            Clipboard.SetContent(package);
-        };
-        stackPanel.Children.Add(button);
-        dialog.Content = stackPanel;
-        dialog.PrimaryButtonClick += (_, _) =>
-        {
-            GetService<INavigationService>().NavigateTo(typeof(HomeViewModel).FullName!);
-        };
-        dialog.CloseButtonClick += (_, _) => { Exit();};
-        try
-        {
-            await dialog.ShowAsync();
-            e.Handled = true;
-        }
-        catch
-        {
-            e.Handled = false;
-            FileHelper.SaveNow("UnhandledException.txt", e.Exception, "Logs");
-        }
+        GetService<ILocalSettingsService>().SaveSettingAsync(KeyValues.LastError, e.Message + "\n" + e.Exception);
+        e.Handled = false;
+        SetWindowMode(WindowMode.Close);
     }
     
     /// <summary>
@@ -227,6 +186,13 @@ public partial class App : Application
                 WindowExtensions.Show(MainWindow!);
                 MainWindow!.Restore();
                 MainWindow!.BringToFront();
+                if (GetService<ILocalSettingsService>().ReadSettingAsync<string>(KeyValues.LastError)
+                        .Result is { } error)
+                {
+                    GetService<IInfoService>().Event(EventType.AppError, InfoBarSeverity.Error,
+                        "App_Error".GetLocalized(), msg: error);
+                    GetService<ILocalSettingsService>().RemoveSettingAsync(KeyValues.LastError);
+                }
                 break;
             case WindowMode.Minimize:
                 MainWindow!.Minimize();

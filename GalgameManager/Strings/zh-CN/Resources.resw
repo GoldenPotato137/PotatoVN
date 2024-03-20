@@ -405,12 +405,6 @@
   <data name="SettingsPage_RateLink.Content" xml:space="preserve">
     <value>评价本应用</value>
   </data>
-  <data name="App_UnhandledException_Oops" xml:space="preserve">
-    <value>Oops! 出现了一个错误</value>
-  </data>
-  <data name="App_UnhandledException_BackToHome" xml:space="preserve">
-    <value>回到主页</value>
-  </data>
   <data name="App_UnhandledException_Exit" xml:space="preserve">
     <value>退出应用</value>
   </data>
@@ -1468,5 +1462,8 @@
   </data>
   <data name="PvnService_UploadAvatarFailed" xml:space="preserve">
     <value>上传账户头像失败</value>
+  </data>
+  <data name="App_Error" xml:space="preserve">
+    <value>Oops, 上次运行崩溃了</value>
   </data>
 </root>

@@ -19,7 +19,7 @@ public class AppCenterService : IAppCenterService
         _localSettingsService.OnSettingChanged += OnSettingChanged;
     }
 
-    private async void OnSettingChanged(string key, object value)
+    private async void OnSettingChanged(string key, object? value)
     {
         if (key == KeyValues.UploadData && value is true)
             await StartAsync();

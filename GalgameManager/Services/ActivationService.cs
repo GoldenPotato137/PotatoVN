@@ -149,6 +149,7 @@ public class ActivationService : IActivationService
 
     private async Task StartupAsync() 
     {
+        if (IsRestart() == false) App.SetWindowMode(WindowMode.Normal);
         await _galgameCollectionService.StartAsync();
         if (IsRestart() == false) _pvnService.Startup();
         if (IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();

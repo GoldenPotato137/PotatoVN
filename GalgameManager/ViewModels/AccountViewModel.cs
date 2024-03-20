@@ -46,7 +46,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
         _pvnService.StatusChanged -= HandelPvnServiceStatusChanged;
     }
 
-    private async void OnLocalSettingsChanged(string key, object value)
+    private async void OnLocalSettingsChanged(string key, object? value)
     {
         switch (key)
         {
@@ -54,7 +54,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
                 await UpdateAccountDisplay();
                 break;
             case KeyValues.SyncGames:
-                PvnSyncGames = (bool)value;
+                PvnSyncGames = value as bool? ?? false;
                 break;
         }
     }

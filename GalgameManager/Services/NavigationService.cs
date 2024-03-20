@@ -60,7 +60,7 @@ public class NavigationService : INavigationService
         localSettingsService.OnSettingChanged += OnSettingChanged;
     }
 
-    private void OnSettingChanged(string key, object value)
+    private void OnSettingChanged(string key, object? value)
     {
         if (key == KeyValues.MemoryImprove)
             _isMemoryImprove = value is true;

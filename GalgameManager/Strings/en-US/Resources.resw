@@ -405,12 +405,6 @@ Users who do not know the regular expression can understand: The name of the gam
   <data name="SettingsPage_RateLink.Content" xml:space="preserve">
     <value>Rate this app</value>
   </data>
-  <data name="App_UnhandledException_Oops" xml:space="preserve">
-    <value>Oops! Something went wrong</value>
-  </data>
-  <data name="App_UnhandledException_BackToHome" xml:space="preserve">
-    <value>Return to Home</value>
-  </data>
   <data name="App_UnhandledException_Exit" xml:space="preserve">
     <value>Exit</value>
   </data>

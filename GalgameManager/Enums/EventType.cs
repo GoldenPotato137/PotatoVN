@@ -8,4 +8,5 @@ public enum EventType
     BgmOAuthEvent,
     GalgameEvent,
     FaqEvent,
+    AppError,
 }

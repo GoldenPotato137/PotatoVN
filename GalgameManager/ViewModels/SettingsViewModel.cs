@@ -263,7 +263,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    private async void OnSettingChange(string key, object value)
+    private async void OnSettingChange(string key, object? value)
     {
         switch (key)
         {

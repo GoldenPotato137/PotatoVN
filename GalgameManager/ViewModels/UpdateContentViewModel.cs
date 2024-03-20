@@ -44,7 +44,7 @@ public partial class UpdateContentViewModel : ObservableObject, INavigationAware
         };
     }
 
-    private async void OnSettingChanged(string key, object value)
+    private async void OnSettingChanged(string key, object? value)
     {
         switch (key)
         {
