@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
@@ -24,6 +25,10 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         get;
         set;
     } = "";
+    
+    public virtual SourceType GalgameSourceType { get; set; }=SourceType.UnKnown;
+    
+    public string Url => $"{GalgameSourceType.SourceTypeToString()}://{Path}";
     
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
@@ -122,21 +127,28 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         _releaseDate = DateTime.MinValue;
     }
 
-    public Galgame(string path)
+    public Galgame(SourceType sourceType, string path)
     {
+        GalgameSourceType = sourceType;
+        //TODO
         Name = SystemPath.GetFileName(SystemPath.GetDirectoryName(path + SystemPath.DirectorySeparatorChar)) ?? "";
         _tags.Value = new ObservableCollection<string>();
         _releaseDate = DateTime.MinValue;
         Path = path;
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
+
+    public Galgame(string name)
+    {
+        Name = name;
+    }
     
     /// <summary>
     /// 检查游戏文件夹是否存在
     /// </summary>
-    public bool CheckExist()
+    public bool CheckExistLocal()
     {
-        return Directory.Exists(Path);
+        return Directory.Exists(Path) && GalgameSourceType == SourceType.LocalFolder;
     }
 
     /// <summary>

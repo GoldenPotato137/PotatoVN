@@ -10,14 +10,14 @@ namespace GalgameManager.Views;
 
 public sealed partial class GalgameFolderPage : Page
 {
-    public GalgameFolderViewModel ViewModel
+    public GalgameSourceViewModel ViewModel
     {
         get;
     }
 
     public GalgameFolderPage()
     {
-        ViewModel = App.GetService<GalgameFolderViewModel>();
+        ViewModel = App.GetService<GalgameSourceViewModel>();
         InitializeComponent();
     }
 

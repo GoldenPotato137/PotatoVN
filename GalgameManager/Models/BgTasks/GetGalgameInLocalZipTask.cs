@@ -8,14 +8,15 @@ using H.NotifyIcon.Core;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class GetGalgameInFolderTask : BgTaskBase
+public class GetGalgameInLocalZipTask : BgTaskBase
 {
+    private static string[] ZipEnds = { "zip", "rar", "7z" };
     public string GalgameSourceUrl = string.Empty;
-    private GalgameFolderSource? _galgameFolderSource;
+    private GalgameZipSource? _galgameFolderSource;
 
-    public GetGalgameInFolderTask() { }
+    public GetGalgameInLocalZipTask() { }
 
-    public GetGalgameInFolderTask(GalgameFolderSource source)
+    public GetGalgameInLocalZipTask(GalgameZipSource source)
     {
         _galgameFolderSource = source;
         GalgameSourceUrl = source.Url;
@@ -24,7 +25,7 @@ public class GetGalgameInFolderTask : BgTaskBase
     protected override Task RecoverFromJsonInternal()
     {
         _galgameFolderSource = (App.GetService<IDataCollectionService<GalgameSourceBase>>() as GalgameSourceCollectionService)?.
-            GetGalgameSourceFromUrl(GalgameSourceUrl) as GalgameFolderSource;
+            GetGalgameSourceFromUrl(GalgameSourceUrl) as GalgameZipSource;
         return Task.CompletedTask;
     }
 
@@ -40,22 +41,7 @@ public class GetGalgameInFolderTask : BgTaskBase
         return Task.Run((async Task () =>
         {
             log += $"{DateTime.Now}\n{GalgameSourceUrl}\n\n";
-            List<string> fileMustContain = new();
-            List<string> fileShouldContain = new();
-            var searchSubFolder = await localSettings.ReadSettingAsync<bool>(KeyValues.SearchChildFolder);
-            var maxDepth = searchSubFolder ? await localSettings.ReadSettingAsync<int>(KeyValues.SearchChildFolderDepth) : 1;
-            var tmp = await localSettings.ReadSettingAsync<string>(KeyValues.GameFolderMustContain);
-            if (!string.IsNullOrEmpty(tmp))
-                fileMustContain = tmp.Split('\r', '\n').ToList();
-            tmp = await localSettings.ReadSettingAsync<string>(KeyValues.GameFolderShouldContain);
-            if (!string.IsNullOrEmpty(tmp))
-                fileShouldContain = tmp.Split('\r', '\n').ToList();
             var ignoreFetchResult = await localSettings.ReadSettingAsync<bool>(KeyValues.IgnoreFetchResult);
-
-            log += "Params:\n" + $"searchSubFolder:{searchSubFolder}\n" + $"maxDepth:{maxDepth}\n" +
-                   $"fileMustContain:{string.Join(",", fileMustContain)}\n" +
-                   $"fileShouldContain:{string.Join(",", fileShouldContain)}\n" +
-                   $"ignoreFetchResult:{ignoreFetchResult}\n\n\n";
 
             _galgameFolderSource.IsRunning = true;
             var cnt = 0;
@@ -71,22 +57,19 @@ public class GetGalgameInFolderTask : BgTaskBase
                     continue;
                 }
                 ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Progress".GetLocalized(currentPath));
-                if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
+                foreach (var path in GetGameZip(currentPath))
                 {
                     AddGalgameResult result = AddGalgameResult.Other;
                     await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                     {
-                        result = await galgameService.TryAddGalgameAsync(SourceType.LocalFolder, currentPath, ignoreFetchResult);
+                        result = await galgameService.TryAddGalgameAsync(SourceType.LocalZip, path, ignoreFetchResult);
                         if (result == AddGalgameResult.Success ||
                             (ignoreFetchResult && result == AddGalgameResult.NotFoundInRss))
                             cnt++;
                     });
                     log += result;
                 }
-                else
-                    log += "Not a game folder";
 
-                if (currentDepth == maxDepth) continue;
                 foreach (var subPath in Directory.GetDirectories(currentPath))
                     pathToCheck.Enqueue((subPath, currentDepth + 1));
             }
@@ -124,25 +107,13 @@ public class GetGalgameInFolderTask : BgTaskBase
         }
     }
     
-    /// <summary>
-    /// 判断文件夹是否是游戏文件夹
-    /// </summary>
-    /// <param name="path">文件夹路径</param>
-    /// <param name="fileMustContain">必须包含的文件后缀</param>
-    /// <param name="fileShouldContain">至少包含一个的文件后缀</param>
-    /// <returns></returns>
-    private static bool IsGameFolder(string path, List<string> fileMustContain, List<string> fileShouldContain)
+    private static IEnumerable<string> GetGameZip(string path)
     {
-        foreach(var file in fileMustContain)
-            if (!Directory.GetFiles(path).Any(f => f.ToLower().EndsWith(file)))
-                return false;
-        var shouldContain = false;
-        foreach(var file in fileShouldContain)
-            if (Directory.GetFiles(path).Any(f => f.ToLower().EndsWith(file)))
-            {
-                shouldContain = true;
-                break;
-            }
-        return shouldContain;
+        foreach (var p in Directory.GetFiles(path).Where(f => ZipEnds.Contains(f.ToLower().Split(".")[^1])))
+        {
+            var parts = p.Split(".");
+            if (parts.Length == 3 && parts[1] != "001")continue;
+            yield return p;
+        }
     }
 }
