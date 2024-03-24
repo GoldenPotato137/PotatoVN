@@ -10,7 +10,6 @@
     xmlns:views="using:GalgameManager.Views"
     mc:Ignorable="d">
     <Page.Resources>
-        <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
         <Style x:Key="AccountStackPanelStyle" TargetType="control:StackPanelWithSpacing">
@@ -22,106 +21,105 @@
     <Grid Margin="{ThemeResource PageButtonMargin}">
         <ScrollViewer Grid.Row="0" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
             <control:StackPanelWithSpacing Margin="0 10 25 0">
-                <Expander Margin="0,0,0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                          IsExpanded="True">
-                    <Expander.Header>
-                        <Grid Padding="0,18,0,18">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="80" Height="80" CornerRadius="15">
-                                <Border.Background>
-                                    <ImageBrush
-                                        ImageSource="{x:Bind ViewModel.PvnAvatar, Mode=OneWay, 
-                                                Converter={StaticResource ImagePathConverter}, 
-                                                ConverterParameter=ms-appx:///Assets/Pictures/Akkarin.webp}" />
-                                </Border.Background>
-                            </Border>
-                            <StackPanel Grid.Column="1" Margin="10,10,0,0" HorizontalAlignment="Left">
-                                <TextBlock Text="PotatoVN" 
-                                           FontSize="18"/>
-                                <TextBlock Text="{x:Bind ViewModel.PvnDisplayName, Mode=OneWay}" 
-                                           Margin="0 0 0 5"/>
-                                <TextBlock Text="{x:Bind ViewModel.PvnStateMsg, Mode=OneWay}" 
-                                           FontSize="12"
-                                           Opacity="0.6"/>
+                <!-- PotatoVN -->
+                <control:AccountPanel Title="PotatoVN" Expand="True"
+                                      Avatar="{x:Bind ViewModel.PvnAvatar, Mode=OneWay}"
+                                      UserName="{x:Bind ViewModel.PvnDisplayName, Mode=OneWay}"
+                                      Description="{x:Bind ViewModel.PvnStateMsg, Mode=OneWay}">
+                    <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
+                        <!-- 账号状态 -->
+                        <control:Panel>
+                            <control:Setting x:Uid="AccountPage_Pvn_AccountStatus"
+                                             Description="{x:Bind ViewModel.PvnLoginDescription, Mode=OneWay}">
+                                <Button MinWidth="{StaticResource ToggleSwitchWidth}"
+                                        Content="{x:Bind ViewModel.PvnLoginButtonText, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.PvnLoginButtonCommand, Mode=OneWay}" />
+                            </control:Setting>
+                        </control:Panel>
+                        <!-- 同步游戏 -->
+                        <control:Panel>
+                            <views:SettingToggleSwitch
+                                x:Uid="AccountPage_Pvn_SyncGame"
+                                IsOn="{x:Bind ViewModel.PvnSyncGames, Mode=TwoWay}" />
+                        </control:Panel>
+                        <!-- 云存储空间 -->
+                        <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
+                            <StackPanel Spacing="10">
+                                <control:Setting x:Uid="AccountPage_Pvn_CloudStorage">
+                                    <Grid VerticalAlignment="Center" Margin="0 5 0 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Style="{ThemeResource SubtitleTextBlockStyle}"
+                                                   Text="{x:Bind ViewModel.UsedSpace, Mode=OneWay}"
+                                                   VerticalAlignment="Bottom" />
+                                        <TextBlock Grid.Column="1" Text=" / "
+                                                   Style="{ThemeResource DescriptionTextStyle}"
+                                                   VerticalAlignment="Bottom" Margin="0 0 0 3" />
+                                        <TextBlock Grid.Column="2" Style="{ThemeResource DescriptionTextStyle}"
+                                                   Text="{x:Bind ViewModel.TotalSpace, Mode=OneWay}"
+                                                   VerticalAlignment="Bottom" Margin="0 0 0 3" />
+                                    </Grid>
+                                </control:Setting>
+                                <TextBlock Style="{ThemeResource DescriptionTextStyle}"
+                                           Text="{x:Bind ViewModel.UsedPercent, Mode=OneWay}"
+                                           Margin="0 2 0 -3" />
+                                <ProgressBar Value="{x:Bind ViewModel.UsedPercentValue, Mode=OneWay}" />
                             </StackPanel>
-                        </Grid>
-                    </Expander.Header>
-                    
-                    <Expander.Content>
-                        <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
-                            <!-- 账号状态 -->
-                            <control:Panel>
-                                <control:Setting x:Uid="AccountPage_Pvn_AccountStatus" 
-                                                 Description="{x:Bind ViewModel.PvnLoginDescription, Mode=OneWay}">
-                                    <Button MinWidth="{StaticResource ToggleSwitchWidth}" 
-                                            Content="{x:Bind ViewModel.PvnLoginButtonText, Mode=OneWay}"
-                                            Command="{x:Bind ViewModel.PvnLoginButtonCommand, Mode=OneWay}"/>
-                                </control:Setting>
-                            </control:Panel>
-                            <!-- 同步游戏 -->
-                            <control:Panel>
-                                <views:SettingToggleSwitch 
-                                    x:Uid="AccountPage_Pvn_SyncGame" 
-                                    IsOn="{x:Bind ViewModel.PvnSyncGames, Mode=TwoWay}"/>
-                            </control:Panel>
-                            <!-- 云存储空间 -->
-                            <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
-                                <StackPanel Spacing="10">
-                                    <control:Setting x:Uid="AccountPage_Pvn_CloudStorage">
-                                        <Grid VerticalAlignment="Center" Margin="0 5 0 0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Style="{ThemeResource SubtitleTextBlockStyle}"
-                                                       Text="{x:Bind ViewModel.UsedSpace, Mode=OneWay}" 
-                                                       VerticalAlignment="Bottom"/>
-                                            <TextBlock Grid.Column="1" Text=" / "
-                                                       Style="{ThemeResource DescriptionTextStyle}"
-                                                       VerticalAlignment="Bottom" Margin="0 0 0 3"/>
-                                            <TextBlock Grid.Column="2" Style="{ThemeResource DescriptionTextStyle}"
-                                                       Text="{x:Bind ViewModel.TotalSpace, Mode=OneWay}" 
-                                                       VerticalAlignment="Bottom" Margin="0 0 0 3"/>
-                                        </Grid>
-                                    </control:Setting>
-                                    <TextBlock Style="{ThemeResource DescriptionTextStyle}" 
-                                               Text="{x:Bind ViewModel.UsedPercent, Mode=OneWay}"
-                                               Margin="0 2 0 -3"/>
-                                    <ProgressBar Value="{x:Bind ViewModel.UsedPercentValue, Mode=OneWay}"/>
-                                </StackPanel>
-                            </control:Panel>
-                            <!-- 账号管理 -->
-                            <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
-                                <control:Setting x:Uid="AccountPage_Pvn_SetAccount">
-                                    <Button x:Uid="AccountPage_Pvn_SetAccount_Button"
-                                            MinWidth="{StaticResource ToggleSwitchWidth}"
-                                            Command="{x:Bind ViewModel.PvnSetAccountCommand}"/>
-                                </control:Setting>
-                            </control:Panel>
-                            <!-- 服务器类型 -->
-                            <control:Panel>
-                                <control:Setting x:Uid="AccountPage_Pvn_ServerType">
-                                    <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
-                                              ItemsSource="{x:Bind ViewModel.PvnServerTypes}"
-                                              SelectedItem="{x:Bind ViewModel.PvnServerType, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate x:DataType="enums:PvnServerType">
-                                                <TextBlock Text="{x:Bind Converter={StaticResource EnumStringConverter}}" />
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </control:Setting>
-                            </control:Panel>
-                        </control:StackPanelWithSpacing>
-                    </Expander.Content>
-                </Expander>
-                
-                <control:AccountPanel Title="Bangumi" Description="This is a description"
-                                      UserName="UserName" DefaultAvatar="ms-appx:///Assets/Pictures/bangumi.png"/>
+                        </control:Panel>
+                        <!-- 账号管理 -->
+                        <control:Panel Visibility="{x:Bind ViewModel.IsPvnLogin, Mode=OneWay}">
+                            <control:Setting x:Uid="AccountPage_Pvn_SetAccount">
+                                <Button x:Uid="AccountPage_Pvn_SetAccount_Button"
+                                        MinWidth="{StaticResource ToggleSwitchWidth}"
+                                        Command="{x:Bind ViewModel.PvnSetAccountCommand}" />
+                            </control:Setting>
+                        </control:Panel>
+                        <!-- 服务器类型 -->
+                        <control:Panel>
+                            <control:Setting x:Uid="AccountPage_Pvn_ServerType">
+                                <ComboBox MinWidth="{StaticResource ToggleSwitchWidth}"
+                                          ItemsSource="{x:Bind ViewModel.PvnServerTypes}"
+                                          SelectedItem="{x:Bind ViewModel.PvnServerType, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="enums:PvnServerType">
+                                            <TextBlock Text="{x:Bind Converter={StaticResource EnumStringConverter}}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </control:Setting>
+                        </control:Panel>
+                    </control:StackPanelWithSpacing>
+                </control:AccountPanel>
+
+                <!-- Bangumi -->
+                <control:AccountPanel Title="Bangumi"
+                                      UserName="{x:Bind ViewModel.BgmName, Mode=OneWay}"
+                                      Avatar="{x:Bind ViewModel.BgmAvatar, Mode=OneWay}"
+                                      DefaultAvatar="ms-appx:///Assets/Pictures/bangumi.png"
+                                      Description="{x:Bind ViewModel.BgmDescription, Mode=OneWay}"
+                                      Expand="True">
+                    <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
+                        <!-- 账号状态 -->
+                        <control:Panel>
+                            <control:Setting x:Uid="AccountPage_Pvn_AccountStatus"
+                                             Description="{x:Bind ViewModel.BgmDescription, Mode=OneWay}">
+                                <Button MinWidth="{StaticResource ToggleSwitchWidth}"
+                                        Content="{x:Bind ViewModel.BgmLoginBtnText, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.BgmLoginBtnCommand, Mode=OneWay}" />
+                            </control:Setting>
+                        </control:Panel>
+                        <!-- 刷新授权 -->
+                        <control:Panel Visibility="{x:Bind ViewModel.IsBgmLogin, Mode=OneWay}">
+                            <control:Setting x:Uid="AccountPage_Bgm_RefreshToken">
+                                <Button MinWidth="{StaticResource ToggleSwitchWidth}" Content="Go"
+                                        Command="{x:Bind ViewModel.BgmRefreshTokenCommand}" />
+                            </control:Setting>
+                        </control:Panel>
+                    </control:StackPanelWithSpacing>
+                </control:AccountPanel>
             </control:StackPanelWithSpacing>
         </ScrollViewer>
     </Grid>

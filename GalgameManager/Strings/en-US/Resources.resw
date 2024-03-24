@@ -736,16 +736,10 @@ Failure reasons:</value>
   <data name="BgmOAuthService_AuthLimit" xml:space="preserve">
     <value>, Authorize to:</value>
   </data>
-  <data name="OAuthResult_Done" xml:space="preserve">
-    <value>Login successful</value>
-  </data>
-  <data name="OAuthResult_Failed" xml:space="preserve">
-    <value>Failed due to reasons:</value>
-  </data>
-  <data name="OAuthResult_FetchingToken" xml:space="preserve">
+  <data name="BgmOAuthStatus_FetchingToken" xml:space="preserve">
     <value>Fetching token, please wait</value>
   </data>
-  <data name="OAuthResult_FetchingAccount" xml:space="preserve">
+  <data name="BgmOAuthStatus_FetchingAccount" xml:space="preserve">
     <value>Fetching account info, please wait</value>
   </data>
   <data name="GalgamePage_SyncStatus.Label" xml:space="preserve">

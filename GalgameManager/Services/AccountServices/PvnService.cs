@@ -124,7 +124,7 @@ public class PvnService : IPvnService
         Task getBgmAccountTask = Task.CompletedTask;
         if (bgmAccount is null || bgmAccount.OAuthed == false)
         {
-            await _bgmService.StartOAuth();
+            await _bgmService.StartOAuthAsync();
             getBgmAccountTask = Task.Run(async () =>
             {
                 for(var i = 0; i <= 60 * 5; i++)  //timeout: 60sec

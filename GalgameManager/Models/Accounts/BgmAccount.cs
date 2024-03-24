@@ -6,6 +6,7 @@ public class BgmAccount
 {
     public bool OAuthed =>  BangumiAccessToken is not "";
     public DateTime Expires = DateTime.Now;
+    public DateTime NextRefresh = DateTime.MinValue;
     public string UserId = "";
     public string BangumiAccessToken = "";
     public string BangumiRefreshToken = "";

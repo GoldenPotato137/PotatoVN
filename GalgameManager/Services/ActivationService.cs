@@ -154,7 +154,7 @@ public class ActivationService : IActivationService
         if (IsRestart() == false) _pvnService.Startup();
         if (IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
-        await _bgmOAuthService.TryRefreshOAuthAsync();
+        if(IsRestart() == false) await _bgmOAuthService.Init();
         await CheckFont();
         await _galgameFolderCollectionService.StartAsync();
     }

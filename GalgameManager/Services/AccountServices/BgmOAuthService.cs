@@ -17,14 +17,10 @@ public class BgmOAuthService : IBgmOAuthService
     private readonly IInfoService _infoService;
     private IPvnService? _pvnService;
     private readonly IConfiguration _config;
-    private BgmAccount _bgmAccount;
-    private DateTime _lastUpdateDateTime;
-    private readonly TimeSpan _minUpdateTime = new(1, 0, 0, 0);
-    private readonly TimeSpan _minRefreshTime = new(5, 0, 0, 0);
+    private readonly TimeSpan _minRefreshTime = new(2, 0, 0, 0);
     private bool _isInitialized;
     
-    public event IBgmOAuthService.Delegate? OnOAuthStateChange;
-    public event Action<OAuthResult, string>? OnAuthResultChange;
+    public event Action<BgmOAuthStatus>? OnAuthResultChange;
 
     
     public BgmOAuthService(ILocalSettingsService localSettingsService, IInfoService infoService, IConfiguration config)
@@ -32,17 +28,16 @@ public class BgmOAuthService : IBgmOAuthService
         _localSettingsService = localSettingsService;
         _infoService = infoService;
         _config = config;
-        _bgmAccount = new BgmAccount();
-        _lastUpdateDateTime = DateTime.UnixEpoch;
     }
 
-    private async Task Init()
+    public async Task Init()
     {
         _isInitialized = true;
         await Upgrade();
         
-        _bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount?>(KeyValues.BangumiOAuthState) ?? new BgmAccount();
-        _lastUpdateDateTime = await _localSettingsService.ReadSettingAsync<DateTime?>(KeyValues.BangumiOAuthStateLastUpdate) ?? DateTime.UnixEpoch;
+        BgmAccount? account = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
+        if (account is not null && DateTime.Now >= account.NextRefresh)
+            _ = Task.Run(RefreshAccountAsync);
     }
 
     /// <summary>
@@ -64,9 +59,18 @@ public class BgmOAuthService : IBgmOAuthService
             }
             await _localSettingsService.SaveSettingAsync(KeyValues.OAuthUpgraded, true);
         }
+
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.OAuthUpgraded2) == false)
+        {
+            BgmAccount? account = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiOAuthState);
+            await _localSettingsService.RemoveSettingAsync(KeyValues.BangumiOAuthState);
+            if (account?.OAuthed is true)
+                await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccount, account);
+            await _localSettingsService.SaveSettingAsync(KeyValues.OAuthUpgraded2, true);
+        }
     }
 
-    public async Task StartOAuth()
+    public async Task StartOAuthAsync()
     {
         await Launcher.LaunchUriAsync(new Uri(BgmOAuthConfig.OAuthUrl));
     }
@@ -79,7 +83,7 @@ public class BgmOAuthService : IBgmOAuthService
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
             App.SetWindowMode(WindowMode.Normal);
-            OnAuthResultChange?.Invoke(OAuthResult.FetchingToken, OAuthResult.FetchingToken.ToMsg());
+            OnAuthResultChange?.Invoke(BgmOAuthStatus.FetchingToken);
         });
         WwwFormUrlDecoder decoder = new(uri.Query);
         var code = decoder.GetFirstValueByNameOrEmpty("code");
@@ -90,16 +94,21 @@ public class BgmOAuthService : IBgmOAuthService
                 "bangumi/oauth").AddQuery("code", code));
             if (!response.IsSuccessStatusCode) return;
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            _bgmAccount.BangumiAccessToken = json["token"]!.ToString();
-            _bgmAccount.BangumiRefreshToken = json["refreshToken"]!.ToString();
-            await GetBgmAccount();
+            BgmAccount account = new()
+            {
+                BangumiAccessToken = json["token"]!.ToString(),
+                BangumiRefreshToken = json["refreshToken"]!.ToString()
+            };
+            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccount, account);
+            await GetBgmAccount(OnAuthResultChange);
         }
         catch (Exception e)
         {
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
-                OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg()+e.Message);
-                _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error, OAuthResult.Failed.ToMsg(), e);
+                OnAuthResultChange?.Invoke(BgmOAuthStatus.Failed);
+                _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error,
+                    "BgmOAuthService_FetchTokenFailed".GetLocalized(), e);
             });
         }
     }
@@ -107,165 +116,111 @@ public class BgmOAuthService : IBgmOAuthService
     public async Task AuthWithAccessToken(string accessToken)
     {
         if (!_isInitialized) await Init();
-        _bgmAccount.BangumiAccessToken = accessToken;
-        _bgmAccount.BangumiRefreshToken = string.Empty;
-        await GetBgmAccount();
+        BgmAccount account = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount) ?? new();
+        account.BangumiAccessToken = accessToken;
+        account.BangumiRefreshToken = string.Empty;
+        await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccount, account);
+        var result = await GetBgmAccount();
+        if (result == false) await _localSettingsService.RemoveSettingAsync(KeyValues.BangumiAccount);
     }
     
-    /// <summary>
-    /// 使用更新token获取新的token，并刷新缓存
-    /// </summary>
-    /// <returns>是否成功</returns>
-    public async Task<bool> RefreshOAuthState()
+    public async Task<bool> RefreshAccountAsync()
     {
-        if (!_isInitialized) await Init();
-        if (string.IsNullOrEmpty(_bgmAccount.BangumiRefreshToken)) return false;
+        BgmAccount? account = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
+        if (string.IsNullOrEmpty(account?.BangumiRefreshToken)) return false;
         HttpClient client = GetHttpClient();
         try
         {
             HttpResponseMessage response = await client.GetAsync(new Uri(await BaseUriAsync(), 
-                "bangumi/refresh").AddQuery("refreshToken", _bgmAccount.BangumiRefreshToken));
+                "bangumi/refresh").AddQuery("refreshToken", account.BangumiRefreshToken));
+            if (response.IsSuccessStatusCode == false)
+                throw new Exception(await response.Content.ReadAsStringAsync());
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
-            _bgmAccount.BangumiAccessToken = json["token"]!.ToString();
-            _bgmAccount.BangumiRefreshToken = json["refreshToken"]!.ToString();
-            await GetBgmAccount();
+            account.BangumiAccessToken = json["token"]!.ToString();
+            account.BangumiRefreshToken = json["refreshToken"]!.ToString();
+            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccount, account);
+            _ = Task.Run(() => GetBgmAccount(OnAuthResultChange)); //异步获取用户信息
             return true;
         }
         catch(Exception e)
         {
-            _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error,
-                "BgmOAuthService_RefreshFailed".GetLocalized(), e);
+            _infoService.Event(EventType.BgmOAuthEvent, e is HttpRequestException ? InfoBarSeverity.Warning 
+                    :InfoBarSeverity.Error, "BgmOAuthService_RefreshFailed".GetLocalized(), e);
             return false;
         }
     }
     
     /// <summary>
-    /// 用于获取用户账户，默认从缓存读取
+    /// 获取Bgm账户信息并保存至local setting，若account不存在则什么都不做
     /// </summary>
-    /// <param name="forceRefresh">强制更新</param>
-    /// <returns></returns>
-    public async Task<BgmAccount> GetBgmAccountWithCache(bool forceRefresh=false)
+    private async Task<bool> GetBgmAccount(Action<BgmOAuthStatus>? onStatusChanged = null)
     {
-        if (!_isInitialized) await Init();
-        if (DateTime.Now - _lastUpdateDateTime >= _minUpdateTime || forceRefresh)
-            await GetBgmAccount();
-        return _bgmAccount;
-    }
-    
-    /// <summary>
-    /// 获取Bgm账户，并刷新缓存 <br/>
-    /// </summary>
-    private async Task GetBgmAccount()
-    {
-        if (!_isInitialized) await Init();
-        if (!_bgmAccount.OAuthed) return;
-        await UiThreadInvokeHelper.InvokeAsync(() =>
-        {
-            OnAuthResultChange?.Invoke(OAuthResult.FetchingAccount, OAuthResult.FetchingAccount.ToMsg());
-        });
+        BgmAccount? account = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
+        if (account is null) return false;
         HttpClient httpClient = GetHttpClient();
         try
         {
             //获取token状态与用户id
-            Dictionary<string, string> parameters = new() { { "access_token", _bgmAccount.BangumiAccessToken } };
-            HttpResponseMessage responseMessage = await httpClient.PostAsync("https://bgm.tv/oauth/token_status", 
-                new FormUrlEncodedContent(parameters));
-            if (!responseMessage.IsSuccessStatusCode) return;
+            Dictionary<string, string> parameters = new() { { "access_token", account.BangumiAccessToken } };
+            await UiThreadInvokeHelper.InvokeAsync(() => { onStatusChanged?.Invoke(BgmOAuthStatus.FetchingTokenInfo); });
+            HttpResponseMessage responseMessage =
+                await httpClient.PostAsync("https://bgm.tv/oauth/token_status", new FormUrlEncodedContent(parameters));
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                var content = await responseMessage.Content.ReadAsStringAsync();
+                _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Error,
+                    "BgmOAuthService_FetchTokenInfoFailed".GetLocalized(), msg: content);
+                return false;
+            }
             JObject json = JObject.Parse(responseMessage.Content.ReadAsStringAsync().Result);
-            if (!int.TryParse(json["expires"]!.ToString(), out var expires)) return;
-            _bgmAccount.UserId = json["user_id"]?.ToString() ?? "-1";
-            _bgmAccount.Expires = IBgmOAuthService.UnixTimeStampToDateTime(expires);
-            _lastUpdateDateTime = DateTime.Now;
+            if (!int.TryParse(json["expires"]!.ToString(), out var expires))
+                throw new Exception("No expires in response."); //不应该发生，没有expires字段
+            account.UserId = json["user_id"]?.ToString() ?? "-1";
+            account.Expires = IBgmOAuthService.UnixTimeStampToDateTime(expires);
+            account.NextRefresh = string.IsNullOrEmpty(account.BangumiRefreshToken)
+                ? new DateTime(2077, 11, 4) : DateTime.Now + _minRefreshTime;
             //下载用户数据
+            await UiThreadInvokeHelper.InvokeAsync(() => { onStatusChanged?.Invoke(BgmOAuthStatus.FetchingAccount); });
             //用户名
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + _bgmAccount.BangumiAccessToken);
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + account.BangumiAccessToken);
             responseMessage = await httpClient.GetAsync($"https://api.bgm.tv/v0/me");
             JToken userJson = JToken.Parse(await responseMessage.Content.ReadAsStringAsync());
-            _bgmAccount.Name = userJson["nickname"]?.ToString() ?? userJson["username"]?.ToString() ?? "BgmAccount_NoName".GetLocalized();
+            account.Name = userJson["nickname"]?.ToString() ?? userJson["username"]?.ToString() ?? "BgmAccount_NoName".GetLocalized();
             //头像
+            await UiThreadInvokeHelper.InvokeAsync(() => { onStatusChanged?.Invoke(BgmOAuthStatus.FetchingAccountImage); });
             if (userJson["avatar"]?["large"] != null)
             {
                 var avatarUrl = userJson["avatar"]!["large"]!.ToString();
-                if (avatarUrl.Contains('?'))
-                    avatarUrl = avatarUrl[..avatarUrl.LastIndexOf('?')]; //xx.jpg?r=1684973055&hd=1 => xx.jpg
-                var path = await DownloadHelper.DownloadAndSaveImageAsync(avatarUrl);
-                if (path != null)
-                    _bgmAccount.Avatar = path;
+                var path = await DownloadHelper.DownloadAndSaveImageAsync(avatarUrl,
+                    fileNameWithoutExtension: "bgmAvatar", onException: (e) =>
+                    {
+                        _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Warning,
+                            "BgmOAuthService_FetchAvatarFailed".GetLocalized(), e);
+                    });
+                account.Avatar = path ?? string.Empty;
             }
 
-            await SaveLastUpdateTime();
-            await SaveOAuthState();
-            await UiThreadInvokeHelper.InvokeAsync(() =>
-            {
-                OnAuthResultChange?.Invoke(OAuthResult.Done, OAuthResult.Done.ToMsg());
-            });
+            await UiThreadInvokeHelper.InvokeAsync(() => { onStatusChanged?.Invoke(BgmOAuthStatus.Done); });
+            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiAccount, account);
+            return true;
         }
         catch (Exception e)
         {
-            await UiThreadInvokeHelper.InvokeAsync(() =>
-            {
-                OnAuthResultChange?.Invoke(OAuthResult.Failed, OAuthResult.Failed.ToMsg() + e.Message);
-            });
+            _infoService.Event(EventType.BgmOAuthEvent, e is HttpRequestException ? InfoBarSeverity.Warning 
+                    : InfoBarSeverity.Error, "BgmOAuthService_FetchAccountFailed".GetLocalized(), e);
+            await UiThreadInvokeHelper.InvokeAsync(() => { onStatusChanged?.Invoke(BgmOAuthStatus.Failed); });
+            return false;
         }
     }
-
-    public async Task<string> GetOAuthStateString(bool forceRefresh=false)
-    {
-        if (!_isInitialized) await Init();
-        if (!_bgmAccount.OAuthed) return "BgmOAuthService_NoLogin".GetLocalized();
-        BgmAccount bgmOAuthState = await GetBgmAccountWithCache(forceRefresh);
-        if (!bgmOAuthState.OAuthed) return "BgmOAuthService_NoLogin".GetLocalized();
-        return "BgmOAuthService_Id".GetLocalized() + bgmOAuthState.UserId + "BgmOAuthService_AuthLimit".GetLocalized() +
-               bgmOAuthState.Expires.ToShortDateString();
-    }
     
-    public async Task<bool> QuitLoginBgm()
+    public async Task LogoutAsync()
     {
-        if (!_isInitialized) await Init();
-        if (!_bgmAccount.OAuthed) return false;
-        _bgmAccount = new BgmAccount();
-        await SaveOAuthState();
-        return true;
-    }
-    
-    public async Task TryRefreshOAuthAsync()
-    {
-        if (!_isInitialized) await Init();
-        if (await CheckForRefresh() == false) return;
-        await RefreshOAuthState();
-    }
-
-    /// <summary>
-    /// 检查是否需要刷新授权
-    /// </summary>
-    private async Task<bool> CheckForRefresh()
-    {
-        if (!_isInitialized)
-            await Init();
-        if (!_bgmAccount.OAuthed) return false;
-        return _bgmAccount.Expires - DateTime.Now < _minRefreshTime;
-    }
-
-    private async Task SaveOAuthState()
-    {
-        await UiThreadInvokeHelper.InvokeAsync(async Task() =>
-        {
-            OnOAuthStateChange?.Invoke(_bgmAccount);
-            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthState, _bgmAccount);
-        });
-    }
-
-    private async Task SaveLastUpdateTime()
-    {
-        await UiThreadInvokeHelper.InvokeAsync(async Task () =>
-        {
-            await _localSettingsService.SaveSettingAsync(KeyValues.BangumiOAuthStateLastUpdate, _lastUpdateDateTime);
-        });
+        await _localSettingsService.RemoveSettingAsync(KeyValues.BangumiAccount);
     }
 
     private async Task<Uri> BaseUriAsync()
     {
-        if (_pvnService is null) _pvnService = App.GetService<IPvnService>();
+        _pvnService ??= App.GetService<IPvnService>();
         PvnServerInfo? serverInfo = await _pvnService.GetServerInfoAsync();
         if (serverInfo?.BangumiOauth2Enable == true) return _pvnService.BaseUri;
         return new Uri(_config["PotatoVNOfficialServer"]!);

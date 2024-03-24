@@ -228,8 +228,9 @@ public class LocalSettingsService : ILocalSettingsService
             _settings[key] = value;
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
-        if(value != null || triggerEventWhenNull)
-            OnSettingChanged?.Invoke(key, value);
+
+        if (value != null || triggerEventWhenNull)
+            await UiThreadInvokeHelper.InvokeAsync(() => OnSettingChanged?.Invoke(key, value));
     }
     
     public async Task RemoveSettingAsync(string key)
@@ -246,6 +247,7 @@ public class LocalSettingsService : ILocalSettingsService
 
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
+        await UiThreadInvokeHelper.InvokeAsync(() => OnSettingChanged?.Invoke(key, null));
     }
 
     /// <summary>

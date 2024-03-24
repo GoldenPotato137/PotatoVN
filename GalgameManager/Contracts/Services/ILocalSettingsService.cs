@@ -11,7 +11,7 @@ public interface ILocalSettingsService
     public delegate void Delegate(string key, object? value);
     
     /// <summary>
-    /// 当设置值改变时触发
+    /// 当设置值改变时触发，<b>从UI线程调用</b>
     /// </summary>
     public event Delegate? OnSettingChanged;
 }

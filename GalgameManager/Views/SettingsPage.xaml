@@ -68,41 +68,6 @@
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
                 
-                <!-- OAuth -->
-                <control:SettingExpander
-                    x:Uid="SettingsPage_OAuth"
-                    SettingIcon="&#xE77b;">
-                    <control:SettingExpander.SettingContent>
-                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
-                            <!-- Bangumi账号 -->
-                            <control:Panel>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Width="45" Height="45" CornerRadius="15" Margin="0 0 20 0">
-                                        <Border.Background>
-                                            <ImageBrush
-                                                ImageSource="{x:Bind ViewModel.BgmAvatar, Mode=OneWay, 
-                                                Converter={StaticResource ImagePathConverter}, 
-                                                ConverterParameter=ms-appx:///Assets/Pictures/Akkarin.webp}" />
-                                        </Border.Background>
-                                    </Border>
-                                    <control:Setting Grid.Column="1" 
-                                                     Title="{x:Bind ViewModel.BgmUserName,Mode=OneWay}"
-                                                     Description="{x:Bind ViewModel.BgmStateString, Mode=OneWay}"
-                                                     VerticalAlignment="Center">
-                                        <Button Content="{x:Bind ViewModel.BgmButtonText, Mode=OneWay}"
-                                                Command="{x:Bind ViewModel.ChangeBgmStateCommand}"/>
-                                    </control:Setting>
-                                </Grid>
-                            </control:Panel>
-                        </StackPanel>
-                    </control:SettingExpander.SettingContent>
-                    
-                </control:SettingExpander>
-                
                 <!-- 游玩 -->
                 <control:SettingExpander 
                     x:Uid="SettingsPage_Game"

@@ -33,11 +33,11 @@ public static class KeyValues
     public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
     
     //账户相关
-    public const string BangumiOAuthState= "bangumiOAuthState";
+    public const string BangumiAccount= "bangumiAccount"; //BgmAccount?, Bangumi账户, 若为null则未登录
     public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
     public const string PvnServerType = "pvnServerType"; //enum: PvnServerType, 服务器类型（官方/自定义）
     public const string PvnServerEndpoint = "pvnServerEndpoint"; //string, 自定义服务器Url
-    public const string PvnAccount = "pvnAccount"; //PvnAccount, PotatoVN账户
+    public const string PvnAccount = "pvnAccount"; //PvnAccount?, PotatoVN账户, 若为null则未登录
     public const string PvnAccountUserName = "pvnAccountUserName"; //string, PotatoVN账户名
     
     //游玩相关
@@ -81,7 +81,8 @@ public static class KeyValues
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
-    public const string OAuthUpgraded = "OAuthUpgraded"; //OAuth升级
+    public const string OAuthUpgraded = "OAuthUpgraded"; //BgmOAuth升级1
+    public const string OAuthUpgraded2 = "OAuthUpgraded2"; //BgmOAuth升级2
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
     public const string CategoryUpgraded = "categoryUpgraded"; //分类索引升级
@@ -89,4 +90,5 @@ public static class KeyValues
     
     //废弃Key，只读，仅用于升级
     public const string BangumiToken = "bangumiToken";
+    public const string BangumiOAuthState= "bangumiOAuthState"; //BgmAccount?, Bangumi账户, 若为null则未登录
 }

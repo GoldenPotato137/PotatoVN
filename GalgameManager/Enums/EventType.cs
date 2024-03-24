@@ -5,7 +5,7 @@ public enum EventType
     PvnSyncEvent,
     PvnSyncEmptyEvent,
     PvnAccountEvent,
-    BgmOAuthEvent,
+    BgmOAuthEvent, // Bgm账号相关的事件
     GalgameEvent,
     FaqEvent,
     AppError,

@@ -737,16 +737,10 @@
   <data name="BgmOAuthService_AuthLimit" xml:space="preserve">
     <value>, 授权至:</value>
   </data>
-  <data name="OAuthResult_Done" xml:space="preserve">
-    <value>登录成功</value>
+  <data name="BgmOAuthStatus_FetchingToken" xml:space="preserve">
+    <value>获取Bangumi Token中，请稍后</value>
   </data>
-  <data name="OAuthResult_Failed" xml:space="preserve">
-    <value>因为以下原因Bangumi登录失败：</value>
-  </data>
-  <data name="OAuthResult_FetchingToken" xml:space="preserve">
-    <value>获取Token中，请稍后</value>
-  </data>
-  <data name="OAuthResult_FetchingAccount" xml:space="preserve">
+  <data name="BgmOAuthStatus_FetchingAccount" xml:space="preserve">
     <value>获取账号信息中，请稍后</value>
   </data>
   <data name="GalgamePage_SyncStatus.Label" xml:space="preserve">
@@ -1202,9 +1196,6 @@
   <data name="AccountPage_Pvn_LoginSuccess" xml:space="preserve">
     <value>登录成功 </value>
   </data>
-  <data name="AccountPage_Pvn_Logout" xml:space="preserve">
-    <value>登出成功</value>
-  </data>
   <data name="AccountPage_Pvn_AccountStatus_Login" xml:space="preserve">
     <value>用户ID:{0}, 登录方式:{1}</value>
   </data>
@@ -1465,5 +1456,53 @@
   </data>
   <data name="App_Error" xml:space="preserve">
     <value>Oops, 上次运行崩溃了</value>
+  </data>
+  <data name="AccountPage_Bgm_NoName" xml:space="preserve">
+    <value>阿~卡~林~</value>
+  </data>
+  <data name="AccountPage_Bgm_NoLogin" xml:space="preserve">
+    <value>还没登录Bangumi账号呢~</value>
+  </data>
+  <data name="AccountPage_Bgm_LoginedDescription" xml:space="preserve">
+    <value>用户ID:{0}, 授权至:{1}, 下次刷新授权:{2}</value>
+  </data>
+  <data name="AccountPage_LogoutSuccess" xml:space="preserve">
+    <value>登出成功</value>
+  </data>
+  <data name="BgmOAuthService_FetchTokenInfoFailed" xml:space="preserve">
+    <value>获取Bangumi Token信息失败</value>
+  </data>
+  <data name="BgmOAuthService_FetchAvatarFailed" xml:space="preserve">
+    <value>下载Bangumi账户头像失败</value>
+  </data>
+  <data name="BgmOAuthService_FetchAccountFailed" xml:space="preserve">
+    <value>获取Bangumi账号信息失败</value>
+  </data>
+  <data name="BgmOAuthStatus_Failed" xml:space="preserve">
+    <value>NOT USED</value>
+  </data>
+  <data name="BgmOAuthStatus_Done" xml:space="preserve">
+    <value>Bangumi账户登录成功</value>
+  </data>
+  <data name="BgmOAuthService_FetchTokenFailed" xml:space="preserve">
+    <value>获取Bangumi Token失败</value>
+  </data>
+  <data name="BgmOAuthStatus_FetchingTokenInfo" xml:space="preserve">
+    <value>获取Bangumi Token信息中</value>
+  </data>
+  <data name="BgmOAuthStatus_FetchingAccountImage" xml:space="preserve">
+    <value>获取Bangumi头像中</value>
+  </data>
+  <data name="AccountPage_Bgm_RefreshToken.Title" xml:space="preserve">
+    <value>刷新授权</value>
+  </data>
+  <data name="AccountPage_Bgm_RefreshToken.Description" xml:space="preserve">
+    <value>立刻刷新授权，并更新账户信息。</value>
+  </data>
+  <data name="AccountPage_Bgm_Refreshing" xml:space="preserve">
+    <value>正在获取新的Token</value>
+  </data>
+  <data name="AccountPage_Bgm_RefreshSuccess" xml:space="preserve">
+    <value>Bangumi账号授权与信息刷新成功</value>
   </data>
 </root>

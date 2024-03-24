@@ -1,40 +1,33 @@
 ﻿using GalgameManager.Enums;
-using GalgameManager.Helpers;
-using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Services;
 
 public interface IBgmOAuthService
 {
-    Task StartOAuth();
+    /// <summary>
+    /// 检查账户是否可用，检查是否需要刷新授权
+    /// </summary>
+    /// <returns></returns>
+    Task Init();
+    
+    Task StartOAuthAsync();
     Task FinishOAuthWithUri(Uri uri);
 
     Task AuthWithAccessToken(string accessToken);
 
-    Task<bool> RefreshOAuthState();
-
-    Task<string> GetOAuthStateString(bool forceRefresh=false);
-
-    Task<BgmAccount> GetBgmAccountWithCache(bool forceRefresh=false);
-
-    Task<bool> QuitLoginBgm();
-
     /// <summary>
-    /// 使用刷新令牌刷新授权，如果还没到刷新时间则什么都不做
+    /// 使用更新token获取新的token，并刷新缓存 <br/>
+    /// 如果没有refreshToken则什么都不做
     /// </summary>
-    Task TryRefreshOAuthAsync();
-    
-    public delegate void Delegate(BgmAccount bgmAccount);
-    
-    /// <summary>
-    /// 当设置值改变时触发
-    /// </summary>
-    public event Delegate? OnOAuthStateChange;
-    
+    /// <returns>是否成功</returns>
+    Task<bool> RefreshAccountAsync();
+
+    Task LogoutAsync();
+
     /// <summary>
     /// 当授权状态改变时触发（用于提示当前授权获取进度）
     /// </summary>
-    public event Action<OAuthResult, string> OnAuthResultChange; 
+    public event Action<BgmOAuthStatus> OnAuthResultChange; 
 
     public static DateTime UnixTimeStampToDateTime( double unixTimeStamp )
     {
