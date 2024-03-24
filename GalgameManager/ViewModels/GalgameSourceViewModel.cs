@@ -19,16 +19,16 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
+public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
 {
-    private readonly IDataCollectionService<GalgameFolderSource> _dataCollectionService;
+    private readonly IDataCollectionService<GalgameSourceBase> _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly IBgTaskService _bgTaskService;
     
     private GalgameSourceBase? _item;
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
-    private GetGalgameInSourceTask? _getGalInFolderTask;
+    private BgTaskBase? _getGalTask;
     private GetGalgameInfoFromRss? _getGalgameInfoFromRss;
     private UnpackGameTask? _unpackGameTask;
     public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
@@ -65,7 +65,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         }
     }
 
-    public GalgameFolderViewModel(IDataCollectionService<GalgameFolderSource> dataCollectionService, 
+    public GalgameSourceViewModel(IDataCollectionService<GalgameSourceBase> dataCollectionService, 
         IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _dataCollectionService = dataCollectionService;
@@ -77,7 +77,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private void ReloadGalgameList(Galgame galgame)
     {
         if (_item == null) return;
-        if (galgame.Path.StartsWith(_item.Path))
+        if (_item.IsInSource(galgame))
             Galgames.Add(galgame);
     }
 
@@ -88,23 +88,38 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         Item = (_dataCollectionService as GalgameSourceCollectionService)!.GetGalgameSourceFromUrl(url);
         if (Item == null) return;
         
-        _getGalInFolderTask = _bgTaskService.GetBgTask<GetGalgameInSourceTask>(Item.Path);
-        if (_getGalInFolderTask != null)
+        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Url);
+        if (_getGalTask != null)
         {
-            _getGalInFolderTask.OnProgress += UpdateNotifyGetGalInFolder;
-            UpdateNotifyGetGalInFolder(_getGalInFolderTask.CurrentProgress);
+            _getGalTask.OnProgress += UpdateNotifyGetGal;
+            UpdateNotifyGetGal(_getGalTask.CurrentProgress);
         }
-        _unpackGameTask = _bgTaskService.GetBgTask<UnpackGameTask>(Item.Path);
+        
+        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInLocalZipTask>(Item.Url);
+        if (_getGalTask != null)
+        {
+            _getGalTask.OnProgress += UpdateNotifyGetGal;
+            UpdateNotifyGetGal(_getGalTask.CurrentProgress);
+        }
+        
+        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Url);
+        if (_getGalTask != null)
+        {
+            _getGalTask.OnProgress += UpdateNotifyGetGal;
+            UpdateNotifyGetGal(_getGalTask.CurrentProgress);
+        }
+        
+        _unpackGameTask = _bgTaskService.GetBgTask<UnpackGameTask>(Item.Url);
         if (_unpackGameTask != null)
         {
             _unpackGameTask.OnProgress += UpdateNotifyUnpack;
             UpdateNotifyUnpack(_unpackGameTask.CurrentProgress);
         }
-        _getGalgameInfoFromRss = _bgTaskService.GetBgTask<GetGalgameInfoFromRss>(Item.Path);
+        _getGalgameInfoFromRss = _bgTaskService.GetBgTask<GetGalgameInfoFromRss>(Item.Url);
         if (_getGalgameInfoFromRss != null)
         {
             _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
-            UpdateNotifyGetGalInFolder(_getGalgameInfoFromRss.CurrentProgress);
+            UpdateNotifyGetGal(_getGalgameInfoFromRss.CurrentProgress);
         }
         Update();
     }
@@ -112,11 +127,11 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     public void OnNavigatedFrom()
     {
         _galgameService.GalgameAddedEvent -= ReloadGalgameList;
-        if (_getGalInFolderTask != null) _getGalInFolderTask.OnProgress -= UpdateNotifyGetGalInFolder;
+        if (_getGalTask != null) _getGalTask.OnProgress -= UpdateNotifyGetGal;
         if (_getGalgameInfoFromRss != null) _getGalgameInfoFromRss.OnProgress -= UpdateNotifyGetInfoFromRss;
         if (_unpackGameTask != null)
         {
-            _unpackGameTask.OnProgress -= UpdateNotifyGetGalInFolder;
+            _unpackGameTask.OnProgress -= UpdateNotifyGetGal;
             _unpackGameTask.OnProgress -= HandelUnpackError;
         }
     }
@@ -137,7 +152,7 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
         ProgressMsg = progress.Message;
     }
 
-    private void UpdateNotifyGetGalInFolder(Progress progress)
+    private void UpdateNotifyGetGal(Progress progress)
     {
         if(Item == null) return;
         Update();
@@ -252,9 +267,9 @@ public partial class GalgameFolderViewModel : ObservableObject, INavigationAware
     private void GetGalInFolder()
     {
         if (_item == null) return;
-        _getGalInFolderTask = new GetGalgameInSourceTask(_item);
-        _getGalInFolderTask.OnProgress += UpdateNotifyGetGalInFolder;
-        _ = _bgTaskService.AddBgTask(_getGalInFolderTask);
+        _getGalTask = _item.GetGalgameInSourceTask();
+        _getGalTask.OnProgress += UpdateNotifyGetGal;
+        _ = _bgTaskService.AddBgTask(_getGalTask);
     }
     
     [RelayCommand(CanExecute = nameof(IsLocalFolder))]

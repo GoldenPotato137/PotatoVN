@@ -2,6 +2,7 @@
 using GalgameManager.Contracts.Models;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
@@ -22,4 +23,6 @@ public class GalgameZipSource : GalgameSourceBase
     {
         return path[..path.LastIndexOf('\\')] == Path ;
     }
+
+    public override BgTaskBase GetGalgameInSourceTask() => new GetGalgameInLocalZipTask(this);
 }

@@ -8,14 +8,14 @@ using H.NotifyIcon.Core;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class GetGalgameInSourceTask : BgTaskBase
+public class GetGalgameInFolderTask : BgTaskBase
 {
     public string GalgameSourceUrl = string.Empty;
-    private GalgameSourceBase? _galgameFolderSource;
+    private GalgameFolderSource? _galgameFolderSource;
 
-    public GetGalgameInSourceTask() { }
+    public GetGalgameInFolderTask() { }
 
-    public GetGalgameInSourceTask(GalgameSourceBase source)
+    public GetGalgameInFolderTask(GalgameFolderSource source)
     {
         _galgameFolderSource = source;
         GalgameSourceUrl = source.Url;
@@ -24,7 +24,7 @@ public class GetGalgameInSourceTask : BgTaskBase
     protected override Task RecoverFromJsonInternal()
     {
         _galgameFolderSource = (App.GetService<IDataCollectionService<GalgameSourceBase>>() as GalgameSourceCollectionService)?.
-            GetGalgameSourceFromUrl(GalgameSourceUrl);
+            GetGalgameSourceFromUrl(GalgameSourceUrl) as GalgameFolderSource;
         return Task.CompletedTask;
     }
 
@@ -60,7 +60,7 @@ public class GetGalgameInSourceTask : BgTaskBase
             _galgameFolderSource.IsRunning = true;
             var cnt = 0;
             Queue<(string Path, int Depth)> pathToCheck = new();
-            pathToCheck.Enqueue((GalgameSourceUrl, 0));
+            pathToCheck.Enqueue((_galgameFolderSource.Path, 0));
             while (pathToCheck.Count > 0)
             {
                 var (currentPath, currentDepth) = pathToCheck.Dequeue();
@@ -76,7 +76,7 @@ public class GetGalgameInSourceTask : BgTaskBase
                     AddGalgameResult result = AddGalgameResult.Other;
                     await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                     {
-                        result = await galgameService.TryAddGalgameAsync(currentPath, ignoreFetchResult);
+                        result = await galgameService.TryAddGalgameAsync(SourceType.LocalFolder, currentPath, ignoreFetchResult);
                         if (result == AddGalgameResult.Success ||
                             (ignoreFetchResult && result == AddGalgameResult.NotFoundInRss))
                             cnt++;

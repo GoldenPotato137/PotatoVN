@@ -18,7 +18,8 @@ public class BgTaskService : IBgTaskService
     public BgTaskService()
     {
         _bgTasksString[typeof(RecordPlayTimeTask)] = "-record";
-        _bgTasksString[typeof(GetGalgameInSourceTask)] = "-getGalInFolder";
+        _bgTasksString[typeof(GetGalgameInFolderTask)] = "-getGalInFolder";
+        _bgTasksString[typeof(GetGalgameInLocalZipTask)] = "-getGalInZip";
         _bgTasksString[typeof(UnpackGameTask)] = "-unpack";
     }
     

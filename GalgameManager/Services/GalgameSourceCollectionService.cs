@@ -55,10 +55,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     {
         foreach (GalgameSourceBase source in _galgameSources.Where(f => f.ScanOnStart))
         {
-            if (source is GalgameFolderSource folder)
-            {
-                _bgTaskService.AddBgTask(new GetGalgameInSourceTask(folder));
-            }
+            _bgTaskService.AddBgTask(source.GetGalgameInSourceTask());
         }
         return Task.CompletedTask;
     }
@@ -114,9 +111,9 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         if (galgameSource is null) throw new NotImplementedException();
         _galgameSources.Add(galgameSource);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameSources, true);
-        if (tryGetGalgame && galgameSource is GalgameFolderSource folder)
+        if (tryGetGalgame)
         {
-            await _bgTaskService.AddBgTask(new GetGalgameInSourceTask(folder));
+            await _bgTaskService.AddBgTask(galgameSource.GetGalgameInSourceTask());
         }
     }
 
@@ -160,7 +157,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     public void ScanAll()
     {
         foreach(GalgameSourceBase b in _galgameSources)
-            if (b is GalgameFolderSource f)_bgTaskService.AddBgTask(new GetGalgameInSourceTask(f));
+            _bgTaskService.AddBgTask(b.GetGalgameInSourceTask());
     }
 }
 

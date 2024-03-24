@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -299,12 +300,13 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     /// <param name="path">游戏文件夹路径</param>
     private async Task AddGalgameInternal(string path)
     {
+        //TODO
         IsPhrasing = true;
         AddGalgameResult result = AddGalgameResult.Other;
         string msg;
         try
         {
-            result = await _galgameService.TryAddGalgameAsync(path, true);
+            result = await _galgameService.TryAddGalgameAsync(SourceType.LocalFolder, path, true);
             msg = result.ToMsg();
         }
         catch (Exception e)

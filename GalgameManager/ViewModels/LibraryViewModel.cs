@@ -51,7 +51,7 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     {
         if (clickedItem != null)
         {
-            _navigationService.NavigateTo(typeof(GalgameFolderViewModel).FullName!, clickedItem.Url);
+            _navigationService.NavigateTo(typeof(GalgameSourceViewModel).FullName!, clickedItem.Url);
         }
     }
 
@@ -83,10 +83,10 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async Task DeleteFolder(GalgameFolderSource? galgameFolder)
+    private async Task DeleteFolder(GalgameSourceBase? galgameFolder)
     {
-        if (galgameFolder == null) return;
-        await _galSourceService.DeleteGalgameFolderAsync(galgameFolder);
+        if (galgameFolder is not GalgameFolderSource folder) return;
+        await _galSourceService.DeleteGalgameFolderAsync(folder);
     }
     
     [RelayCommand]

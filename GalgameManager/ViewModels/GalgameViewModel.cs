@@ -5,6 +5,7 @@ using Windows.Storage.Pickers;
 using Windows.System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
@@ -316,7 +317,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                     _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
                     return;
                 }
-                await _galgameService.TryAddGalgameAsync(folder, virtualGame: Item);
+                await _galgameService.TryAddGalgameAsync(SourceType.LocalFolder, folder, virtualGame: Item);
                 Item!.ExePath = file.Path;
                 IsLocalGame = Item!.CheckExistLocal();
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());

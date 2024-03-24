@@ -20,7 +20,7 @@ public class PageService : IPageService
         Configure<GalgameCharacterViewModel, GalgameCharacterPage>();
         Configure<SettingsViewModel, SettingsPage>();
         Configure<LibraryViewModel, LibraryPage>();
-        Configure<GalgameFolderViewModel, GalgameFolderPage>();
+        Configure<GalgameSourceViewModel, GalgameFolderPage>();
         Configure<GalgameSettingViewModel, GalgameSettingPage>();
         Configure<HelpViewModel, HelpPage>();
         Configure<PlayedTimeViewModel, PlayedTimePage>();

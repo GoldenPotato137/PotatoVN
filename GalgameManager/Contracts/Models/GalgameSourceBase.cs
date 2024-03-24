@@ -3,13 +3,14 @@ using System.Collections.ObjectModel;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
 namespace GalgameManager.Contracts.Models;
 
-public class GalgameSourceBase: IEnumerable
+public class GalgameSourceBase
 {
     [JsonIgnore] public GalgameCollectionService GalgameService;
 
@@ -82,7 +83,8 @@ public class GalgameSourceBase: IEnumerable
     public virtual string GetLogPath() => StdPath.Combine("Logs", GetLogName());
     
     public virtual string GetLogName() => $"GalgameSource_{Url.ToBase64()}.txt";
-    public virtual IEnumerator GetEnumerator() => throw new NotImplementedException();
+
+    public virtual BgTaskBase GetGalgameInSourceTask() => throw new NotImplementedException();
 }
 
 public enum SourceType
