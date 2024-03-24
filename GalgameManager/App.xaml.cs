@@ -1,4 +1,5 @@
 ﻿using GalgameManager.Activation;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
@@ -85,7 +86,7 @@ public partial class App : Application
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
-            services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
+            services.AddSingleton<IDataCollectionService<GalgameSourceBase>, GalgameSourceCollectionService>();
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<ICategoryService, CategoryService>();

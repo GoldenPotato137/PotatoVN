@@ -1,14 +1,17 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
@@ -16,9 +19,9 @@ namespace GalgameManager.ViewModels;
 public partial class LibraryViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private readonly GalgameFolderCollectionService _galFolderService;
+    private readonly GalgameSourceCollectionService _galSourceService;
     
-    public ObservableCollection<GalgameFolder> Source { get; private set; } = new();
+    public ObservableCollection<GalgameSourceBase> Source { get; private set; } = new();
     public ICommand ItemClickCommand { get; }
     public ICommand AddLibraryCommand { get; }
     
@@ -28,27 +31,27 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
 
     #endregion
 
-    public LibraryViewModel(INavigationService navigationService, IDataCollectionService<GalgameFolder> galFolderService)
+    public LibraryViewModel(INavigationService navigationService, IDataCollectionService<GalgameSourceBase> galFolderService)
     {
         _navigationService = navigationService;
-        _galFolderService = (GalgameFolderCollectionService) galFolderService;
+        _galSourceService = (GalgameSourceCollectionService) galFolderService;
 
-        ItemClickCommand = new RelayCommand<GalgameFolder>(OnItemClick);
+        ItemClickCommand = new RelayCommand<GalgameSourceBase>(OnItemClick);
         AddLibraryCommand = new RelayCommand(AddLibrary);
     }
 
     public async void OnNavigatedTo(object parameter)
     {
-        Source = await _galFolderService.GetContentGridDataAsync();
+        Source = await _galSourceService.GetContentGridDataAsync();
     }
 
     public void OnNavigatedFrom(){}
     
-    private void OnItemClick(GalgameFolder? clickedItem)
+    private void OnItemClick(GalgameSourceBase? clickedItem)
     {
         if (clickedItem != null)
         {
-            _navigationService.NavigateTo(typeof(GalgameFolderViewModel).FullName!, clickedItem.Path);
+            _navigationService.NavigateTo(typeof(GalgameFolderViewModel).FullName!, clickedItem.Url);
         }
     }
 
@@ -56,16 +59,22 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     {
         try
         {
-            FolderPicker folderPicker = new();
-            folderPicker.FileTypeFilter.Add("*");
-
-            WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, App.MainWindow!.GetWindowHandle());
-
-            var folder = await folderPicker.PickSingleFolderAsync();
-            if (folder != null)
+            AddSourceDialog dialog = new()
             {
-                await _galFolderService.AddGalgameFolderAsync(folder.Path);
+                XamlRoot = App.MainWindow!.Content.XamlRoot,
+            };
+            await dialog.ShowAsync();
+            if (dialog.Canceled) return;
+            switch (dialog.SelectItem)
+            {
+                case 0:
+                    await _galSourceService.AddGalgameFolderAsync(SourceType.LocalFolder, dialog.Path);
+                    break;
+                case 1:
+                    await _galSourceService.AddGalgameFolderAsync(SourceType.LocalZip, dialog.Path);
+                    break;
             }
+
         }
         catch (Exception e)
         {
@@ -74,16 +83,16 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async Task DeleteFolder(GalgameFolder? galgameFolder)
+    private async Task DeleteFolder(GalgameFolderSource? galgameFolder)
     {
         if (galgameFolder == null) return;
-        await _galFolderService.DeleteGalgameFolderAsync(galgameFolder);
+        await _galSourceService.DeleteGalgameFolderAsync(galgameFolder);
     }
     
     [RelayCommand]
     private void ScanAll()
     {
-        _galFolderService.ScanAll();
+        _galSourceService.ScanAll();
         _ = DisplayMsgAsync(InfoBarSeverity.Success, "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
     }
     

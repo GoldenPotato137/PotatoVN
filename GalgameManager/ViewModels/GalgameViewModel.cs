@@ -76,7 +76,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
 
         Item = param.Galgame;
-        IsLocalGame = Item.CheckExist();
+        IsLocalGame = Item.CheckExistLocal();
         Item.SavePath = Item.SavePath; //更新存档位置显示
         UpdateVisibility();
         
@@ -318,7 +318,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                 }
                 await _galgameService.TryAddGalgameAsync(folder, virtualGame: Item);
                 Item!.ExePath = file.Path;
-                IsLocalGame = Item!.CheckExist();
+                IsLocalGame = Item!.CheckExistLocal();
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());
                 _galgameService.RefreshDisplay(); //重新构造显示列表以刷新特殊显示非本地游戏（因为GameToOpacityConverter只会在构造列表的时候被调用）
             }

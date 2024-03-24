@@ -4,7 +4,7 @@ namespace GalgameManager.Models.Filters;
 
 public class VirtualGameFilter : FilterBase
 {
-    public override bool Apply(Galgame galgame) => galgame.CheckExist();
+    public override bool Apply(Galgame galgame) => galgame.CheckExistLocal();
     
     public override string Name { get; } = "VirtualGameFilter".GetLocalized();
 

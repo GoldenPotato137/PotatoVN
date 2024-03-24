@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Windows.Storage;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
@@ -11,22 +12,22 @@ namespace GalgameManager.Models.BgTasks;
 
 public class UnpackGameTask : BgTaskBase
 {
-    public string GalgameFolderPath = string.Empty;
+    public string GalgameFolderUrl = string.Empty;
     public string PackPath = string.Empty;
     public string? Password = string.Empty;
     public string GameName = string.Empty;
     
-    private GalgameFolder? _galgameFolder;
+    private GalgameFolderSource? _galgameFolderSource;
     private StorageFile? _pack;
     private static bool _init;
 
     public UnpackGameTask() { }
 
-    public UnpackGameTask(StorageFile pack, GalgameFolder galgameFolder,string gameName, string? password = null)
+    public UnpackGameTask(StorageFile pack, GalgameFolderSource galgameFolderSource,string gameName, string? password = null)
     {
         _pack = pack;
-        _galgameFolder = galgameFolder;
-        GalgameFolderPath = galgameFolder.Path;
+        _galgameFolderSource = galgameFolderSource;
+        GalgameFolderUrl = galgameFolderSource.Url;
         PackPath = pack.Path;
         GameName = gameName;
         Password = password;
@@ -34,8 +35,8 @@ public class UnpackGameTask : BgTaskBase
     
     protected async override Task RecoverFromJsonInternal()
     {
-        _galgameFolder = (App.GetService<IDataCollectionService<GalgameFolder>>() as GalgameFolderCollectionService)?.
-            GetGalgameFolderFromPath(GalgameFolderPath);
+        _galgameFolderSource = (App.GetService<IDataCollectionService<GalgameSourceBase>>() as GalgameSourceCollectionService)?.
+            GetGalgameSourceFromUrl(GalgameFolderUrl) as GalgameFolderSource;
         try
         {
             _pack = await StorageFile.GetFileFromPathAsync(PackPath);
@@ -48,16 +49,16 @@ public class UnpackGameTask : BgTaskBase
 
     public override Task Run()
     {
-        if(_galgameFolder is null || _pack is null || GameName == string.Empty) return Task.CompletedTask;
+        if(_galgameFolderSource is null || _pack is null || GameName == string.Empty) return Task.CompletedTask;
 
         Init();
-        var outputDirectory = _galgameFolder.Path; // 解压路径
+        var outputDirectory = _galgameFolderSource.Path; // 解压路径
         var saveDirectory = Path.Combine(outputDirectory, GameName); // 游戏保存路径
         return Task.Run((async Task() =>
         {
             try
             {
-                _galgameFolder.IsUnpacking = true;
+                _galgameFolderSource.IsUnpacking = true;
                 ChangeProgress(0, 1, "GalgameFolder_UnpackGame_Start".GetLocalized());
 
                 var folderName = string.Empty;
@@ -98,7 +99,7 @@ public class UnpackGameTask : BgTaskBase
                     await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!
                         .TryAddGalgameAsync(saveDirectory, true);
                 });
-                _galgameFolder.IsUnpacking = false;
+                _galgameFolderSource.IsUnpacking = false;
                 ChangeProgress(1, 1, string.Empty);
 
                 if (StartFromBg && await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.NotifyWhenUnpackGame)
@@ -110,15 +111,15 @@ public class UnpackGameTask : BgTaskBase
             }
             catch (Exception) //密码错误或压缩包损坏
             {
-                _galgameFolder.IsUnpacking = false;
+                _galgameFolderSource.IsUnpacking = false;
                 ChangeProgress(-1, 1, string.Empty);
-                if (saveDirectory != string.Empty && saveDirectory != _galgameFolder.Path)
+                if (saveDirectory != string.Empty && saveDirectory != _galgameFolderSource.Path)
                     Directory.Delete(saveDirectory, true); // 删除解压失败的文件夹
             }
         })!);
     }
 
-    public override bool OnSearch(string key) => GalgameFolderPath == key;
+    public override bool OnSearch(string key) => GalgameFolderUrl == key;
 
     public override string Title { get; } = "UnpackGameTask_Title".GetLocalized();
 
