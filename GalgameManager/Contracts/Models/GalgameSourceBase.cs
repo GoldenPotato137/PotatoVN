@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
 using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
@@ -82,9 +83,14 @@ public class GalgameSourceBase
     /// </summary>
     public virtual string GetLogPath() => StdPath.Combine("Logs", GetLogName());
     
-    public virtual string GetLogName() => $"GalgameSource_{Url.ToBase64()}.txt";
+    public virtual string GetLogName() => $"Galgame_{Url.ToBase64().Replace("/", "").Replace("=", "")}.txt";
 
-    public virtual BgTaskBase GetGalgameInSourceTask() => throw new NotImplementedException();
+    public async virtual IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
+    {
+        yield break;
+        throw new NotImplementedException();
+    }
+
 }
 
 public enum SourceType

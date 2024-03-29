@@ -26,10 +26,21 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         set;
     } = "";
     
-    public virtual SourceType GalgameSourceType { get; set; }=SourceType.UnKnown;
+    public SourceType GalgameSourceType { get; set; }=SourceType.UnKnown;
     
-    public string Url => $"{GalgameSourceType.SourceTypeToString()}://{Path}";
-    
+    public string Url
+    {
+        get
+        {
+            if (GalgameSourceType == SourceType.Virtual)
+            {
+                return $"{GalgameSourceType.SourceTypeToString()}://{Name}";
+            }
+
+            return $"{GalgameSourceType.SourceTypeToString()}://{Path}";
+        }
+    }
+
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 
     [JsonIgnore] public string? ImageUrl;
@@ -42,7 +53,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
-    [ObservableProperty] private LockableProperty<DateTime> _releaseDate;
+    [ObservableProperty] private LockableProperty<DateTime> _releaseDate = DateTime.MinValue;
     [ObservableProperty] private ObservableCollection<GalgameCharacter> _characters = new();
     [JsonIgnore][ObservableProperty] private string _savePosition = string.Empty;
     [ObservableProperty] private string? _exePath;
@@ -124,23 +135,22 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     {
         _tags.Value = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
-        _releaseDate = DateTime.MinValue;
     }
 
-    public Galgame(SourceType sourceType, string path)
+    public Galgame(SourceType sourceType, string name, string path)
     {
         GalgameSourceType = sourceType;
-        //TODO
-        Name = SystemPath.GetFileName(SystemPath.GetDirectoryName(path + SystemPath.DirectorySeparatorChar)) ?? "";
-        _tags.Value = new ObservableCollection<string>();
-        _releaseDate = DateTime.MinValue;
+        Name = name;
         Path = path;
+        _tags.Value = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
 
     public Galgame(string name)
     {
         Name = name;
+        _tags.Value = new ObservableCollection<string>();
+        _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
     
     /// <summary>
@@ -345,6 +355,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// <returns>恢复过后的信息</returns>
     public static Galgame ResolveMeta(Galgame meta,string metaFolderPath)
     {
+        if(!meta.CheckExistLocal())return meta;
         meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)
@@ -388,6 +399,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// </summary>
     public void FindSaveInPath()
     {
+        if (!CheckExistLocal()) return;
         try
         {
             var cnt = 0;
@@ -407,7 +419,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         }
     }
     
-    public string GetLogName() => $"Galgame_{Path.ToBase64().Replace("/", "").Replace("=", "")}.txt";
+    public string GetLogName() => $"Galgame_{Url.ToBase64().Replace("/", "").Replace("=", "")}.txt";
 }
 
 

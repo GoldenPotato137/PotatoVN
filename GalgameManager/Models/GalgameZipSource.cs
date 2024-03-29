@@ -24,5 +24,4 @@ public class GalgameZipSource : GalgameSourceBase
         return path[..path.LastIndexOf('\\')] == Path ;
     }
 
-    public override BgTaskBase GetGalgameInSourceTask() => new GetGalgameInLocalZipTask(this);
 }

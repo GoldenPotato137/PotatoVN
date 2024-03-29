@@ -92,8 +92,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         foreach (Galgame g in _galgames)
         {
             if (g.CheckExistLocal() == false)
+            {
                 g.Path = string.Empty;
-            _galgameMap[g.Path] = g;
+                g.GalgameSourceType = SourceType.Virtual;
+            }
+            _galgameMap[g.Url] = g;
             g.ErrorOccurred += e =>
                 _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
         }
@@ -137,7 +140,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         _galgames.Remove(galgame);
         if(galgame.CheckExistLocal())
-            _galgameMap.Remove(galgame.Path);
+            _galgameMap.Remove(galgame.Url);
         UpdateDisplay(UpdateType.Remove, galgame);
         if (removeFromDisk)
             galgame.Delete();
@@ -145,21 +148,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await SaveGalgamesAsync();
     }
 
-    /// <summary>
-    /// 试图添加一个galgame，若已存在则不添加
-    /// </summary>
-    /// <param name="path">galgame路径</param>
-    /// <param name="isForce">是否强制添加（若RSS源中找不到相关游戏信息）</param>
-    /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
-    public async Task<AddGalgameResult> TryAddGalgameAsync(SourceType sourceType, string path , bool isForce = false, Galgame? virtualGame = null)
+    public async Task<Galgame?> TryRecoverGalgameFromLocalPath(string path)
     {
-        //TODO
-        if (_galgames.Any(gal => gal.Path == path && gal.GalgameSourceType == sourceType))
-            return AddGalgameResult.AlreadyExists;
-
-        Galgame galgame = new(sourceType, path);
+        Galgame? galgame = null;
         var metaFolder = Path.Combine(path, Galgame.MetaPath);
-        if (Path.Exists(Path.Combine(metaFolder, "meta.json"))) // 有元数据备份
+        if (Path.Exists(Path.Combine(metaFolder, "meta.json")))
         {
             try
             {
@@ -172,7 +165,36 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             }
             PhrasedEvent?.Invoke();
         }
-        else if (virtualGame is null)
+        return galgame;
+    }
+    
+    public Galgame? GetVirtualGame(Galgame galgame)=>_galgames.FirstOrDefault(g =>
+        string.IsNullOrEmpty(g.Ids[(int)RssType.Bangumi]) == false
+        && g.Ids[(int)RssType.Bangumi] == galgame.Ids[(int)RssType.Bangumi]
+        && g.CheckExistLocal() == false);
+
+    /// <summary>
+    /// 试图添加一个galgame，若已存在则不添加
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="path">galgame路径</param>
+    /// <param name="galgame"></param>
+    /// <param name="isForce">是否强制添加（若RSS源中找不到相关游戏信息）</param>
+    /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
+    public async Task<AddGalgameResult> TryAddGalgameAsync(Galgame galgame , bool isForce = false, Galgame? virtualGame = null)
+    {
+        //TODO
+        if (_galgames.Any(gal => gal.Path == galgame.Path && gal.GalgameSourceType == galgame.GalgameSourceType))
+            return AddGalgameResult.AlreadyExists;
+        
+        // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
+        virtualGame ??= GetVirtualGame(galgame);
+        if (virtualGame is not null)
+        {
+            virtualGame.Path = galgame.Path;
+            galgame = virtualGame;
+        }
+        if (virtualGame is null)
         {
             var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
             var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
@@ -184,22 +206,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             if (!isForce && galgame.RssType == RssType.None)
                 return AddGalgameResult.NotFoundInRss;
         }
-
-        // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
-        virtualGame ??= _galgames.FirstOrDefault(g =>
-            string.IsNullOrEmpty(g.Ids[(int)RssType.Bangumi]) == false
-            && g.Ids[(int)RssType.Bangumi] == galgame.Ids[(int)RssType.Bangumi]
-            && g.CheckExistLocal() == false);
-        if (virtualGame is not null)
-        {
-            virtualGame.Path = galgame.Path;
-            galgame = virtualGame;
-        }
         
         galgame.FindSaveInPath();
         if(virtualGame is null)
             _galgames.Add(galgame);
-        _galgameMap[galgame.Path] = galgame;
+        _galgameMap[galgame.Url] = galgame;
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
         UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
@@ -486,7 +497,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="galgame"></param>
     private async Task SaveMetaAsync(Galgame galgame)
     {
-        if(string.IsNullOrEmpty(galgame.Path)) return;
+        if(!galgame.CheckExistLocal()) return;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
         _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy());
         var imagePath = Path.Combine(galgame.Path, Galgame.MetaPath);
@@ -526,6 +537,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <returns>可执行文件地址，如果用户取消或找不到可执行文件则返回null</returns>
     public async Task<string?> GetGalgameExeAsync(Galgame galgame)
     {
+        if (!galgame.CheckExistLocal()) return null;
         List<string> exes = galgame.GetExesAndBats();
         switch (exes.Count)
         {

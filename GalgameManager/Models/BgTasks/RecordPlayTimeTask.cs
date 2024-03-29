@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Helpers;
@@ -25,6 +26,7 @@ public class RecordPlayTimeTask : BgTaskBase
 
     public RecordPlayTimeTask(Galgame game, Process process)
     {
+        Debug.Assert(game.CheckExistLocal());
         if (process.HasExited) return;
         ProcessName = process.ProcessName;
         GalgamePath = game.Path;

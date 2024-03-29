@@ -317,7 +317,9 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
                     _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
                     return;
                 }
-                await _galgameService.TryAddGalgameAsync(SourceType.LocalFolder, folder, virtualGame: Item);
+                await _galgameService.TryAddGalgameAsync(
+                    new Galgame(SourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder)
+                        , folder), virtualGame: Item);
                 Item!.ExePath = file.Path;
                 IsLocalGame = Item!.CheckExistLocal();
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());

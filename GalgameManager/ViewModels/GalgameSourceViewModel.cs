@@ -88,21 +88,14 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         Item = (_dataCollectionService as GalgameSourceCollectionService)!.GetGalgameSourceFromUrl(url);
         if (Item == null) return;
         
-        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Url);
+        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInSourceTask>(Item.Url);
         if (_getGalTask != null)
         {
             _getGalTask.OnProgress += UpdateNotifyGetGal;
             UpdateNotifyGetGal(_getGalTask.CurrentProgress);
         }
         
-        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInLocalZipTask>(Item.Url);
-        if (_getGalTask != null)
-        {
-            _getGalTask.OnProgress += UpdateNotifyGetGal;
-            UpdateNotifyGetGal(_getGalTask.CurrentProgress);
-        }
-        
-        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInFolderTask>(Item.Url);
+        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInSourceTask>(Item.Url);
         if (_getGalTask != null)
         {
             _getGalTask.OnProgress += UpdateNotifyGetGal;
@@ -205,7 +198,8 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         //TODO
         try
         {
-            var result = await _galgameService.TryAddGalgameAsync(_item!.GalgameSourceType, folder, true);
+            var result = await _galgameService.TryAddGalgameAsync(
+                new Galgame(SourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder), folder), true);
             if (result == AddGalgameResult.Success)
                 await ShowSuccessInfoBar();
             else if (result == AddGalgameResult.AlreadyExists)
@@ -267,7 +261,8 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     private void GetGalInFolder()
     {
         if (_item == null) return;
-        _getGalTask = _item.GetGalgameInSourceTask();
+        //TODO
+        _getGalTask = new GetGalgameInSourceTask(_item);
         _getGalTask.OnProgress += UpdateNotifyGetGal;
         _ = _bgTaskService.AddBgTask(_getGalTask);
     }

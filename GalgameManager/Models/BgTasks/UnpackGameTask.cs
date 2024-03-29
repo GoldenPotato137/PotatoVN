@@ -7,6 +7,8 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
 using SevenZip;
+using SystemPath = System.IO.Path;
+
 
 namespace GalgameManager.Models.BgTasks;
 
@@ -97,7 +99,11 @@ public class UnpackGameTask : BgTaskBase
                 await UiThreadInvokeHelper.InvokeAsync(async Task () =>
                 {
                     await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!
-                        .TryAddGalgameAsync(SourceType.LocalFolder, saveDirectory, true);
+                        .TryAddGalgameAsync(new 
+                            Galgame(SourceType.LocalFolder, 
+                                GalgameFolderSource.GetGalgameName(saveDirectory), 
+                                saveDirectory
+                            ), true);
                 });
                 _galgameFolderSource.IsUnpacking = false;
                 ChangeProgress(1, 1, string.Empty);

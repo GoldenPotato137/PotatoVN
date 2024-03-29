@@ -306,7 +306,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         string msg;
         try
         {
-            result = await _galgameService.TryAddGalgameAsync(SourceType.LocalFolder, path, true);
+            result = await _galgameService.TryAddGalgameAsync(
+                new Galgame(SourceType.LocalFolder, GalgameFolderSource.GetGalgameName(path), path), true);
             msg = result.ToMsg();
         }
         catch (Exception e)

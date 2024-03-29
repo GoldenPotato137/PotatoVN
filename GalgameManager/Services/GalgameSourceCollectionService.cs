@@ -55,13 +55,14 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     {
         foreach (GalgameSourceBase source in _galgameSources.Where(f => f.ScanOnStart))
         {
-            _bgTaskService.AddBgTask(source.GetGalgameInSourceTask());
+            _bgTaskService.AddBgTask(new GetGalgameInSourceTask(source));
         }
         return Task.CompletedTask;
     }
 
     private async void OnGalgameAdded(Galgame galgame)
     {
+        //TODO
         if (galgame.CheckExistLocal() == false) return;
         try
         {
@@ -98,7 +99,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         switch (sourceType)
         {
             case SourceType.UnKnown:
-                throw new NotImplementedException();
+                throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
             case SourceType.LocalFolder:
                 galgameSource = new GalgameFolderSource(path, _galgameService);
                 break;
@@ -108,12 +109,13 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
             default:
                 throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
         }
-        if (galgameSource is null) throw new NotImplementedException();
+        if (galgameSource is null) throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
         _galgameSources.Add(galgameSource);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameSources, true);
         if (tryGetGalgame)
         {
-            await _bgTaskService.AddBgTask(galgameSource.GetGalgameInSourceTask());
+            //TODO
+            await _bgTaskService.AddBgTask(new GetGalgameInSourceTask(galgameSource));
         }
     }
 
@@ -156,8 +158,9 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     /// </summary>
     public void ScanAll()
     {
+        //TODO
         foreach(GalgameSourceBase b in _galgameSources)
-            _bgTaskService.AddBgTask(b.GetGalgameInSourceTask());
+            _bgTaskService.AddBgTask(new GetGalgameInSourceTask(b));
     }
 }
 
