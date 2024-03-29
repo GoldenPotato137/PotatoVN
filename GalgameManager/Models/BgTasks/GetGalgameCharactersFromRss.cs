@@ -69,7 +69,7 @@ public class GetGalgameCharactersFromRss : BgTaskBase
         })!);
     }
 
-    public override bool OnSearch(string key) => _galgame?.Path.Contains(key) ?? false;
+    public override bool OnSearch(string key) => _galgame?.Url.Contains(key) ?? false;
     
     public override string Title { get; } = "GetCharacterInfoTask_Title".GetLocalized();
 }

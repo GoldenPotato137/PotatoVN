@@ -95,13 +95,6 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
             UpdateNotifyGetGal(_getGalTask.CurrentProgress);
         }
         
-        _getGalTask = _bgTaskService.GetBgTask<GetGalgameInSourceTask>(Item.Url);
-        if (_getGalTask != null)
-        {
-            _getGalTask.OnProgress += UpdateNotifyGetGal;
-            UpdateNotifyGetGal(_getGalTask.CurrentProgress);
-        }
-        
         _unpackGameTask = _bgTaskService.GetBgTask<UnpackGameTask>(Item.Url);
         if (_unpackGameTask != null)
         {

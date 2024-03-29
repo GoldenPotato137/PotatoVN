@@ -46,9 +46,11 @@ public class GalgameZipSource : GalgameSourceBase
                 if (m.Success)
                 {
                     yield return (new 
-                        Galgame(GalgameSourceType, m.Groups["name"].Value, f), "");
+                        Galgame(GalgameSourceType, m.Groups["name"].Value, f), $"successfully add {f}");
                 }
-                
+
+                yield return (null, $"{f} is not zip");
+
             }
             if (currentDepth == maxDepth) continue;
             foreach (var subPath in Directory.GetDirectories(currentPath))

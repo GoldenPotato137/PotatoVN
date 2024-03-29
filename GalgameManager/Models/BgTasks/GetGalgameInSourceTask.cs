@@ -51,7 +51,7 @@ public class GetGalgameInSourceTask : BgTaskBase
                     log += l;
                     continue;
                 }
-                ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Progress".GetLocalized(galgame.Path));
+                ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Progress".GetLocalized(galgame.Url));
                 AddGalgameResult result = AddGalgameResult.Other;
                 await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                 {

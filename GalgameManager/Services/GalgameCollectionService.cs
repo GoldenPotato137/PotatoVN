@@ -91,7 +91,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
         foreach (Galgame g in _galgames)
         {
-            if (g.CheckExistLocal() == false)
+            if (g.GalgameSourceType == SourceType.LocalFolder && g.CheckExistLocal() == false)
             {
                 g.Path = string.Empty;
                 g.GalgameSourceType = SourceType.Virtual;
@@ -183,7 +183,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
     public async Task<AddGalgameResult> TryAddGalgameAsync(Galgame galgame , bool isForce = false, Galgame? virtualGame = null)
     {
-        //TODO
         if (_galgames.Any(gal => gal.Path == galgame.Path && gal.GalgameSourceType == galgame.GalgameSourceType))
             return AddGalgameResult.AlreadyExists;
         
@@ -192,6 +191,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (virtualGame is not null)
         {
             virtualGame.Path = galgame.Path;
+            virtualGame.GalgameSourceType = SourceType.LocalFolder;
             galgame = virtualGame;
         }
         if (virtualGame is null)

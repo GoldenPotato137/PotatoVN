@@ -62,8 +62,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
 
     private async void OnGalgameAdded(Galgame galgame)
     {
-        //TODO
-        if (galgame.CheckExistLocal() == false) return;
+        if (!galgame.CheckExistLocal()) return;
         try
         {
             await AddGalgameFolderAsync(SourceType.LocalFolder, galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
@@ -114,7 +113,6 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameSources, true);
         if (tryGetGalgame)
         {
-            //TODO
             await _bgTaskService.AddBgTask(new GetGalgameInSourceTask(galgameSource));
         }
     }
@@ -158,7 +156,6 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     /// </summary>
     public void ScanAll()
     {
-        //TODO
         foreach(GalgameSourceBase b in _galgameSources)
             _bgTaskService.AddBgTask(new GetGalgameInSourceTask(b));
     }
