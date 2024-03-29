@@ -312,14 +312,11 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             if (file is not null)
             {
                 var folder = file.Path[..file.Path.LastIndexOf('\\')];
-                if (_galgameService.GetGalgameFromPath(folder) is not null)
-                {
-                    _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
-                    return;
-                }
-                await _galgameService.TryAddGalgameAsync(
+                AddGalgameResult result =  await _galgameService.TryAddGalgameAsync(
                     new Galgame(SourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder)
                         , folder), virtualGame: Item);
+                if (result == AddGalgameResult.AlreadyExists) 
+                    _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
                 Item!.ExePath = file.Path;
                 IsLocalGame = Item!.CheckExistLocal();
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());

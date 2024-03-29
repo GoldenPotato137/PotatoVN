@@ -79,10 +79,8 @@ public class CategoryService : ICategoryService
                 foreach (Category c in group.Categories.OfType<Category>())
                     c.Galgames.ForEach(str =>
                     {
-                        if (_galgameService.GetGalgameFromPath(str) is { } tmp)
+                        if (_galgameService.GetGalgameFromUrl(str) is { } tmp)
                             c.Add(tmp);
-                        else if(_galgameService.GetGalgameFromName(str) is { } tmp2)
-                            c.Add(tmp2);
                     });
             }
         });

@@ -17,7 +17,7 @@ public class RecordPlayTimeTask : BgTaskBase
     [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     
     public string ProcessName = string.Empty;
-    public string GalgamePath = string.Empty;
+    public string GalgameUrl = string.Empty;
     public DateTime StartTime = DateTime.Now;
     private Galgame? _galgame;
     private Process? _process;
@@ -29,7 +29,7 @@ public class RecordPlayTimeTask : BgTaskBase
         Debug.Assert(game.CheckExistLocal());
         if (process.HasExited) return;
         ProcessName = process.ProcessName;
-        GalgamePath = game.Path;
+        GalgameUrl = game.Url;
         _galgame = game;
         _process = process;
     }
@@ -38,7 +38,7 @@ public class RecordPlayTimeTask : BgTaskBase
     {
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         _galgame = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)?.
-            GetGalgameFromPath(GalgamePath);
+            GetGalgameFromUrl(GalgameUrl);
         return Task.CompletedTask;
     }
 

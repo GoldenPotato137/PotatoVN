@@ -20,7 +20,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 {
     // _galgames 无序, _displayGalgames有序
     private List<Galgame> _galgames = new();
-    private readonly Dictionary<string, Galgame> _galgameMap = new(); // 路径->Galgame
+    private readonly Dictionary<string, Galgame> _galgameMap = new(); // Url->Galgame
     private ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
@@ -443,14 +443,14 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     }
 
     /// <summary>
-    /// 从路径获取galgame
+    /// 从Url获取galgame
     /// </summary>
     /// <param name="path">路径</param>
     /// <returns>galgame,若找不到则返回null</returns>
-    public Galgame? GetGalgameFromPath(string path)
+    public Galgame? GetGalgameFromUrl(string url)
     {
-        if (string.IsNullOrEmpty(path)) return null;
-        return _galgameMap.TryGetValue(path, out Galgame? result) ? result : null;
+        if (string.IsNullOrEmpty(url)) return null;
+        return _galgameMap.TryGetValue(url, out Galgame? result) ? result : null;
     }
 
     /// <summary>
