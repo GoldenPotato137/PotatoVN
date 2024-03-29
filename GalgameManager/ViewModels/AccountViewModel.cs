@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
+using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
@@ -51,12 +52,40 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
         switch (key)
         {
             case KeyValues.PvnAccount:
+            case KeyValues.BangumiAccount:
                 await UpdateAccountDisplay();
                 break;
             case KeyValues.SyncGames:
                 PvnSyncGames = value as bool? ?? false;
                 break;
         }
+    }
+    
+    private async Task UpdateAccountDisplay()
+    {
+        PvnAccount? account = await _localSettingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount);
+        BgmAccount? bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            PvnAvatar = account?.Avatar;
+            PvnLoginButtonText = account is null ? "Login".GetLocalized() : "Logout".GetLocalized();
+            PvnLoginDescription = account is null
+                ? "AccountPage_Pvn_AccountStatus_Unlogin".GetLocalized()
+                : "AccountPage_Pvn_AccountStatus_Login".GetLocalized(account.Id, account.LoginMethod.GetLocalized());
+            PvnLoginButtonCommand = account is null ? new RelayCommand(PvnLogin) : new RelayCommand(PvnLogout);
+            PvnDisplayName = account?.UserDisplayName ?? "BgmAccount_NoName".GetLocalized();
+            PvnStateMsg = "AccountPage_Pvn_ConnectTo".GetLocalized(_pvnService.BaseUri.ToString());
+            UsedSpace = $"{((double)(account?.UsedSpace ?? 0) / 1024 / 1024)
+                .ToString("F1", CultureInfo.InvariantCulture)} MB";
+            TotalSpace = $"{((double)(account?.TotalSpace ?? 0) / 1024 / 1024)
+                .ToString("F1", CultureInfo.InvariantCulture)} MB";
+            UsedPercentValue = (double)(account?.UsedSpace ?? 0) / (account?.TotalSpace ?? 1) * 100;
+            UsedPercent = "AccountPage_Pvn_SpaceUsedPercent".GetLocalized(UsedPercentValue
+                .ToString("F1", CultureInfo.InvariantCulture));
+            IsPvnLogin = account is not null;
+            
+            BgmAccount = bgmAccount;
+        });
     }
 
     #region POTATOVN_ACCOUNT
@@ -96,30 +125,6 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
             return false;
         await _localSettingsService.SaveSettingAsync(KeyValues.PvnServerEndpoint, dialog.ServerUrl);
         return true;
-    }
-
-    private async Task UpdateAccountDisplay()
-    {
-        PvnAccount? account = await _localSettingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount);
-        await UiThreadInvokeHelper.InvokeAsync(() =>
-        {
-            PvnAvatar = account?.Avatar;
-            PvnLoginButtonText = account is null ? "Login".GetLocalized() : "Logout".GetLocalized();
-            PvnLoginDescription = account is null
-                ? "AccountPage_Pvn_AccountStatus_Unlogin".GetLocalized()
-                : "AccountPage_Pvn_AccountStatus_Login".GetLocalized(account.Id, account.LoginMethod.GetLocalized());
-            PvnLoginButtonCommand = account is null ? new RelayCommand(PvnLogin) : new RelayCommand(PvnLogout);
-            PvnDisplayName = account?.UserDisplayName ?? "BgmAccount_NoName".GetLocalized();
-            PvnStateMsg = "AccountPage_Pvn_ConnectTo".GetLocalized(_pvnService.BaseUri.ToString());
-            UsedSpace = $"{((double)(account?.UsedSpace ?? 0) / 1024 / 1024)
-                .ToString("F1", CultureInfo.InvariantCulture)} MB";
-            TotalSpace = $"{((double)(account?.TotalSpace ?? 0) / 1024 / 1024)
-                .ToString("F1", CultureInfo.InvariantCulture)} MB";
-            UsedPercentValue = (double)(account?.UsedSpace ?? 0) / (account?.TotalSpace ?? 1) * 100;
-            UsedPercent = "AccountPage_Pvn_SpaceUsedPercent".GetLocalized(UsedPercentValue
-                .ToString("F1", CultureInfo.InvariantCulture));
-            IsPvnLogin = account is not null;
-        });
     }
     
     private void HandelPvnServiceStatusChanged(PvnServiceStatus status)
@@ -166,7 +171,7 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
     private async void PvnLogout()
     {
         await _pvnService.LogOutAsync();
-        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_Pvn_Logout".GetLocalized());
+        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_LogoutSuccess".GetLocalized());
     }
 
     [RelayCommand]
@@ -198,20 +203,72 @@ public partial class AccountViewModel : ObservableRecipient, INavigationAware
 
     #region BANUGMI_ACCOUNT
 
-    private void BgmAuthResultNotify(OAuthResult result, string msg)
+    public string BgmName => _bgmAccount?.Name ?? "AccountPage_Bgm_NoName".GetLocalized();
+    public string? BgmAvatar => _bgmAccount?.Avatar;
+    public string BgmDescription => _bgmAccount is null
+        ? "AccountPage_Bgm_NoLogin".GetLocalized()
+        : "AccountPage_Bgm_LoginedDescription".GetLocalized(_bgmAccount.UserId, _bgmAccount.Expires.ToStringDefault(),
+            _bgmAccount.NextRefresh.ToStringDefault());
+    public string BgmLoginBtnText => _bgmAccount is null ? "Login".GetLocalized() : "Logout".GetLocalized();
+    public ICommand BgmLoginBtnCommand => _bgmAccount is null ? new RelayCommand(BgmLogin) : new RelayCommand(BgmLogout);
+    public bool IsBgmLogin => _bgmAccount is not null;
+    
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BgmName))]
+    [NotifyPropertyChangedFor(nameof(BgmAvatar))]
+    [NotifyPropertyChangedFor(nameof(BgmDescription))]
+    [NotifyPropertyChangedFor(nameof(BgmLoginBtnText))]
+    [NotifyPropertyChangedFor(nameof(BgmLoginBtnCommand))]
+    [NotifyPropertyChangedFor(nameof(IsBgmLogin))]
+    private BgmAccount? _bgmAccount;
+
+    private void BgmAuthResultNotify(BgmOAuthStatus result)
     {
         switch (result)
         {
-            case OAuthResult.Done:
-            case OAuthResult.Failed:
-                _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
+            case BgmOAuthStatus.Failed:
+                _infoService.Info(InfoBarSeverity.Error); //失败走事件通知，关闭消息栏 
                 break;
-            case OAuthResult.FetchingAccount: 
-            case OAuthResult.FetchingToken:
+            case BgmOAuthStatus.Done:
+                _infoService.Info(InfoBarSeverity.Success, msg: result.GetLocalized());
+                break;
             default:
-                _infoService.Info(result.ToInfoBarSeverity(), msg: msg, displayTimeMs: 1000 * 60);
+                _infoService.Info(InfoBarSeverity.Informational, msg: result.GetLocalized(), displayTimeMs: 1000 * 60);
                 break;
         }
+    }
+
+    private async void BgmLogin()
+    {
+        SelectAuthModeDialog selectAuthModeDialog = new();
+        ContentDialogResult result = await selectAuthModeDialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+        switch (selectAuthModeDialog.SelectItem)
+        {
+            case 0:
+                await _bgmService.StartOAuthAsync();
+                break;
+            case 1:
+                if (!string.IsNullOrEmpty(selectAuthModeDialog.AccessToken)) 
+                    await _bgmService.AuthWithAccessToken(selectAuthModeDialog.AccessToken);
+                break;
+        }
+    }
+
+    private async void BgmLogout()
+    {
+        await _bgmService.LogoutAsync();
+        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_LogoutSuccess".GetLocalized());
+    }
+
+    [RelayCommand]
+    private async void BgmRefreshToken()
+    {
+        _infoService.Info(InfoBarSeverity.Informational, msg: "AccountPage_Bgm_Refreshing".GetLocalized(),
+            displayTimeMs: 1000 * 60);
+        var result = await _bgmService.RefreshAccountAsync();
+        if (result == false)
+            _infoService.Info(InfoBarSeverity.Error); //失败走事件通知，关闭消息栏
     }
     
     #endregion

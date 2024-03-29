@@ -28,7 +28,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly IUpdateService _updateService;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ICategoryService _categoryService;
-    private readonly IBgmOAuthService _bgmOAuthService;
     private string _versionDescription;
 
     #region UI_STRINGS //历史遗留，不要继续使用这种方式获取字符串
@@ -79,26 +78,22 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     {
         await _updateService.UpdateSettingsBadgeAsync();
         UpdateAvailable = await _updateService.CheckUpdateAsync();
-        await LoadBgmAccountAsync(await _bgmOAuthService.GetBgmAccountWithCache());
     }
 
     public void OnNavigatedFrom()
     {
         _updateService.SettingBadgeEvent -= HandelSettingBadgeEvent;
-        _bgmOAuthService.OnAuthResultChange -= BgmAuthResultNotify;
         _galgameCollectionService.MetaSavedEvent -= SetSaveMetaPopUp;
-        _localSettingsService.OnSettingChanged -= OnSettingChange;
     }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
-        ICategoryService categoryService, IBgmOAuthService bgmOAuthService)
+        ICategoryService categoryService)
     {
         _categoryService = categoryService;
         _themeSelectorService = themeSelectorService;
         _navigationService = navigationService;
         _updateService = updateService;
-        _bgmOAuthService = bgmOAuthService;
         updateService.SettingBadgeEvent += HandelSettingBadgeEvent;
         _versionDescription = GetVersionDescription();
         _localSettingsService = localSettingsService;
@@ -106,8 +101,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         //THEME
         _elementTheme = themeSelectorService.Theme;
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
-        //OAUTH
-        _bgmOAuthService.OnAuthResultChange += BgmAuthResultNotify;
         //GAME
         _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
         _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
@@ -154,7 +147,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
             ? new[] { AuthenticationType.NoAuthentication, AuthenticationType.CustomPassword }
             : new[] { AuthenticationType.NoAuthentication, AuthenticationType.WindowsHello, AuthenticationType.CustomPassword };
-        _localSettingsService.OnSettingChanged += OnSettingChange;
     }
 
     #region INFOBAR_CONTROL
@@ -224,79 +216,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty] private bool _fixHorizontalPicture;
     partial void OnFixHorizontalPictureChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.FixHorizontalPicture, value);
-
-    #endregion
-
-    #region OAUTH
-    
-    [ObservableProperty] private string _bgmStateString = string.Empty;
-    [ObservableProperty] private string _bgmAvatar = string.Empty;
-    [ObservableProperty] private string _bgmUserName = string.Empty;
-    [ObservableProperty] private string _bgmButtonText = string.Empty;
-    private BgmAccount _bgmAccount = new();
-    
-    [RelayCommand]
-    private async Task ChangeBgmState()
-    {
-        if (_bgmAccount.OAuthed)
-            await _bgmOAuthService.QuitLoginBgm();
-        else
-        {
-            SelectAuthModeDialog selectAuthModeDialog = new();
-
-            ContentDialogResult result = await selectAuthModeDialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                switch (selectAuthModeDialog.SelectItem)
-                {
-                    case 0:
-                        await _bgmOAuthService.StartOAuth();
-                        break;
-                    case 1:
-                        if (!string.IsNullOrEmpty(selectAuthModeDialog.AccessToken))
-                        {
-                            await _bgmOAuthService.AuthWithAccessToken(selectAuthModeDialog.AccessToken);
-                        }
-                        break;
-                }
-            }
-        }
-    }
-
-    private async void OnSettingChange(string key, object? value)
-    {
-        switch (key)
-        {
-            case KeyValues.BangumiOAuthState:
-                await LoadBgmAccountAsync((value as BgmAccount)!); 
-                break;
-        }
-    }
-
-    private async Task LoadBgmAccountAsync(BgmAccount account)
-    {
-        _bgmAccount = account;
-        BgmAvatar = account.Avatar;
-        BgmUserName = account.Name;
-        BgmStateString = await _bgmOAuthService.GetOAuthStateString();
-        BgmButtonText = account.OAuthed ? "Logout".GetLocalized() : "Login".GetLocalized();
-    }
-    
-    private async void BgmAuthResultNotify(OAuthResult result, string msg)
-    {
-        switch (result)
-        {
-            case OAuthResult.Done:
-            case OAuthResult.Failed:
-                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg);
-                break;
-            case OAuthResult.FetchingAccount: 
-            case OAuthResult.FetchingToken:
-            default:
-                await DisplayMsgAsync(result.ToInfoBarSeverity(), msg, 1000 * 60);
-                break;
-        }
-    }
 
     #endregion
 
