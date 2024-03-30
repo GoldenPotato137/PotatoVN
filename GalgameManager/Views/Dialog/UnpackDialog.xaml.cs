@@ -1,5 +1,6 @@
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Helpers;
 
@@ -27,6 +28,15 @@ public sealed partial class UnpackDialog
     public async new Task ShowAsync()
     {
         await GetPack();
+        if (StorageFile is null) return;
+        await base.ShowAsync();
+    }
+    
+    public async Task ShowAsync(StorageFile storageFile)
+    {
+        StorageFile = storageFile;
+        PackNameText.Text = StorageFile?.Name ?? string.Empty;
+        GameNameText.Text = StorageFile?.DisplayName ?? string.Empty;
         if (StorageFile is null) return;
         await base.ShowAsync();
     }

@@ -20,7 +20,7 @@ public class GalgameFolderSource : GalgameSourceBase
     [JsonIgnore] public bool IsUnpacking;
     public override SourceType GalgameSourceType => SourceType.LocalFolder;
 
-    public GalgameFolderSource(string path, IDataCollectionService<Galgame> service): base(path, service)
+    public GalgameFolderSource(string path): base(path)
     {
     }
 

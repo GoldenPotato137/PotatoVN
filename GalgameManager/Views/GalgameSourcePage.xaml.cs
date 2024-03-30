@@ -8,14 +8,14 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace GalgameManager.Views;
 
-public sealed partial class GalgameFolderPage : Page
+public sealed partial class GalgameSourcePage : Page
 {
     public GalgameSourceViewModel ViewModel
     {
         get;
     }
 
-    public GalgameFolderPage()
+    public GalgameSourcePage()
     {
         ViewModel = App.GetService<GalgameSourceViewModel>();
         InitializeComponent();

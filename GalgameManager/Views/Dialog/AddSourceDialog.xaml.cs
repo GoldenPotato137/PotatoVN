@@ -1,15 +1,8 @@
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using GalgameManager.Contracts.Models;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
-using GalgameManager.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace GalgameManager.Views.Dialog;
 
 public sealed partial class AddSourceDialog : ContentDialog
@@ -48,7 +41,7 @@ public sealed partial class AddSourceDialog : ContentDialog
     
     public AddSourceDialog()
     {
-        InitializeComponent();
+        this.InitializeComponent();
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         IsPrimaryButtonEnabled = false;
         DefaultButton = ContentDialogButton.Primary;

@@ -148,16 +148,15 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await SaveGalgamesAsync();
     }
 
-    public async Task<Galgame?> TryRecoverGalgameFromLocalPath(string path)
+    public Galgame TryRecoverGalgameFromLocalPath(Galgame galgame)
     {
-        Galgame? galgame = null;
-        var metaFolder = Path.Combine(path, Galgame.MetaPath);
+        if (galgame.GalgameSourceType != SourceType.LocalFolder) return galgame;
+        var metaFolder = Path.Combine(galgame.Path, Galgame.MetaPath);
         if (Path.Exists(Path.Combine(metaFolder, "meta.json")))
         {
             try
             {
-                galgame = _fileService.Read<Galgame>(metaFolder, "meta.json")!;
-                Galgame.ResolveMeta(galgame, metaFolder);
+                galgame = Galgame.ResolveMetaFromLocalFolder(galgame, metaFolder);
             }
             catch (Exception) // 文件不合法
             {
@@ -176,8 +175,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <summary>
     /// 试图添加一个galgame，若已存在则不添加
     /// </summary>
-    /// <param name="sourceType"></param>
-    /// <param name="path">galgame路径</param>
     /// <param name="galgame"></param>
     /// <param name="isForce">是否强制添加（若RSS源中找不到相关游戏信息）</param>
     /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
@@ -185,6 +182,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         if (_galgames.Any(gal => gal.Path == galgame.Path && gal.GalgameSourceType == galgame.GalgameSourceType))
             return AddGalgameResult.AlreadyExists;
+
+        galgame = TryRecoverGalgameFromLocalPath(galgame);
         
         // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
         virtualGame ??= GetVirtualGame(galgame);
@@ -193,8 +192,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             virtualGame.Path = galgame.Path;
             virtualGame.GalgameSourceType = SourceType.LocalFolder;
             galgame = virtualGame;
-        }
-        if (virtualGame is null)
+        } else if (virtualGame is null)
         {
             var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
             var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);

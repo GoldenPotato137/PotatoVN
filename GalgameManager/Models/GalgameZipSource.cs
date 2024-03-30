@@ -18,7 +18,7 @@ public class GalgameZipSource : GalgameSourceBase
     public static string FxRegex = @"(?<=\\)(?<name>[^\.\\]+)(?:(\.part1)?\.(zip|rar|7z))$";
     public override SourceType GalgameSourceType => SourceType.LocalZip;
 
-    public GalgameZipSource(string path, IDataCollectionService<Galgame> service): base(path, service)
+    public GalgameZipSource(string path): base(path)
     {
     }
 

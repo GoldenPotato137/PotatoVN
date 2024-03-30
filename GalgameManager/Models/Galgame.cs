@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Contracts.Models;
+using GalgameManager.Core.Contracts.Services;
+using GalgameManager.Core.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
@@ -353,9 +355,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// <param name="meta">待恢复的数据</param>
     /// <param name="metaFolderPath">meta文件夹路径</param>
     /// <returns>恢复过后的信息</returns>
-    public static Galgame ResolveMeta(Galgame meta,string metaFolderPath)
+    public static Galgame ResolveMetaFromLocalFolder(Galgame meta,string metaFolderPath)
     {
         if(!meta.CheckExistLocal())return meta;
+        meta = App.GetService<IFileService>().Read<Galgame>(metaFolderPath, "meta.json")!;
+        meta.GalgameSourceType = SourceType.LocalFolder;
         meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)

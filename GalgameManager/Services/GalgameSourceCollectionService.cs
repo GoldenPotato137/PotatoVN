@@ -100,17 +100,17 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
             case SourceType.UnKnown:
                 throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
             case SourceType.LocalFolder:
-                galgameSource = new GalgameFolderSource(path, _galgameService);
+                galgameSource = new GalgameFolderSource(path);
                 break;
             case SourceType.LocalZip:
-                galgameSource = new GalgameZipSource(path, _galgameService);
+                galgameSource = new GalgameZipSource(path);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
         }
         if (galgameSource is null) throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
         _galgameSources.Add(galgameSource);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameSources, true);
+        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameSources, _galgameSources, true);
         if (tryGetGalgame)
         {
             await _bgTaskService.AddBgTask(new GetGalgameInSourceTask(galgameSource));
@@ -140,7 +140,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         foreach (Galgame galgame in await galgameFolderSource.GetGalgameList())
             await _galgameService.RemoveGalgame(galgame, true);
         _galgameSources.Remove(galgameFolderSource);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameFolders, _galgameSources, true);
+        await _localSettingsService.SaveSettingAsync(KeyValues.GalgameSources, _galgameSources, true);
     }
     
     /// <summary>

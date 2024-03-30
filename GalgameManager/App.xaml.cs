@@ -119,7 +119,7 @@ public partial class App : Application
             services.AddTransient<LibraryViewModel>();
             services.AddTransient<LibraryPage>();
             services.AddTransient<GalgameSourceViewModel>();
-            services.AddTransient<GalgameFolderPage>();
+            services.AddTransient<GalgameSourcePage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
             services.AddTransient<UpdateContentViewModel>();

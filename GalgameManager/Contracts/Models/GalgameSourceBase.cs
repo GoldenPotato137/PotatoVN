@@ -19,18 +19,19 @@ public class GalgameSourceBase
     [JsonIgnore] private readonly List<Galgame> _galgames = new();
 
     public string Url => $"{GalgameSourceType.SourceTypeToString()}://{Path}";
-    public string Path { get; set; }
+    public string Path { get; set; } = "";
     public virtual SourceType GalgameSourceType => throw new NotImplementedException();
     public bool ScanOnStart { get; set; }
 
-    public GalgameSourceBase(string path, IDataCollectionService<Galgame> service)
+    public GalgameSourceBase(string path)
     {
         Path = path;
-        GalgameService = ((GalgameCollectionService?)service)!;
+        GalgameService = ((GalgameCollectionService?)App.GetService<IDataCollectionService<Galgame>>())!;
     }
 
     public GalgameSourceBase()
     {
+        GalgameService = ((GalgameCollectionService?)App.GetService<IDataCollectionService<Galgame>>())!;
     }
 
     public async virtual Task<ObservableCollection<Galgame>> GetGalgameList()
@@ -91,6 +92,7 @@ public class GalgameSourceBase
 
     public async virtual IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
     {
+        await Task.CompletedTask;
         yield break;
         throw new NotImplementedException();
     }
