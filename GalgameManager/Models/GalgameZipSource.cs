@@ -22,6 +22,11 @@ public class GalgameZipSource : GalgameSourceBase
     {
     }
 
+    public GalgameZipSource()
+    {
+        
+    }
+
     public override bool IsInSource(string path)
     {
         return path[..path.LastIndexOf('\\')] == Path ;

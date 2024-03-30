@@ -21,6 +21,8 @@ public class LocalSettingsService : ILocalSettingsService
     private readonly string _localsettingsFile;
     private readonly string _localsettingsBackupFile;
 
+    private readonly JsonSerializerSettings _serializerSettings;
+
     private IDictionary<string, object> _settings;
 
     private bool _isInitialized;
@@ -32,6 +34,9 @@ public class LocalSettingsService : ILocalSettingsService
     {
         _fileService = fileService;
         LocalSettingsOptions op = options.Value;
+
+        _serializerSettings = new JsonSerializerSettings();
+        _serializerSettings.Converters.Add(new GalgameSourceCustomConverter());
 
         _applicationDataFolder = ApplicationData.Current.LocalFolder.Path;
         _localsettingsFile = op.LocalSettingsFile ?? ErrorFileName;
@@ -69,7 +74,7 @@ public class LocalSettingsService : ILocalSettingsService
             var reset = false;
             try
             {
-                _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
+                _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile, _serializerSettings) ?? 
                             new Dictionary<string, object>();
             }
             catch

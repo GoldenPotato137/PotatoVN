@@ -16,7 +16,7 @@ public class GalgameSourceBase
     [JsonIgnore] public GalgameCollectionService GalgameService;
 
     [JsonIgnore] public bool IsRunning;
-    private readonly List<Galgame> _galgames = new();
+    [JsonIgnore] private readonly List<Galgame> _galgames = new();
 
     public string Url => $"{GalgameSourceType.SourceTypeToString()}://{Path}";
     public string Path { get; set; }
@@ -27,6 +27,10 @@ public class GalgameSourceBase
     {
         Path = path;
         GalgameService = ((GalgameCollectionService?)service)!;
+    }
+
+    public GalgameSourceBase()
+    {
     }
 
     public async virtual Task<ObservableCollection<Galgame>> GetGalgameList()

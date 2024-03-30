@@ -24,6 +24,11 @@ public class GalgameFolderSource : GalgameSourceBase
     {
     }
 
+    public GalgameFolderSource()
+    {
+        
+    }
+
     public override bool IsInSource(string path)
     {
         return path[..path.LastIndexOf('\\')] == Path ;
