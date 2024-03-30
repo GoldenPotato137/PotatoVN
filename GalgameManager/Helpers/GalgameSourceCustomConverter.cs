@@ -18,7 +18,7 @@ public class GalgameSourceCustomConverter:CustomCreationConverter<GalgameSourceB
     {
         if (reader.TokenType == JsonToken.Null) return null;
         JObject jObject = JObject.Load(reader);
-        GalgameSourceBase? target = new GalgameSourceBase();
+        GalgameSourceBase? target = new();
         JProperty? type = jObject.Property("GalgameSourceType");
         if (type != null && type.Count > 0)
         {
@@ -40,7 +40,7 @@ public class GalgameSourceCustomConverter:CustomCreationConverter<GalgameSourceB
                     throw new NotSupportedException();
             }
         }
-        serializer.Populate(reader, target);
+        serializer.Populate(jObject.CreateReader(), target);
         return target;
     }
 }
