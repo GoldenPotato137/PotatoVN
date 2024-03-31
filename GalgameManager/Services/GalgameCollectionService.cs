@@ -27,6 +27,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private readonly IFileService _fileService;
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
+    private readonly IBgTaskService _bgTaskService;
     private string _searchKey = string.Empty;
     public event Action<Galgame>? GalgameAddedEvent; //当有galgame添加时触发
     public event Action<Galgame>? GalgameDeletedEvent; //当有galgame删除时触发
@@ -42,7 +43,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     } = new IGalInfoPhraser[5];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
-        IFileService fileService, IFilterService filterService, IInfoService infoService)
+        IFileService fileService, IFilterService filterService, IInfoService infoService, IBgTaskService bgTaskService)
     {
         LocalSettingsService = localSettingsService;
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
@@ -51,6 +52,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _filterService = filterService;
         _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         _infoService = infoService;
+        _bgTaskService = bgTaskService;
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new();
@@ -360,7 +362,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <summary>
     /// 获取要显示的galgame列表
     /// </summary>
-    public async Task<ObservableCollection<Galgame>> GetContentGridDataAsync()
+    public async Task<ObservableCollection<Galgame>> GetGalgameSourcesAsync()
     {
         await Task.CompletedTask;
         return _displayGalgames;
@@ -785,6 +787,17 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                 RecordPlayTimeTask.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
                 break;
         }
+    }
+    
+    public async Task ToLocalGalgame(Galgame galgame)
+    {
+        if (galgame.SourceType != GalgameSourceType.LocalZip) return;
+        UnpackDialog dialog = new();
+        await dialog.ShowAsync(await StorageFile.GetFileFromPathAsync(galgame.Path), true);
+        StorageFile? file = dialog.StorageFile;
+        GalgameSourceBase? source = dialog.Source;
+        if (file == null || source is not GalgameFolderSource folderSource) return;
+        _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
     }
 }
 

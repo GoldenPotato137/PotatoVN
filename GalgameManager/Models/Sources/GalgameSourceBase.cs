@@ -40,12 +40,6 @@ public class GalgameSourceBase
     {
         return _galgames.Where(g => g.Name == name).ToList()[0];
     }
-    
-    public async virtual Task<Galgame?> ToLocalGalgame(Galgame galgame)
-    {
-        await Task.CompletedTask;
-        return null;
-    }
 
     /// <summary>
     /// 向库中新增一个游戏

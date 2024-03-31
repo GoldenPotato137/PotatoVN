@@ -929,6 +929,9 @@
   <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
     <value>设置本地路径</value>
   </data>
+  <data name="GalgamePage_UnzipGame.Label" xml:space="preserve">
+    <value>解压游戏</value>
+  </data>
   <data name="HomePage_Syncing" xml:space="preserve">
     <value>同步游戏记录中  {0}/{1}</value>
   </data>
@@ -1039,6 +1042,9 @@
   </data>
   <data name="UnpackDialog_GameName.Text" xml:space="preserve">
     <value>游戏名</value>
+  </data>
+  <data name="UnpackDialog_SourceSelect.Text" xml:space="preserve">
+    <value>本地源</value>
   </data>
   <data name="UnpackDialog_GameDescription.Text" xml:space="preserve">
     <value>为提高识别准确度，游戏名应尽可能准确(正式名)并去除不必要的内容(如版本、汉化组名等)</value>

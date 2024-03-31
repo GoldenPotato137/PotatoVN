@@ -70,7 +70,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     {
         SearchKey = _galgameService.GetSearchKey();
         UpdateSearchTitle();
-        Source = await _dataCollectionService.GetContentGridDataAsync();
+        Source = await _dataCollectionService.GetGalgameSourcesAsync();
         Filters = _filterService.GetFilters();
         
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
@@ -320,7 +320,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
-    private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetContentGridDataAsync();
+    private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetGalgameSourcesAsync();
 
     [RelayCommand]
     private async Task AddGalgame()

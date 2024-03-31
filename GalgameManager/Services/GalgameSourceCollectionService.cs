@@ -28,7 +28,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         _bgTaskService = bgTaskService;
     }
 
-    public async Task<ObservableCollection<GalgameSourceBase>> GetContentGridDataAsync()
+    public async Task<ObservableCollection<GalgameSourceBase>> GetGalgameSourcesAsync()
     {
         await Task.CompletedTask;
         return _galgameSources;

@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sources="using:GalgameManager.Models.Sources"
     mc:Ignorable="d"
     Style="{ThemeResource DefaultContentDialogStyle}">
 
@@ -14,9 +15,26 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid Grid.Row="0" x:Name="SourceSelect">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" x:Uid="UnpackDialog_SourceSelect" MinWidth="35" VerticalAlignment="Center"/>
+            <ListView Grid.Column="1" x:Name="SourceListView" SelectionChanged="SourceListView_OnSelectionChanged">
+                <ListView.ItemTemplate>
+                <DataTemplate x:DataType="sources:GalgameSourceBase">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{x:Bind Path}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
         
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -29,7 +47,7 @@
                     Command="{x:Bind GetPackCommand}" />
         </Grid>
         
-        <Grid Grid.Row="1" Margin="{ThemeResource SmallTopMargin}">
+        <Grid Grid.Row="2" Margin="{ThemeResource SmallTopMargin}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -39,10 +57,10 @@
                      HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
         </Grid>
         
-        <TextBlock Grid.Row="2" x:Uid="UnpackDialog_GameDescription" Margin="0 5 0 0" TextWrapping="Wrap"
+        <TextBlock Grid.Row="3" x:Uid="UnpackDialog_GameDescription" Margin="0 5 0 0" TextWrapping="Wrap"
                    Style="{ThemeResource DescriptionTextStyle}"/>
         
-        <Grid Grid.Row="3" Margin="{ThemeResource SmallTopMargin}">
+        <Grid Grid.Row="4" Margin="{ThemeResource SmallTopMargin}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

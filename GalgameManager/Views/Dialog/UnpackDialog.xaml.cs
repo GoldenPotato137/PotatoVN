@@ -2,7 +2,12 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
+using GalgameManager.Models.Sources;
+using GalgameManager.Services;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Views.Dialog;
 
@@ -12,6 +17,7 @@ public sealed partial class UnpackDialog
     public string PackName => PackNameText.Text;
     public string GameName => GameNameText.Text;
     public StorageFile? StorageFile;
+    public GalgameSourceBase? Source = null;
         
     public UnpackDialog()
     {
@@ -32,12 +38,16 @@ public sealed partial class UnpackDialog
         await base.ShowAsync();
     }
     
-    public async Task ShowAsync(StorageFile storageFile)
+    public async Task ShowAsync(StorageFile storageFile,  bool showSources = false)
     {
         StorageFile = storageFile;
         PackNameText.Text = StorageFile?.Name ?? string.Empty;
         GameNameText.Text = StorageFile?.DisplayName ?? string.Empty;
         if (StorageFile is null) return;
+        SourceSelect.Visibility = showSources ? Visibility.Visible : Visibility.Collapsed;
+        SourceListView.ItemsSource = 
+            (await App.GetService<IDataCollectionService<GalgameSourceBase>>().GetGalgameSourcesAsync())
+            .Where(s=>s.SourceType == GalgameSourceType.LocalFolder);
         await base.ShowAsync();
     }
 
@@ -58,5 +68,10 @@ public sealed partial class UnpackDialog
             
         PackNameText.Text = StorageFile?.Name ?? string.Empty;
         GameNameText.Text = StorageFile?.DisplayName ?? string.Empty;
+    }
+
+    private void SourceListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        Source = SourceListView.SelectedItem as GalgameSourceBase;
     }
 }

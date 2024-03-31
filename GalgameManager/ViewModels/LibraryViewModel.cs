@@ -42,7 +42,7 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        Source = await _galSourceService.GetContentGridDataAsync();
+        Source = await _galSourceService.GetGalgameSourcesAsync();
     }
 
     public void OnNavigatedFrom(){}

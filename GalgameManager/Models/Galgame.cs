@@ -162,6 +162,11 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     {
         return Directory.Exists(Path) && SourceType == GalgameSourceType.LocalFolder;
     }
+    
+    public bool CheckIsZip()
+    {
+        return SourceType == GalgameSourceType.LocalZip;
+    }
 
     /// <summary>
     /// 删除游戏文件夹
