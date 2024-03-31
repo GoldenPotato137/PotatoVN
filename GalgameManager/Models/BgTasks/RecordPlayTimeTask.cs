@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Helpers;

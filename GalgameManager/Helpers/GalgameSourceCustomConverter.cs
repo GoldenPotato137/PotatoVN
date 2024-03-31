@@ -1,5 +1,5 @@
-﻿using GalgameManager.Contracts.Models;
-using GalgameManager.Models;
+﻿using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;

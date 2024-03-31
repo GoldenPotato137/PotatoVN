@@ -1,8 +1,8 @@
-﻿using GalgameManager.Contracts.Models;
-using GalgameManager.Contracts.Services;
+﻿using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using H.NotifyIcon.Core;
 

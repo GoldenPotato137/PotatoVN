@@ -1,5 +1,5 @@
-﻿using GalgameManager.Contracts.Models;
-using GalgameManager.Helpers;
+﻿using GalgameManager.Helpers;
+using GalgameManager.Models.Sources;
 
 namespace GalgameManager.Models.Filters;
 

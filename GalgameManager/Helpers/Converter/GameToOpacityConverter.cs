@@ -1,5 +1,5 @@
-﻿using GalgameManager.Contracts.Models;
-using GalgameManager.Models;
+﻿using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml.Data;
 
 namespace GalgameManager.Helpers.Converter;

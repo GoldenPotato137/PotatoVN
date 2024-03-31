@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 using Windows.Storage;
-using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using SevenZip;
 using SystemPath = System.IO.Path;

@@ -1,17 +1,11 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
-using Windows.Storage;
+﻿using System.Collections.ObjectModel;
 using GalgameManager.Core.Contracts.Services;
-using GalgameManager.Enums;
 using GalgameManager.Helpers;
-using GalgameManager.Models;
-using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
-using GalgameManager.Views.Dialog;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
-namespace GalgameManager.Contracts.Models;
+namespace GalgameManager.Models.Sources;
 
 public class GalgameSourceBase
 {

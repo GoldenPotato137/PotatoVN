@@ -1,11 +1,11 @@
 ﻿using GalgameManager.Activation;
-using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;

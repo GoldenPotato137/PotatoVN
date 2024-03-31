@@ -1,18 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
-using Windows.Storage;
-using GalgameManager.Contracts.Models;
+﻿using System.Text.RegularExpressions;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
-using GalgameManager.Helpers;
-using GalgameManager.Models.BgTasks;
-using GalgameManager.Services;
-using GalgameManager.Views.Dialog;
-using Newtonsoft.Json;
-using StdPath = System.IO.Path;
 
-namespace GalgameManager.Models;
+namespace GalgameManager.Models.Sources;
 
 
 public class GalgameZipSource : GalgameSourceBase

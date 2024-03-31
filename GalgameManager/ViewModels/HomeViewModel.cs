@@ -16,9 +16,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
-using GalgameManager.Contracts.Models;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
+using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml.Media.Animation;
 // ReSharper disable CollectionNeverQueried.Global
 

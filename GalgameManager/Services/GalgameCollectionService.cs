@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -10,6 +9,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.Sources;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

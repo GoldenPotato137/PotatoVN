@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using GalgameManager.Contracts.Models;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
+using GalgameManager.Models.Sources;
 using Newtonsoft.Json;
 using SystemPath = System.IO.Path;
 

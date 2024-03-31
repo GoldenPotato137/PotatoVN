@@ -6,8 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
-    xmlns:models1="using:GalgameManager.Contracts.Models"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:sources="using:GalgameManager.Models.Sources"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -60,7 +60,7 @@
             SelectionMode="None"
             StretchContentForSingleRow="False">
             <controls:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="models1:GalgameSourceBase">
+                <DataTemplate x:DataType="sources:GalgameSourceBase">
                     <Grid
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
