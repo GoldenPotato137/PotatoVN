@@ -12,7 +12,7 @@
     DefaultButton="Primary"
     PrimaryButtonText="确定"
     SecondaryButtonText="取消"
-    Style="{StaticResource DefaultContentDialogStyle}"
+    Style="{ThemeResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
 
     <StackPanel>
@@ -20,9 +20,9 @@
             <x:String>本地库</x:String>
             <x:String>本地压缩库</x:String>
         </RadioButtons>
-        <StackPanel Orientation="Horizontal">
-            <TextBox Text="{x:Bind Path ,Mode=TwoWay}"/>
-            <Button Click="ButtonBase_OnClick">选择路径</Button>
-        </StackPanel>
+        <RelativePanel>
+            <TextBox RelativePanel.AlignLeftWithPanel="True" Text="{x:Bind Path ,Mode=TwoWay}"/>
+            <Button RelativePanel.AlignRightWithPanel="True" Click="ButtonBase_OnClick">选择路径</Button>
+        </RelativePanel>
     </StackPanel>
 </ContentDialog>

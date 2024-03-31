@@ -62,16 +62,19 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
 
     private async void OnGalgameAdded(Galgame galgame)
     {
-        if (!galgame.CheckExistLocal()) return;
+        if (_galgameSources.FirstOrDefault(folder => folder.IsInSource(galgame)) is { } sourceBase)
+        {
+            sourceBase.AddGalgame(galgame);
+        };
+        if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
         try
         {
-            await AddGalgameFolderAsync(GalgameSourceType.LocalFolder, galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
+            await AddGalgameFolderAsync(galgame.SourceType, galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
         }
         catch (Exception)
         {
             // ignored
         }
-        _galgameSources.First(folder => folder.IsInSource(galgame)).AddGalgame(galgame);
     }
 
     private void OnGalgameDeleted(Galgame galgame)
@@ -121,7 +124,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     /// 删除一个galgame库，其包含弹窗警告，若用户取消则什么都不做
     /// </summary>
     /// <param name="galgameFolderSource"></param>
-    public async Task DeleteGalgameFolderAsync(GalgameFolderSource galgameFolderSource)
+    public async Task DeleteGalgameFolderAsync(GalgameSourceBase galgameFolderSource)
     {
         var delete = false;
         ContentDialog dialog = new()

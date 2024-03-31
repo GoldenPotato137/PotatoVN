@@ -85,8 +85,8 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task DeleteFolder(GalgameSourceBase? galgameFolder)
     {
-        if (galgameFolder is not GalgameFolderSource folder) return;
-        await _galSourceService.DeleteGalgameFolderAsync(folder);
+        if (galgameFolder is null) return;
+        await _galSourceService.DeleteGalgameFolderAsync(galgameFolder);
     }
     
     [RelayCommand]
