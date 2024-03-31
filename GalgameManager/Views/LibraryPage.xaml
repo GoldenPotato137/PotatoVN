@@ -16,6 +16,7 @@
                           Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </CommandBarFlyout>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
+        <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -67,7 +68,7 @@
                         ContextFlyout="{StaticResource Flyout}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <FontIcon
-                                Glyph="&#xE8B7;"
+                                Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyphConverter}}"
                                 FontFamily="Segoe Fluent Icons"
                                 FontSize="50"/>
                             <TextBlock

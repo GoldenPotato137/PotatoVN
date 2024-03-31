@@ -1511,7 +1511,7 @@
   <data name="AccountPage_Bgm_RefreshSuccess" xml:space="preserve">
     <value>Bangumi账号授权与信息刷新成功</value>
   </data>
-  <data name="AddSourceDialog_Title" xml:space="preserve">
+  <data name="AddSourceDialog.Title" xml:space="preserve">
     <value>添加源</value>
   </data>
   <data name="GalgameSourceType_LocalFolder" xml:space="preserve">

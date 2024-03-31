@@ -13,16 +13,17 @@
     PrimaryButtonText="确定"
     SecondaryButtonText="取消"
     Style="{ThemeResource DefaultContentDialogStyle}"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Uid="AddSourceDialog">
 
     <StackPanel>
         <RadioButtons SelectedIndex="{x:Bind SelectItem, Mode=TwoWay}">
             <x:String>本地库</x:String>
             <x:String>本地压缩库</x:String>
         </RadioButtons>
-        <RelativePanel>
-            <TextBox RelativePanel.AlignLeftWithPanel="True" Text="{x:Bind Path ,Mode=TwoWay}"/>
-            <Button RelativePanel.AlignRightWithPanel="True" Click="ButtonBase_OnClick">选择路径</Button>
-        </RelativePanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBox  MinWidth="300" Text="{x:Bind Path ,Mode=TwoWay}"/>
+            <Button Margin="20 0" Click="ButtonBase_OnClick">选择路径</Button>
+        </StackPanel>
     </StackPanel>
 </ContentDialog>
