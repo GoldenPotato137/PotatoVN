@@ -5,6 +5,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -53,6 +54,34 @@ public class LocalSettingsService : ILocalSettingsService
         Upgrade().Wait();
     }
 
+    private async Task UpgradeLargeFormat()
+    {
+        if (await ReadSettingAsync<bool>(KeyValues.SourceUpgraded) == false)
+        {
+            IDictionary<string, object>? dict =
+                _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile);
+            if (dict != null)
+            {
+                if (dict[KeyValues.GalgameFolders] is not JArray j)return;
+                List<GalgameFolderSource>? sources = JsonConvert.DeserializeObject
+                    <List<GalgameFolderSource>>(j.ToString());
+                if (sources is not null) _settings[KeyValues.GalgameSources] = JsonConvert.SerializeObject(sources);
+                if (dict[KeyValues.Galgames] is not JArray k)return;
+                List<Galgame>? games = JsonConvert.DeserializeObject
+                    <List<Galgame>>(k.ToString());
+                if (games is not null) _settings[KeyValues.Galgames] = JsonConvert.SerializeObject(
+                    games.Select(g =>
+                    {
+                        g.SourceType = GalgameSourceType.LocalFolder;
+                        return g;
+                    }));
+                _settings[KeyValues.CategoryGroups] = dict[KeyValues.CategoryGroups].ToString() ?? "[]";
+            }
+            await SaveSettingAsync(KeyValues.SourceUpgraded, true);
+            _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
+        }
+    }
+
     /// <summary>
     /// 仅在读大文件时调用
     /// </summary>
@@ -60,6 +89,7 @@ public class LocalSettingsService : ILocalSettingsService
     private async Task InitializeAsync()
     {
         if (_isInitialized) return;
+        await UpgradeLargeFormat();
         var retry = 0;
         while (true)
         {
@@ -189,6 +219,8 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.NotifyWhenUnpackGame:
             case KeyValues.EventPvnSyncNotify:
                 return (T?)(object)true;
+            case KeyValues.SourceUpgraded:
+                return (T?)(object)false;
             default:
                 return default;
         }

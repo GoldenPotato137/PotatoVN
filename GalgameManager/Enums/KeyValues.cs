@@ -83,6 +83,7 @@ public static class KeyValues
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
+    public const string SourceUpgraded = "sortKeysUpgraded"; //排序格式升级
     public const string OAuthUpgraded = "OAuthUpgraded"; //BgmOAuth升级1
     public const string OAuthUpgraded2 = "OAuthUpgraded2"; //BgmOAuth升级2
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
