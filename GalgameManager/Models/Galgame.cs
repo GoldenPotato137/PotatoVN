@@ -28,18 +28,18 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         set;
     } = "";
     
-    public SourceType GalgameSourceType { get; set; }=SourceType.UnKnown;
+    public GalgameSourceType SourceType { get; set; }=GalgameSourceType.UnKnown;
     
     public string Url
     {
         get
         {
-            if (GalgameSourceType == SourceType.Virtual)
+            if (SourceType == GalgameSourceType.Virtual)
             {
-                return $"{GalgameSourceType.SourceTypeToString()}://{Name}";
+                return $"{SourceType.SourceTypeToString()}://{Name}";
             }
 
-            return $"{GalgameSourceType.SourceTypeToString()}://{Path}";
+            return $"{SourceType.SourceTypeToString()}://{Path}";
         }
     }
 
@@ -139,9 +139,9 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
 
-    public Galgame(SourceType sourceType, string name, string path)
+    public Galgame(GalgameSourceType sourceType, string name, string path)
     {
-        GalgameSourceType = sourceType;
+        SourceType = sourceType;
         Name = name;
         Path = path;
         _tags.Value = new ObservableCollection<string>();
@@ -160,7 +160,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// </summary>
     public bool CheckExistLocal()
     {
-        return Directory.Exists(Path) && GalgameSourceType == SourceType.LocalFolder;
+        return Directory.Exists(Path) && SourceType == GalgameSourceType.LocalFolder;
     }
 
     /// <summary>
@@ -359,7 +359,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     {
         if(!meta.CheckExistLocal())return meta;
         meta = App.GetService<IFileService>().Read<Galgame>(metaFolderPath, "meta.json")!;
-        meta.GalgameSourceType = SourceType.LocalFolder;
+        meta.SourceType = GalgameSourceType.LocalFolder;
         meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)

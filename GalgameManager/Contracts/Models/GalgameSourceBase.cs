@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
+using Windows.Storage;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
@@ -18,9 +20,9 @@ public class GalgameSourceBase
     [JsonIgnore] public bool IsRunning;
     [JsonIgnore] private readonly List<Galgame> _galgames = new();
 
-    public string Url => $"{GalgameSourceType.SourceTypeToString()}://{Path}";
+    public string Url => $"{SourceType.SourceTypeToString()}://{Path}";
     public string Path { get; set; } = "";
-    public virtual SourceType GalgameSourceType => throw new NotImplementedException();
+    public virtual GalgameSourceType SourceType => throw new NotImplementedException();
     public bool ScanOnStart { get; set; }
 
     public GalgameSourceBase(string path)
@@ -43,6 +45,12 @@ public class GalgameSourceBase
     public virtual Galgame GetGalgameByName(string name)
     {
         return _galgames.Where(g => g.Name == name).ToList()[0];
+    }
+    
+    public async virtual Task<Galgame?> ToLocalGalgame(Galgame galgame)
+    {
+        await Task.CompletedTask;
+        return null;
     }
 
     /// <summary>
@@ -70,7 +78,7 @@ public class GalgameSourceBase
     /// <returns></returns>
     public virtual bool IsInSource(Galgame galgame)
     {
-        return galgame.GalgameSourceType == GalgameSourceType && !string.IsNullOrEmpty(galgame.Path) && IsInSource(galgame.Path);
+        return galgame.SourceType == SourceType && !string.IsNullOrEmpty(galgame.Path) && IsInSource(galgame.Path);
     }
 
     /// <summary>
@@ -94,12 +102,11 @@ public class GalgameSourceBase
     {
         await Task.CompletedTask;
         yield break;
-        throw new NotImplementedException();
     }
 
 }
 
-public enum SourceType
+public enum GalgameSourceType
 {
     UnKnown,
     LocalFolder,
@@ -108,13 +115,13 @@ public enum SourceType
 }
 
 public static class SourceTypeHelper{
-    public static string? SourceTypeToString(this SourceType sourceType)
+    public static string? SourceTypeToString(this GalgameSourceType sourceType)
     {
         return sourceType switch
         {
-            SourceType.LocalFolder => "local_folder",
-            SourceType.LocalZip => "local_zip",
-            SourceType.UnKnown => null,
+            GalgameSourceType.LocalFolder => "local_folder",
+            GalgameSourceType.LocalZip => "local_zip",
+            GalgameSourceType.UnKnown => null,
             _ => null
         };
     }

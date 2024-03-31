@@ -7,6 +7,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
     xmlns:models1="using:GalgameManager.Contracts.Models"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -14,6 +15,7 @@
             <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiDeleteFolder}" 
                           Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </CommandBarFlyout>
+        <converter:EnumToStringConverter x:Key="EnumStringConverter" />
     </Page.Resources>
 
     <Grid>
@@ -74,6 +76,12 @@
                                 HorizontalAlignment="Center"
                                 Style="{ThemeResource BodyTextStyle}"
                                 Text="{x:Bind Path}" />
+                            <TextBlock
+                                MaxHeight="85"
+                                Margin="{StaticResource XXSmallTopMargin}"
+                                HorizontalAlignment="Center"
+                                Style="{ThemeResource DescriptionTextStyle}"
+                                Text="{x:Bind SourceType, Converter={StaticResource EnumStringConverter}}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

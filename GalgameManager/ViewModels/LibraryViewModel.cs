@@ -68,10 +68,10 @@ public partial class LibraryViewModel : ObservableRecipient, INavigationAware
             switch (dialog.SelectItem)
             {
                 case 0:
-                    await _galSourceService.AddGalgameFolderAsync(SourceType.LocalFolder, dialog.Path);
+                    await _galSourceService.AddGalgameFolderAsync(GalgameSourceType.LocalFolder, dialog.Path);
                     break;
                 case 1:
-                    await _galSourceService.AddGalgameFolderAsync(SourceType.LocalZip, dialog.Path);
+                    await _galSourceService.AddGalgameFolderAsync(GalgameSourceType.LocalZip, dialog.Path);
                     break;
             }
 

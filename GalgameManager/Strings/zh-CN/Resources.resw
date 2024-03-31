@@ -1508,4 +1508,10 @@
   <data name="AddSourceDialog_Title" xml:space="preserve">
     <value>添加源</value>
   </data>
+  <data name="GalgameSourceType_LocalFolder" xml:space="preserve">
+    <value>本地文件夹</value>
+  </data>
+  <data name="GalgameSourceType_LocalZip" xml:space="preserve">
+    <value>本地压缩包</value>
+  </data>
 </root>

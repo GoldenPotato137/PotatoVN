@@ -1,4 +1,5 @@
-﻿using GalgameManager.Models;
+﻿using GalgameManager.Contracts.Models;
+using GalgameManager.Models;
 using Microsoft.UI.Xaml.Data;
 
 namespace GalgameManager.Helpers.Converter;
@@ -10,7 +11,7 @@ public class GameToOpacityConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is Galgame game)
-            return SpecialDisplayVirtualGame && game.CheckExistLocal() == false ? 0.5 : 1;
+            return SpecialDisplayVirtualGame && game.SourceType != GalgameSourceType.Virtual ? 0.5 : 1;
         return 1;
     }
 

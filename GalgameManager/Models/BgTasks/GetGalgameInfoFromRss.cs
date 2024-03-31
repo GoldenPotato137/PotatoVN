@@ -65,7 +65,7 @@ public class GetGalgameInfoFromRss : BgTaskBase
                 await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                 {
                     Galgame result = await galgameService.PhraseGalInfoAsync(galgame);
-                    log += $"{result.Name} Done";
+                    log += $"{result.Name} Done\n";
                 });
                 characterTasks.Add(bgTaskService.AddBgTask(new GetGalgameCharactersFromRss(galgame)));
             }

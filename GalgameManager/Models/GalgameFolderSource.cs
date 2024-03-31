@@ -18,7 +18,7 @@ namespace GalgameManager.Models;
 public class GalgameFolderSource : GalgameSourceBase
 {
     [JsonIgnore] public bool IsUnpacking;
-    public override SourceType GalgameSourceType => SourceType.LocalFolder;
+    public override GalgameSourceType SourceType => GalgameSourceType.LocalFolder;
 
     public GalgameFolderSource(string path): base(path)
     {
@@ -56,12 +56,12 @@ public class GalgameFolderSource : GalgameSourceBase
             var (currentPath, currentDepth) = pathToCheck.Dequeue();
             if (!HasPermission(currentPath))
             {
-                yield return (null, "Has No Permission");
+                yield return (null, "Has No Permission\n");
             }
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
             {
                 yield return (new 
-                    Galgame(GalgameSourceType, GetGalgameName(currentPath), currentPath), "");
+                    Galgame(SourceType, GetGalgameName(currentPath), currentPath), "");
             }
         
             if (currentDepth == maxDepth) continue;

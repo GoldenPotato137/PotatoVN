@@ -100,7 +100,7 @@ public class UnpackGameTask : BgTaskBase
                 {
                     await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!
                         .TryAddGalgameAsync(new 
-                            Galgame(SourceType.LocalFolder, 
+                            Galgame(GalgameSourceType.LocalFolder, 
                                 GalgameFolderSource.GetGalgameName(saveDirectory), 
                                 saveDirectory
                             ), true);

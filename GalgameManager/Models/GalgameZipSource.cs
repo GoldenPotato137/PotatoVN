@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using Windows.Storage;
 using GalgameManager.Contracts.Models;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
@@ -7,6 +8,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
+using GalgameManager.Views.Dialog;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
@@ -16,7 +18,7 @@ namespace GalgameManager.Models;
 public class GalgameZipSource : GalgameSourceBase
 {
     public static string FxRegex = @"(?<=\\)(?<name>[^\.\\]+)(?:(\.part1)?\.(zip|rar|7z))$";
-    public override SourceType GalgameSourceType => SourceType.LocalZip;
+    public override GalgameSourceType SourceType => GalgameSourceType.LocalZip;
 
     public GalgameZipSource(string path): base(path)
     {
@@ -31,7 +33,24 @@ public class GalgameZipSource : GalgameSourceBase
     {
         return path[..path.LastIndexOf('\\')] == Path ;
     }
-    
+
+    public async override Task<Galgame?> ToLocalGalgame(Galgame galgame)
+    {
+        // if (galgame.SourceType != GalgameSourceType.LocalZip) return null;
+        // UnpackDialog dialog = new();
+        // await dialog.ShowAsync(await StorageFile.GetFileFromPathAsync(galgame.Path));
+        // StorageFile? file = dialog.StorageFile;
+        //
+        // if (file == null || _item == null) return;
+        //
+        // _unpackGameTask = new UnpackGameTask(file, f, dialog.GameName, dialog.Password);
+        // _unpackGameTask.OnProgress += UpdateNotifyUnpack;
+        // _unpackGameTask.OnProgress += HandelUnpackError;
+        // _ = _bgTaskService.AddBgTask(_unpackGameTask);
+        await Task.CompletedTask;
+        return null;
+    }
+
     public async override IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
     {
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
@@ -51,10 +70,10 @@ public class GalgameZipSource : GalgameSourceBase
                 if (m.Success)
                 {
                     yield return (new 
-                        Galgame(GalgameSourceType, m.Groups["name"].Value, f), $"successfully add {f}");
+                        Galgame(SourceType, m.Groups["name"].Value, f), $"successfully add {f}\n");
                 }
 
-                yield return (null, $"{f} is not zip");
+                yield return (null, $"{f} is not zip\n");
 
             }
             if (currentDepth == maxDepth) continue;

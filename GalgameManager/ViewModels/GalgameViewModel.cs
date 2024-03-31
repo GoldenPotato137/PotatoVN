@@ -313,7 +313,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             {
                 var folder = file.Path[..file.Path.LastIndexOf('\\')];
                 AddGalgameResult result =  await _galgameService.TryAddGalgameAsync(
-                    new Galgame(SourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder)
+                    new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder)
                         , folder), virtualGame: Item);
                 if (result == AddGalgameResult.AlreadyExists) 
                     _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());

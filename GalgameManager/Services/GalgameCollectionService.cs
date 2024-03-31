@@ -91,10 +91,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
         foreach (Galgame g in _galgames)
         {
-            if (g.GalgameSourceType == SourceType.LocalFolder && g.CheckExistLocal() == false)
+            if (g.SourceType == GalgameSourceType.LocalFolder && g.CheckExistLocal() == false)
             {
                 g.Path = string.Empty;
-                g.GalgameSourceType = SourceType.Virtual;
+                g.SourceType = GalgameSourceType.Virtual;
             }
             _galgameMap[g.Url] = g;
             g.ErrorOccurred += e =>
@@ -150,7 +150,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
 
     public Galgame TryRecoverGalgameFromLocalPath(Galgame galgame)
     {
-        if (galgame.GalgameSourceType != SourceType.LocalFolder) return galgame;
+        if (galgame.SourceType != GalgameSourceType.LocalFolder) return galgame;
         var metaFolder = Path.Combine(galgame.Path, Galgame.MetaPath);
         if (Path.Exists(Path.Combine(metaFolder, "meta.json")))
         {
@@ -180,7 +180,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
     public async Task<AddGalgameResult> TryAddGalgameAsync(Galgame galgame , bool isForce = false, Galgame? virtualGame = null)
     {
-        if (_galgames.Any(gal => gal.Path == galgame.Path && gal.GalgameSourceType == galgame.GalgameSourceType))
+        if (_galgames.Any(gal => gal.Path == galgame.Path && gal.SourceType == galgame.SourceType))
             return AddGalgameResult.AlreadyExists;
 
         galgame = TryRecoverGalgameFromLocalPath(galgame);
@@ -190,7 +190,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (virtualGame is not null)
         {
             virtualGame.Path = galgame.Path;
-            virtualGame.GalgameSourceType = SourceType.LocalFolder;
+            virtualGame.SourceType = GalgameSourceType.LocalFolder;
             galgame = virtualGame;
         } else if (virtualGame is null)
         {

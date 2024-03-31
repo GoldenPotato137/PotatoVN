@@ -65,7 +65,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         if (!galgame.CheckExistLocal()) return;
         try
         {
-            await AddGalgameFolderAsync(SourceType.LocalFolder, galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
+            await AddGalgameFolderAsync(GalgameSourceType.LocalFolder, galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
         }
         catch (Exception)
         {
@@ -86,9 +86,9 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     /// <param name="path">库路径</param>
     /// <param name="tryGetGalgame">是否自动寻找库里游戏</param>
     /// <exception cref="Exception">库已经添加过了</exception>
-    public async Task AddGalgameFolderAsync(SourceType sourceType, string path, bool tryGetGalgame = true)
+    public async Task AddGalgameFolderAsync(GalgameSourceType sourceType, string path, bool tryGetGalgame = true)
     {
-        if (_galgameSources.Any(galFolder => galFolder.Path == path && galFolder.GalgameSourceType == sourceType))
+        if (_galgameSources.Any(galFolder => galFolder.Path == path && galFolder.SourceType == sourceType))
         {
             throw new Exception($"这个galgame库{sourceType.SourceTypeToString()}://{path}已经添加过了");
         }
@@ -97,12 +97,12 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
 
         switch (sourceType)
         {
-            case SourceType.UnKnown:
+            case GalgameSourceType.UnKnown:
                 throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
-            case SourceType.LocalFolder:
+            case GalgameSourceType.LocalFolder:
                 galgameSource = new GalgameFolderSource(path);
                 break;
-            case SourceType.LocalZip:
+            case GalgameSourceType.LocalZip:
                 galgameSource = new GalgameZipSource(path);
                 break;
             default:

@@ -192,7 +192,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         try
         {
             var result = await _galgameService.TryAddGalgameAsync(
-                new Galgame(SourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder), folder), true);
+                new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder), folder), true);
             if (result == AddGalgameResult.Success)
                 await ShowSuccessInfoBar();
             else if (result == AddGalgameResult.AlreadyExists)
@@ -278,7 +278,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
 
     private bool IsLocalFolder()
     {
-        return Item?.GalgameSourceType == SourceType.LocalFolder;
+        return Item?.SourceType == GalgameSourceType.LocalFolder;
     }
 
     private async void HandelUnpackError(Progress progress)
@@ -303,7 +303,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     private void UpdateTitleMaxWidth()
     {
         if (_pageWidth == 0 || _commandBarWidth == 0) return;
-        TitleMaxWidth = Math.Max(_pageWidth - _commandBarWidth - 20, 0);
+        TitleMaxWidth = Math.Max(_pageWidth - _commandBarWidth - 20, 0) / 2;
     }
     
     [RelayCommand]

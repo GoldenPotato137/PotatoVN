@@ -19,22 +19,22 @@ public class GalgameSourceCustomConverter:CustomCreationConverter<GalgameSourceB
         if (reader.TokenType == JsonToken.Null) return null;
         JObject jObject = JObject.Load(reader);
         GalgameSourceBase? target = new();
-        JProperty? type = jObject.Property("GalgameSourceType");
+        JProperty? type = jObject.Property(nameof(GalgameSourceBase.SourceType));
         if (type != null && type.Count > 0)
         {
             var typeValue = type.Value.ToString();
-            SourceType menuButtonType = (SourceType)Enum.Parse(typeof(SourceType), typeValue);
+            GalgameSourceType menuButtonType = (GalgameSourceType)Enum.Parse(typeof(GalgameSourceType), typeValue);
             switch (menuButtonType)
             {
-                case SourceType.UnKnown:
+                case GalgameSourceType.UnKnown:
                     throw new NotSupportedException();
-                case SourceType.LocalFolder:
+                case GalgameSourceType.LocalFolder:
                     target = new GalgameFolderSource();
                     break;
-                case SourceType.LocalZip:
+                case GalgameSourceType.LocalZip:
                     target = new GalgameZipSource();
                     break;
-                case SourceType.Virtual:
+                case GalgameSourceType.Virtual:
                     throw new NotSupportedException();
                 default:
                     throw new NotSupportedException();

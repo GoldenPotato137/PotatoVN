@@ -20,7 +20,7 @@
             <x:String>本地库</x:String>
             <x:String>本地压缩库</x:String>
         </RadioButtons>
-        <StackPanel HorizontalAlignment="Left">
+        <StackPanel Orientation="Horizontal">
             <TextBox Text="{x:Bind Path ,Mode=TwoWay}"/>
             <Button Click="ButtonBase_OnClick">选择路径</Button>
         </StackPanel>
