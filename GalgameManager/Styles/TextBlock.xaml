@@ -23,6 +23,11 @@
         <Setter Property="Opacity" Value="0.6"/>
     </Style>
     
+    <Style x:Key="SmallTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{StaticResource SmallFontSize}" />
+    </Style>
+    
     <Style x:Key="DescriptionRichTextStyle" TargetType="RichTextBlock">
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{StaticResource SmallFontSize}" />

@@ -27,12 +27,16 @@
                            Style="{ThemeResource TitleTextBlockStyle}" 
                            MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
                            x:Name="PathTextBlock"/>
-                <TextBlock Text="{x:Bind ViewModel.Item.SourceType, FallbackValue={}, Converter={StaticResource EnumStringConverter}}"
-                           Style="{ThemeResource DescriptionTextStyle}" 
-                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
-                           RelativePanel.RightOf="PathTextBlock"
-                           RelativePanel.AlignVerticalCenterWith="PathTextBlock"
-                           Padding="4, 0"/>
+                <Border RelativePanel.RightOf="PathTextBlock"
+                        RelativePanel.AlignVerticalCenterWith="PathTextBlock"
+                        Background="SteelBlue"
+                        BorderThickness="0"
+                        CornerRadius="6">
+                    <TextBlock Text="{x:Bind ViewModel.Item.SourceType, FallbackValue={}, Converter={StaticResource EnumStringConverter}}"
+                               Style="{ThemeResource SmallTextStyle}" 
+                               MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
+                               Padding="4, 0"/>
+                </Border>
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
                             DefaultLabelPosition="Right">
                     <!-- 手动添加游戏 -->
