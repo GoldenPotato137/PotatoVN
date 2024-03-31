@@ -62,20 +62,31 @@ public class LocalSettingsService : ILocalSettingsService
                 _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile);
             if (dict != null)
             {
-                if (dict[KeyValues.GalgameFolders] is not JArray j)return;
-                List<GalgameFolderSource>? sources = JsonConvert.DeserializeObject
-                    <List<GalgameFolderSource>>(j.ToString());
-                if (sources is not null) _settings[KeyValues.GalgameSources] = JsonConvert.SerializeObject(sources);
-                if (dict[KeyValues.Galgames] is not JArray k)return;
-                List<Galgame>? games = JsonConvert.DeserializeObject
-                    <List<Galgame>>(k.ToString());
-                if (games is not null) _settings[KeyValues.Galgames] = JsonConvert.SerializeObject(
-                    games.Select(g =>
-                    {
-                        g.SourceType = GalgameSourceType.LocalFolder;
-                        return g;
-                    }));
-                _settings[KeyValues.CategoryGroups] = dict[KeyValues.CategoryGroups].ToString() ?? "[]";
+                if(dict.TryGetValue(KeyValues.GalgameFolders, out var folders))
+                {
+                    if (folders is not JArray j) return;
+                    List<GalgameFolderSource>? sources = JsonConvert.DeserializeObject
+                        <List<GalgameFolderSource>>(j.ToString());
+                    if (sources is not null) _settings[KeyValues.GalgameSources] = JsonConvert.SerializeObject(sources);
+                }
+                if (dict.TryGetValue(KeyValues.Galgames, out var gs))
+                {
+                    if (gs is not JArray k) return;
+                    List<Galgame>? games = JsonConvert.DeserializeObject
+                        <List<Galgame>>(k.ToString());
+                    if (games is not null)
+                        _settings[KeyValues.Galgames] = JsonConvert.SerializeObject(
+                            games.Select(g =>
+                            {
+                                g.SourceType = GalgameSourceType.LocalFolder;
+                                return g;
+                            }));
+                }
+
+                if (dict.TryGetValue(KeyValues.CategoryGroups, out var cgs ))
+                {
+                    _settings[KeyValues.CategoryGroups] = cgs.ToString() ?? "[]";
+                }
             }
             await SaveSettingAsync(KeyValues.SourceUpgraded, true);
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
