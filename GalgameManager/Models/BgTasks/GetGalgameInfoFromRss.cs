@@ -52,7 +52,6 @@ public class GetGalgameInfoFromRss : BgTaskBase
         
         return Task.Run((async Task () =>
         {
-            List<Task> characterTasks = new List<Task>();
             log += $"{DateTime.Now}\n{GalgameSourceUrl}\n\n";
 
             _galgameSource.IsRunning = true;
@@ -67,7 +66,6 @@ public class GetGalgameInfoFromRss : BgTaskBase
                     Galgame result = await galgameService.PhraseGalInfoAsync(galgame);
                     log += $"{result.Name} Done\n";
                 });
-                characterTasks.Add(bgTaskService.AddBgTask(new GetGalgameCharactersFromRss(galgame)));
             }
             
             ChangeProgress(0, 1, "GalgameFolder_GetGalgameInfo_Saving".GetLocalized());

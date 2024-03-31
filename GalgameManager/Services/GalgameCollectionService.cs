@@ -262,6 +262,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
         PhrasedEvent2?.Invoke(galgame);
+        _ = _bgTaskService.AddBgTask(new GetGalgameCharactersFromRss(galgame));
         return result;
     }
     public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter, RssType rssType = RssType.None)
