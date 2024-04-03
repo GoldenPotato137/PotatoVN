@@ -30,6 +30,15 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly IBgTaskService _bgTaskService;
     private readonly IPvnService _pvnService;
     [ObservableProperty] private Galgame? _item;
+    [NotifyCanExecuteChangedFor(nameof(PlayCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ChangeSavePositionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResetExePathCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteFromDiskCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetLocalPathCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedThreadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectProcessCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectTextCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearTextCommand))]
     [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
     [ObservableProperty] private bool _isZipGame;
     [ObservableProperty] private bool _isPhrasing;
@@ -168,10 +177,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await Launcher.LaunchUriAsync(new Uri("https://vndb.org/v"+Item!.Ids[(int)RssType.Vndb]));
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task Play()
     {
-        if (Item == null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         if (Item.ExePath == null)
             await _galgameService.GetGalgameExeAsync(Item);
         if (Item.ExePath == null) return;
@@ -227,23 +236,24 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, Item);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task ChangeSavePosition()
     {
-        if(Item == null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         await _galgameService.ChangeGalgameSavePosition(Item);
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private void ResetExePath(object obj)
     {
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         Item!.ExePath = null;
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task DeleteFromDisk()
     {
-        if(Item == null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow!.Content.XamlRoot,
@@ -310,7 +320,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SetLocalPath()
     {
         try
@@ -342,7 +352,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task RemoveSelectedThread()
     {
         Item!.ProcessName = null;
@@ -351,10 +361,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await SaveAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectProcess()
     {
-        if(Item is null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         SelectProcessDialog dialog = new();
         await dialog.ShowAsync();
         if (dialog.SelectedProcessName is not null)
@@ -366,10 +376,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectText()
     {
-        if (Item is null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         var path = Item.TextPath;
         if (path is null || File.Exists(path) == false)
         {
@@ -387,7 +397,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             _ = Launcher.LaunchUriAsync(new Uri(path));
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task ClearText()
     {
         if (Item is null) return;
