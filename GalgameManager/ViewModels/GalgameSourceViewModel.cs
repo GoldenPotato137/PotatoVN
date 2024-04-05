@@ -26,7 +26,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     private readonly IBgTaskService _bgTaskService;
     
     private GalgameSourceBase? _item;
-    public ObservableCollection<Galgame> Galgames = new();
+    [ObservableProperty] public ObservableCollection<Galgame> _galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
     private BgTaskBase? _getGalTask;
     private GetGalgameInfoFromRssTask? _getGalgameInfoFromRss;
@@ -52,6 +52,11 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private string _uiDownloadInfo = "GalgameFolderPage_DownloadInfo".GetLocalized();
 
     #endregion
+
+    partial void OnGalgamesChanged(ObservableCollection<Galgame> value)
+    {
+        _galgameService.SaveGalgamesAsync().Wait();
+    }
 
     public GalgameSourceBase? Item
     {
