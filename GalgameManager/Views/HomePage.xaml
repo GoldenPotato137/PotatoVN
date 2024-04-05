@@ -22,6 +22,7 @@
         <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
         <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
+        <converters:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
         
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
@@ -222,6 +223,19 @@
                                              Stroke="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
                                              Fill="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
                                              />
+                                    <Border Background="Gray"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                        Height="24" Width="24"
+                                        CornerRadius="4">
+                                        <Border.Shadow>
+                                            <ThemeShadow />
+                                        </Border.Shadow>
+                                        <FontIcon
+                                            Glyph="{x:Bind SourceType, 
+                                                Converter={StaticResource SourceTypeGlyphConverter}}"
+                                            FontFamily="Segoe Fluent Icons"
+                                            FontSize="16"/>
+                                    </Border>
                                 </Grid>
             
                                 <TextBlock

@@ -7,15 +7,15 @@ using H.NotifyIcon.Core;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class GetGalgameCharactersFromRss : BgTaskBase
+public class GetGalgameCharactersFromRssTask : BgTaskBase
 {
     public string GalgamesName = "";
     private Galgame? _galgame;
 
 
-    public GetGalgameCharactersFromRss() { }
+    public GetGalgameCharactersFromRssTask() { }
 
-    public GetGalgameCharactersFromRss(Galgame galgame)
+    public GetGalgameCharactersFromRssTask(Galgame galgame)
     {
         _galgame = galgame;
         GalgamesName = galgame.Name.Value ?? "";

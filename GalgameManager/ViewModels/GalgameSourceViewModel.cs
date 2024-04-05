@@ -29,7 +29,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     public ObservableCollection<Galgame> Galgames = new();
     private readonly List<Galgame> _selectedGalgames = new();
     private BgTaskBase? _getGalTask;
-    private GetGalgameInfoFromRss? _getGalgameInfoFromRss;
+    private GetGalgameInfoFromRssTask? _getGalgameInfoFromRss;
     private UnpackGameTask? _unpackGameTask;
     public readonly RssType[] RssTypes = { RssType.Bangumi, RssType.Vndb, RssType.Mixed};
     
@@ -101,7 +101,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
             _unpackGameTask.OnProgress += UpdateNotifyUnpack;
             UpdateNotifyUnpack(_unpackGameTask.CurrentProgress);
         }
-        _getGalgameInfoFromRss = _bgTaskService.GetBgTask<GetGalgameInfoFromRss>(Item.Url);
+        _getGalgameInfoFromRss = _bgTaskService.GetBgTask<GetGalgameInfoFromRssTask>(Item.Url);
         if (_getGalgameInfoFromRss != null)
         {
             _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
@@ -238,13 +238,13 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         if (_item == null) return;
         if (_selectedGalgames.Count == 0)
         {
-            _getGalgameInfoFromRss = new GetGalgameInfoFromRss(_item);
+            _getGalgameInfoFromRss = new GetGalgameInfoFromRssTask(_item);
             _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
             _ = _bgTaskService.AddBgTask(_getGalgameInfoFromRss);
         }
         else
         {
-            _getGalgameInfoFromRss = new GetGalgameInfoFromRss(_item, _selectedGalgames);
+            _getGalgameInfoFromRss = new GetGalgameInfoFromRssTask(_item, _selectedGalgames);
             _getGalgameInfoFromRss.OnProgress += UpdateNotifyGetInfoFromRss;
             _ = _bgTaskService.AddBgTask(_getGalgameInfoFromRss);
         }

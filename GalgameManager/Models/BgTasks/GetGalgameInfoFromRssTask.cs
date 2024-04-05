@@ -8,7 +8,7 @@ using H.NotifyIcon.Core;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class GetGalgameInfoFromRss : BgTaskBase
+public class GetGalgameInfoFromRssTask : BgTaskBase
 {
     public string GalgameSourceUrl = string.Empty;
     public IList<string> GalgamesName = new List<string>();
@@ -16,9 +16,9 @@ public class GetGalgameInfoFromRss : BgTaskBase
     private List<Galgame>? _galgames;
 
 
-    public GetGalgameInfoFromRss() { }
+    public GetGalgameInfoFromRssTask() { }
 
-    public GetGalgameInfoFromRss(GalgameSourceBase galgameSource, List<Galgame>? toUpdate = null)
+    public GetGalgameInfoFromRssTask(GalgameSourceBase galgameSource, List<Galgame>? toUpdate = null)
     {
         _galgameSource = galgameSource;
         GalgameSourceUrl = galgameSource.Url;
@@ -43,7 +43,7 @@ public class GetGalgameInfoFromRss : BgTaskBase
 
     public override Task Run()
     {
-        if (_galgameSource is null || _galgames is null || Directory.Exists(GalgameSourceUrl) == false || _galgameSource.IsRunning)
+        if (_galgameSource is null || _galgames is null || _galgameSource.IsRunning)
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
