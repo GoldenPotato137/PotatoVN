@@ -20,7 +20,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class GalgameViewModel : ObservableRecipient, INavigationAware
+public partial class GalgameViewModel : ObservableObject, INavigationAware
 {
     private const int ProcessMaxWaitSec = 60; //(手动指定游戏进程)等待游戏进程启动的最大时间
     private readonly GalgameCollectionService _galgameService;

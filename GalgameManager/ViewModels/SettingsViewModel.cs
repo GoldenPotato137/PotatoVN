@@ -20,7 +20,7 @@ using GalgameManager.Views.Dialog;
 namespace GalgameManager.ViewModels;
 
 
-public partial class SettingsViewModel : ObservableRecipient, INavigationAware
+public partial class SettingsViewModel : ObservableObject, INavigationAware
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly GalgameCollectionService _galgameCollectionService;

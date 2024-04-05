@@ -486,10 +486,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// </param>
     public async Task SaveGalgamesAsync(Galgame? galgame = null)
     {
+        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         if(galgame?.CheckExistLocal() == false) return;
         if (galgame != null && await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
             await SaveMetaAsync(galgame);
-        await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
     }
     
     /// <summary>

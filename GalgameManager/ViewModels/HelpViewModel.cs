@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class HelpViewModel : ObservableRecipient, INavigationAware
+public partial class HelpViewModel : ObservableObject, INavigationAware
 {
     private readonly IFaqService _faqService;
     private readonly IInfoService _infoService;

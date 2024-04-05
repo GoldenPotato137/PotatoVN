@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class LibraryViewModel : ObservableRecipient, INavigationAware
+public partial class LibraryViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly GalgameSourceCollectionService _galSourceService;

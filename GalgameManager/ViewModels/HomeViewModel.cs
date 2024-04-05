@@ -24,7 +24,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 
 namespace GalgameManager.ViewModels;
 
-public partial class HomeViewModel : ObservableRecipient, INavigationAware
+public partial class HomeViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly IDataCollectionService<Galgame> _dataCollectionService;

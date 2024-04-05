@@ -7,11 +7,11 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace GalgameManager.ViewModels;
 
-public partial class ShellViewModel : ObservableRecipient
+public partial class ShellViewModel : ObservableObject
 {
-    private bool _isBackEnabled;
-    private object? _selected;
-    private bool _isDeveloperMode;
+    [ObservableProperty] private bool _isBackEnabled;
+    [ObservableProperty] private object? _selected;
+    [ObservableProperty] private bool _isDeveloperMode;
     private int _unreadInfos;
     private readonly IBgTaskService _bgTaskService;
     [ObservableProperty] private bool _updateBadgeVisibility;
@@ -27,18 +27,6 @@ public partial class ShellViewModel : ObservableRecipient
     public INavigationViewService NavigationViewService
     {
         get;
-    }
-
-    public bool IsBackEnabled
-    {
-        get => _isBackEnabled;
-        set => SetProperty(ref _isBackEnabled, value);
-    }
-
-    public object? Selected
-    {
-        get => _selected;
-        set => SetProperty(ref _selected, value);
     }
 
     public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService,

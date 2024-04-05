@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class AccountViewModel : ObservableRecipient, INavigationAware
+public partial class AccountViewModel : ObservableObject, INavigationAware
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgmOAuthService _bgmService;
