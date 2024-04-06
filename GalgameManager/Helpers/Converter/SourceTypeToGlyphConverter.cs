@@ -11,6 +11,7 @@ internal class SourceTypeToGlyphConverter : IValueConverter
         {
             GalgameSourceType.LocalFolder => "\uE8B7",
             GalgameSourceType.LocalZip => "\uF012",
+            GalgameSourceType.Virtual => "\uEEa3",
             _ => ""
         };
     }
