@@ -46,11 +46,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
     #endregion
 
-    public ICommand ItemClickCommand
-    {
-        get;
-    }
-
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
@@ -62,8 +57,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _localSettingsService = localSettingsService;
         _filterService = filterService;
         _infoService = infoService;
-
-        ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -110,7 +103,8 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _localSettingsService.OnSettingChanged -= OnSettingChanged;
     }
 
-    private void OnItemClick(Galgame? clickedItem)
+    [RelayCommand]
+    private void ItemClick(Galgame? clickedItem)
     {
         if (clickedItem != null)
         {
