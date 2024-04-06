@@ -193,7 +193,6 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     /// <param name="folder">游戏文件夹路径</param>
     private async Task TryAddGalgame(string folder)
     {
-        //TODO
         try
         {
             var result = await _galgameService.TryAddGalgameAsync(

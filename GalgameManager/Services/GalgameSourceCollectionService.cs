@@ -69,7 +69,10 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
         try
         {
-            await AddGalgameFolderAsync(galgame.SourceType, galgame.Path[..galgame.Path.LastIndexOf('\\')], false);
+            if (Path.GetDirectoryName(galgame.Path) is {} p)
+            {
+                await AddGalgameSourceAsync(galgame.SourceType, p, false);
+            }
         }
         catch (Exception)
         {
@@ -89,7 +92,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     /// <param name="path">库路径</param>
     /// <param name="tryGetGalgame">是否自动寻找库里游戏</param>
     /// <exception cref="Exception">库已经添加过了</exception>
-    public async Task AddGalgameFolderAsync(GalgameSourceType sourceType, string path, bool tryGetGalgame = true)
+    public async Task AddGalgameSourceAsync(GalgameSourceType sourceType, string path, bool tryGetGalgame = true)
     {
         if (_galgameSources.Any(galFolder => galFolder.Path == path && galFolder.SourceType == sourceType))
         {

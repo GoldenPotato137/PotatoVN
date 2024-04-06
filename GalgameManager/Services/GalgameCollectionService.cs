@@ -150,10 +150,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await SaveGalgamesAsync();
     }
 
-    public Galgame TryRecoverGalgameFromLocalPath(Galgame galgame)
+    public Galgame TryRecoverGalgameFromLocal(Galgame galgame)
     {
-        if (galgame.SourceType != GalgameSourceType.LocalFolder) return galgame;
-        var metaFolder = Path.Combine(galgame.Path, Galgame.MetaPath);
+        if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return galgame;
+        var metaFolder = galgame.GetMetaPath();
         if (Path.Exists(Path.Combine(metaFolder, "meta.json")))
         {
             try
@@ -185,14 +185,14 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (_galgames.Any(gal => gal.Path == galgame.Path && gal.SourceType == galgame.SourceType))
             return AddGalgameResult.AlreadyExists;
 
-        galgame = TryRecoverGalgameFromLocalPath(galgame);
+        galgame = TryRecoverGalgameFromLocal(galgame);
         
         // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
         virtualGame ??= GetVirtualGame(galgame);
         if (virtualGame is not null)
         {
             virtualGame.Path = galgame.Path;
-            virtualGame.SourceType = GalgameSourceType.LocalFolder;
+            virtualGame.SourceType = galgame.SourceType;
             galgame = virtualGame;
         } else if (virtualGame is null)
         {
@@ -446,12 +446,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <summary>
     /// 从Url获取galgame
     /// </summary>
-    /// <param name="path">路径</param>
+    /// <param name="url">url</param>
     /// <returns>galgame,若找不到则返回null</returns>
     public Galgame? GetGalgameFromUrl(string url)
     {
-        if (string.IsNullOrEmpty(url)) return null;
-        return _galgameMap.TryGetValue(url, out Galgame? result) ? result : null;
+        return string.IsNullOrEmpty(url) ? null : _galgameMap.GetValueOrDefault(url);
     }
 
     /// <summary>
@@ -487,8 +486,8 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task SaveGalgamesAsync(Galgame? galgame = null)
     {
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
-        if(galgame?.CheckExistLocal() == false) return;
-        if (galgame != null && await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
+        if(galgame?.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
+        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
             await SaveMetaAsync(galgame);
     }
     
@@ -498,13 +497,15 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="galgame"></param>
     private async Task SaveMetaAsync(Galgame galgame)
     {
-        if(!galgame.CheckExistLocal()) return;
+        if(galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
-        _fileService.Save(galgame.GetMetaPath(), "meta.json", galgame.GetMetaCopy());
-        var imagePath = Path.Combine(galgame.Path, Galgame.MetaPath);
-        imagePath = Path.Combine(imagePath, Path.GetFileName(galgame.ImagePath));
-        if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(imagePath))
-            File.Copy(galgame.ImagePath.Value!, imagePath);
+        var metaPath = galgame.GetMetaPath();
+        Galgame meta = galgame.GetMetaCopy(metaPath);
+        var destImagePath = Path.Join(metaPath, meta.ImagePath.Value!);
+        _fileService.Save(metaPath, "meta.json", meta);
+        if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(destImagePath)
+           && File.Exists(galgame.ImagePath))
+            File.Copy(galgame.ImagePath.Value!, destImagePath);
     }
 
     /// <summary>

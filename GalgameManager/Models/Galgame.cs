@@ -13,7 +13,7 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneable
+public partial class Galgame : ObservableObject, IComparable<Galgame>
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -250,42 +250,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
         }
         return 0;
     }
-    
-    public object Clone()
-    {
-        Dictionary<string, int> playTime = new();
-        foreach (var (key, value) in PlayedTime)
-            playTime.Add(key, value);
-        Galgame result = new()
-        {
-            Path = "..\\",
-            ImagePath = ImagePath.Value is null or DefaultImagePath ? DefaultImagePath :
-                ".\\" + SystemPath.GetFileName(ImagePath),
-            PlayedTime = playTime,
-            Name = Name.Value ?? string.Empty,
-            CnName = CnName,
-            Description = Description.Value ?? string.Empty,
-            Developer = Developer.Value ?? DefaultString,
-            LastPlay = LastPlay.Value ?? DefaultString,
-            ExpectedPlayTime = ExpectedPlayTime.Value ?? DefaultString,
-            Rating = Rating.Value,
-            ReleaseDate = ReleaseDate.Value,
-            ExePath = "..\\" + SystemPath.GetFileName(ExePath),
-            Tags = new ObservableCollection<string>(Tags.Value!.ToList()),
-            TotalPlayTime = TotalPlayTime,
-            RunAsAdmin = RunAsAdmin,
-            PlayType = PlayType,
-            Ids = (string[])Ids.Clone(),
-            RssType = RssType,
-            Comment = Comment,
-            MyRate = MyRate,
-            PrivateComment = PrivateComment,
-            SavePath = SavePath,
-            ProcessName = ProcessName,
-            TextPath =  TextPath,
-        };
-        return result;
-    }
 
     /// <summary>
     /// 获取游戏文件夹下的所有exe以及bat文件
@@ -342,16 +306,54 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// <returns></returns>
     public string GetMetaPath()
     {
-        return SystemPath.Combine(Path, MetaPath);
+        return SourceType switch
+        {
+            GalgameSourceType.LocalFolder => SystemPath.Combine(Path, MetaPath),
+            GalgameSourceType.LocalZip when SystemPath.GetDirectoryName(Path) is { } p => 
+                SystemPath.Combine(p, MetaPath, SystemPath.GetFileNameWithoutExtension(Path)),
+            _ => ""
+        };
     }
 
     /// <summary>
     /// 获取用来保存meta信息的galgame，用于序列化
     /// </summary>
     /// <returns></returns>
-    public Galgame GetMetaCopy()
+    public Galgame GetMetaCopy(string metaPath)
     {
-        return (Galgame) Clone();
+        Dictionary<string, int> playTime = new();
+        foreach (var (key, value) in PlayedTime)
+            playTime.Add(key, value);
+        Galgame result = new()
+        {
+            SourceType = SourceType, 
+            Path = SystemPath.GetRelativePath(metaPath, Path),
+            ImagePath = ImagePath.Value is null or DefaultImagePath ? DefaultImagePath :
+                ".\\" + SystemPath.GetFileName(ImagePath),
+            PlayedTime = playTime,
+            Name = Name.Value ?? string.Empty,
+            CnName = CnName,
+            Description = Description.Value ?? string.Empty,
+            Developer = Developer.Value ?? DefaultString,
+            LastPlay = LastPlay.Value ?? DefaultString,
+            ExpectedPlayTime = ExpectedPlayTime.Value ?? DefaultString,
+            Rating = Rating.Value,
+            ReleaseDate = ReleaseDate.Value,
+            ExePath = SystemPath.GetRelativePath(metaPath, Path),
+            Tags = new ObservableCollection<string>(Tags.Value!.ToList()),
+            TotalPlayTime = TotalPlayTime,
+            RunAsAdmin = RunAsAdmin,
+            PlayType = PlayType,
+            Ids = (string[])Ids.Clone(),
+            RssType = RssType,
+            Comment = Comment,
+            MyRate = MyRate,
+            PrivateComment = PrivateComment,
+            SavePath = SavePath,
+            ProcessName = ProcessName,
+            TextPath =  TextPath,
+        };
+        return result;
     }
 
     /// <summary>
@@ -362,9 +364,8 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
     /// <returns>恢复过后的信息</returns>
     public static Galgame ResolveMetaFromLocalFolder(Galgame meta,string metaFolderPath)
     {
-        if(!meta.CheckExistLocal())return meta;
+        if(meta.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip))return meta;
         meta = App.GetService<IFileService>().Read<Galgame>(metaFolderPath, "meta.json")!;
-        meta.SourceType = GalgameSourceType.LocalFolder;
         meta.Path = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.Path));
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         if (meta.ImagePath.Value != DefaultImagePath)
@@ -373,15 +374,22 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>, ICloneabl
             if(File.Exists(meta.ImagePath) == false)
                 meta.ImagePath.Value = DefaultImagePath;
         }
-        if (meta.ExePath != null)
-        {
-            meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
-            if (File.Exists(meta.ExePath) == false)
-                meta.ExePath = null;
-        }
-        meta.SavePath = Directory.Exists(meta.SavePath) ? meta.SavePath : null; //检查存档路径是否存在并设置SavePosition字段
         meta.UpdateIdFromMixed();
-        meta.FindSaveInPath();
+        if (meta.SourceType == GalgameSourceType.LocalFolder)
+        {
+            if (meta.ExePath != null)
+            {
+                meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
+                if (File.Exists(meta.ExePath) == false)
+                    meta.ExePath = null;
+            }
+            meta.SavePath = Directory.Exists(meta.SavePath) ? meta.SavePath : null; //检查存档路径是否存在并设置SavePosition字段
+            meta.FindSaveInPath();
+        }
+        else
+        {
+            meta.ExePath = null;
+        }
         return meta;
     }
 
