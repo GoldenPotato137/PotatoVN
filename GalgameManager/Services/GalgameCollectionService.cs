@@ -94,7 +94,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames = _galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
         foreach (Galgame g in _galgames)
         {
-            if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Directory.Exists(g.Path))
+            if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
             {
                 g.Path = string.Empty;
                 g.SourceType = GalgameSourceType.Virtual;
