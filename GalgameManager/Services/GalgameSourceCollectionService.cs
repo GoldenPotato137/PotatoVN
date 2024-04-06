@@ -60,23 +60,11 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         return Task.CompletedTask;
     }
 
-    private async void OnGalgameAdded(Galgame galgame)
+    private void OnGalgameAdded(Galgame galgame)
     {
         if (_galgameSources.FirstOrDefault(folder => folder.IsInSource(galgame)) is { } sourceBase)
         {
             sourceBase.AddGalgame(galgame);
-        };
-        if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
-        try
-        {
-            if (Path.GetDirectoryName(galgame.Path) is {} p)
-            {
-                await AddGalgameSourceAsync(galgame.SourceType, p, false);
-            }
-        }
-        catch (Exception)
-        {
-            // ignored
         }
     }
 

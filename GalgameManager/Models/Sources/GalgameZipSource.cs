@@ -1,10 +1,8 @@
 ﻿using System.Text.RegularExpressions;
-using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
-using GalgameManager.Models.BgTasks;
-using GalgameManager.Services;
-using GalgameManager.Views.Dialog;
+using SystemPath = System.IO.Path;
+
 
 namespace GalgameManager.Models.Sources;
 
@@ -25,7 +23,7 @@ public class GalgameZipSource : GalgameSourceBase
 
     public override bool IsInSource(string path)
     {
-        return path[..path.LastIndexOf('\\')] == Path ;
+        return SystemPath.GetFullPath(path).StartsWith(SystemPath.GetFullPath(Path)) ;
     }
 
     public async override IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()

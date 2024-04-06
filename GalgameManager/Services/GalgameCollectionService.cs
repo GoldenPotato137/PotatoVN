@@ -91,9 +91,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private async Task GetGalgames()
     {
         _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
+        _galgames = _galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
         foreach (Galgame g in _galgames)
         {
-            if (g.SourceType == GalgameSourceType.LocalFolder && g.CheckExistLocal() == false)
+            if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Directory.Exists(g.Path))
             {
                 g.Path = string.Empty;
                 g.SourceType = GalgameSourceType.Virtual;
@@ -185,7 +186,10 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (_galgames.Any(gal => gal.Path == galgame.Path && gal.SourceType == galgame.SourceType))
             return AddGalgameResult.AlreadyExists;
 
+        // 覆盖sourceType
+        GalgameSourceType sourceType = galgame.SourceType;
         galgame = TryRecoverGalgameFromLocal(galgame);
+        galgame.SourceType = sourceType;
         
         // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
         virtualGame ??= GetVirtualGame(galgame);

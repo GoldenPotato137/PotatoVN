@@ -23,7 +23,7 @@ public class GalgameFolderSource : GalgameSourceBase
 
     public override bool IsInSource(string path)
     {
-        return path[..path.LastIndexOf('\\')] == Path ;
+        return SystemPath.GetFullPath(path).StartsWith(SystemPath.GetFullPath(Path)) ;
     }
 
     public async override IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
