@@ -223,7 +223,8 @@
                                              Stroke="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
                                              Fill="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
                                              />
-                                    <Border Background="Gray"
+                                    <Border 
+                                        Background="{ThemeResource AccentTextFillColorTertiaryBrush}"
                                         HorizontalAlignment="Right" VerticalAlignment="Top" 
                                         Height="24" Width="24"
                                         CornerRadius="4">

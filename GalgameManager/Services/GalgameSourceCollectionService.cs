@@ -42,11 +42,11 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
 
         await Task.Run(() =>
         {
-            foreach (GalgameSourceBase galgameFolder in _galgameSources)
+            foreach (GalgameSourceBase galgameSource in _galgameSources)
             {
-                galgameFolder.GalgameService = _galgameService;
-                foreach(Galgame game in galgames.Where(galgame => galgameFolder.IsInSource(galgame)))
-                    galgameFolder.AddGalgame(game);
+                galgameSource.GalgameService = _galgameService;
+                foreach(Galgame game in galgames.Where(galgame => galgameSource.IsInSource(galgame)))
+                    galgameSource.AddGalgame(game);
             }
         });
     }

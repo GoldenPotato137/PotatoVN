@@ -94,11 +94,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         _galgames = _galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
         foreach (Galgame g in _galgames)
         {
-            if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
-            {
-                g.Path = string.Empty;
-                g.SourceType = GalgameSourceType.Virtual;
-            }
+            // if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
+            // {
+            //     // g.Path = string.Empty;
+            //     g.SourceType = GalgameSourceType.Virtual;
+            // }
             _galgameMap[g.Url] = g;
             g.ErrorOccurred += e =>
                 _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
