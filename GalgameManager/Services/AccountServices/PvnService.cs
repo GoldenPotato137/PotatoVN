@@ -120,7 +120,7 @@ public class PvnService : IPvnService
 
     public async Task<PvnAccount?> LoginViaBangumiAsync()
     {
-        BgmAccount? bgmAccount = await _settingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiOAuthState);
+        BgmAccount? bgmAccount = await _settingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
         Task getBgmAccountTask = Task.CompletedTask;
         if (bgmAccount is null || bgmAccount.OAuthed == false)
         {
@@ -130,7 +130,7 @@ public class PvnService : IPvnService
                 for(var i = 0; i <= 60 * 5; i++)  //timeout: 60sec
                 {
                     await Task.Delay(200);
-                    bgmAccount = await _settingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiOAuthState);
+                    bgmAccount = await _settingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
                     if (bgmAccount is not null && bgmAccount.OAuthed) break;
                 }
             });

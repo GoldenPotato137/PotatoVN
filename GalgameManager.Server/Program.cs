@@ -82,6 +82,15 @@ public class Program
                 ValidateIssuer = false,
             };
         });
+        builder.Services.AddCors(x =>
+        {
+            x.AddPolicy("AllowAll", corsPolicyBuilder =>
+            {
+                corsPolicyBuilder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
 
         WebApplication app = builder.Build();
         
@@ -100,8 +109,8 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        app.UseCors("AllowAll");
         app.UseAuthorization();
-
 
         app.MapControllers();
 
