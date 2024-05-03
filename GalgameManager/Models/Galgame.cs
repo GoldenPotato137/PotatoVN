@@ -324,6 +324,27 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         Dictionary<string, int> playTime = new();
         foreach (var (key, value) in PlayedTime)
             playTime.Add(key, value);
+        ObservableCollection<GalgameCharacter> characters = new();
+        foreach (var character in Characters)
+        {
+            characters.Add(new GalgameCharacter
+            {
+                Name = character.Name,
+                Relation = character.Relation,
+                PreviewImagePath = ".\\" + SystemPath.GetFileName(character.PreviewImagePath),
+                ImagePath = ".\\" + SystemPath.GetFileName(character.ImagePath),
+                Summary = character.Summary,
+                Gender = character.Gender,
+                BirthYear = character.BirthYear,
+                BirthMon = character.BirthMon,
+                BirthDay = character.BirthDay,
+                BirthDate = character.BirthDate,
+                BloodType = character.BloodType,
+                Height = character.Height,
+                Weight = character.Weight,
+                BWH = character.BWH,
+            });
+        }
         Galgame result = new()
         {
             SourceType = SourceType, 
@@ -332,6 +353,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
                 ".\\" + SystemPath.GetFileName(ImagePath),
             PlayedTime = playTime,
             Name = Name.Value ?? string.Empty,
+            Characters = characters, 
             CnName = CnName,
             Description = Description.Value ?? string.Empty,
             Developer = Developer.Value ?? DefaultString,
@@ -373,6 +395,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             meta.ImagePath.Value = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ImagePath.Value!));
             if(File.Exists(meta.ImagePath) == false)
                 meta.ImagePath.Value = DefaultImagePath;
+        }
+        foreach (GalgameCharacter character in meta.Characters)
+        {
+            character.ImagePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, character.ImagePath));
+            if (File.Exists(character.ImagePath) == false)
+                character.ImagePath = DefaultImagePath;
+            character.PreviewImagePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, character.PreviewImagePath));
+            if (File.Exists(character.PreviewImagePath) == false)
+                character.PreviewImagePath = DefaultImagePath;
         }
         meta.UpdateIdFromMixed();
         if (meta.SourceType == GalgameSourceType.LocalFolder)

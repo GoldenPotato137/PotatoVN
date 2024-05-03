@@ -151,9 +151,9 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         await SaveGalgamesAsync();
     }
 
-    public Galgame TryRecoverGalgameFromLocal(Galgame galgame)
+    public (Galgame, bool) TryRecoverGalgameFromLocal(Galgame galgame)
     {
-        if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return galgame;
+        if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return (galgame, false);
         var metaFolder = galgame.GetMetaPath();
         if (Path.Exists(Path.Combine(metaFolder, "meta.json")))
         {
@@ -167,7 +167,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             }
             PhrasedEvent?.Invoke();
         }
-        return galgame;
+        return (galgame, true);
     }
     
     public Galgame? GetVirtualGame(Galgame galgame)=>_galgames.FirstOrDefault(g =>
@@ -186,10 +186,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if (_galgames.Any(gal => gal.Path == galgame.Path && gal.SourceType == galgame.SourceType))
             return AddGalgameResult.AlreadyExists;
 
-        // 覆盖sourceType
-        GalgameSourceType sourceType = galgame.SourceType;
-        galgame = TryRecoverGalgameFromLocal(galgame);
-        galgame.SourceType = sourceType;
         
         // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
         virtualGame ??= GetVirtualGame(galgame);
@@ -200,15 +196,22 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             galgame = virtualGame;
         } else if (virtualGame is null)
         {
-            var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
-            var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
-            var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
-            galgame.Name.Value = NameRegex.GetName(galgame.Name!, pattern, removeBorder, regexIndex);
-            if (string.IsNullOrEmpty(galgame.Name)) return AddGalgameResult.NotFoundInRss;
-
-            galgame = await PhraseGalInfoAsync(galgame);
-            if (!isForce && galgame.RssType == RssType.None)
-                return AddGalgameResult.NotFoundInRss;
+            // 覆盖sourceType
+            GalgameSourceType sourceType = galgame.SourceType;
+            bool recoverSuccess;
+            (galgame, recoverSuccess) = TryRecoverGalgameFromLocal(galgame);
+            galgame.SourceType = sourceType;
+            if (!recoverSuccess)
+            {
+                var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
+                var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
+                var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
+                galgame.Name.Value = NameRegex.GetName(galgame.Name!, pattern, removeBorder, regexIndex);
+                if (string.IsNullOrEmpty(galgame.Name)) return AddGalgameResult.NotFoundInRss;
+                galgame = await PhraseGalInfoAsync(galgame);
+                if (!isForce && galgame.RssType == RssType.None)
+                    return AddGalgameResult.NotFoundInRss;
+            }
         }
         
         galgame.FindSaveInPath();
@@ -510,6 +513,17 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(destImagePath)
            && File.Exists(galgame.ImagePath))
             File.Copy(galgame.ImagePath.Value!, destImagePath);
+        foreach( GalgameCharacter character in galgame.Characters)
+        {
+            var destCharPreviewImagePath = Path.Join(metaPath, Path.GetFileName(character.PreviewImagePath));
+            var destCharImagePath = Path.Join(metaPath, Path.GetFileName(character.ImagePath));
+            if (character.PreviewImagePath != Galgame.DefaultImagePath && !File.Exists(destCharPreviewImagePath)
+           && File.Exists(character.PreviewImagePath))
+                File.Copy(character.PreviewImagePath, destCharPreviewImagePath);
+            if (character.ImagePath != Galgame.DefaultImagePath && !File.Exists(destCharImagePath)
+           && File.Exists(character.ImagePath))
+                File.Copy(character.ImagePath, destCharImagePath);
+        }
     }
 
     /// <summary>
