@@ -20,5 +20,11 @@ public enum WindowMode
     /// <summary>
     /// 关闭应用，仅在CloseConfirmDialog中使用
     /// </summary>
-    Close
+    Close,
+    
+    /// <summary>
+    /// 启动中
+    /// </summary>
+    Booting,
+
 }
