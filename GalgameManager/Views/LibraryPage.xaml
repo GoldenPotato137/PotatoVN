@@ -6,6 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:sources="using:GalgameManager.Models.Sources"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -13,6 +15,8 @@
             <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiDeleteFolder}" 
                           Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </CommandBarFlyout>
+        <converter:EnumToStringConverter x:Key="EnumStringConverter" />
+        <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -57,14 +61,14 @@
             SelectionMode="None"
             StretchContentForSingleRow="False">
             <controls:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="models:GalgameFolder">
+                <DataTemplate x:DataType="sources:GalgameSourceBase">
                     <Grid
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
                         ContextFlyout="{StaticResource Flyout}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <FontIcon
-                                Glyph="&#xE8B7;"
+                                Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyphConverter}}"
                                 FontFamily="Segoe Fluent Icons"
                                 FontSize="50"/>
                             <TextBlock
@@ -73,6 +77,12 @@
                                 HorizontalAlignment="Center"
                                 Style="{ThemeResource BodyTextStyle}"
                                 Text="{x:Bind Path}" />
+                            <TextBlock
+                                MaxHeight="85"
+                                Margin="{StaticResource XXSmallTopMargin}"
+                                HorizontalAlignment="Center"
+                                Style="{ThemeResource DescriptionTextStyle}"
+                                Text="{x:Bind SourceType, Converter={StaticResource EnumStringConverter}}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.AddSourceDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:GalgameManager.Views.Control"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    PrimaryButtonClick="OnPrimaryButtonClick"
+    SecondaryButtonClick="OnSecondaryButtonClick"
+    DefaultButton="Primary"
+    PrimaryButtonText="确定"
+    SecondaryButtonText="取消"
+    Style="{ThemeResource DefaultContentDialogStyle}"
+    mc:Ignorable="d"
+    x:Uid="AddSourceDialog">
+
+    <StackPanel>
+        <RadioButtons SelectedIndex="{x:Bind SelectItem, Mode=TwoWay}">
+            <x:String>本地库</x:String>
+            <x:String>本地压缩库</x:String>
+        </RadioButtons>
+        <StackPanel Orientation="Horizontal">
+            <TextBox  MinWidth="300" Text="{x:Bind Path ,Mode=TwoWay}"/>
+            <Button Margin="20 0" Click="ButtonBase_OnClick">选择路径</Button>
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

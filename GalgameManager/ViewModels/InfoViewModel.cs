@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml;
 
 namespace GalgameManager.ViewModels;
 
-public partial class InfoViewModel : ObservableRecipient, INavigationAware
+public partial class InfoViewModel : ObservableObject, INavigationAware
 {
     public ObservableCollection<BgTaskViewModel> BgTasks = new();
     [ObservableProperty] private ObservableCollection<Info> _infos = new();
@@ -71,7 +71,7 @@ public partial class InfoViewModel : ObservableRecipient, INavigationAware
     }
 }
 
-public partial class BgTaskViewModel : ObservableRecipient
+public partial class BgTaskViewModel : ObservableObject
 {
     [ObservableProperty] private string _message = string.Empty;
     [ObservableProperty] private string _title = string.Empty;

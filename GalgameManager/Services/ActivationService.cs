@@ -7,6 +7,7 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,7 +21,7 @@ public class ActivationService : IActivationService
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUpdateService _updateService;
-    private readonly IDataCollectionService<GalgameFolder> _galgameFolderCollectionService;
+    private readonly IDataCollectionService<GalgameSourceBase> _galgameFolderCollectionService;
     private readonly IDataCollectionService<Galgame> _galgameCollectionService;
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
@@ -34,7 +35,7 @@ public class ActivationService : IActivationService
     
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
-        IDataCollectionService<GalgameFolder> galgameFolderCollectionService,
+        IDataCollectionService<GalgameSourceBase> galgameFolderCollectionService,
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,

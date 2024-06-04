@@ -929,6 +929,9 @@
   <data name="GalgamePage_SetLocalPath.Label" xml:space="preserve">
     <value>设置本地路径</value>
   </data>
+  <data name="GalgamePage_UnzipGame.Label" xml:space="preserve">
+    <value>解压游戏</value>
+  </data>
   <data name="HomePage_Syncing" xml:space="preserve">
     <value>同步游戏记录中  {0}/{1}</value>
   </data>
@@ -1039,6 +1042,9 @@
   </data>
   <data name="UnpackDialog_GameName.Text" xml:space="preserve">
     <value>游戏名</value>
+  </data>
+  <data name="UnpackDialog_SourceSelect.Text" xml:space="preserve">
+    <value>本地源</value>
   </data>
   <data name="UnpackDialog_GameDescription.Text" xml:space="preserve">
     <value>为提高识别准确度，游戏名应尽可能准确(正式名)并去除不必要的内容(如版本、汉化组名等)</value>
@@ -1504,6 +1510,15 @@
   </data>
   <data name="AccountPage_Bgm_RefreshSuccess" xml:space="preserve">
     <value>Bangumi账号授权与信息刷新成功</value>
+  </data>
+  <data name="AddSourceDialog.Title" xml:space="preserve">
+    <value>添加源</value>
+  </data>
+  <data name="GalgameSourceType_LocalFolder" xml:space="preserve">
+    <value>本地文件夹</value>
+  </data>
+  <data name="GalgameSourceType_LocalZip" xml:space="preserve">
+    <value>本地压缩包</value>
   </data>
   <data name="LocalSettingService_ResetConfig" xml:space="preserve">
     <value>无法正确读取软件设置，可能软件数据损坏了。请参考链接：https://github.com/GoldenPotato137/PotatoVN/wiki/TroubleShooting 查看解决方案。软件数据已重置。</value>

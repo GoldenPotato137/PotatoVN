@@ -20,7 +20,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class GalgameCharacterViewModel : ObservableRecipient, INavigationAware
+public partial class GalgameCharacterViewModel : ObservableObject, INavigationAware
 {
     [ObservableProperty] private GalgameCharacter? _character;
     private readonly INavigationService _navigationService;

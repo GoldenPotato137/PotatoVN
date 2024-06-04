@@ -18,12 +18,13 @@ using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
+using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml.Media.Animation;
 // ReSharper disable CollectionNeverQueried.Global
 
 namespace GalgameManager.ViewModels;
 
-public partial class HomeViewModel : ObservableRecipient, INavigationAware
+public partial class HomeViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly IDataCollectionService<Galgame> _dataCollectionService;
@@ -45,11 +46,6 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
     #endregion
 
-    public ICommand ItemClickCommand
-    {
-        get;
-    }
-
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
@@ -61,15 +57,13 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _localSettingsService = localSettingsService;
         _filterService = filterService;
         _infoService = infoService;
-
-        ItemClickCommand = new RelayCommand<Galgame>(OnItemClick);
     }
     
     public async void OnNavigatedTo(object parameter)
     {
         SearchKey = _galgameService.GetSearchKey();
         UpdateSearchTitle();
-        Source = await _dataCollectionService.GetContentGridDataAsync();
+        Source = await _dataCollectionService.GetGalgameSourcesAsync();
         Filters = _filterService.GetFilters();
         
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
@@ -109,7 +103,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
         _localSettingsService.OnSettingChanged -= OnSettingChanged;
     }
 
-    private void OnItemClick(Galgame? clickedItem)
+    [RelayCommand]
+    private void ItemClick(Galgame? clickedItem)
     {
         if (clickedItem != null)
         {
@@ -299,12 +294,14 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
     /// <param name="path">游戏文件夹路径</param>
     private async Task AddGalgameInternal(string path)
     {
+        //TODO
         IsPhrasing = true;
         AddGalgameResult result = AddGalgameResult.Other;
         string msg;
         try
         {
-            result = await _galgameService.TryAddGalgameAsync(path, true);
+            result = await _galgameService.TryAddGalgameAsync(
+                new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(path), path), true);
             msg = result.ToMsg();
         }
         catch (Exception e)
@@ -317,7 +314,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
-    private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetContentGridDataAsync();
+    private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetGalgameSourcesAsync();
 
     [RelayCommand]
     private async Task AddGalgame()

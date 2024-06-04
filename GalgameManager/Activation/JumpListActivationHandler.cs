@@ -25,7 +25,7 @@ public class JumpListActivationHandler : ActivationHandler<AppActivationArgument
         if ((arg.Arguments.StartsWith("/j") && arg.Arguments.Length > 2) == false) return false;
         var target = arg.Arguments[3..]; //去掉/j与空格
         target = target[1..^1]; //去掉双引号
-        _game = _galgameCollectionService.GetGalgameFromPath(target);
+        _game = _galgameCollectionService.GetGalgameFromUrl(target);
         return _game is not null;
     }
 

@@ -10,7 +10,7 @@ using GalgameManager.Services;
 
 namespace GalgameManager.ViewModels;
 
-public partial class GalgameSettingViewModel : ObservableRecipient, INavigationAware
+public partial class GalgameSettingViewModel : ObservableObject, INavigationAware
 {
     public Galgame Gal
     {

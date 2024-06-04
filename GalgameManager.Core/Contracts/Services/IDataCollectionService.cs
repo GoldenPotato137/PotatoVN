@@ -4,7 +4,7 @@ namespace GalgameManager.Core.Contracts.Services;
 
 public interface IDataCollectionService<T>
 {
-    Task<ObservableCollection<T>> GetContentGridDataAsync();
+    Task<ObservableCollection<T>> GetGalgameSourcesAsync();
 
     /// <summary>
     /// 初始化

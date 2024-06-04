@@ -18,7 +18,7 @@ public class BgTaskService : IBgTaskService
     public BgTaskService()
     {
         _bgTasksString[typeof(RecordPlayTimeTask)] = "-record";
-        _bgTasksString[typeof(GetGalgameInFolderTask)] = "-getGalInFolder";
+        _bgTasksString[typeof(GetGalgameInSourceTask)] = "-getGalInSource";
         _bgTasksString[typeof(UnpackGameTask)] = "-unpack";
     }
     
@@ -64,6 +64,7 @@ public class BgTaskService : IBgTaskService
         _bgTasks.Add(bgTask);
         Task t = bgTask.Run().ContinueWith(_ =>
         {
+            if (!_bgTasks.Contains(bgTask)) return;
             _bgTasks.Remove(bgTask);
             UiThreadInvokeHelper.Invoke(() => BgTaskRemoved?.Invoke(bgTask));
         });

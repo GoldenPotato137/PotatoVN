@@ -12,6 +12,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
@@ -19,7 +20,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class GalgameViewModel : ObservableRecipient, INavigationAware
+public partial class GalgameViewModel : ObservableObject, INavigationAware
 {
     private const int ProcessMaxWaitSec = 60; //(手动指定游戏进程)等待游戏进程启动的最大时间
     private readonly GalgameCollectionService _galgameService;
@@ -29,7 +30,17 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
     private readonly IBgTaskService _bgTaskService;
     private readonly IPvnService _pvnService;
     [ObservableProperty] private Galgame? _item;
+    [NotifyCanExecuteChangedFor(nameof(PlayCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ChangeSavePositionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResetExePathCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteFromDiskCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetLocalPathCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedThreadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectProcessCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SelectTextCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearTextCommand))]
     [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
+    [ObservableProperty] private bool _isZipGame;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
@@ -54,6 +65,17 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
     }
 
+    [RelayCommand]
+    private async Task UnzipGame()
+    {
+        if (Item?.CheckIsZip() ?? false)
+        {
+            await _galgameService.ToLocalGalgame(Item);
+        }
+    }
+    
+    
+
     public GalgameViewModel(IDataCollectionService<Galgame> dataCollectionService, INavigationService navigationService, 
         IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
         IPvnService pvnService)
@@ -76,7 +98,8 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
 
         Item = param.Galgame;
-        IsLocalGame = Item.CheckExist();
+        IsLocalGame = Item.CheckExistLocal();
+        IsZipGame = Item.CheckIsZip();
         Item.SavePath = Item.SavePath; //更新存档位置显示
         UpdateVisibility();
         
@@ -154,10 +177,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await Launcher.LaunchUriAsync(new Uri("https://vndb.org/v"+Item!.Ids[(int)RssType.Vndb]));
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task Play()
     {
-        if (Item == null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         if (Item.ExePath == null)
             await _galgameService.GetGalgameExeAsync(Item);
         if (Item.ExePath == null) return;
@@ -213,23 +236,24 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         _navigationService.NavigateTo(typeof(GalgameSettingViewModel).FullName!, Item);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task ChangeSavePosition()
     {
-        if(Item == null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         await _galgameService.ChangeGalgameSavePosition(Item);
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private void ResetExePath(object obj)
     {
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         Item!.ExePath = null;
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task DeleteFromDisk()
     {
-        if(Item == null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow!.Content.XamlRoot,
@@ -296,7 +320,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SetLocalPath()
     {
         try
@@ -311,14 +335,13 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             if (file is not null)
             {
                 var folder = file.Path[..file.Path.LastIndexOf('\\')];
-                if (_galgameService.GetGalgameFromPath(folder) is not null)
-                {
+                AddGalgameResult result =  await _galgameService.TryAddGalgameAsync(
+                    new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder)
+                        , folder), virtualGame: Item);
+                if (result == AddGalgameResult.AlreadyExists) 
                     _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
-                    return;
-                }
-                await _galgameService.TryAddGalgameAsync(folder, virtualGame: Item);
                 Item!.ExePath = file.Path;
-                IsLocalGame = Item!.CheckExist();
+                IsLocalGame = Item!.CheckExistLocal();
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());
                 _galgameService.RefreshDisplay(); //重新构造显示列表以刷新特殊显示非本地游戏（因为GameToOpacityConverter只会在构造列表的时候被调用）
             }
@@ -329,7 +352,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task RemoveSelectedThread()
     {
         Item!.ProcessName = null;
@@ -338,10 +361,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         await SaveAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectProcess()
     {
-        if(Item is null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         SelectProcessDialog dialog = new();
         await dialog.ShowAsync();
         if (dialog.SelectedProcessName is not null)
@@ -353,10 +376,10 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectText()
     {
-        if (Item is null) return;
+        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
         var path = Item.TextPath;
         if (path is null || File.Exists(path) == false)
         {
@@ -374,7 +397,7 @@ public partial class GalgameViewModel : ObservableRecipient, INavigationAware
             _ = Launcher.LaunchUriAsync(new Uri(path));
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task ClearText()
     {
         if (Item is null) return;

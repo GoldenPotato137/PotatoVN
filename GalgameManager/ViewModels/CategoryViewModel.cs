@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class CategoryViewModel : ObservableRecipient, INavigationAware
+public partial class CategoryViewModel : ObservableObject, INavigationAware
 {
     private readonly CategoryService _categoryService;
     private readonly INavigationService _navigationService;

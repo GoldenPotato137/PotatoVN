@@ -33,7 +33,7 @@ public partial class Category : ObservableObject
     {
         Galgames.Clear();
         foreach (Galgame game in _galgames)
-            Galgames.Add(game.CheckExist()? game.Path : game.Name!);
+            Galgames.Add(game.Url);
     }
     
     public void Add(Galgame galgame)

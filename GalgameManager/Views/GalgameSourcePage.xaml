@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="GalgameManager.Views.GalgameFolderPage"
+    x:Class="GalgameManager.Views.GalgameSourcePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,9 +7,11 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <converter:EnumToStringConverter x:Key="EnumStringConverter" />
     </Page.Resources>
     
     <Grid>
@@ -23,7 +25,18 @@
             <RelativePanel Grid.Row="0">
                 <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}"
                            Style="{ThemeResource TitleTextBlockStyle}" 
-                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"/>
+                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
+                           x:Name="PathTextBlock"/>
+                <Border RelativePanel.RightOf="PathTextBlock"
+                        RelativePanel.AlignVerticalCenterWith="PathTextBlock"
+                        Background="SteelBlue"
+                        BorderThickness="0"
+                        CornerRadius="6">
+                    <TextBlock Text="{x:Bind ViewModel.Item.SourceType, FallbackValue={}, Converter={StaticResource EnumStringConverter}}"
+                               Style="{ThemeResource SmallTextStyle}" 
+                               MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
+                               Padding="4, 0"/>
+                </Border>
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
                             DefaultLabelPosition="Right">
                     <!-- 手动添加游戏 -->

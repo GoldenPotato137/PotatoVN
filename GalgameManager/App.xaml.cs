@@ -5,6 +5,7 @@ using GalgameManager.Core.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
@@ -85,7 +86,7 @@ public partial class App : Application
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
-            services.AddSingleton<IDataCollectionService<GalgameFolder>, GalgameFolderCollectionService>();
+            services.AddSingleton<IDataCollectionService<GalgameSourceBase>, GalgameSourceCollectionService>();
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<ICategoryService, CategoryService>();
@@ -117,8 +118,8 @@ public partial class App : Application
             services.AddTransient<PlayedTimeViewModel>();
             services.AddTransient<LibraryViewModel>();
             services.AddTransient<LibraryPage>();
-            services.AddTransient<GalgameFolderViewModel>();
-            services.AddTransient<GalgameFolderPage>();
+            services.AddTransient<GalgameSourceViewModel>();
+            services.AddTransient<GalgameSourcePage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
             services.AddTransient<UpdateContentViewModel>();

@@ -1,10 +1,11 @@
-﻿using System.Configuration;
+using System.Configuration;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,9 @@ public class LocalSettingsService : ILocalSettingsService
     private readonly string _localsettingsFile;
     private readonly string _localsettingsBackupFile;
 
-    private IDictionary<string, object> _settings;
+    private readonly JsonSerializerSettings _deserializerSettings;
+
+    private IDictionary<string, string> _settings;
 
     private bool _isInitialized;
     private bool _isUpgrade;
@@ -33,11 +36,14 @@ public class LocalSettingsService : ILocalSettingsService
         _fileService = fileService;
         LocalSettingsOptions op = options.Value;
 
+        _deserializerSettings = new JsonSerializerSettings();
+        _deserializerSettings.Converters.Add(new GalgameSourceCustomConverter());
+
         _applicationDataFolder = ApplicationData.Current.LocalFolder.Path;
         _localsettingsFile = op.LocalSettingsFile ?? ErrorFileName;
         _localsettingsBackupFile = op.BackUpSettingsFile ?? ErrorFileName;
 
-        _settings = new Dictionary<string, object>();
+        _settings = new Dictionary<string, string>();
 
         async void OnAppClosing()
         {
@@ -48,23 +54,67 @@ public class LocalSettingsService : ILocalSettingsService
         Upgrade().Wait();
     }
 
+    private async Task UpgradeLargeFormat()
+    {
+        if (await ReadSettingAsync<bool>(KeyValues.SourceUpgraded) == false)
+        {
+            IDictionary<string, object>? dict =
+                _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile);
+            if (dict != null)
+            {
+                if(dict.TryGetValue(KeyValues.GalgameFolders, out var folders))
+                {
+                    if (folders is not JArray j) return;
+                    List<GalgameFolderSource>? sources = JsonConvert.DeserializeObject
+                        <List<GalgameFolderSource>>(j.ToString());
+                    if (sources is not null) _settings[KeyValues.GalgameSources] = JsonConvert.SerializeObject(sources);
+                }
+                if (dict.TryGetValue(KeyValues.Galgames, out var gs))
+                {
+                    if (gs is not JArray k) return;
+                    List<Galgame>? games = JsonConvert.DeserializeObject
+                        <List<Galgame>>(k.ToString());
+                    if (games is not null)
+                        _settings[KeyValues.Galgames] = JsonConvert.SerializeObject(
+                            games.Select(g =>
+                            {
+                                g.SourceType = GalgameSourceType.LocalFolder;
+                                return g;
+                            }));
+                }
+
+                if (dict.TryGetValue(KeyValues.CategoryGroups, out var cgs ))
+                {
+                    _settings[KeyValues.CategoryGroups] = cgs.ToString() ?? "[]";
+                }
+            }
+            await SaveSettingAsync(KeyValues.SourceUpgraded, true);
+            _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
+        }
+    }
+
     /// <summary>
     /// 仅在读大文件时调用
     /// </summary>
     /// <exception cref="ConfigurationErrorsException"></exception>
     private async Task InitializeAsync()
     {
-        if (_isInitialized || App.Status == WindowMode.Close) return;
+        if (_isInitialized) return;
+        await UpgradeLargeFormat();
         var retry = 0;
         while (true)
         {
-            await UpgradeSaveFormat();
-
+            if (retry > 3) //配置读取失败且无法回复，全新启动
+            {
+                _settings = new Dictionary<string, string>();
+                return;
+            }
+            
             var reset = false;
             try
             {
-                _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? 
-                            new Dictionary<string, object>();
+                _settings = _fileService.Read<IDictionary<string, string>>(_applicationDataFolder, _localsettingsFile) ?? 
+                            new Dictionary<string, string>();
             }
             catch
             {
@@ -73,26 +123,7 @@ public class LocalSettingsService : ILocalSettingsService
             
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
-            
-            if (retry > 3) //配置读取失败且无法回复，全新启动
-            {
-                try
-                {
-                    File.Copy(settingFile, Path.Combine(_applicationDataFolder, "recover.txt"), false);
-                }
-                catch
-                {
-                    //ignore
-                }
-                
-                await SaveSettingAsync(KeyValues.LastError, "LocalSettingService_ResetConfig".GetLocalized());
-                await SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0); // 重置同步时间戳
-                _settings = new Dictionary<string, object>();
-                App.SetWindowMode(WindowMode.Close);
-                return;
-            }
-            
-            if (reset || CheckSettings() == false)
+            if (reset)
             {
                 // 恢复最后一个正确的配置
                 if (File.Exists(Path.Combine(_applicationDataFolder, _localsettingsBackupFile))) 
@@ -110,25 +141,6 @@ public class LocalSettingsService : ILocalSettingsService
 
             await Task.CompletedTask;
             break;
-        }
-    }
-
-    /// <summary>
-    /// 更新存储格式, 用于大文件
-    /// </summary>
-    private async Task UpgradeSaveFormat()
-    {
-        if (await ReadSettingAsync<bool>(KeyValues.SaveFormatUpgraded) == false)
-        {
-            IDictionary<string, object> old = _fileService.Read<IDictionary<string, object>>
-                (_applicationDataFolder, _localsettingsFile) ??new Dictionary<string, object>();
-            // 原本莫名其妙把数据序列化了两次，弱智了
-            // 把被序列化两次的数据恢复过来
-            Dictionary<string, object> tmp = new();
-            foreach (var key in old.Keys)
-                tmp[key] = JsonConvert.DeserializeObject(old[key].ToString()!)!;
-            _fileService.SaveNow(_applicationDataFolder, _localsettingsFile, tmp);
-            await SaveSettingAsync(KeyValues.SaveFormatUpgraded, true);
         }
     }
 
@@ -169,13 +181,7 @@ public class LocalSettingsService : ILocalSettingsService
             await InitializeAsync();
             if (_settings.TryGetValue(key, out var obj))
             {
-                if (obj is JToken json)
-                {
-                    _settings[key] = json.ToObject<T>()!;
-                    obj = _settings[key];
-                }
-
-                return (T?)obj;
+                return JsonConvert.DeserializeObject<T>(obj, _deserializerSettings);
             }
         }
 
@@ -224,6 +230,8 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.NotifyWhenUnpackGame:
             case KeyValues.EventPvnSyncNotify:
                 return (T?)(object)true;
+            case KeyValues.SourceUpgraded:
+                return (T?)(object)false;
             default:
                 return default;
         }
@@ -238,7 +246,7 @@ public class LocalSettingsService : ILocalSettingsService
         else if(value!=null)
         {
             await InitializeAsync();
-            _settings[key] = value;
+            _settings[key] = JsonConvert.SerializeObject(value);
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
 
@@ -261,24 +269,6 @@ public class LocalSettingsService : ILocalSettingsService
             _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         }
         await UiThreadInvokeHelper.InvokeAsync(() => OnSettingChanged?.Invoke(key, null));
-    }
-
-    /// <summary>
-    /// 检查设置是否能正常读取
-    /// </summary>
-    private bool CheckSettings()
-    {
-        try
-        {
-            foreach (var value in _settings.Values)
-                if (value is JToken)
-                    JsonConvert.DeserializeObject(value.ToString()!);
-        }
-        catch
-        {
-            return false;
-        }
-        return true;
     }
 
 }

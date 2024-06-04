@@ -50,7 +50,9 @@ public static class KeyValues
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
     
     //数据相关
+    //抛弃GalgameFolders
     public const string GalgameFolders = "galgameFolders";
+    public const string GalgameSources = "galgameSources";
     public const string Galgames = "galgames";
     public const string Filters = "filters";
     public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
@@ -81,6 +83,7 @@ public static class KeyValues
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
+    public const string SourceUpgraded = "sortKeysUpgraded"; //排序格式升级
     public const string OAuthUpgraded = "OAuthUpgraded"; //BgmOAuth升级1
     public const string OAuthUpgraded2 = "OAuthUpgraded2"; //BgmOAuth升级2
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级

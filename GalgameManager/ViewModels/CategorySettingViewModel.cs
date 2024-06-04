@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class CategorySettingViewModel : ObservableRecipient, INavigationAware
+public partial class CategorySettingViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly CategoryService _categoryService;
