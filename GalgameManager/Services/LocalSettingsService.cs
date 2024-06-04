@@ -54,16 +54,10 @@ public class LocalSettingsService : ILocalSettingsService
     /// <exception cref="ConfigurationErrorsException"></exception>
     private async Task InitializeAsync()
     {
-        if (_isInitialized) return;
+        if (_isInitialized || App.Status == WindowMode.Close) return;
         var retry = 0;
         while (true)
         {
-            if (retry > 3) //配置读取失败且无法回复，全新启动
-            {
-                _settings = new Dictionary<string, object>();
-                return;
-            }
-
             await UpgradeSaveFormat();
 
             var reset = false;
@@ -79,6 +73,25 @@ public class LocalSettingsService : ILocalSettingsService
             
             var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
             var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
+            
+            if (retry > 3) //配置读取失败且无法回复，全新启动
+            {
+                try
+                {
+                    File.Copy(settingFile, Path.Combine(_applicationDataFolder, "recover.txt"), false);
+                }
+                catch
+                {
+                    //ignore
+                }
+                
+                await SaveSettingAsync(KeyValues.LastError, "LocalSettingService_ResetConfig".GetLocalized());
+                await SaveSettingAsync(KeyValues.PvnSyncTimestamp, 0); // 重置同步时间戳
+                _settings = new Dictionary<string, object>();
+                App.SetWindowMode(WindowMode.Close);
+                return;
+            }
+            
             if (reset || CheckSettings() == false)
             {
                 // 恢复最后一个正确的配置

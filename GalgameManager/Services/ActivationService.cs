@@ -61,7 +61,7 @@ public class ActivationService : IActivationService
     {
         // 多实例启动，切换到第一实例，第一实例 App.OnActivated() 响应
         IList<AppInstance> instances = AppInstance.GetInstances();
-        if (instances.Count > 1)
+        if (instances.Count > 1 && AppInstance.GetCurrent() != instances[0])
         {
             if (activationArgs is AppActivationArguments args)
             {
@@ -104,6 +104,8 @@ public class ActivationService : IActivationService
         {
             await _bgTaskService.ResolvedBgTasksAsync();
         }
+        
+        App.Status = IsRestart() ? WindowMode.SystemTray : WindowMode.Normal;
 
         // Execute tasks after activation.
         await StartupAsync();
@@ -219,7 +221,7 @@ public class ActivationService : IActivationService
     /// 判断是否是重启（aka进入系统托盘模式）<br/>
     /// 关于为什么要以重启进入系统托盘模式，见：<see cref="App.SetWindowMode"/>
     /// </summary>
-    private bool IsRestart()
+    public static bool IsRestart()
     {
         AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
         ExtendedActivationKind kind = activatedArgs.Kind;
