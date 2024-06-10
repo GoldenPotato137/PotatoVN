@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using Microsoft.UI.Xaml;
@@ -30,6 +31,7 @@ public partial class InfoViewModel : ObservableObject, INavigationAware
         BgTasks.Clear();
         foreach (BgTaskBase task in _bgTaskService.GetBgTasks()) 
             BgTasks.Add(new BgTaskViewModel(task));
+        App.GetService<ILocalSettingsService>().RemoveSettingAsync(KeyValues.LastError); //打开消息界面后才移除崩溃记录
         Infos = _infoService.Infos;
         foreach (Info info in Infos)
             info.Read = true;

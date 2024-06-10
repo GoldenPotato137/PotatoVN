@@ -1,4 +1,4 @@
-﻿using System.Configuration;
+using System.Configuration;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;

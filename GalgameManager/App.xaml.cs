@@ -54,7 +54,7 @@ public partial class App : Application
     public static TaskbarIcon? SystemTray { get; set; }
     
     public static UIElement? AppTitlebar { get; set; }
-    public static bool Closing;
+    public static WindowMode Status = WindowMode.Booting;
     public static event Action? OnAppClosing;
     public static DispatcherQueue DispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
 
@@ -145,9 +145,11 @@ public partial class App : Application
     private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
-        GetService<ILocalSettingsService>().SaveSettingAsync(KeyValues.LastError, e.Message + "\n" + e.Exception);
+        var errMsg = GetService<ILocalSettingsService>().ReadSettingAsync<string>(KeyValues.LastError).Result ??
+                      string.Empty;
+        errMsg += (errMsg.Length > 0 ? "\n\n" : string.Empty) + e.Message + "\n" + e.Exception;
+        GetService<ILocalSettingsService>().SaveSettingAsync(KeyValues.LastError, errMsg);
         e.Handled = false;
-        SetWindowMode(WindowMode.Close);
     }
     
     /// <summary>
@@ -157,11 +159,13 @@ public partial class App : Application
     {
         base.OnLaunched(args);
         _instance = this;
+        Status = WindowMode.Booting;
         await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
 
     private async void OnActivated(object?_, AppActivationArguments arguments)
     {
+        if (Status == WindowMode.Booting) return; // 应用启动时不响应激活，避免启动软件时启动多次
         await GetService<IActivationService>().HandleActivationAsync(arguments);
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
@@ -192,10 +196,10 @@ public partial class App : Application
                 {
                     GetService<IInfoService>().Event(EventType.AppError, InfoBarSeverity.Error,
                         "App_Error".GetLocalized(), msg: error);
-                    GetService<ILocalSettingsService>().RemoveSettingAsync(KeyValues.LastError);
                 }
                 break;
             case WindowMode.Minimize:
+                Status = WindowMode.Minimize;
                 MainWindow!.Minimize();
                 break;
             case WindowMode.SystemTray:
@@ -205,8 +209,8 @@ public partial class App : Application
                 WindowExtensions.Hide(MainWindow!);
                 break;
             case WindowMode.Close:
+                Status = WindowMode.Close;
                 OnAppClosing?.Invoke();
-                Closing = true;
                 SystemTray?.Dispose();
                 _instance.Exit();
                 break;

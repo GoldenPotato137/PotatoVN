@@ -85,7 +85,9 @@ public class FileService : IFileService
     {
         foreach (var (path, content) in WritingQueue.GetConsumingEnumerable())
         {
-            File.WriteAllText(path, content);
+            var tmpPath = path + ".tmp";
+            File.WriteAllText(tmpPath, content);
+            File.Move(tmpPath, path, true);
         }
     }
 }
