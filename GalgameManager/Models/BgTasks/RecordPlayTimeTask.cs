@@ -60,7 +60,8 @@ public class RecordPlayTimeTask : BgTaskBase
                 App.SetWindowMode(WindowMode.Normal);
             });
             await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
-            App.GetService<IPvnService>().Upload(_galgame, PvnUploadProperties.PlayTime);
+            if(await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.SyncGames))
+                App.GetService<IPvnService>().Upload(_galgame, PvnUploadProperties.PlayTime);
         });
         
         Task.Run(() =>
