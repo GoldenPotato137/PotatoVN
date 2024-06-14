@@ -20,10 +20,8 @@ public class LocalSettingsService : ILocalSettingsService
 
     private readonly string _applicationDataFolder;
     private readonly string _localsettingsFile;
-    private readonly string _localsettingsBackupFile;
 
     private readonly JsonSerializerSettings _serializerSettings;
-    private readonly JsonSerializer _serializer;
 
     private IDictionary<string, object> _settings;
 
@@ -39,11 +37,9 @@ public class LocalSettingsService : ILocalSettingsService
 
         _serializerSettings = new JsonSerializerSettings();
         _serializerSettings.Converters.Add(new GalgameSourceCustomConverter());
-        _serializer = JsonSerializer.Create(_serializerSettings);
 
         _applicationDataFolder = ApplicationData.Current.LocalFolder.Path;
         _localsettingsFile = op.LocalSettingsFile ?? ErrorFileName;
-        _localsettingsBackupFile = op.BackUpSettingsFile ?? ErrorFileName;
 
         _settings = new Dictionary<string, object>();
 
@@ -103,49 +99,14 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (_isInitialized) return;
         await UpgradeLargeFormat();
-        var retry = 0;
-        while (true)
+        await UpgradeSaveFormat();
+        foreach(var path in Directory.GetFiles(_applicationDataFolder, "data.*.json"))
         {
-            if (retry > 3) //配置读取失败且无法回复，全新启动
-            {
-                _settings = new Dictionary<string, object>();
-                return;
-            }
-
-            await UpgradeSaveFormat();
-
-            var reset = false;
-            try
-            {
-                _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile, _serializerSettings) ?? 
-                            new Dictionary<string, object>();
-            }
-            catch
-            {
-                reset = true;
-            }
-            
-            var settingFile = Path.Combine(_applicationDataFolder, _localsettingsFile);
-            var backupFile = Path.Combine(_applicationDataFolder, _localsettingsBackupFile);
-            if (reset || CheckSettings() == false)
-            {
-                // 恢复最后一个正确的配置
-                if (File.Exists(Path.Combine(_applicationDataFolder, _localsettingsBackupFile))) 
-                    File.Copy(backupFile, settingFile, true);
-                retry ++;
-                continue;
-            }
-
-            _isInitialized = true;
-            Task _ = Task.Run(() =>
-            {
-                // 备份配置
-                File.Copy(settingFile, backupFile, true);
-            });
-
-            await Task.CompletedTask;
-            break;
+            var key = Path.GetFileName(path)[5..^5];
+            var content = await File.ReadAllTextAsync(path);
+            _settings[key] = content; // 第一次读取时再反序列化
         }
+        _isInitialized = true;
     }
 
     /// <summary>
@@ -164,6 +125,21 @@ public class LocalSettingsService : ILocalSettingsService
                 tmp[key] = JsonConvert.DeserializeObject(old[key].ToString()!)!;
             _fileService.SaveNow(_applicationDataFolder, _localsettingsFile, tmp);
             await SaveSettingAsync(KeyValues.SaveFormatUpgraded, true);
+        }
+
+        // 大配置分离保存，而非像原先那样全部放在一个大json中
+        if (await ReadSettingAsync<bool>(KeyValues.LargerFileSeparateUpgraded) == false)
+        {
+            IDictionary<string, object> old = _fileService.Read<IDictionary<string, object>>
+                (_applicationDataFolder, _localsettingsFile) ??new Dictionary<string, object>();
+            foreach(var key in old.Keys)
+            {
+                _fileService.SaveWithoutJson(_applicationDataFolder, $"data.{key}.json", old[key].ToString()!);
+            }
+            _fileService.Delete(_applicationDataFolder, _localsettingsFile);
+            _fileService.Delete(_applicationDataFolder, "LocalSettings.backup.json");
+            await _fileService.WaitForWriteFinishAsync();
+            await SaveSettingAsync(KeyValues.LargerFileSeparateUpgraded, true);
         }
     }
 
@@ -190,29 +166,41 @@ public class LocalSettingsService : ILocalSettingsService
         _isUpgrade = true;
     }
 
-    public async Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false)
+    /// <summary>
+    /// 读取配置
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="isLarge">是否从统一的大文件json中读取</param>
+    /// <param name="converters">额外的Converter列表，会添加在默认列表之后</param>
+    /// <returns>若无相关配置，且无默认配置，返回default</returns>
+    public async Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false, List<JsonConverter>? converters = null)
     {
-        if (RuntimeHelper.IsMSIX && !isLarge)
+        try
         {
-            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
+            converters?.ForEach(c => _serializerSettings.Converters.Add(c));
+            if (RuntimeHelper.IsMSIX && !isLarge)
             {
-                return obj is string? JsonConvert.DeserializeObject<T>(obj.ToString()!): default;
+                if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
+                {
+                    return obj is string ? JsonConvert.DeserializeObject<T>(obj.ToString()!, _serializerSettings) : default;
+                }
+            }
+            else
+            {
+                await InitializeAsync();
+                if (_settings.TryGetValue(key, out var obj))
+                {
+                    if (obj is T value) return value;
+                    _settings[key] = JsonConvert.DeserializeObject<T>(obj.ToString()!, _serializerSettings)!;
+                    obj = _settings[key];
+                    return (T?)obj;
+                }
             }
         }
-        else
+        finally
         {
-            await InitializeAsync();
-            if (_settings.TryGetValue(key, out var obj))
-            {
-                if (obj is JToken json)
-                {
-                    _settings[key] = json.ToObject<T>(_serializer)!;
-                    obj = _settings[key];
-                }
-                
-
-                return (T?)obj;
-            }
+            // 无论如何都要移除新增的converter，防止崩溃保存的时候用到不应该用的converter
+            converters?.ForEach(c => _serializerSettings.Converters.Remove(c));
         }
 
         return TryGetDefaultValue<T>(key);
@@ -267,17 +255,35 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
-    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false, bool triggerEventWhenNull = false)
+    /// <summary>
+    /// 保存配置
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="value">value</param>
+    /// <param name="isLarge">是否从统一的保存到大文件json中</param>
+    /// <param name="triggerEventWhenNull">当value为null时是否要触发OnSettingChanged事件</param>
+    /// <param name="converters">额外的Converter列表</param>
+    public async Task SaveSettingAsync<T>(string key, T value, bool isLarge = false, bool triggerEventWhenNull = false,
+        List<JsonConverter>? converters = null)
     {
-        if (RuntimeHelper.IsMSIX && !isLarge)
+        try
         {
-            ApplicationData.Current.LocalSettings.Values[key] = JsonConvert.SerializeObject(value);
+            converters?.ForEach(c => _serializerSettings.Converters.Add(c));
+            if (RuntimeHelper.IsMSIX && !isLarge)
+            {
+                ApplicationData.Current.LocalSettings.Values[key] = JsonConvert.SerializeObject(value, _serializerSettings);
+            }
+            else if(value!=null)
+            {
+                await InitializeAsync();
+                _settings[key] = value;
+                _fileService.Save(_applicationDataFolder, $"data.{key}.json", value, _serializerSettings);
+            }
         }
-        else if(value!=null)
+        finally
         {
-            await InitializeAsync();
-            _settings[key] = value;
-            _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings, _serializerSettings);
+            // 无论如何都要移除新增的converter，防止崩溃保存的时候用到不应该用的converter
+            converters?.ForEach(c => _serializerSettings.Converters.Remove(c));
         }
 
         if (value != null || triggerEventWhenNull)
@@ -300,23 +306,4 @@ public class LocalSettingsService : ILocalSettingsService
         }
         await UiThreadInvokeHelper.InvokeAsync(() => OnSettingChanged?.Invoke(key, null));
     }
-
-    /// <summary>
-    /// 检查设置是否能正常读取
-    /// </summary>
-    private bool CheckSettings()
-    {
-        try
-        {
-            foreach (var value in _settings.Values)
-                if (value is JToken)
-                    JsonConvert.DeserializeObject(value.ToString()!);
-        }
-        catch
-        {
-            return false;
-        }
-        return true;
-    }
-
 }
