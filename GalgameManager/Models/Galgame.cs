@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Core.Contracts.Services;
-using GalgameManager.Core.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
@@ -42,6 +41,15 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             return $"{SourceType.SourceTypeToString()}://{Path}";
         }
     }
+
+    [JsonIgnore] public GalgameUid Uid => new()
+    {
+        Name = Name.Value!,
+        CnName = CnName,
+        BangumiId = Ids[(int)RssType.Bangumi],
+        VndbId = Ids[(int)RssType.Vndb],
+        PvnId = Ids[(int)RssType.PotatoVn],
+    };
 
     [ObservableProperty] private LockableProperty<string> _imagePath = DefaultImagePath;
 

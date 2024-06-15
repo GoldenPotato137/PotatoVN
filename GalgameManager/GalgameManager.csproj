@@ -150,4 +150,8 @@
   <ItemGroup>
     <Resource Remove="Themes\Generic.xaml" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Helpers\GalgameSourceCustomConverter.cs" />
+  </ItemGroup>
 </Project>
