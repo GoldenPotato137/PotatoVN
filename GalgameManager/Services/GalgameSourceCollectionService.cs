@@ -84,10 +84,10 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
     {
         if (_galgameSources.Any(galFolder => galFolder.Path == path && galFolder.SourceType == sourceType))
         {
-            throw new Exception($"这个galgame库{sourceType.SourceTypeToString()}://{path}已经添加过了");
+            throw new PvnException($"这个galgame库{sourceType.SourceTypeToString()}://{path}已经添加过了");
         }
 
-        GalgameSourceBase? galgameSource = null;
+        GalgameSourceBase? galgameSource;
 
         switch (sourceType)
         {
@@ -102,7 +102,6 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
             default:
                 throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
         }
-        if (galgameSource is null) throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null);
         _galgameSources.Add(galgameSource);
         await _localSettingsService.SaveSettingAsync(KeyValues.GalgameSources, _galgameSources, true);
         if (tryGetGalgame)
@@ -130,7 +129,7 @@ public class GalgameSourceCollectionService : IDataCollectionService<GalgameSour
         };
         await dialog.ShowAsync();
         
-        if (delete == false || !_galgameSources.Contains(galgameFolderSource)) return;
+        if (!delete || !_galgameSources.Contains(galgameFolderSource)) return;
         foreach (Galgame galgame in await galgameFolderSource.GetGalgameList())
             await _galgameService.RemoveGalgame(galgame, true);
         _galgameSources.Remove(galgameFolderSource);
