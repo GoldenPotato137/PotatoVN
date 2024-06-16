@@ -66,6 +66,11 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             {false,false};
         Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
         RecordPlayTimeTask.RecordOnlyWhenForeground = LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
+
+        App.OnAppClosing += async () =>
+        {
+            await SaveGalgamesAsync();
+        };
     }
     
     public async Task InitAsync()
