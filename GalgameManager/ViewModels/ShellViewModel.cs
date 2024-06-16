@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -90,11 +91,7 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty] private string? _infoBarTitle;
     [ObservableProperty] private string? _infoBarMessage;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
-    private int _eventInfoBarIndex;
-    [ObservableProperty] private bool _isEventInfoBarOpen;
-    [ObservableProperty] private string? _eventInfoBarTitle;
-    [ObservableProperty] private string? _eventInfoBarMessage;
-    [ObservableProperty] private InfoBarSeverity _eventInfoBarSeverity = InfoBarSeverity.Informational;
+    public ObservableCollection<ShellEventViewModel> ShellEvents { get; } = new();
 
     private async Task DisplayInfoMsgAsync(InfoBarSeverity infoBarSeverity, string? title, string? msg,
         int delayMs = 3000)
@@ -128,15 +125,18 @@ public partial class ShellViewModel : ObservableObject
             }
             msg += "...";
         }
-
-        var currentIndex = ++_eventInfoBarIndex;
-        EventInfoBarSeverity = infoBarSeverity;
-        EventInfoBarTitle = title;
-        EventInfoBarMessage = msg;
-        IsEventInfoBarOpen = true;
+        
+        if(ShellEvents.Count > 3) ShellEvents.RemoveAt(0); // 最多同时显示3个事件
+        ShellEventViewModel shellEvent = new()
+        {
+            Title = title,
+            Message = msg,
+            Severity = infoBarSeverity,
+            Command = new RelayCommand(NavigateToInfoPage)
+        };
+        ShellEvents.Add(shellEvent);
         await Task.Delay(delayMs);
-        if (currentIndex == _eventInfoBarIndex)
-            IsEventInfoBarOpen = false;
+        ShellEvents.Remove(shellEvent);
     }
     
     [RelayCommand]
@@ -146,4 +146,13 @@ public partial class ShellViewModel : ObservableObject
     }
 
     #endregion
+}
+
+public class ShellEventViewModel
+{
+    public string? Title;
+    public string? Message;
+    public InfoBarSeverity Severity;
+    // 每个元素都带个Command：ListView的bug，见https://github.com/microsoft/microsoft-ui-xaml/issues/560
+    public required IRelayCommand Command;
 }
