@@ -10,8 +10,8 @@ public partial class Category : ObservableObject
     [JsonIgnore]
     [JsonProperty("Galgames")]
     [Deprecated("只用于反序列化以更新旧设置，使用下面的GalgamesX", DeprecationType.Deprecate, 172)]
-    public readonly List<string> Galgames = new(); 
-    public readonly List<Galgame> GalgamesX = new();
+    public List<string> Galgames = new(); 
+    public List<Galgame> GalgamesX = new();
     [ObservableProperty] private string _imagePath = string.Empty;
 
     public bool Belong(Galgame galgame) => GalgamesX.Contains(galgame);
