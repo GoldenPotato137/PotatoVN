@@ -2,15 +2,16 @@
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.Phrase;
 
 public class YmgalPhraser: IGalInfoPhraser
 {
     private HttpClient _httpClient;
-    public static string BaseUrl = "https://www.ymgal.games/";
-    public static string PublicClientId = "ymgal";
-    public static string PublicClientSecret = "luna0327";
+    private static string BaseUrl = "https://www.ymgal.games/";
+    private static string PublicClientId = "ymgal";
+    private static string PublicClientSecret = "luna0327";
     
 
     public YmgalPhraser()
@@ -35,7 +36,15 @@ public class YmgalPhraser: IGalInfoPhraser
             url = BaseUrl + 
                   $"open/archive/search-game?mode=accurate&keyword={name}&similarity=50";
         }
-        
+
+        HttpResponseMessage response = await _httpClient.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            // ApiResponse<> apiResponse =
+            //     JsonConvert.DeserializeObject<ApiResponse<>>(await response.Content.ReadAsStringAsync());
+            await response.Content.ReadAsStringAsync();
+        }
+        return null;
     }
 
     public RssType GetPhraseType() => RssType.Ymgal;
@@ -56,6 +65,7 @@ public class YmgalPhraser: IGalInfoPhraser
         var access_token = OauthGet().Result;
         _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
         _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + access_token);
+        _httpClient.DefaultRequestHeaders.Add("version", "1");
     }
 }
 
