@@ -6,12 +6,12 @@ namespace GalgameManager.Models;
 
 public partial class Category : ObservableObject
 {
-    public string Name = string.Empty;
+    public string Name { get; set; }= string.Empty;
     [JsonIgnore]
     [JsonProperty("Galgames")]
     [Deprecated("只用于反序列化以更新旧设置，使用下面的GalgamesX", DeprecationType.Deprecate, 172)]
-    public List<string> Galgames = new(); 
-    public List<Galgame> GalgamesX = new();
+    public List<string> Galgames { get; } = new(); 
+    public List<Galgame> GalgamesX { get; }= new();
     [ObservableProperty] private string _imagePath = string.Empty;
 
     public bool Belong(Galgame galgame) => GalgamesX.Contains(galgame);
