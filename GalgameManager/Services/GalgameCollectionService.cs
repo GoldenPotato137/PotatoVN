@@ -454,6 +454,23 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     }
 
     /// <summary>
+    /// 获取UID相似度最高的游戏，若全为0则返回null<br/>
+    /// Uid比较规则见：<see cref="GalgameUid"/>
+    /// </summary>
+    public Galgame? GetGalgameFromUid(GalgameUid uid)
+    {
+        var max = 0;
+        Galgame? result = null;
+        foreach(Galgame g in _galgames)
+            if (g.Uid.Similarity(uid) > max)
+            {
+                result = g;
+                max = g.Uid.Similarity(uid);
+            }
+        return result;
+    }
+
+    /// <summary>
     /// 从id获取galgame
     /// </summary>
     /// <param name="id">id</param>

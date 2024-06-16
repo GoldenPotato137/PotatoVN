@@ -51,8 +51,14 @@ public class CategoryService : ICategoryService
     public async Task Init()
     {
         if (_isInit) return;
+
+        await Upgrade();
+
         _categoryGroups = await _localSettings.ReadSettingAsync<ObservableCollection<CategoryGroup>>
-            (KeyValues.CategoryGroups, true) ?? new ObservableCollection<CategoryGroup>();
+                              (KeyValues.CategoryGroups, true, converters: new() { new GalgameAndUidConverter() }) 
+                          ?? new ObservableCollection<CategoryGroup>();
+        foreach(CategoryGroup group in _categoryGroups)
+            group.Categories.ForEach(c => c.GalgamesX.RemoveNull());
 
         // 有时候程序崩溃的时候没能移除游玩状态就保存了，需要手动把游玩状态移除
         List<CategoryGroup> toRemove = _categoryGroups.Where(group => group.Type == CategoryGroupType.Status).ToList();
@@ -70,20 +76,6 @@ public class CategoryService : ICategoryService
             _categoryGroups.Add(_developerGroup);
         }
         InitStatusGroup();
-        
-        // 将分类里的Galgame从string还原
-        await Task.Run(() =>
-        {
-            foreach (CategoryGroup group in _categoryGroups)
-            {
-                foreach (Category c in group.Categories.OfType<Category>())
-                    c.Galgames.ForEach(str =>
-                    {
-                        if (_galgameService.GetGalgameFromUrl(str) is { } tmp)
-                            c.Add(tmp);
-                    });
-            }
-        });
         
         foreach (Galgame g in _galgameService.Galgames) 
         {
@@ -236,9 +228,8 @@ public class CategoryService : ICategoryService
         if (_isInit == false) return;
         if(_statusGroup != null)
             _categoryGroups.Remove(_statusGroup); //状态分类组是即时构造的，不需要保存
-        foreach (CategoryGroup categoryGroup in _categoryGroups)
-            categoryGroup.Categories.ForEach(c => c.UpdateSerializeList());
-        await _localSettings.SaveSettingAsync(KeyValues.CategoryGroups, _categoryGroups, true);
+        await _localSettings.SaveSettingAsync(KeyValues.CategoryGroups, _categoryGroups, true,
+            converters: new() { new GalgameAndUidConverter() });
     }
 
     /// <summary>
@@ -283,6 +274,14 @@ public class CategoryService : ICategoryService
         _statusCategory[(int)PlayType.Playing] = _statusGroup.Categories[2];
         _statusCategory[(int)PlayType.Shelved] = _statusGroup.Categories[3];
         _statusCategory[(int)PlayType.Abandoned] = _statusGroup.Categories[4];
+    }
+
+    /// <summary>
+    /// 旧的存储格式与新的存储格式不兼容，需要升级
+    /// </summary>
+    private async Task Upgrade()
+    {
+        await Task.CompletedTask; //todo：待完成多Source化后添加
     }
 
     /// <summary>

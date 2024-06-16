@@ -1,10 +1,13 @@
-﻿namespace GalgameManager.Contracts.Services;
+﻿using Newtonsoft.Json;
+
+namespace GalgameManager.Contracts.Services;
 
 public interface ILocalSettingsService
 {
-    Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false);
+    Task<T?> ReadSettingAsync<T>(string key, bool isLarge = false, List<JsonConverter>? converters = null);
 
-    Task SaveSettingAsync<T>(string key, T value, bool isLarge = false, bool triggerEventWhenNull = false);
+    Task SaveSettingAsync<T>(string key, T value, bool isLarge = false, bool triggerEventWhenNull = false,
+        List<JsonConverter>? converters = null);
 
     Task RemoveSettingAsync(string key);
     
