@@ -122,11 +122,11 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return result;
     }
 
-    public static (string? bgmId, string? vndbId) TryGetId(string? id)  //id: bgm:xxx,vndb:xxx
+    public static (string? bgmId, string? vndbId, string? ymgalId) TryGetId(string? id)  //id: bgm:xxx,vndb:xxx
     {
         if (id == null || id.Contains("bgm:") == false || id.Contains(",vndb:") == false)
-            return (null, null);
-        id = id.Replace("bgm:", "").Replace("vndb:", "").Replace(" ","");
+            return (null, null, null);
+        id = id.Replace("bgm:", "").Replace("vndb:", "").Replace("ymgal:", "").Replace(" ","");
         id = id.Replace("，", ","); //替换中文逗号为英文逗号
         var tmp = id.Split(",").ToArray();
         string? bgmId = null, vndbId = null;
@@ -135,12 +135,12 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return (bgmId, vndbId);
     }
 
-    public static string TrySetId(string str, string? bgmId, string? vndbId)
+    public static string TrySetId(string str, string? bgmId, string? vndbId, string? ymgalId)
     {
         (string? bgmId, string? vndbId) lastId = TryGetId(str);
         bgmId = bgmId ?? lastId.bgmId;
         vndbId = vndbId ?? lastId.vndbId;
-        return $"bgm:{bgmId},vndb:{vndbId}";
+        return $"bgm:{bgmId},vndb:{vndbId},ymgal:{ymgalId}";
     }
 
     public RssType GetPhraseType() => RssType.Mixed;
