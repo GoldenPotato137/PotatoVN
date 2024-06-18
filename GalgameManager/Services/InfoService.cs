@@ -49,6 +49,8 @@ public class InfoService : IInfoService
                 return await _localSettingsService.ReadSettingAsync<bool>(KeyValues.EventPvnSyncNotify);
             case EventType.PvnSyncEmptyEvent:
                 return await _localSettingsService.ReadSettingAsync<bool>(KeyValues.EventPvnSyncEmptyNotify);
+            case EventType.NotCriticalUnexpectedError:
+                return await _localSettingsService.ReadSettingAsync<bool>(KeyValues.DevelopmentMode);
             default:
                 return true;
         }

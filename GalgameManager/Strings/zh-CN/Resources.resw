@@ -1523,4 +1523,7 @@
   <data name="LocalSettingService_ResetConfig" xml:space="preserve">
     <value>无法正确读取软件设置，可能软件数据损坏了。请参考链接：https://github.com/GoldenPotato137/PotatoVN/wiki/TroubleShooting 查看解决方案。软件数据已重置。</value>
   </data>
+  <data name="UnexpectedEvent" xml:space="preserve">
+    <value>非预计错误</value>
+  </data>
 </root>
