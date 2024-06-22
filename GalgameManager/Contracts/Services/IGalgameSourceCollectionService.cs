@@ -2,7 +2,7 @@
 
 namespace GalgameManager.Contracts.Services;
 
-public interface IGalgameSourceService
+public interface IGalgameSourceCollectionService
 {
     /// <summary>
     /// 初始化

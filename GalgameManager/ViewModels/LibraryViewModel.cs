@@ -19,7 +19,7 @@ namespace GalgameManager.ViewModels;
 public partial class LibraryViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private readonly GalgameSourceService _galSourceServiceService;
+    private readonly GalgameSourceCollectionService _galSourceCollectionService;
     
     public ObservableCollection<GalgameSourceBase> Source { get; private set; } = new();
     public ICommand ItemClickCommand { get; }
@@ -31,10 +31,10 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 
     #endregion
 
-    public LibraryViewModel(INavigationService navigationService, IGalgameSourceService galFolderService)
+    public LibraryViewModel(INavigationService navigationService, IGalgameSourceCollectionService galFolderService)
     {
         _navigationService = navigationService;
-        _galSourceServiceService = (GalgameSourceService) galFolderService;
+        _galSourceCollectionService = (GalgameSourceCollectionService) galFolderService;
 
         ItemClickCommand = new RelayCommand<GalgameSourceBase>(OnItemClick);
         AddLibraryCommand = new RelayCommand(AddLibrary);
@@ -42,7 +42,7 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        Source = await _galSourceServiceService.GetGalgameSourcesAsync();
+        Source = await _galSourceCollectionService.GetGalgameSourcesAsync();
     }
 
     public void OnNavigatedFrom(){}
@@ -68,10 +68,10 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
             switch (dialog.SelectItem)
             {
                 case 0:
-                    await _galSourceServiceService.AddGalgameSourceAsync(GalgameSourceType.LocalFolder, dialog.Path);
+                    await _galSourceCollectionService.AddGalgameSourceAsync(GalgameSourceType.LocalFolder, dialog.Path);
                     break;
                 case 1:
-                    await _galSourceServiceService.AddGalgameSourceAsync(GalgameSourceType.LocalZip, dialog.Path);
+                    await _galSourceCollectionService.AddGalgameSourceAsync(GalgameSourceType.LocalZip, dialog.Path);
                     break;
             }
 
@@ -86,13 +86,13 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     private async Task DeleteFolder(GalgameSourceBase? galgameFolder)
     {
         if (galgameFolder is null) return;
-        await _galSourceServiceService.DeleteGalgameFolderAsync(galgameFolder);
+        await _galSourceCollectionService.DeleteGalgameFolderAsync(galgameFolder);
     }
     
     [RelayCommand]
     private void ScanAll()
     {
-        _galSourceServiceService.ScanAll();
+        _galSourceCollectionService.ScanAll();
         _ = DisplayMsgAsync(InfoBarSeverity.Success, "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
     }
     

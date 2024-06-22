@@ -21,7 +21,7 @@ namespace GalgameManager.ViewModels;
 
 public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
 {
-    private readonly IGalgameSourceService _dataCollectionService;
+    private readonly IGalgameSourceCollectionService _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly IBgTaskService _bgTaskService;
     
@@ -70,7 +70,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         }
     }
 
-    public GalgameSourceViewModel(IGalgameSourceService dataCollectionService, 
+    public GalgameSourceViewModel(IGalgameSourceCollectionService dataCollectionService, 
         IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _dataCollectionService = dataCollectionService;

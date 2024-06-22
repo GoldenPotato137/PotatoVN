@@ -11,14 +11,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
-public class GalgameSourceService : IGalgameSourceService
+public class GalgameSourceCollectionService : IGalgameSourceCollectionService
 {
     private ObservableCollection<GalgameSourceBase> _galgameSources = new();
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgTaskService _bgTaskService;
 
-    public GalgameSourceService(ILocalSettingsService localSettingsService, 
+    public GalgameSourceCollectionService(ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _localSettingsService = localSettingsService;

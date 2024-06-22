@@ -21,7 +21,7 @@ public class ActivationService : IActivationService
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUpdateService _updateService;
-    private readonly IGalgameSourceService _galgameFolderCollectionService;
+    private readonly IGalgameSourceCollectionService _galgameFolderCollectionService;
     private readonly IDataCollectionService<Galgame> _galgameCollectionService;
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
@@ -35,7 +35,7 @@ public class ActivationService : IActivationService
     
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
-        IGalgameSourceService galgameFolderCollectionService,
+        IGalgameSourceCollectionService galgameFolderCollectionService,
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
