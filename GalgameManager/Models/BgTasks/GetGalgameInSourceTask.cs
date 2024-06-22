@@ -23,8 +23,7 @@ public class GetGalgameInSourceTask : BgTaskBase
     
     protected override Task RecoverFromJsonInternal()
     {
-        _galgameFolderSource = (App.GetService<IDataCollectionService<GalgameSourceBase>>() as GalgameSourceCollectionService)?.
-            GetGalgameSourceFromUrl(GalgameSourceUrl);
+        _galgameFolderSource = App.GetService<IGalgameSourceService>()?.GetGalgameSourceFromUrl(GalgameSourceUrl);
         return Task.CompletedTask;
     }
 

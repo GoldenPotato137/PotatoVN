@@ -31,8 +31,7 @@ public class GetGalgameInfoFromRssTask : BgTaskBase
     
     protected override Task RecoverFromJsonInternal()
     {
-        _galgameSource = (App.GetService<IDataCollectionService<GalgameSourceBase>>() as GalgameSourceCollectionService)?.
-            GetGalgameSourceFromUrl(GalgameSourceUrl);
+        _galgameSource = App.GetService<IGalgameSourceService>().GetGalgameSourceFromUrl(GalgameSourceUrl);
         _galgames = new List<Galgame>();
         foreach (var name in GalgamesName)
         {

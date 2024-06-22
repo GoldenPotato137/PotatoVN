@@ -21,7 +21,7 @@ public class ActivationService : IActivationService
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUpdateService _updateService;
-    private readonly IDataCollectionService<GalgameSourceBase> _galgameFolderCollectionService;
+    private readonly IGalgameSourceService _galgameFolderCollectionService;
     private readonly IDataCollectionService<Galgame> _galgameCollectionService;
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
@@ -35,7 +35,7 @@ public class ActivationService : IActivationService
     
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
-        IDataCollectionService<GalgameSourceBase> galgameFolderCollectionService,
+        IGalgameSourceService galgameFolderCollectionService,
         IDataCollectionService<Galgame> galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
@@ -235,7 +235,7 @@ public class ActivationService : IActivationService
                 if (argStrings.Length > 1)
                     argStrings = argStrings.Skip(1).ToArray();
 
-                return argStrings.Any(str => str == "/r");
+                return Array.Exists(argStrings, str => str == "/r");
             }
         }
         return false;

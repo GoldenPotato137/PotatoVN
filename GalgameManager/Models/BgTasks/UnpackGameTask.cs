@@ -37,7 +37,7 @@ public class UnpackGameTask : BgTaskBase
     
     protected async override Task RecoverFromJsonInternal()
     {
-        _galgameFolderSource = (App.GetService<IDataCollectionService<GalgameSourceBase>>() as GalgameSourceCollectionService)?.
+        _galgameFolderSource = (App.GetService<IGalgameSourceService>() as GalgameSourceService)?.
             GetGalgameSourceFromUrl(GalgameFolderUrl) as GalgameFolderSource;
         try
         {

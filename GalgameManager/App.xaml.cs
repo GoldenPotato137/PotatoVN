@@ -86,7 +86,7 @@ public partial class App : Application
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IDataCollectionService<Galgame>, GalgameCollectionService>();
-            services.AddSingleton<IDataCollectionService<GalgameSourceBase>, GalgameSourceCollectionService>();
+            services.AddSingleton<IGalgameSourceService, GalgameSourceService>();
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<ICategoryService, CategoryService>();

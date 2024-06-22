@@ -21,7 +21,7 @@ namespace GalgameManager.ViewModels;
 
 public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
 {
-    private readonly IDataCollectionService<GalgameSourceBase> _dataCollectionService;
+    private readonly IGalgameSourceService _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly IBgTaskService _bgTaskService;
     
@@ -70,7 +70,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         }
     }
 
-    public GalgameSourceViewModel(IDataCollectionService<GalgameSourceBase> dataCollectionService, 
+    public GalgameSourceViewModel(IGalgameSourceService dataCollectionService, 
         IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService)
     {
         _dataCollectionService = dataCollectionService;
@@ -90,7 +90,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     {
         if (parameter is not string url) return;
         //TODO
-        Item = (_dataCollectionService as GalgameSourceCollectionService)!.GetGalgameSourceFromUrl(url);
+        Item = _dataCollectionService.GetGalgameSourceFromUrl(url);
         if (Item == null) return;
         
         _getGalTask = _bgTaskService.GetBgTask<GetGalgameInSourceTask>(Item.Url);
@@ -178,7 +178,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         if (file != null)
         {
             var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
-            if (_item!.IsInSource(folder) == false)
+            if (!_item!.IsInSource(folder))
             {
                 await ShowGameExistedInfoBar(new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）"));
                 return;
