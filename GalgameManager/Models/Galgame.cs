@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Core.Contracts.Services;
@@ -86,7 +85,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public bool PvnUpdate; //是否需要更新
     public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
 
-    [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     [JsonIgnore] public static SortKeys[] SortKeysList
     {
         get;
@@ -283,33 +281,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     }
 
     /// <summary>
-    /// 记录游戏的游玩时间
-    /// </summary>
-    /// <param name="process">游戏进程</param>
-    public async void RecordPlayTime(Process process)
-    {
-        await Task.Run(() =>
-        {
-            while (!process.HasExited)
-            {
-                Thread.Sleep(1000 * 60);
-                if (process.HasExited || 
-                    (RecordOnlyWhenForeground && (process.IsMainWindowMinimized() || !process.IsMainWindowActive())))
-                    continue;
-                UiThreadInvokeHelper.Invoke(() =>
-                {
-                    TotalPlayTime++;
-                });
-                var now = DateTime.Now.ToString("yyyy/M/d");
-                if (PlayedTime.ContainsKey(now))
-                    PlayedTime[now]++;
-                else
-                    PlayedTime.Add(now, 1);
-            }
-        });
-    }
-
-    /// <summary>
     /// 获取该游戏信息文件夹地址
     /// </summary>
     /// <returns></returns>
@@ -408,10 +379,10 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         foreach (GalgameCharacter character in meta.Characters)
         {
             character.ImagePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, character.ImagePath));
-            if (File.Exists(character.ImagePath) == false)
+            if (!File.Exists(character.ImagePath))
                 character.ImagePath = DefaultImagePath;
             character.PreviewImagePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, character.PreviewImagePath));
-            if (File.Exists(character.PreviewImagePath) == false)
+            if (!File.Exists(character.PreviewImagePath))
                 character.PreviewImagePath = DefaultImagePath;
         }
         meta.UpdateIdFromMixed();
@@ -420,7 +391,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             if (meta.ExePath != null)
             {
                 meta.ExePath = SystemPath.GetFullPath(SystemPath.Combine(metaFolderPath, meta.ExePath));
-                if (File.Exists(meta.ExePath) == false)
+                if (!File.Exists(meta.ExePath))
                     meta.ExePath = null;
             }
             meta.SavePath = Directory.Exists(meta.SavePath) ? meta.SavePath : null; //检查存档路径是否存在并设置SavePosition字段
