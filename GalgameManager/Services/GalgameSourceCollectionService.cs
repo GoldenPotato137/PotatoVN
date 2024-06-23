@@ -35,13 +35,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         _sourceServices[GalgameSourceType.LocalFolder] = localFolderSrcService;
         _sourceServices[GalgameSourceType.Virtual] = virtualSourceService;
     }
-
-    public async Task<ObservableCollection<GalgameSourceBase>> GetGalgameSourcesAsync()
-    {
-        await Task.CompletedTask;
-        return _galgameSources;
-    }
-
+    
     public async Task InitAsync()
     {
         _galgameSources = await _localSettingsService.ReadSettingAsync<ObservableCollection<GalgameSourceBase>>(
@@ -63,6 +57,8 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         }
         return Task.CompletedTask;
     }
+    
+    public ObservableCollection<GalgameSourceBase> GetGalgameSources() => _galgameSources;
     
     public GalgameSourceBase? GetGalgameSourceFromUrl(string url)
     {

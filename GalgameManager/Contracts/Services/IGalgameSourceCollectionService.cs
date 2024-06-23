@@ -1,4 +1,5 @@
-﻿using GalgameManager.Models;
+﻿using System.Collections.ObjectModel;
+using GalgameManager.Models;
 using GalgameManager.Models.Sources;
 
 namespace GalgameManager.Contracts.Services;
@@ -15,6 +16,8 @@ public interface IGalgameSourceCollectionService
     /// 应用启动后调用
     /// </summary>
     Task StartAsync();
+
+    public ObservableCollection<GalgameSourceBase> GetGalgameSources();
 
     /// <inheritdoc cref="GetGalgameSource"/>
     public GalgameSourceBase? GetGalgameSourceFromUrl(string url);

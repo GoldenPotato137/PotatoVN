@@ -1,14 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
-using GalgameManager.Models;
 using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
@@ -40,9 +36,9 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
         AddLibraryCommand = new RelayCommand(AddLibrary);
     }
 
-    public async void OnNavigatedTo(object parameter)
+    public void OnNavigatedTo(object parameter)
     {
-        Source = await _galSourceCollectionService.GetGalgameSourcesAsync();
+        Source = _galSourceCollectionService.GetGalgameSources();
     }
 
     public void OnNavigatedFrom(){}
