@@ -1,7 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using GalgameManager.Core.Contracts.Services;
-using GalgameManager.Helpers;
-using GalgameManager.Services;
+﻿using GalgameManager.Helpers;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
@@ -9,45 +6,49 @@ namespace GalgameManager.Models.Sources;
 
 public class GalgameSourceBase
 {
-    [JsonIgnore] public GalgameCollectionService GalgameService;
-
     [JsonIgnore] public bool IsRunning;
-    [JsonIgnore] private readonly List<Galgame> _galgames = new();
+    /// 所有游戏和路径，只用于序列化，任何时候都不应该直接操作这个列表
+    public List<GalgameAndPath> Galgames { get; } = new();
 
-    public string Url => $"{SourceType.SourceTypeToString()}://{Path}";
+    public string Url => CalcUrl(SourceType, Path);
     public string Path { get; set; } = "";
     public virtual GalgameSourceType SourceType => throw new NotImplementedException();
     public bool ScanOnStart { get; set; }
+    
+    public static string CalcUrl(GalgameSourceType type, string path) => $"{type.SourceTypeToString()}://{path}";
+
+    public static (GalgameSourceType type, string path) ResolveUrl(string url)
+    {
+        if(!url.Contains("://")) throw new PvnException("illegal url: missing '://'");
+        var parts = url.Split("://");
+        return (parts[0].ToEnum() , parts[1]);
+    }
 
     public GalgameSourceBase(string path)
     {
         Path = path;
-        GalgameService = ((GalgameCollectionService?)App.GetService<IDataCollectionService<Galgame>>())!;
     }
 
     public GalgameSourceBase()
     {
-        GalgameService = ((GalgameCollectionService?)App.GetService<IDataCollectionService<Galgame>>())!;
     }
 
-    public async virtual Task<ObservableCollection<Galgame>> GetGalgameList()
-    {
-        await Task.CompletedTask;
-        return new ObservableCollection<Galgame>(_galgames);
-    }
+    public IEnumerable<Galgame> GetGalgameList() => Galgames.Select(g => g.Galgame);
 
     public virtual Galgame GetGalgameByName(string name)
     {
-        return _galgames.Where(g => g.Name == name).ToList()[0];
+        return Galgames.Where(g => g.Galgame.Name == name).ToList()[0].Galgame;
     }
 
     /// <summary>
     /// 向库中新增一个游戏
     /// </summary>
     /// <param name="galgame">游戏</param>
-    public virtual void AddGalgame(Galgame galgame)
+    /// <param name="path">路径</param>
+    public virtual void AddGalgame(Galgame galgame, string path)
     {
-        _galgames.Add(galgame);
+        Galgames.Add(new GalgameAndPath { Galgame = galgame, Path = path });
+        galgame.Sources.Add(this);
     }
 
     /// <summary>
@@ -56,7 +57,8 @@ public class GalgameSourceBase
     /// <param name="galgame">游戏</param>
     public virtual void DeleteGalgame(Galgame galgame)
     {
-        _galgames.Remove(galgame);
+        Galgames.RemoveAll(g => g.Galgame == galgame);
+        galgame.Sources.Remove(this);
     }
 
     /// <summary>
@@ -102,7 +104,8 @@ public enum GalgameSourceType
     Virtual
 }
 
-public static class SourceTypeHelper{
+public static class SourceTypeHelper
+{
     public static string? SourceTypeToString(this GalgameSourceType sourceType)
     {
         return sourceType switch
@@ -111,6 +114,16 @@ public static class SourceTypeHelper{
             GalgameSourceType.LocalZip => "local_zip",
             GalgameSourceType.UnKnown => null,
             _ => null
+        };
+    }
+    
+    public static GalgameSourceType ToEnum(this string sourceType)
+    {
+        return sourceType switch
+        {
+            "local_folder" => GalgameSourceType.LocalFolder,
+            "local_zip" => GalgameSourceType.LocalZip,
+            _ => GalgameSourceType.UnKnown
         };
     }
 }

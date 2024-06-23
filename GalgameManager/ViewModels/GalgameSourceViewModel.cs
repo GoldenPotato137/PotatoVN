@@ -66,7 +66,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         {
             SetProperty(ref _item, value);
             if (value != null)
-                Galgames = value.GetGalgameList().Result;
+                Galgames = new ObservableCollection<Galgame>(value.GetGalgameList());
         }
     }
 

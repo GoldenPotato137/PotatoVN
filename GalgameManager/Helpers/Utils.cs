@@ -127,4 +127,30 @@ public static class Utils
         target = target.ToLower().Replace("_", string.Empty).Replace(" ", string.Empty).Replace("-", string.Empty);
         return string.Compare(self, target, StringComparison.Ordinal);
     }
+    
+    /// <summary>
+    /// 检查两个系统路径是否相同
+    /// </summary>
+    /// <param name="path1"></param>
+    /// <param name="path2"></param>
+    /// <returns></returns>
+    public static bool ArePathsEqual(string path1, string path2)
+    {
+        Uri uri1 = new(Path.GetFullPath(path1), UriKind.Absolute);
+        Uri uri2 = new(Path.GetFullPath(path2), UriKind.Absolute);
+        return uri1.Equals(uri2);
+    }
+
+    /// <summary>
+    /// 检查一个路径是否包含在另一个路径中
+    /// </summary>
+    /// <param name="parentPath"></param>
+    /// <param name="childPath"></param>
+    /// <returns></returns>
+    public static bool IsPathContained(string parentPath, string childPath)
+    {
+        Uri parentUri = new(Path.GetFullPath(parentPath) + Path.DirectorySeparatorChar);
+        Uri childUri = new(Path.GetFullPath(childPath) + Path.DirectorySeparatorChar);
+        return parentUri.IsBaseOf(childUri);
+    }
 }

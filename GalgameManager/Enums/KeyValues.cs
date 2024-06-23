@@ -51,6 +51,8 @@ public static class KeyValues
     
     //数据相关
     public const string GalgameSources = "galgameSources";
+    ///int, 当前已经用到的最大的galgameSource的id
+    public const string GalgameSourcesId = "galgameSourcesId"; 
     public const string Galgames = "galgames";
     public const string Filters = "filters";
     public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
@@ -82,12 +84,12 @@ public static class KeyValues
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string LargerFileSeparateUpgraded = "largerFileSeparateUpgraded"; //大文件分离升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
-    public const string SourceUpgraded = "sortKeysUpgraded"; //排序格式升级
     public const string OAuthUpgraded = "OAuthUpgraded"; //BgmOAuth升级1
     public const string OAuthUpgraded2 = "OAuthUpgraded2"; //BgmOAuth升级2
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
     public const string CategoryUpgraded = "categoryUpgraded"; //分类索引升级
+    public const string SourceUpgrade = "sourceUpgrade"; //Source升级
     
     
     //废弃Key，只读，仅用于升级

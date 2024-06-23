@@ -76,6 +76,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
     [JsonIgnore] public readonly ObservableCollection<Category> Categories = new();
+    [JsonIgnore] public ObservableCollection<GalgameSourceBase> Sources { get; } = new(); //所属的源
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论

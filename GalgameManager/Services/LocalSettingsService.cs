@@ -51,46 +51,7 @@ public class LocalSettingsService : ILocalSettingsService
         App.OnAppClosing += OnAppClosing;
         Upgrade().Wait();
     }
-
-    private async Task UpgradeLargeFormat()
-    {
-        if (await ReadSettingAsync<bool>(KeyValues.SourceUpgraded) == false)
-        {
-            IDictionary<string, object>? dict =
-                _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile);
-            if (dict != null)
-            {
-                if(dict.TryGetValue(KeyValues.GalgameFolders, out var folders))
-                {
-                    if (folders is not JArray j) return;
-                    List<GalgameFolderSource>? sources = JsonConvert.DeserializeObject
-                        <List<GalgameFolderSource>>(j.ToString());
-                    if (sources is not null) _settings[KeyValues.GalgameSources] = JsonConvert.SerializeObject(sources);
-                }
-                if (dict.TryGetValue(KeyValues.Galgames, out var gs))
-                {
-                    if (gs is not JArray k) return;
-                    List<Galgame>? games = JsonConvert.DeserializeObject
-                        <List<Galgame>>(k.ToString());
-                    if (games is not null)
-                        _settings[KeyValues.Galgames] = JsonConvert.SerializeObject(
-                            games.Select(g =>
-                            {
-                                g.SourceType = GalgameSourceType.LocalFolder;
-                                return g;
-                            }));
-                }
-
-                if (dict.TryGetValue(KeyValues.CategoryGroups, out var cgs ))
-                {
-                    _settings[KeyValues.CategoryGroups] = cgs.ToString() ?? "[]";
-                }
-            }
-            await SaveSettingAsync(KeyValues.SourceUpgraded, true);
-            _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
-        }
-    }
-
+    
     /// <summary>
     /// 仅在读大文件时调用
     /// </summary>
@@ -98,7 +59,6 @@ public class LocalSettingsService : ILocalSettingsService
     private async Task InitializeAsync()
     {
         if (_isInitialized) return;
-        await UpgradeLargeFormat();
         await UpgradeSaveFormat();
         foreach(var path in Directory.GetFiles(_applicationDataFolder, "data.*.json"))
         {
@@ -248,8 +208,6 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.NotifyWhenUnpackGame:
             case KeyValues.EventPvnSyncNotify:
                 return (T?)(object)true;
-            case KeyValues.SourceUpgraded:
-                return (T?)(object)false;
             default:
                 return default;
         }

@@ -22,7 +22,7 @@ public class GetGalgameInfoFromRssTask : BgTaskBase
     {
         _galgameSource = galgameSource;
         GalgameSourceUrl = galgameSource.Url;
-        _galgames = toUpdate ?? (_galgameSource.GetGalgameList().Result).ToList();
+        _galgames = toUpdate ?? _galgameSource.GetGalgameList().ToList();
         foreach (Galgame galgame in _galgames)
         {
             GalgamesName.Add(galgame.Name.Value ?? "");
