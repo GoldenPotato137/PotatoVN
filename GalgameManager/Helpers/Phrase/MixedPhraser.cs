@@ -11,6 +11,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
     private readonly VndbPhraser _vndbPhraser;
     private IEnumerable<string> _developerList;
     private bool _init;
+    private static string[] _sourcesNames = { "vndb", "bgm", "ymgal" };
 
     
     private void Init()
@@ -122,25 +123,36 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return result;
     }
 
-    public static (string? bgmId, string? vndbId, string? ymgalId) TryGetId(string? id)  //id: bgm:xxx,vndb:xxx
+    public Dictionary<string, string> Id2IdDict(string ids)
     {
-        if (id == null || id.Contains("bgm:") == false || id.Contains(",vndb:") == false)
-            return (null, null, null);
-        id = id.Replace("bgm:", "").Replace("vndb:", "").Replace("ymgal:", "").Replace(" ","");
-        id = id.Replace("，", ","); //替换中文逗号为英文逗号
-        var tmp = id.Split(",").ToArray();
-        string? bgmId = null, vndbId = null;
-        if (tmp[0] != "null") bgmId = tmp[0];
-        if (tmp[1] != "null") vndbId = tmp[1];
-        return (bgmId, vndbId);
-    }
+        Dictionary<string, string> idDict = new();
+        ids = ids.Replace("，", ",").Replace(" ", "");
+        foreach (var id in ids.Split(","))
+        {
+            if (id.Contains(':'))
+            {
+                var parts = id.Split(":");
+                if (parts.Length == 2 && _sourcesNames.Contains(parts[0]))
+                {
+                    idDict.Add(parts[0], parts[1]);
+                }
+            }
+        }
 
-    public static string TrySetId(string str, string? bgmId, string? vndbId, string? ymgalId)
+        return idDict;
+    }
+    
+    public string IdDict2Id(Dictionary<string, string> ids)
     {
-        (string? bgmId, string? vndbId) lastId = TryGetId(str);
-        bgmId = bgmId ?? lastId.bgmId;
-        vndbId = vndbId ?? lastId.vndbId;
-        return $"bgm:{bgmId},vndb:{vndbId},ymgal:{ymgalId}";
+        List<string> idParts = new();
+        foreach (var (name, id) in ids)
+        {
+            if (_sourcesNames.Contains(name))
+            {
+                idParts.Add($"{name}:{id}");
+            }
+        }
+        return string.Join(",", idParts);
     }
 
     public RssType GetPhraseType() => RssType.Mixed;
