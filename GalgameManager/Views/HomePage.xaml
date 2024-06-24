@@ -22,7 +22,7 @@
         <converters:ImagePathConverter x:Key="ImagePathConverter"/>
         <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
         <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
-        <converters:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
+        <converters:SourcesToStringConverter x:Key="SourcesToStringConverter"/>
         
         <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
             <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
@@ -217,25 +217,25 @@
                                                 />
                                         </Rectangle.Fill>
                                     </Rectangle>
+                                    <!-- 游玩状态标记(右上角) -->
                                     <Polygon x:Name="PlayTypePolygon" HorizontalAlignment="Right" VerticalAlignment="Top" 
                                              StrokeThickness="2" Points="0,0 0,20 -20,0"
                                              Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
                                              Stroke="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
                                              Fill="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
                                              />
+                                    <!-- 来源标记(右下角) -->
                                     <Border 
                                         Background="{ThemeResource AccentTextFillColorTertiaryBrush}"
-                                        HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                        Height="24" Width="24"
-                                        CornerRadius="4">
+                                        HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                                        Padding="5 2 5 2" CornerRadius="4">
                                         <Border.Shadow>
                                             <ThemeShadow />
                                         </Border.Shadow>
-                                        <FontIcon
-                                            Glyph="{x:Bind SourceType, 
-                                                Converter={StaticResource SourceTypeGlyphConverter}}"
-                                            FontFamily="Segoe Fluent Icons"
-                                            FontSize="16"/>
+                                        <TextBlock
+                                            Text="{x:Bind Sources, Converter={StaticResource SourcesToStringConverter}}"
+                                            FontFamily="Segoe Fluent Icons" FontSize="16"
+                                            VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
             
