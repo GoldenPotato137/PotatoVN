@@ -1526,4 +1526,7 @@
   <data name="UnexpectedEvent" xml:space="preserve">
     <value>非预计错误</value>
   </data>
+  <data name="GalgameCollectionService_BackupMetaFailed" xml:space="preserve">
+    <value>备份{0}的Meta到源{1}失败</value>
+  </data>
 </root>

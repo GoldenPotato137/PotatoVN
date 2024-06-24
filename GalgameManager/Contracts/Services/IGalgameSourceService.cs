@@ -19,4 +19,16 @@ public interface IGalgameSourceService
     /// <param name="target">目标库</param>
     /// <param name="game">游戏</param>
     public Task MoveOutAsync(GalgameSourceBase target, Galgame game);
+
+    /// <summary>
+    /// 在库中保存游戏的Meta
+    /// </summary>
+    public Task SaveMetaAsync(Galgame game);
+
+    /// <summary>
+    /// 从游戏文件夹游戏Meta，若不存在则返回null
+    /// </summary>
+    /// <param name="path">文件夹路径</param>
+    /// <returns></returns>
+    public Task<Galgame?> LoadMetaAsync(string path);
 }

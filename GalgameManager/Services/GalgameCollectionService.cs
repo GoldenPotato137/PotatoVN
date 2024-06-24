@@ -24,7 +24,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     private ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
-    private readonly IFileService _fileService;
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     private readonly IBgTaskService _bgTaskService;
@@ -48,7 +47,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         LocalSettingsService = localSettingsService;
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
         _jumpListService = jumpListService;
-        _fileService = fileService;
         _filterService = filterService;
         _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         _infoService = infoService;
@@ -231,23 +229,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         UpdateDisplay(UpdateType.Add, game);
     }
 
-    private async Task<Galgame?> TryAddGalgameAsync(AddCommit commit, string bgmId)
-    {
-        if (GetGalgameFromId(bgmId, RssType.Bangumi) is not null) return null;
-        Galgame galgame = new()
-        {
-            Name = {Value = commit.Name},
-            Ids = {[(int)RssType.Mixed] = MixedPhraser.TrySetId(string.Empty, bgmId, null)}
-        };
-        await PhraseGalInfoAsync(galgame);
-        _galgames.Add(galgame);
-        GalgameAddedEvent?.Invoke(galgame);
-        UpdateDisplay(UpdateType.Add, galgame);
-        galgame.ErrorOccurred += e =>
-            _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
-        return galgame;
-    }
-    
     /// <summary>
     /// 从下载源获取这个galgame的信息，并获取游玩状态（若设置里开启）
     /// </summary>
@@ -495,7 +476,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public Galgame? GetGalgameFromName(string? name)
     {
         if (string.IsNullOrEmpty(name)) return null;
-        return _galgames.FirstOrDefault(g => g.Name.Value == name);
+        return _galgames.Find(g => g.Name.Value == name);
     }
     
     /// <summary>
@@ -508,8 +489,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     public async Task SaveGalgamesAsync(Galgame? galgame = null)
     {
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
-        if(galgame?.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
-        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
+        if (galgame is not null && await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata))
             await SaveMetaAsync(galgame);
     }
     
@@ -519,25 +499,22 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     /// <param name="galgame"></param>
     private async Task SaveMetaAsync(Galgame galgame)
     {
-        if(galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return;
-        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SaveBackupMetadata) == false) return;
-        var metaPath = galgame.GetMetaPath();
-        Galgame meta = galgame.GetMetaCopy(metaPath);
-        var destImagePath = Path.Join(metaPath, meta.ImagePath.Value!);
-        _fileService.Save(metaPath, "meta.json", meta);
-        if(galgame.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(destImagePath)
-           && File.Exists(galgame.ImagePath))
-            File.Copy(galgame.ImagePath.Value!, destImagePath);
-        foreach( GalgameCharacter character in galgame.Characters)
+        IEnumerable<GalgameSourceType> types = galgame.Sources.Select(s => s.SourceType).Distinct();
+        List<(Task, GalgameSourceType)> tasks = new();
+        foreach (GalgameSourceType type in types) 
+            tasks.Add((SourceServiceFactory.GetSourceService(type).SaveMetaAsync(galgame), type));
+        foreach ((Task, GalgameSourceType) t in tasks)
         {
-            var destCharPreviewImagePath = Path.Join(metaPath, Path.GetFileName(character.PreviewImagePath));
-            var destCharImagePath = Path.Join(metaPath, Path.GetFileName(character.ImagePath));
-            if (character.PreviewImagePath != Galgame.DefaultImagePath && !File.Exists(destCharPreviewImagePath)
-           && File.Exists(character.PreviewImagePath))
-                File.Copy(character.PreviewImagePath, destCharPreviewImagePath);
-            if (character.ImagePath != Galgame.DefaultImagePath && !File.Exists(destCharImagePath)
-           && File.Exists(character.ImagePath))
-                File.Copy(character.ImagePath, destCharImagePath);
+            try
+            {
+                await t.Item1;
+            }
+            catch (Exception e)
+            {
+                _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning,
+                    "GalgameCollectionService_BackupMetaFailed".GetLocalized(galgame.Name.Value
+                                                                             ?? string.Empty, t.Item2.ToString()), e);
+            }
         }
     }
 

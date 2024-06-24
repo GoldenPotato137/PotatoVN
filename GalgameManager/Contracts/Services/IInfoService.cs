@@ -31,4 +31,11 @@ public interface IInfoService
     /// <param name="exception">与之相关的异常，若不是异常则不填</param>
     /// <param name="msg">事件信息</param>
     public void Event(EventType type, InfoBarSeverity infoBarSeverity, string title, Exception? exception = null, string? msg = null);
+
+    /// <summary>
+    /// 不严重的非预期错误，仅在开发模式下通知
+    /// </summary>
+    /// <param name="msg"></param>
+    /// <param name="infoBarSeverity"></param>
+    public void DeveloperEvent(string msg, InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning);
 }

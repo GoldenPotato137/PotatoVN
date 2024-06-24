@@ -17,4 +17,7 @@ public class VirtualSourceService : IGalgameSourceService
         await Task.CompletedTask;
         target.DeleteGalgame(game);
     }
+
+    public Task SaveMetaAsync(Galgame game) => Task.CompletedTask;
+    public Task<Galgame?> LoadMetaAsync(string path) => (Task<Galgame?>)Task.CompletedTask;
 }

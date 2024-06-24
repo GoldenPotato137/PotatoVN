@@ -39,6 +39,9 @@ public class GalgameSourceBase
     {
         return Galgames.Where(g => g.Galgame.Name == name).ToList()[0].Galgame;
     }
+    
+    /// 获取游戏在这个库中的路径，若游戏不在库中则返回null
+    public string? GetPath(Galgame game) => Galgames.Find(g => g.Galgame == game)?.Path;
 
     /// <summary>
     /// 向库中新增一个游戏

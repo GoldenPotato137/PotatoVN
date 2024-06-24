@@ -34,4 +34,10 @@ public partial class LockableProperty<T> : ObservableObject
     {
         return lockableProperty._value;
     }
+    
+    public void ForceSet(T? value)
+    {
+        SetProperty(ref _value, value);
+        OnValueChanged?.Invoke(value);
+    }
 }

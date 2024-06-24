@@ -18,12 +18,9 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IInfoService _infoService;
-    private readonly Dictionary<GalgameSourceType, IGalgameSourceService> _sourceServices = new();
-    
 
     public GalgameSourceCollectionService(ILocalSettingsService localSettingsService, 
         IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService,
-        LocalFolderSourceService localFolderSrcService, VirtualSourceService virtualSourceService,
         IInfoService infoService)
     {
         _localSettingsService = localSettingsService;
@@ -31,9 +28,6 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         _galgameService.GalgameDeletedEvent += OnGalgameDeleted;
         _bgTaskService = bgTaskService;
         _infoService = infoService;
-        
-        _sourceServices[GalgameSourceType.LocalFolder] = localFolderSrcService;
-        _sourceServices[GalgameSourceType.Virtual] = virtualSourceService;
     }
     
     public async Task InitAsync()
@@ -161,7 +155,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
                 new PvnException($"Can not move game {{game.Name}} into source {{target.Path}}: already there"));
             return Task.CompletedTask;
         }
-        return _sourceServices[target.SourceType].MoveInAsync(target, game, path);
+        return SourceServiceFactory.GetSourceService(target.SourceType).MoveInAsync(target, game, path);
     }
 
     public Task RemoveFromSourceAsync(GalgameSourceBase target, Galgame game)
@@ -172,7 +166,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
                 "UnexpectedEvent".GetLocalized(), new PvnException($"Can not move game {game.Name} " +
                                                                    $"out of source {target.Path}: not in source"));
         }
-        return _sourceServices[target.SourceType].MoveOutAsync(target, game);
+        return SourceServiceFactory.GetSourceService(target.SourceType).MoveOutAsync(target, game);
     }
 
     /// <summary>
@@ -220,12 +214,13 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
 
                 GalgameSourceBase? source = GetGalgameSource(GalgameSourceType.LocalFolder, folderPath);
                 source ??= await AddGalgameSourceAsync(GalgameSourceType.LocalFolder, folderPath);
-                await _sourceServices[GalgameSourceType.LocalFolder].MoveInAsync(source, g, gamePath);
+                await SourceServiceFactory.GetSourceService(GalgameSourceType.LocalFolder)
+                    .MoveInAsync(source, g, gamePath);
             }
             else //非本机游戏
             {
                 GalgameSourceBase source = GetGalgameSource(GalgameSourceType.Virtual, string.Empty)!;
-                await _sourceServices[GalgameSourceType.Virtual].MoveInAsync(source, g);
+                await SourceServiceFactory.GetSourceService(GalgameSourceType.Virtual).MoveInAsync(source, g);
             }
         }
 
