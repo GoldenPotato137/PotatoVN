@@ -17,6 +17,10 @@ public interface IGalgameSourceCollectionService
     /// </summary>
     Task StartAsync();
 
+    /// <summary>
+    /// 获取所有Source列表的引用，<b>只读</b>
+    /// </summary>
+    /// <returns></returns>
     public ObservableCollection<GalgameSourceBase> GetGalgameSources();
 
     /// <inheritdoc cref="GetGalgameSource"/>

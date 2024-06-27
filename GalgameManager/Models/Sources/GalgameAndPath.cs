@@ -2,6 +2,12 @@
 
 public class GalgameAndPath
 {
-    public required Galgame Galgame { get; set; }
-    public required string Path { get; set; }
+    public Galgame Galgame { get; set; }
+    public string Path { get; set; }
+
+    public GalgameAndPath(Galgame game, string path)
+    {
+        Galgame = game;
+        Path = path;
+    }
 }

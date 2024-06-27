@@ -153,4 +153,14 @@ public static class Utils
         Uri childUri = new(Path.GetFullPath(childPath) + Path.DirectorySeparatorChar);
         return parentUri.IsBaseOf(childUri);
     }
+
+    /// <summary>
+    /// 检查一个路径是否是另一个路径的直接子文件夹
+    /// </summary>
+    public static bool IsChildFolder(string parentPath, string childPath)
+    {
+        var tmp = Path.GetDirectoryName(childPath);
+        if (tmp is null) return false;
+        return Path.GetFullPath(parentPath) == Path.GetFullPath(tmp);
+    }
 }

@@ -1529,4 +1529,31 @@
   <data name="GalgameCollectionService_BackupMetaFailed" xml:space="preserve">
     <value>备份{0}的Meta到源{1}失败</value>
   </data>
+  <data name="GalgamePage_MoveToAnotherSource.Label" xml:space="preserve">
+    <value>移入另一个源</value>
+  </data>
+  <data name="ChangeSourceDialog_TargetSource.Text" xml:space="preserve">
+    <value>移入</value>
+  </data>
+  <data name="ChangeSourceDialog_FetchingSourceInfo.Text" xml:space="preserve">
+    <value>获取游戏源信息中</value>
+  </data>
+  <data name="LocalFolderSourceService_SelectFolder" xml:space="preserve">
+    <value>目标文件夹</value>
+  </data>
+  <data name="ChangeSourceDialog_Space" xml:space="preserve">
+    <value>{0} 可用，共 {1}</value>
+  </data>
+  <data name="ChangeSourceDialog_RemoveFromSource.Content" xml:space="preserve">
+    <value>并将游戏移出下选中源</value>
+  </data>
+  <data name="LocalFolderSourceService_MoveInDescription" xml:space="preserve">
+    <value>复制游戏至：{0}</value>
+  </data>
+  <data name="LocalFolderSourceService_MoveOutDescription" xml:space="preserve">
+    <value>删除文件夹：{0}</value>
+  </data>
+  <data name="ChangeSourceDialog_OperateDescription.Text" xml:space="preserve">
+    <value>点击确定后，PotatoVN将：</value>
+  </data>
 </root>

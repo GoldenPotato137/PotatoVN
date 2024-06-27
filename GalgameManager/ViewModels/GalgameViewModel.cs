@@ -404,6 +404,14 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         Item.TextPath = null;
         await SaveAsync();
     }
+
+    [RelayCommand]
+    private async Task MoveToSource()
+    {
+        if (Item is null) return;
+        ChangeSourceDialog dialog = new(Item);
+        await dialog.ShowAsync();
+    }
 }
 
 public class GalgamePageParameter

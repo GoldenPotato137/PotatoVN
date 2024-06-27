@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.ChangeSourceDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sources="using:GalgameManager.Models.Sources"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:control="using:GalgameManager.Views.Control"
+    mc:Ignorable="d"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <ContentDialog.Resources>
+        <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyph" />
+        <converter:EnumToStringConverter x:Key="EnumToString" />
+        <converter:AnyToVisibilityConverter x:Key="AnyToVisibility" />
+    </ContentDialog.Resources>
+
+    <control:StackPanelWithSpacing Space="30">
+        <StackPanel Orientation="Horizontal" Spacing="20">
+            <TextBlock x:Uid="ChangeSourceDialog_TargetSource" VerticalAlignment="Center" />
+            <ComboBox MinWidth="320" VerticalAlignment="Center"
+                      ItemsSource="{x:Bind Sources}"
+                      SelectedIndex="{x:Bind SelectSourceIndex, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="sources:GalgameSourceBase">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon FontFamily="Segoe Fluent Icons"
+                                      Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyph}}" />
+                            <TextBlock Text="{x:Bind SourceType, Converter={StaticResource EnumToString}}" />
+                            <TextBlock Text="{x:Bind Path}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- 空间/剩余空间条 -->
+        <Grid Visibility="{x:Bind SpacePanelVisibility, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ProgressBar Grid.Row="0" HorizontalAlignment="Stretch"
+                         Value="{x:Bind SpacePercent, Mode=OneWay}"
+                         ShowError="{x:Bind SpaceShowError, Mode=OneWay}" />
+            <TextBlock Grid.Row="1" Margin="0 5 0 0 "
+                       Style="{StaticResource DescriptionTextStyle}"
+                       Text="{x:Bind SpaceInfo, Mode= OneWay}" />
+        </Grid>
+
+        <!-- 由各个SourceService提供的额外设置区 -->
+        <Grid Visibility="{x:Bind AdditionSettingPanelVisibility,Mode=OneWay}">
+            <ContentPresenter HorizontalAlignment="Stretch"
+                              Visibility="{x:Bind AdditionSettingVisibility, Mode=OneWay}"
+                              Content="{x:Bind AdditionSettingControl, Mode=OneWay}" />
+            <StackPanel Spacing="10" Visibility="{x:Bind AdditionSettingWaitingVisibility, Mode=OneWay}">
+                <ProgressRing IsIndeterminate="True" HorizontalAlignment="Stretch" />
+                <TextBlock x:Uid="ChangeSourceDialog_FetchingSourceInfo" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <!-- 并从源中移除 -->
+        <StackPanel Orientation="Horizontal" Spacing="20" Margin="0 10 0 0 "
+                    Visibility="{x:Bind RemovePanelVisibility, Mode=OneWay}">
+            <CheckBox x:Uid="ChangeSourceDialog_RemoveFromSource"
+                      IsChecked="{x:Bind RemoveFromSource, Mode=TwoWay}"
+                      VerticalAlignment="Center" />
+            <ComboBox ItemsSource="{x:Bind GalgameSources}"
+                      SelectedIndex="{x:Bind RemoveFromSourceIndex, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="sources:GalgameSourceBase">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon FontFamily="Segoe Fluent Icons"
+                                      Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyph}}" />
+                            <TextBlock Text="{x:Bind Path}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- 操作预览 -->
+        <control:StackPanelWithSpacing Margin="0 5 0 0" 
+                                       Visibility="{x:Bind OperatePanelDescriptionVisibility, Mode=OneWay}">
+            <TextBlock x:Uid="ChangeSourceDialog_OperateDescription"
+                       Style="{StaticResource DescriptionTextStyle}" />
+            <TextBlock Style="{StaticResource DescriptionTextStyle}" 
+                       Text="{x:Bind MoveInDescription, Mode=OneWay}"/>
+            <TextBlock Style="{StaticResource DescriptionTextStyle}"
+                       Text="{x:Bind MoveOutDescription, Mode=OneWay}"
+                       Visibility="{x:Bind MoveOutDescription, Mode=OneWay,
+                       Converter={StaticResource AnyToVisibility}}" />
+        </control:StackPanelWithSpacing>
+    </control:StackPanelWithSpacing>
+</ContentDialog>

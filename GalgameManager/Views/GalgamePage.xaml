@@ -164,6 +164,14 @@
                         </AppBarButton.Icon>
                     </AppBarButton>
                     <AppBarSeparator/>
+                    <!-- 移入另一个源 -->
+                    <AppBarButton x:Uid="GalgamePage_MoveToAnotherSource"
+                                  Command="{x:Bind ViewModel.MoveToSourceCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DE;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <!-- 彻底删除游戏 -->
                     <AppBarButton Icon="Delete" x:Uid="GalgamePage_Delete" Command="{x:Bind ViewModel.DeleteFromDiskCommand}"
                                   IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                 </CommandBar.SecondaryCommands>

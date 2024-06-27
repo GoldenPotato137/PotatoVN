@@ -50,7 +50,7 @@ public class GalgameSourceBase
     /// <param name="path">路径</param>
     public virtual void AddGalgame(Galgame galgame, string path)
     {
-        Galgames.Add(new GalgameAndPath { Galgame = galgame, Path = path });
+        Galgames.Add(new GalgameAndPath(galgame, path));
         galgame.Sources.Add(this);
     }
 

@@ -68,6 +68,7 @@
     <None Remove="Assets\Potato.targetsize-48_altform-unplated.png" />
     <None Remove="Views\Control\HomeItem.xaml" />
     <None Remove="Views\Dialog\ChangePlayStatusDialog.xaml" />
+    <None Remove="Views\Dialog\ChangeSourceDialog.xaml" />
     <None Remove="Views\Dialog\PvnLoginDialog.xaml" />
     <None Remove="Views\Dialog\PvnSetAccountDialog.xaml" />
     <None Remove="Views\Dialog\SelectProcessDialog.xaml" />
@@ -90,7 +91,7 @@
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls" Version="7.1.3" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240607001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
@@ -105,6 +106,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Dialog\ChangeSourceDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Dialog\PvnSetAccountDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,5 +1,7 @@
 ﻿using GalgameManager.Models;
 using GalgameManager.Models.Sources;
+using GalgameManager.Views.Dialog;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Contracts.Services;
 
@@ -31,4 +33,34 @@ public interface IGalgameSourceService
     /// <param name="path">文件夹路径</param>
     /// <returns></returns>
     public Task<Galgame?> LoadMetaAsync(string path);
+
+    /// <summary>
+    /// 在转换游戏位置时，给ChangeSourceDialog提供附加设置控件，返回null则不附加任何控件
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="setting"></param>
+    /// <returns></returns>
+    public Task<Grid?> GetAdditionSettingControlAsync(GalgameSourceBase source, ChangeSourceDialogAttachSetting setting);
+    
+    /// <summary>
+    /// 获取库的（总空间，已用空间）（byte），若无法获取则返回(-1,-1)
+    /// </summary>
+    /// <param name="source"></param>
+    public Task<(long total, long used)> GetSpaceAsync(GalgameSourceBase source);
+
+    /// <summary>
+    /// 获取移入描述
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="targetPath"></param>
+    /// <returns></returns>
+    public string GetMoveInDescription(GalgameSourceBase target, string targetPath);
+
+    /// <summary>
+    /// 获取将游戏移出某个库的描述
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="galgame"></param>
+    /// <returns></returns>
+    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame);
 }
