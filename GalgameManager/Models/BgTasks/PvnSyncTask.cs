@@ -15,7 +15,7 @@ public class PvnSyncTask : BgTaskBase
     
     protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
 
-    public override Task Run()
+    protected override Task RunInternal()
     {
         GalgameCollectionService gameService =
             (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;

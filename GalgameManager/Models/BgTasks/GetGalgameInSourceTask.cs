@@ -27,7 +27,7 @@ public class GetGalgameInSourceTask : BgTaskBase
         return Task.CompletedTask;
     }
 
-    public override Task Run()
+    protected override Task RunInternal()
     {
         //TODO
         if (_galgameFolderSource is null || _galgameFolderSource.IsRunning)

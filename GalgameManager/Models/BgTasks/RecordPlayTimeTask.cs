@@ -41,7 +41,7 @@ public class RecordPlayTimeTask : BgTaskBase
         return Task.CompletedTask;
     }
 
-    public override Task Run()
+    protected override Task RunInternal()
     {
         if(_process is null || _galgame is null) return Task.CompletedTask;
         ChangeProgress(0, 1, "RecordPlayTimeTask_ProgressMsg".GetLocalized(_galgame.Name.Value!));

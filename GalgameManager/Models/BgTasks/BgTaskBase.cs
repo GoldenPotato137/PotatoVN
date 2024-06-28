@@ -11,6 +11,8 @@ public abstract class BgTaskBase
 
     public Progress CurrentProgress { get; private set; }
     
+    public Task Task { get; private set; } = Task.CompletedTask;
+    
     protected bool StartFromBg;
 
     public Task RecoverFromJson()
@@ -21,7 +23,13 @@ public abstract class BgTaskBase
 
     protected abstract Task RecoverFromJsonInternal();
 
-    public abstract Task Run();
+    public Task Run()
+    {
+        Task = RunInternal();
+        return Task;
+    }
+
+    protected abstract Task RunInternal();
 
     public virtual bool OnSearch(string key) => false;
 

@@ -49,7 +49,7 @@ public class UnpackGameTask : BgTaskBase
         }
     }
 
-    public override Task Run()
+    protected override Task RunInternal()
     {
         if(_galgameFolderSource is null || _pack is null || GameName == string.Empty) return Task.CompletedTask;
 

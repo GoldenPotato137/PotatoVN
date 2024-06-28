@@ -40,7 +40,7 @@ public class GetGalgameInfoFromRssTask : BgTaskBase
         return Task.CompletedTask;
     }
 
-    public override Task Run()
+    protected override Task RunInternal()
     {
         if (_galgameSource is null || _galgames is null || _galgameSource.IsRunning)
             return Task.CompletedTask;

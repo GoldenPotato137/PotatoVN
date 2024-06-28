@@ -27,7 +27,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase
         return Task.CompletedTask;
     }
 
-    public override Task Run()
+    protected override Task RunInternal()
     {
         if (_galgame is null)
             return Task.CompletedTask;
