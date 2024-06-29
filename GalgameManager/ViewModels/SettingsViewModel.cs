@@ -101,6 +101,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         //THEME
         _elementTheme = themeSelectorService.Theme;
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
+        TimeAsHour = _localSettingsService.ReadSettingAsync<bool>(KeyValues.TimeAsHour).Result;
         //GAME
         _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
         _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
@@ -216,6 +217,10 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
     [ObservableProperty] private bool _fixHorizontalPicture;
     partial void OnFixHorizontalPictureChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.FixHorizontalPicture, value);
+    
+    // 时间显示单位改为小时
+    [ObservableProperty] private bool _timeAsHour;
+    partial void OnTimeAsHourChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.TimeAsHour, value);
 
     #endregion
 
@@ -436,7 +441,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     partial void OnEventPvnSyncChanged(bool value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.EventPvnSyncNotify, value);
-        if (value == false)
+        if (!value)
             EventPvnSyncEmpty = false;
     }
 

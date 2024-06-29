@@ -1,4 +1,5 @@
 ﻿using GalgameManager.Helpers;
+using Newtonsoft.Json;
 
 namespace GalgameManager.Models.BgTasks;
 
@@ -11,7 +12,7 @@ public abstract class BgTaskBase
 
     public Progress CurrentProgress { get; private set; }
     
-    public Task Task { get; private set; } = Task.CompletedTask;
+    [JsonIgnore] public Task Task { get; private set; } = Task.CompletedTask;
     
     protected bool StartFromBg;
 

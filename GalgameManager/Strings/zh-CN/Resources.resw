@@ -1556,4 +1556,10 @@
   <data name="ChangeSourceDialog_OperateDescription.Text" xml:space="preserve">
     <value>点击确定后，PotatoVN将：</value>
   </data>
+  <data name="SettingsPage_Theme_TimeAsHour.Title" xml:space="preserve">
+    <value>时间显示单位改为小时</value>
+  </data>
+  <data name="SettingsPage_Theme_TimeAsHour.Description" xml:space="preserve">
+    <value>将软件中所有时间显示改为"..h..m"而非"..分钟"</value>
+  </data>
 </root>
