@@ -1,6 +1,8 @@
 ﻿using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models.BgTasks;
+using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json;
 
 namespace GalgameManager.Services;
@@ -14,9 +16,12 @@ public class BgTaskService : IBgTaskService
     
     private readonly List<BgTaskBase> _bgTasks = new();
     private readonly Dictionary<Type,string> _bgTasksString = new();
+    private readonly IInfoService _infoService;
 
-    public BgTaskService()
+    public BgTaskService(IInfoService infoService)
     {
+        _infoService = infoService;
+        
         _bgTasksString[typeof(RecordPlayTimeTask)] = "-record";
         _bgTasksString[typeof(GetGalgameInSourceTask)] = "-getGalInSource";
         _bgTasksString[typeof(UnpackGameTask)] = "-unpack";
@@ -62,11 +67,24 @@ public class BgTaskService : IBgTaskService
     private Task AddTaskInternal(BgTaskBase bgTask)
     {
         _bgTasks.Add(bgTask);
-        Task t = bgTask.Run().ContinueWith(_ =>
+        Task t = bgTask.Run().ContinueWith(async previousTask =>
         {
-            if (!_bgTasks.Contains(bgTask)) return;
+            await Task.Delay(500);
+            if (previousTask is { IsFaulted: true, Exception: not null })
+            {
+                Exception e = previousTask.Exception;
+                if (previousTask.Exception.InnerExceptions.Count > 0)
+                    e = previousTask.Exception.InnerExceptions[0];
+                _infoService.Event(EventType.BgTaskFailEvent, InfoBarSeverity.Warning,
+                    "BgTaskService_TaskFailed".GetLocalized(bgTask.Title), e);
+            }
+            else if (bgTask.CurrentProgress.NotifyWhenSuccess) 
+                _infoService.Event(EventType.BgTaskSuccessEvent, InfoBarSeverity.Success,
+                    "BgTaskService_TaskSuccess".GetLocalized(bgTask.Title), msg: bgTask.CurrentProgress.Message);
+            if (!_bgTasks.Contains(bgTask)) return Task.CompletedTask;
             _bgTasks.Remove(bgTask);
             UiThreadInvokeHelper.Invoke(() => BgTaskRemoved?.Invoke(bgTask));
+            return Task.CompletedTask;
         });
         UiThreadInvokeHelper.Invoke(()=>BgTaskAdded?.Invoke(bgTask));
         return t;

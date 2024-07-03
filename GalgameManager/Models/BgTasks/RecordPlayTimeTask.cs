@@ -4,22 +4,25 @@ using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Converter;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
-using Newtonsoft.Json;
 
 namespace GalgameManager.Models.BgTasks;
 
 public class RecordPlayTimeTask : BgTaskBase
 {
     private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
-    [JsonIgnore] public static bool RecordOnlyWhenForeground; //是否只在游戏处于前台时记录游玩时间
     
-    public string ProcessName = string.Empty;
-    public string GalgameUrl = string.Empty;
-    public DateTime StartTime = DateTime.Now;
+    public string ProcessName { get; set; } = string.Empty;
+    public string GalgameUrl { get; set; }= string.Empty;
+    public DateTime StartTime { get; set; }= DateTime.Now;
+    public int CurrentPlayTime { get; set; } //本次游玩时间
+    
     private Galgame? _galgame;
     private Process? _process;
+
+    private readonly ILocalSettingsService _localSettingsService = App.GetService<ILocalSettingsService>();
     
     public RecordPlayTimeTask(){}
 
@@ -41,9 +44,9 @@ public class RecordPlayTimeTask : BgTaskBase
         return Task.CompletedTask;
     }
 
-    protected override Task RunInternal()
+    protected async override Task RunInternal()
     {
-        if(_process is null || _galgame is null) return Task.CompletedTask;
+        if(_process is null || _galgame is null) return ;
         ChangeProgress(0, 1, "RecordPlayTimeTask_ProgressMsg".GetLocalized(_galgame.Name.Value!));
         Task t = Task.Run(async () =>
         {
@@ -58,31 +61,59 @@ public class RecordPlayTimeTask : BgTaskBase
                 };
                 App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, parma);
                 App.SetWindowMode(WindowMode.Normal);
+                ChangeProgress(0, 1,
+                    "RecordPlayTimeTask_Done".GetLocalized(_galgame.Name.Value ?? string.Empty,
+                        TimeToDisplayTimeConverter.Convert(CurrentPlayTime)));
             });
             await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
             if(await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.SyncGames))
                 App.GetService<IPvnService>().Upload(_galgame, PvnUploadProperties.PlayTime);
         });
         
-        Task.Run(() =>
+        _ = RecordPlayTimeAsync();
+
+        await t;
+    }
+
+    private Task RecordPlayTimeAsync()
+    {
+        return Task.Run(() =>
         {
-            while (_process.HasExited == false)
+            var recordOnlyWhenForeground =
+                _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
+            try
             {
-                Thread.Sleep(1000 * 60);
-                if (_process.HasExited || 
-                    (RecordOnlyWhenForeground && (_process.IsMainWindowMinimized() || !_process.IsMainWindowActive())))
-                    continue;
-                UiThreadInvokeHelper.Invoke(() =>
+                _localSettingsService.OnSettingChanged += OnSettingChanged;
+                
+                while (!_process!.HasExited)
                 {
-                    _galgame.TotalPlayTime++;
-                });
-                var now = DateTime.Now.ToStringDefault();
-                if (_galgame.PlayedTime.TryAdd(now, 1) == false)
-                    _galgame.PlayedTime[now]++;
+                    Thread.Sleep(1000 * 60);
+                    if (_process.HasExited || 
+                        (recordOnlyWhenForeground && (_process.IsMainWindowMinimized() || !_process.IsMainWindowActive())))
+                        continue;
+                    UiThreadInvokeHelper.Invoke(() =>
+                    {
+                        _galgame!.TotalPlayTime++;
+                        CurrentPlayTime++;
+                    });
+                    var now = DateTime.Now.ToStringDefault();
+                    if (!_galgame!.PlayedTime.TryAdd(now, 1))
+                        _galgame.PlayedTime[now]++;
+                }
+            }
+            finally
+            {
+                _localSettingsService.OnSettingChanged -= OnSettingChanged;
+            }
+
+            return;
+
+            void OnSettingChanged(string key, object? value)
+            {
+                if(key != KeyValues.RecordOnlyWhenForeground || value is not bool b) return;
+                recordOnlyWhenForeground = b;
             }
         });
-        
-        return t;
     }
 
     public override string Title { get; } = "RecordPlayTimeTask_Title".GetLocalized();

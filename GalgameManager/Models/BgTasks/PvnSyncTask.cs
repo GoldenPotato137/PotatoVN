@@ -11,11 +11,11 @@ namespace GalgameManager.Models.BgTasks;
 
 public class PvnSyncTask : BgTaskBase
 {
-    public string Result = string.Empty;
+    public string Result { get; set; } = string.Empty;
     
     protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
 
-    protected override Task RunInternal()
+    protected async override Task RunInternal()
     {
         GalgameCollectionService gameService =
             (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
@@ -24,47 +24,39 @@ public class PvnSyncTask : BgTaskBase
         ILocalSettingsService settingsService = App.GetService<ILocalSettingsService>();
 
         if (settingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount).Result is null)
+            throw new PvnException("PvnSyncTask_Error_NotLogin".GetLocalized());
+
+        try
         {
-            ChangeProgress(-1, 1, "PvnSyncTask_Error_NotLogin".GetLocalized());
-            return Task.CompletedTask;
+            ChangeProgress(0, 1, "PvnSyncTask_GettingModifiedTimestamp".GetLocalized());
+            var lastSync = await settingsService.ReadSettingAsync<long>(KeyValues.PvnSyncTimestamp);
+            var latest = await pvnService.GetLastGalChangedTimeStampAsync();
+            if (lastSync < latest)
+                await PullUpdates(pvnService, gameService, settingsService, latest);
+        }
+        catch (Exception e)
+        {
+            var failedReason = "PvnSyncTask_Error".GetLocalized();
+            if (e is HttpRequestException)
+                failedReason = "PvnSyncTask_Error_Network".GetLocalized();
+            ChangeProgress(-1, 1, failedReason);
+            throw new PvnException($"{failedReason}\n{e}");
         }
 
-        return Task.Run(async () =>
-        {
-            try
-            {
-                ChangeProgress(0, 1, "PvnSyncTask_GettingModifiedTimestamp".GetLocalized());
-                var lastSync = await settingsService.ReadSettingAsync<long>(KeyValues.PvnSyncTimestamp);
-                var latest = await pvnService.GetLastGalChangedTimeStampAsync();
-                if (lastSync < latest)
-                    await PullUpdates(pvnService, gameService, settingsService, latest);
-            }
-            catch (Exception e)
-            {
-                InfoBarSeverity severity = InfoBarSeverity.Error;
-                if (e is HttpRequestException)
-                    severity = InfoBarSeverity.Warning;
-                infoService.Event(EventType.PvnSyncEvent, severity, "PvnSyncTask_Error".GetLocalized(), e);
-                var failedReason = "PvnSyncTask_Error".GetLocalized();
-                if (e is HttpRequestException)
-                    failedReason = "PvnSyncTask_Error_Network".GetLocalized();
-                ChangeProgress(-1, 1, failedReason);
-                return;
-            }
+        await CommitChanges(gameService, pvnService, infoService, settingsService);
 
-            await CommitChanges(gameService, pvnService, infoService, settingsService);
-            
-            ChangeProgress(1, 1, "PvnSyncTask_Completed".GetLocalized());
-            EventType type = EventType.PvnSyncEvent;
-            if (Result.IsNullOrEmpty())
-            {
-                Result = "PvnSyncTask_NoChange".GetLocalized();
-                type = EventType.PvnSyncEmptyEvent;
-            }
-            if (Result.EndsWith('\n')) Result = Result[..^1];
-            infoService.Event(type, InfoBarSeverity.Success, "PvnSyncTask_Completed".GetLocalized(), null, Result);
-            await Task.Delay(500);
-        });
+
+        var notify = true;
+        if (Result.IsNullOrEmpty())
+        {
+            Result = "PvnSyncTask_NoChange".GetLocalized();
+            if (await App.GetService<ILocalSettingsService>()
+                    .ReadSettingAsync<bool>(KeyValues.EventPvnSyncEmptyNotify))
+                notify = false;
+        }
+
+        if (Result.EndsWith('\n')) Result = Result[..^1];
+        ChangeProgress(1, 1, Result, notify);
     }
 
     public override string Title { get; } = "PvnSyncTask_Title".GetLocalized();

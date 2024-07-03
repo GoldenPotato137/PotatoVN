@@ -1428,7 +1428,7 @@
     <value>从RSS获取角色信息完成，保存记录中</value>
   </data>
   <data name="Galgame_GetCharacterInfo_Done" xml:space="preserve">
-    <value>保存完成</value>
+    <value>已成功下载{0}的角色信息</value>
   </data>
   <data name="GetCharacterInfoTask_Title" xml:space="preserve">
     <value>下载角色数据任务</value>
@@ -1561,5 +1561,14 @@
   </data>
   <data name="SettingsPage_Theme_TimeAsHour.Description" xml:space="preserve">
     <value>将软件中所有时间显示改为"..h..m"而非"..分钟"</value>
+  </data>
+  <data name="BgTaskService_TaskFailed" xml:space="preserve">
+    <value>{0}失败</value>
+  </data>
+  <data name="BgTaskService_TaskSuccess" xml:space="preserve">
+    <value>{0}完成</value>
+  </data>
+  <data name="RecordPlayTimeTask_Done" xml:space="preserve">
+    <value>本次游玩 {0} 时长：{1}</value>
   </data>
 </root>

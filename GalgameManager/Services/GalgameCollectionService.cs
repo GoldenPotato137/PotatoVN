@@ -63,7 +63,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
         var sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
             {false,false};
         Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
-        RecordPlayTimeTask.RecordOnlyWhenForeground = LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
 
         App.OnAppClosing += async () =>
         {
@@ -794,9 +793,6 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
                     false,
                     false
                 });
-                break;
-            case KeyValues.RecordOnlyWhenForeground:
-                RecordPlayTimeTask.RecordOnlyWhenForeground = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
                 break;
         }
     }

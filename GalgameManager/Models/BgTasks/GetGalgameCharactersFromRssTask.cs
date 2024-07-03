@@ -59,12 +59,12 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase
             ChangeProgress(0, 1, "Galgame_GetCharacterInfo_Saving".GetLocalized());
             FileHelper.SaveWithoutJson(_galgame.GetLogName(), log, "Logs");
             await Task.Delay(1000); //等待文件保存
-            
-            ChangeProgress(1, 1, "Galgame_GetCharacterInfo_Done".GetLocalized());
+
+            ChangeProgress(1, 1, "Galgame_GetCharacterInfo_Done".GetLocalized(_galgame.Name.Value ?? string.Empty));
             if (App.MainWindow is null && await localSettings.ReadSettingAsync<bool>(KeyValues.NotifyWhenGetGalgameInFolder))
             {
-                App.SystemTray?.ShowNotification(nameof(NotificationIcon.Info), 
-                    "Galgame_GetCharacterInfo_Done".GetLocalized());
+                App.SystemTray?.ShowNotification(nameof(NotificationIcon.Info),
+                    "Galgame_GetCharacterInfo_Done".GetLocalized(_galgame.Name.Value ?? string.Empty));
             }
         })!);
     }
