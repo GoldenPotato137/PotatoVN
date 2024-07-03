@@ -1,0 +1,86 @@
+name: Document Build & Deploy
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'GalgameManager.Doc/**'
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository master branch
+        uses: actions/checkout@master
+
+      - name: Setup Node.js 10.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 20
+
+      - name: Setup Dependencies And Build
+        run: |
+          cd GalgameManager.Doc/
+          npm install
+          npm run docs:build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build & Push Docker image
+        run: |
+          cd GalgameManager.Doc/.vitepress/dist
+          docker build --tag goldenpotato137/potatovn.net:latest .
+          docker push goldenpotato137/potatovn.net:latest
+
+      - name: Verify deployment
+        run: echo "The image has been successfully pushed to Docker Hub."
+  
+  deploy-to-my-server:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Private Key
+        env:
+          PRIVATE_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          sudo timedatectl set-timezone "Asia/Shanghai"
+          mkdir -p ~/.ssh/
+          echo "$PRIVATE_KEY" > ~/.ssh/id_rsa 
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan potatovn.net >> ~/.ssh/known_hosts
+      - name: Deploy
+        run: |
+          ssh goldenpotato@potatovn.net "\
+          echo 'Starting deployment...'; \
+          echo 'Pull new image...'; \
+          docker pull goldenpotato137/potatovn.net:latest; \
+          echo 'Stop old container...'; \
+          docker stop potatovn.net; \
+          echo 'Remove old container...'; \
+          docker rm potatovn.net; \
+          echo 'Run new container...'; \
+          docker run -d --name potatovn.net -p 9002:80 goldenpotato137/potatovn.net:latest; \
+          echo 'Deployment completed.'; \
+          "
