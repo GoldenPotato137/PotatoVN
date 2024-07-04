@@ -18,7 +18,8 @@ public class CapacityToStringConverter : IValueConverter
             }
             catch (Exception e)
             {
-                App.GetService<IInfoService>().DeveloperEvent($"Cannot convert capacity to string with exception: {e}");
+                App.GetService<IInfoService>()
+                    .DeveloperEvent(msg: $"Cannot convert capacity to string with exception: {e}");
                 return "Unknown";
             }
         }

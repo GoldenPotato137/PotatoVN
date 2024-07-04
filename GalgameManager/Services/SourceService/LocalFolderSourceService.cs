@@ -2,6 +2,7 @@
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
@@ -20,22 +21,16 @@ public class LocalFolderSourceService : IGalgameSourceService
         _fileService = fileService;
     }
 
-    public async Task MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null)
+    public BgTaskBase MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null)
     {
-        await Task.CompletedTask;
-        if (targetPath is null)
-        {
-            _infoService.DeveloperEvent("targetPath is null");
-            return;
-        }
-
-        target.AddGalgame(game, targetPath);
+        if (targetPath is null) throw new PvnException("targetPath is null");
+        if (target is not GalgameFolderSource source) throw new ArgumentException("target is not GalgameFolderSource");
+        return new LocalFolderSourceMoveInTask(game, source, targetPath);
     }
 
-    public async Task MoveOutAsync(GalgameSourceBase target, Galgame game)
+    public BgTaskBase MoveOutAsync(GalgameSourceBase target, Galgame game)
     {
-        await Task.CompletedTask;
-        target.DeleteGalgame(game);
+        return new LocalFolderSourceMoveOutTask();
     }
 
     public async Task SaveMetaAsync(Galgame game)
@@ -123,7 +118,7 @@ public class LocalFolderSourceService : IGalgameSourceService
         }
         catch (Exception e)
         {
-            _infoService.DeveloperEvent($"failed to get drive info with exception: {e}");
+            _infoService.DeveloperEvent(msg: $"failed to get drive info with exception: {e}");
             return (-1, -1);
         }
     }

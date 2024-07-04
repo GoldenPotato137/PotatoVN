@@ -1571,4 +1571,25 @@
   <data name="RecordPlayTimeTask_Done" xml:space="preserve">
     <value>本次游玩 {0} 时长：{1}</value>
   </data>
+  <data name="LocalFolderSourceMoveTask_MoveIn_Title" xml:space="preserve">
+    <value>复制游戏任务</value>
+  </data>
+  <data name="LocalFolderSourceTask_MoveIn_Error" xml:space="preserve">
+    <value>复制游戏失败</value>
+  </data>
+  <data name="LocalFolderSourceTask_MoveIn_Progress" xml:space="preserve">
+    <value>正在复制 {0} 到 {1}</value>
+  </data>
+  <data name="SourceMoveInBase_Success" xml:space="preserve">
+    <value>成功将游戏复制至另一个源</value>
+  </data>
+  <data name="LocalFolderSourceTask_MoveIn_Success" xml:space="preserve">
+    <value>成功将游戏 {0} 复制到 {1}</value>
+  </data>
+  <data name="SourceMoveTask_Title" xml:space="preserve">
+    <value>移动游戏所在源任务</value>
+  </data>
+  <data name="SourceMoveTask_MovingIn" xml:space="preserve">
+    <value>正在执行游戏搬入另一个源的任务</value>
+  </data>
 </root>

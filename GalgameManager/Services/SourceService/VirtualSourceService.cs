@@ -1,5 +1,6 @@
 ﻿using GalgameManager.Contracts.Services;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml.Controls;
@@ -8,16 +9,16 @@ namespace GalgameManager.Services;
 
 public class VirtualSourceService : IGalgameSourceService
 {
-    public async Task MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null)
+    public BgTaskBase MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null)
     {
-        await Task.CompletedTask;
         target.AddGalgame(game, string.Empty);
+        return BgTaskBase.Empty;
     }
 
-    public async Task MoveOutAsync(GalgameSourceBase target, Galgame game)
+    public BgTaskBase MoveOutAsync(GalgameSourceBase target, Galgame game)
     {
-        await Task.CompletedTask;
         target.DeleteGalgame(game);
+        return BgTaskBase.Empty;
     }
 
     public Task SaveMetaAsync(Galgame game) => Task.CompletedTask;

@@ -41,9 +41,11 @@ public class InfoService : IInfoService
         _appCenterService.UploadEvent(title, exception, msg);
     }
 
-    public void DeveloperEvent(string msg, InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning)
+    public void DeveloperEvent(InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning, string? msg = null,
+        Exception? e = null)
     {
-        Event(EventType.NotCriticalUnexpectedError, infoBarSeverity, "UnexpectedEvent".GetLocalized(), msg: msg);
+        Event(EventType.NotCriticalUnexpectedError, infoBarSeverity, "UnexpectedEvent".GetLocalized(), 
+            exception: e, msg: msg);
     }
 
     private async Task<bool> ShouldNotifyEvent(EventType type)

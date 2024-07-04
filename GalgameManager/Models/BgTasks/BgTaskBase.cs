@@ -5,6 +5,8 @@ namespace GalgameManager.Models.BgTasks;
 
 public abstract class BgTaskBase
 {
+    [JsonIgnore] public static BgTaskBase Empty { get; } = new EmptyBgTask();
+    
     /// <summary>
     /// (当前进度，总进度，信息)， 当前进度>=总进度时可以理解为任务完成
     /// </summary>

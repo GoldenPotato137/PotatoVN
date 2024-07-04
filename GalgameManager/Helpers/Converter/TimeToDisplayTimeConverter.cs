@@ -11,7 +11,7 @@ public class TimeToDisplayTimeConverter : IValueConverter
     {
         if (value is not int && value is not long)
         {
-            App.GetService<IInfoService>().DeveloperEvent("value is not number", InfoBarSeverity.Error);
+            App.GetService<IInfoService>().DeveloperEvent(InfoBarSeverity.Error, "value is not number");
             return string.Empty;
         }
         

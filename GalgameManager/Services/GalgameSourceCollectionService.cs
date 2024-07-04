@@ -146,25 +146,37 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         await Save();
     }
 
-    public Task MoveIntoSourceAsync(GalgameSourceBase target, Galgame game, string? path = null)
+    public BgTaskBase MoveIntoSourceAsync(GalgameSourceBase target, Galgame game, bool operate, string? path = null)
     {
         if (game.Sources.Any(s => s == target))
         {
             _infoService.Event(EventType.NotCriticalUnexpectedError, InfoBarSeverity.Warning,
                 "UnexpectedEvent".GetLocalized(),
                 new PvnException($"Can not move game {{game.Name}} into source {{target.Path}}: already there"));
-            return Task.CompletedTask;
+            return BgTaskBase.Empty;
+        }
+        if (!operate)
+        {
+            if (path is null) throw new ArgumentException("operate is false but path is null");
+            target.AddGalgame(game, path);
+            return BgTaskBase.Empty;
         }
         return SourceServiceFactory.GetSourceService(target.SourceType).MoveInAsync(target, game, path);
     }
 
-    public Task RemoveFromSourceAsync(GalgameSourceBase target, Galgame game)
+    public BgTaskBase RemoveFromSourceAsync(GalgameSourceBase target, Galgame game, bool operate)
     {
         if (game.Sources.All(s => s != target))
         {
             _infoService.Event(EventType.NotCriticalUnexpectedError, InfoBarSeverity.Warning,
                 "UnexpectedEvent".GetLocalized(), new PvnException($"Can not move game {game.Name} " +
                                                                    $"out of source {target.Path}: not in source"));
+            return BgTaskBase.Empty;
+        }
+        if (!operate)
+        {
+            target.DeleteGalgame(game);
+            return BgTaskBase.Empty;
         }
         return SourceServiceFactory.GetSourceService(target.SourceType).MoveOutAsync(target, game);
     }
@@ -187,7 +199,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
     private void OnGalgameDeleted(Galgame galgame)
     {
         foreach (GalgameSourceBase s in galgame.Sources)
-            s.DeleteGalgame(galgame); //这里不要用RemoveFromSource，因为这里只是取消托管，而不是真的从库中物理移除游戏
+            RemoveFromSourceAsync(s, galgame, false);
     }
 
     /// <summary>
@@ -214,13 +226,12 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
 
                 GalgameSourceBase? source = GetGalgameSource(GalgameSourceType.LocalFolder, folderPath);
                 source ??= await AddGalgameSourceAsync(GalgameSourceType.LocalFolder, folderPath);
-                await SourceServiceFactory.GetSourceService(GalgameSourceType.LocalFolder)
-                    .MoveInAsync(source, g, gamePath);
+                await MoveIntoSourceAsync(source, g, false, folderPath).Task;
             }
             else //非本机游戏
             {
                 GalgameSourceBase source = GetGalgameSource(GalgameSourceType.Virtual, string.Empty)!;
-                await SourceServiceFactory.GetSourceService(GalgameSourceType.Virtual).MoveInAsync(source, g);
+                await MoveIntoSourceAsync(source, g, false, string.Empty).Task;
             }
         }
 

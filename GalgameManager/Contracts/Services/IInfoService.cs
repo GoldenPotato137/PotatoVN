@@ -37,5 +37,7 @@ public interface IInfoService
     /// </summary>
     /// <param name="msg"></param>
     /// <param name="infoBarSeverity"></param>
-    public void DeveloperEvent(string msg, InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning);
+    /// <param name="e"></param>
+    public void DeveloperEvent(InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning, string? msg = null,
+        Exception? e = null);
 }

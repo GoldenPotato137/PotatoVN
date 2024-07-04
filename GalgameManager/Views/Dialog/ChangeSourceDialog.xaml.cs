@@ -16,6 +16,10 @@ public sealed partial class ChangeSourceDialog
     public List<GalgameSourceBase> Sources { get; }
     public List<GalgameSourceBase> GalgameSources { get; }
     public bool Ok { get; private set; }
+    public string TargetPath => _targetPath;
+    public GalgameSourceBase MoveInSource => Sources[_selectSourceIndex];
+    public GalgameSourceBase? MoveOutSource { get; private set; }
+    
     [ObservableProperty] private int _selectSourceIndex;
     [ObservableProperty] private Visibility _spacePanelVisibility = Visibility.Collapsed;
     [ObservableProperty] private string _spaceInfo = string.Empty;
@@ -44,7 +48,11 @@ public sealed partial class ChangeSourceDialog
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         PrimaryButtonText = "Yes".GetLocalized();
         IsPrimaryButtonEnabled = false;
-        PrimaryButtonClick += (_, _) => Ok = true;
+        PrimaryButtonClick += (_, _) =>
+        {
+            Ok = true;
+            MoveOutSource = RemoveFromSource ? GalgameSources![RemoveFromSourceIndex] : null;
+        };
         CloseButtonText = "Cancel".GetLocalized();
         DefaultButton = ContentDialogButton.Close;
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 
 namespace GalgameManager.Contracts.Services;
@@ -59,11 +60,18 @@ public interface IGalgameSourceCollectionService
     /// </summary>
     /// <param name="target">目标库</param>
     /// <param name="game">游戏</param>
+    /// <param name="operate">
+    /// 是否需要进行实际的操作（如复制文件夹、上传游戏等）
+    /// <b>值为false时，path为必填项</b>
+    /// </param>
     /// <param name="path">目标路径，若为null则表示可以由对应的sourceService自行决定路径</param>
-    public Task MoveIntoSourceAsync(GalgameSourceBase target, Galgame game, string? path = null);
-    
+    public BgTaskBase MoveIntoSourceAsync(GalgameSourceBase target, Galgame game, bool operate, string? path = null);
+
     /// <summary>
     /// 将游戏移出某个库
     /// </summary>
-    public Task RemoveFromSourceAsync(GalgameSourceBase target, Galgame game);
+    /// <param name="target"></param>
+    /// <param name="game"></param>
+    /// <param name="operate">是否要进行实际操作（如删除文件夹、从云端删除游戏压缩包等）</param>
+    public BgTaskBase RemoveFromSourceAsync(GalgameSourceBase target, Galgame game, bool operate);
 }
