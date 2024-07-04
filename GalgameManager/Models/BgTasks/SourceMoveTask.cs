@@ -46,8 +46,9 @@ public class SourceMoveTask : BgTaskBase
 
     protected override Task RecoverFromJsonInternal() => Task.CompletedTask; // 不需要
 
-    protected override async Task RunInternal()
+    protected async override Task RunInternal()
     {
+        await Task.CompletedTask;
         ChangeProgress(0, 2, string.Empty);
         while (CurrentProgress.Current != 2)
         {

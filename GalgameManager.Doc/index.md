@@ -12,7 +12,7 @@ hero:
       link: /usage/quick-start/install
     - theme: alt
       text: 使用指北
-      link: /usage
+      link: /usage/how-to-use/brief
     - theme: alt
       text: 一起开发！
       link: /development

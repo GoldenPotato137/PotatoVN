@@ -8,6 +8,13 @@ const vitepressSidebarOptions: Options[] = [
         useFolderTitleFromIndexFile: true,
         sortMenusByFrontmatterOrder: true,
     },
+    {
+        scanStartPath : 'development',
+        resolvePath : '/development/',
+        useTitleFromFileHeading: true,
+        useFolderTitleFromIndexFile: true,
+        sortMenusByFrontmatterOrder: true,
+    },
 ];
 
 export default generateSidebar(vitepressSidebarOptions);
