@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import SideBar from "./SideBar";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -26,36 +27,11 @@ export default defineConfig({
     logo: "/avatar.png",
     nav: [
       { text: '主页', link: '/' },
-      { text: '使用指北', link: '/usage' },
+      { text: '使用指北', link: '/usage/how-to-use/brief' },
       { text: '一起开发', link: '/development' },
     ],
     search: { provider: 'local' },
-    sidebar: {
-      '/usage/': [
-        {
-          text: '快速启动',
-          items: [
-            { text: '下载与安装', link: '/usage/install' },
-          ]
-        },
-        {
-          text: '使用指北',
-          items: [
-            { text: '简介', link: '/usage/' },
-          ]
-        }
-      ],
-      '/development/': [
-        {
-          text: 'Config',
-          items: [
-            { text: 'Index', link: '/config/' },
-            { text: 'Three', link: '/config/three' },
-            { text: 'Four', link: '/config/four' }
-          ]
-        }
-      ]
-    },
+    sidebar: SideBar,
     socialLinks: [
       { icon: 'github', link: 'https://github.com/GoldenPotato137/PotatoVN' }
     ],
@@ -69,3 +45,4 @@ export default defineConfig({
     }
   }
 })
+

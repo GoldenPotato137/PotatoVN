@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: PotatoVN，启动！
-      link: /usage/install
+      link: /usage/quick-start/install
     - theme: alt
       text: 使用指北
       link: /usage
