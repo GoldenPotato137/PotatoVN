@@ -72,6 +72,9 @@ public sealed partial class ShellPage : Page
         
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
+
+        NavigationViewControl.AddHandler(PointerPressedEvent,
+            new PointerEventHandler(NavigationViewControl_OnPointerPressed), true);
     }
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
