@@ -3,11 +3,8 @@ using Windows.ApplicationModel.Activation;
 using Windows.Storage;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
-using GalgameManager.Models;
-using GalgameManager.Models.Sources;
 using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,7 +19,7 @@ public class ActivationService : IActivationService
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IUpdateService _updateService;
     private readonly IGalgameSourceCollectionService _galgameFolderCollectionService;
-    private readonly IDataCollectionService<Galgame> _galgameCollectionService;
+    private readonly IGalgameCollectionService _galgameCollectionService;
     private readonly IAppCenterService _appCenterService;
     private readonly ICategoryService _categoryService;
     private readonly IAuthenticationService _authenticationService;
@@ -36,7 +33,7 @@ public class ActivationService : IActivationService
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
         IGalgameSourceCollectionService galgameFolderCollectionService,
-        IDataCollectionService<Galgame> galgameCollectionService,
+        IGalgameCollectionService galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,

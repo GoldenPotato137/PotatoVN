@@ -98,7 +98,7 @@ public class UnpackGameTask : BgTaskBase
                 ChangeProgress(1, 1, "GalgameFolder_UnpackGame_Done".GetLocalized());
                 await UiThreadInvokeHelper.InvokeAsync(async Task () =>
                 {
-                    await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!
+                    await (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!
                         .TryAddGalgameAsync(new 
                             Galgame(GalgameSourceType.LocalFolder, 
                                 GalgameFolderSource.GetGalgameName(saveDirectory), 

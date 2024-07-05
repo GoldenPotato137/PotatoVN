@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Services;
@@ -22,7 +21,7 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
     private readonly IPvnService _pvnService;
     private readonly GalgameCollectionService _galgameCollectionService;
     
-    public PlayedTimeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> gameCollectionService,
+    public PlayedTimeViewModel(INavigationService navigationService, IGalgameCollectionService gameCollectionService,
         IPvnService pvnService)
     {
         _navigationService = navigationService;

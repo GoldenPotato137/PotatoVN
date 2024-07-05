@@ -1,6 +1,5 @@
 ﻿using Windows.ApplicationModel.Activation;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
@@ -13,7 +12,7 @@ public class JumpListActivationHandler : ActivationHandler<AppActivationArgument
     private readonly GalgameCollectionService _galgameCollectionService;
     private Galgame? _game;
     
-    public JumpListActivationHandler(IDataCollectionService<Galgame> galgameCollectionService)
+    public JumpListActivationHandler(IGalgameCollectionService galgameCollectionService)
     {
         _galgameCollectionService = (galgameCollectionService as GalgameCollectionService)!;
     }

@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Services;
@@ -27,7 +26,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private RssType _selectedRss = RssType.None;
 
-    public GalgameSettingViewModel(IDataCollectionService<Galgame> galCollectionService, INavigationService navigationService,
+    public GalgameSettingViewModel(IGalgameCollectionService galCollectionService, INavigationService navigationService,
         IPvnService pvnService)
     {
         Gal = new Galgame();

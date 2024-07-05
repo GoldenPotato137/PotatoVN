@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
@@ -87,7 +86,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
-        IDataCollectionService<Galgame> galgameService, IUpdateService updateService, INavigationService navigationService,
+        IGalgameCollectionService galgameService, IUpdateService updateService, INavigationService navigationService,
         ICategoryService categoryService)
     {
         _categoryService = categoryService;

@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
-public partial class GalgameCollectionService : IDataCollectionService<Galgame>
+public partial class GalgameCollectionService : IGalgameCollectionService
 {
     // _galgames 无序, _displayGalgames有序
     private List<Galgame> _galgames = new();
@@ -437,11 +437,7 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
     {
         return string.IsNullOrEmpty(url) ? null : _galgameMap.GetValueOrDefault(url);
     }
-
-    /// <summary>
-    /// 获取UID相似度最高的游戏，若全为0则返回null<br/>
-    /// Uid比较规则见：<see cref="GalgameUid"/>
-    /// </summary>
+    
     public Galgame? GetGalgameFromUid(GalgameUid uid)
     {
         var max = 0;
@@ -454,24 +450,13 @@ public partial class GalgameCollectionService : IDataCollectionService<Galgame>
             }
         return result;
     }
-
-    /// <summary>
-    /// 从id获取galgame
-    /// </summary>
-    /// <param name="id">id</param>
-    /// <param name="rssType">id的信息源</param>
-    /// <returns>galgame，若找不到返回null</returns>
+    
     public Galgame? GetGalgameFromId(string? id, RssType rssType)
     {
         if (id is null) return null;
         return _galgames.FirstOrDefault(g => g.Ids[(int)rssType] == id);
     }
-
-    /// <summary>
-    /// 从名字获取galgame
-    /// </summary>
-    /// <param name="name">名字</param>
-    /// <returns>galgame，找不到返回null</returns>
+    
     public Galgame? GetGalgameFromName(string? name)
     {
         if (string.IsNullOrEmpty(name)) return null;

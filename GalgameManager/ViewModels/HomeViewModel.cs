@@ -1,13 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Windows.Input;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
@@ -27,7 +25,7 @@ namespace GalgameManager.ViewModels;
 public partial class HomeViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private readonly IDataCollectionService<Galgame> _dataCollectionService;
+    private readonly IGalgameCollectionService _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
@@ -48,7 +46,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
 
     public ObservableCollection<Galgame> Source { get; private set; } = new();
 
-    public HomeViewModel(INavigationService navigationService, IDataCollectionService<Galgame> dataCollectionService,
+    public HomeViewModel(INavigationService navigationService, IGalgameCollectionService dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
     {
         _navigationService = navigationService;
@@ -63,7 +61,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         SearchKey = _galgameService.GetSearchKey();
         UpdateSearchTitle();
-        Source = await _dataCollectionService.GetGalgameSourcesAsync();
+        Source = await _galgameService.GetGalgameSourcesAsync();
         Filters = _filterService.GetFilters();
         
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)

@@ -2,6 +2,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models.Sources;
@@ -46,7 +47,7 @@ public sealed partial class UnpackDialog
         if (StorageFile is null) return;
         SourceSelect.Visibility = showSources ? Visibility.Visible : Visibility.Collapsed;
         SourceListView.ItemsSource = 
-            (await App.GetService<IDataCollectionService<GalgameSourceBase>>().GetGalgameSourcesAsync())
+            (await App.GetService<IGalgameCollectionService>().GetGalgameSourcesAsync())
             .Where(s=>s.SourceType == GalgameSourceType.LocalFolder);
         await base.ShowAsync();
     }

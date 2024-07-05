@@ -1,5 +1,4 @@
 ﻿using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models.Sources;
@@ -33,7 +32,7 @@ public class GetGalgameInSourceTask : BgTaskBase
         if (_galgameFolderSource is null || _galgameFolderSource.IsRunning)
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
-        GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+        GalgameCollectionService galgameService = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
         var log = string.Empty;
         
         return Task.Run((async Task () =>

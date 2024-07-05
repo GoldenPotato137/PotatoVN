@@ -30,7 +30,7 @@ public class PvnService : IPvnService
     private PvnServerInfo? _serverInfo;
 
     public PvnService(ILocalSettingsService settingsService, IConfiguration config, IBgmOAuthService bgmService,
-        IBgTaskService bgTaskService, IDataCollectionService<Galgame> gameService, IInfoService infoService)
+        IBgTaskService bgTaskService, IGalgameCollectionService gameService, IInfoService infoService)
     {
         _settingsService = settingsService;
         _bgmService = bgmService;

@@ -25,7 +25,7 @@ public class CategoryService : ICategoryService
 
     public CategoryGroup StatusGroup => _statusGroup!;
 
-    public CategoryService(ILocalSettingsService localSettings, IDataCollectionService<Galgame> galgameService)
+    public CategoryService(ILocalSettingsService localSettings, IGalgameCollectionService galgameService)
     {
         _localSettings = localSettings;
         _galgameService = (galgameService as GalgameCollectionService)!;

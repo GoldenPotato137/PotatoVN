@@ -1,4 +1,4 @@
-﻿using GalgameManager.Core.Contracts.Services;
+﻿using GalgameManager.Contracts.Services;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using Newtonsoft.Json;
@@ -17,6 +17,6 @@ public class GalgameAndUidConverter : JsonConverter<Galgame>
     {
         GalgameUid? uid = serializer.Deserialize<GalgameUid>(reader);
         if (uid is null) return null;
-        return (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.GetGalgameFromUid(uid);
+        return (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!.GetGalgameFromUid(uid);
     }
 }

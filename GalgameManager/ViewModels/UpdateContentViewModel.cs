@@ -4,10 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI.UI.Controls;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
-using GalgameManager.Models;
 using GalgameManager.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +24,7 @@ public partial class UpdateContentViewModel : ObservableObject, INavigationAware
         "UpdateContentPage_CurrentVersion".GetLocalized() + RuntimeHelper.GetVersion();
 
     public UpdateContentViewModel(IUpdateService updateService,ILocalSettingsService localSettingsService,
-        IDataCollectionService<Galgame> galgameService)
+        IGalgameCollectionService galgameService)
     {
         _updateService = updateService;
         _galgameCollectionService = (GalgameCollectionService)galgameService;

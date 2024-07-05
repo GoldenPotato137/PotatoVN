@@ -1,5 +1,4 @@
 ﻿using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Services;
@@ -23,7 +22,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase
     
     protected override Task RecoverFromJsonInternal()
     {
-        _galgame =  (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)?.GetGalgameFromName(GalgamesName);
+        _galgame =  (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)?.GetGalgameFromName(GalgamesName);
         return Task.CompletedTask;
     }
 
@@ -32,7 +31,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase
         if (_galgame is null)
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
-        GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+        GalgameCollectionService galgameService = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
         var log = string.Empty;
         
         return Task.Run((async Task () =>

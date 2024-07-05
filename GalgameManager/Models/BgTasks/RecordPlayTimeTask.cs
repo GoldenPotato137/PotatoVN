@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -39,7 +38,7 @@ public class RecordPlayTimeTask : BgTaskBase
     protected override Task RecoverFromJsonInternal()
     {
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
-        _galgame = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)?.
+        _galgame = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)?.
             GetGalgameFromUrl(GalgameUrl);
         return Task.CompletedTask;
     }
@@ -65,7 +64,7 @@ public class RecordPlayTimeTask : BgTaskBase
                     "RecordPlayTimeTask_Done".GetLocalized(_galgame.Name.Value ?? string.Empty,
                         TimeToDisplayTimeConverter.Convert(CurrentPlayTime)));
             });
-            await (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
+            await (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!.SaveGalgamesAsync(_galgame);
             if(await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.SyncGames))
                 App.GetService<IPvnService>().Upload(_galgame, PvnUploadProperties.PlayTime);
         });

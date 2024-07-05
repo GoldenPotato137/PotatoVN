@@ -1,5 +1,4 @@
 ﻿using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -18,7 +17,7 @@ public class PvnSyncTask : BgTaskBase
     protected async override Task RunInternal()
     {
         GalgameCollectionService gameService =
-            (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+            (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
         IInfoService infoService = App.GetService<IInfoService>();
         IPvnService pvnService = App.GetService<IPvnService>();
         ILocalSettingsService settingsService = App.GetService<ILocalSettingsService>();

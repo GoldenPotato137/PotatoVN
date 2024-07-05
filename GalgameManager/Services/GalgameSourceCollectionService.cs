@@ -20,7 +20,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
     private readonly IInfoService _infoService;
 
     public GalgameSourceCollectionService(ILocalSettingsService localSettingsService, 
-        IDataCollectionService<Galgame> galgameService, IBgTaskService bgTaskService,
+        IGalgameCollectionService galgameService, IBgTaskService bgTaskService,
         IInfoService infoService)
     {
         _localSettingsService = localSettingsService;

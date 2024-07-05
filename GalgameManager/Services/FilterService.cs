@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
@@ -94,7 +93,7 @@ public class FilterService : IFilterService
             str = str[..(str.LastIndexOf('/') - 1)];
         await Task.Run((async Task() =>
         {
-            List<Galgame> games = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!.Galgames;
+            List<Galgame> games = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!.Galgames;
             IEnumerable<CategoryGroup> categoryGroups = await App.GetService<ICategoryService>().GetCategoryGroupsAsync();
             //Category
             HashSet<string> addedCategories = new();

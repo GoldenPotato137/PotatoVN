@@ -1,5 +1,4 @@
 ﻿using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models.Sources;
@@ -45,7 +44,7 @@ public class GetGalgameInfoFromRssTask : BgTaskBase
         if (_galgameSource is null || _galgames is null || _galgameSource.IsRunning)
             return Task.CompletedTask;
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
-        GalgameCollectionService galgameService = (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+        GalgameCollectionService galgameService = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
         IBgTaskService bgTaskService = App.GetService<IBgTaskService>();
         var log = string.Empty;
         

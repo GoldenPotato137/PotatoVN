@@ -17,7 +17,7 @@ public abstract class SourceMoveInBase : BgTaskBase
     /// 目标路径，在RunIternalAsync时一定不是null
     protected GalgameFolderSource? TargetSource;
 
-    protected readonly GalgameCollectionService GameService = (App.GetService<IDataCollectionService<Galgame>>()
+    protected readonly GalgameCollectionService GameService = (App.GetService<IGalgameCollectionService>()
         as GalgameCollectionService)!;
 
     protected readonly IGalgameSourceCollectionService SourceCollectionService =

@@ -1,5 +1,4 @@
 ﻿using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Helpers;
 using GalgameManager.Models.Sources;
 using GalgameManager.Services;
@@ -31,7 +30,7 @@ public class SourceMoveTask : BgTaskBase
     private GalgameSourceBase? _moveOutSource;
 
     private readonly GalgameCollectionService _gameService =
-        (App.GetService<IDataCollectionService<Galgame>>() as GalgameCollectionService)!;
+        (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
     private readonly IGalgameSourceCollectionService _sourceService = App.GetService<IGalgameSourceCollectionService>();
     private readonly IInfoService _infoService = App.GetService<IInfoService>();
     
