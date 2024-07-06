@@ -4,15 +4,16 @@ using GalgameManager.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace GalgameManager.Helpers.Phrase;
 
 public class YmgalPhraser: IGalInfoPhraser
 {
     private HttpClient _httpClient;
-    private static string BaseUrl = "https://www.ymgal.games/";
-    private static string PublicClientId = "ymgal";
-    private static string PublicClientSecret = "luna0327";
+    private static string _baseUrl = "https://www.ymgal.games/";
+    private static string _publicClientId = "ymgal";
+    private static string _publicClientSecret = "luna0327";
 
     // private readonly JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings()
     // {
@@ -38,11 +39,11 @@ public class YmgalPhraser: IGalInfoPhraser
         {
             if (galgame.RssType != RssType.Ymgal) throw new Exception();
             id = Convert.ToInt32(galgame.Id ?? "");
-            url = BaseUrl + $"open/archive/?gid={id}";
+            url = _baseUrl + $"open/archive/?gid={id}";
         }
         catch (Exception)
         {
-            url = BaseUrl + 
+            url = _baseUrl + 
                   $"open/archive/search-game?mode=accurate&keyword={name}&similarity=50";
         }
 
@@ -53,15 +54,21 @@ public class YmgalPhraser: IGalInfoPhraser
             {
                 ApiResponse<GameResponse>? apiResponse =
                     JsonConvert.DeserializeObject<ApiResponse<GameResponse>>(
-                        await response.Content.ReadAsStringAsync());
-                if (!apiResponse?.success ?? apiResponse == null) return null;
-                Game g = apiResponse.data.game;
+                        await response.Content.ReadAsStringAsync(),
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = new CamelCasePropertyNamesContractResolver()
+                        });
+                if (!apiResponse?.Success ?? apiResponse == null) return null;
+                Game g = apiResponse.Data.Game;
                 Galgame result = new()
                 {
-                    Name = g.name,
-                    CnName = g.chineseName,
-                    Description = g.introduction
+                    Name = g.Name,
+                    CnName = g.ChineseName,
+                    Description = g.Introduction,
+                    ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue, 
                 };
+                return result;
             }
         }
         catch (Exception e)
@@ -76,141 +83,145 @@ public class YmgalPhraser: IGalInfoPhraser
     public async Task<string> OauthGet()
     {
         HttpResponseMessage request = await _httpClient.GetAsync(
-            BaseUrl +
-            $"oauth/token?grant_type=client_credentials&client_id={PublicClientId}&client_secret={PublicClientSecret}&scope=public");
+            _baseUrl +
+            $"oauth/token?grant_type=client_credentials&client_id={_publicClientId}&client_secret={_publicClientSecret}&scope=public");
         request.EnsureSuccessStatusCode();
         return JsonConvert.
             DeserializeObject<OauthRequest>
-                (await request.Content.ReadAsStringAsync())?.access_token ?? "";
+                (await request.Content.ReadAsStringAsync(), 
+                    new JsonSerializerSettings
+                    {
+                        ContractResolver = new DefaultContractResolver{NamingStrategy = new SnakeCaseNamingStrategy()}
+                    })?.AccessToken ?? "";
     }
     
     private void GetHttpClient()
     {
-        var access_token = OauthGet().Result;
+        var accessToken = OauthGet().Result;
         _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
-        _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + access_token);
+        _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
         _httpClient.DefaultRequestHeaders.Add("version", "1");
     }
 }
 
 public class OauthRequest
 {
-    public string access_token { get; set; }
-    public string token_type { get; set; }
-    public int expires_in { get; set; }
-    public string scope { get; set; }
+    public required string AccessToken { get; set; }
+    public required string TokenType { get; set; }
+    public required int ExpiresIn { get; set; }
+    public required string Scope { get; set; }
 }
 
 public class ApiResponse<T>
 {
-    public bool success { get; set; }
-    public int code { get; set; }
-    public string msg { get; set; }
-    public T data { get; set; }
+    public bool Success { get; set; }
+    public int Code { get; set; }
+    public required string Msg { get; set; }
+    public required T Data { get; set; }
 }
 
 public class Archive
 {
-    public int publishVersion { get; set; }
-    public string publishTime { get; set; }
-    public int publisher { get; set; }
-    public string name { get; set; }
-    public string chineseName { get; set; }
-    public ExtensionName[] extensionName { get; set; }
-    public string introduction { get; set; }
-    public string state { get; set; }
-    public int weights { get; set; }
-    public string mainImg { get; set; }
-    public MoreEntry[] moreEntry { get; set; }
+    public int PublishVersion { get; set; }
+    public required string PublishTime { get; set; }
+    public int Publisher { get; set; }
+    public required string Name { get; set; }
+    public required string ChineseName { get; set; }
+    public required ExtensionName[] ExtensionName { get; set; }
+    public required string Introduction { get; set; }
+    public required string State { get; set; }
+    public required int Weights { get; set; }
+    public required string MainImg { get; set; }
+    public required MoreEntry[] MoreEntry { get; set; }
 }
 
 public class Game : Archive
 {
-    public int gid { get; set; }
-    public int developerId { get; set; }
-    public bool haveChinese { get; set; }
-    public string typeDesc { get; set; }
-    public string releaseDate { get; set; }
-    public bool restricted { get; set; }
-    public string country { get; set; }
-    public Website[] website { get; set; }
-    public Characters[] characters { get; set; }
-    public Releases[] releases { get; set; }
-    public Staff[] staff { get; set; }
-    public string type { get; set; }
-    public bool freeze { get; set; }
+    public int Gid { get; set; }
+    public int DeveloperId { get; set; }
+    public bool HaveChinese { get; set; }
+    public required string TypeDesc { get; set; }
+    public required string ReleaseDate { get; set; }
+    public bool Restricted { get; set; }
+    public required string Country { get; set; }
+    public required Website[] Website { get; set; }
+    public required Characters[] Characters { get; set; }
+    public required Releases[] Releases { get; set; }
+    public required Staff[] Staff { get; set; }
+    public required string Type { get; set; }
+    public bool Freeze { get; set; }
 }
 
 public class ExtensionName
 {
-    public string name { get; set; }
-    public string type { get; set; }
-    public string desc { get; set; }
+    public required string Name { get; set; }
+    public required string Type { get; set; }
+    public required string Desc { get; set; }
 }
 
 public class MoreEntry
 {
-    public string key { get; set; }
-    public string value { get; set; }
+    public required string Key { get; set; }
+    public required string Value { get; set; }
 }
 
 public class Website
 {
-    public string title { get; set; }
-    public string link { get; set; }
+    public required string Title { get; set; }
+    public required string Link { get; set; }
 }
 
 public class Characters
 {
-    public int cid { get; set; }
-    public int cvId { get; set; }
-    public int characterPosition { get; set; }
+    public int Cid { get; set; }
+    public int CvId { get; set; }
+    public int CharacterPosition { get; set; }
 }
 
 public class Releases
 {
-    public int id { get; set; }
-    public string releaseName { get; set; }
-    public string relatedLink { get; set; }
-    public string platform { get; set; }
-    public string releaseDate { get; set; }
-    public string releaseLanguage { get; set; }
-    public string restrictionLevel { get; set; }
+    public int Id { get; set; }
+    public required string ReleaseName { get; set; }
+    public required string RelatedLink { get; set; }
+    public required string Platform { get; set; }
+    public required string ReleaseDate { get; set; }
+    public required string ReleaseLanguage { get; set; }
+    public required string RestrictionLevel { get; set; }
 }
 
 public class Staff
 {
-    public int sid { get; set; }
-    public int pid { get; set; }
-    public string empName { get; set; }
-    public string empDesc { get; set; }
-    public string jobName { get; set; }
+    public int Sid { get; set; }
+    public int Pid { get; set; }
+    public required string EmpName { get; set; }
+    public required string EmpDesc { get; set; }
+    public required string JobName { get; set; }
 }
 
 
 public class GameResponse
 {
-    public Game game { get; set; }
-    public Dictionary<string, CidMapping> cidMapping { get; set; }
-    public Dictionary<string, PidMapping> pidMapping { get; set; }
+    public required Game Game { get; set; }
+    public required Dictionary<string, CidMapping> CidMapping { get; set; }
+    public required Dictionary<string, PidMapping> PidMapping { get; set; }
 }
 
 public class CidMapping 
 {
-    public int cid { get; set; }
-    public string name { get; set; }
-    public string mainImg { get; set; }
-    public string state { get; set; }
-    public bool freeze { get; set; }
+    public int Cid { get; set; }
+    public required string Name { get; set; }
+    public required string MainImg { get; set; }
+    public required string State { get; set; }
+    public bool Freeze { get; set; }
 }
 
 public class PidMapping
 {
-    public int pid { get; set; }
-    public string name { get; set; }
-    public string mainImg { get; set; }
-    public string state { get; set; }
-    public bool freeze { get; set; }
+    public int Pid { get; set; }
+    public required string Name { get; set; }
+    public required string MainImg { get; set; }
+    public required string State { get; set; }
+    public bool Freeze { get; set; }
 }
 
 

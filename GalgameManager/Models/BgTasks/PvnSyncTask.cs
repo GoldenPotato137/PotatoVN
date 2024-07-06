@@ -94,8 +94,7 @@ public class PvnSyncTask : BgTaskBase
                 game.Ids[(int)RssType.PotatoVn] = dto.id.ToString();
                 game.Ids[(int)RssType.Bangumi] = dto.bgmId ?? game.Ids[(int)RssType.Bangumi];
                 game.Ids[(int)RssType.Vndb] = dto.vndbId ?? game.Ids[(int)RssType.Vndb];
-                game.Ids[(int)RssType.Mixed] = MixedPhraser.TrySetId(game.Ids[(int)RssType.Mixed] ?? string.Empty,
-                    game.Ids[(int)RssType.Bangumi], game.Ids[(int)RssType.Vndb]);
+                game.Ids[(int)RssType.Mixed] = MixedPhraser.IdList2Id(game.Ids);
                 game.Name = dto.name ?? game.Name.Value ?? string.Empty;
                 game.CnName = dto.cnName ?? game.CnName;
                 game.Description = dto.description ?? game.Description.Value ?? string.Empty;

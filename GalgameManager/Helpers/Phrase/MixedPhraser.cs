@@ -60,16 +60,20 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         // 试图从Id中获取bgmId和vndbId
         try
         {
-            (string? bgmId, string ? vndbId) tmp = TryGetId(galgame.Ids[(int)RssType.Mixed]);
-            if (string.IsNullOrEmpty(tmp.bgmId) == false)
+            Dictionary<string, string> tmp = Id2IdDict(galgame.Ids[(int)RssType.Mixed] ?? "");
+            string ? bgmId;string? vndbId;
+            tmp.TryGetValue("bgm", out bgmId);
+            tmp.TryGetValue("vndb", out vndbId);
+            
+            if (string.IsNullOrEmpty(bgmId) == false)
             {
                 bgm.RssType = RssType.Bangumi;
-                bgm.Id = tmp.bgmId;
+                bgm.Id = bgmId;
             }
-            if (string.IsNullOrEmpty(tmp.vndbId) == false)
+            if (string.IsNullOrEmpty(vndbId) == false)
             {
                 vndb.RssType = RssType.Vndb;
-                vndb.Id = tmp.vndbId;
+                vndb.Id = vndbId;
             }
         }
         catch (Exception)
@@ -123,7 +127,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return result;
     }
 
-    public Dictionary<string, string> Id2IdDict(string ids)
+    public static Dictionary<string, string> Id2IdDict(string ids)
     {
         Dictionary<string, string> idDict = new();
         ids = ids.Replace("，", ",").Replace(" ", "");
@@ -142,17 +146,28 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return idDict;
     }
     
-    public string IdDict2Id(Dictionary<string, string> ids)
+    public static string IdDict2Id(Dictionary<string, string?> ids)
     {
         List<string> idParts = new();
         foreach (var (name, id) in ids)
         {
-            if (_sourcesNames.Contains(name))
+            if (_sourcesNames.Contains(name) && !id.IsNullOrEmpty())
             {
                 idParts.Add($"{name}:{id}");
             }
         }
         return string.Join(",", idParts);
+    }
+    
+    public static string IdList2Id(string?[] ids)
+    {
+        Dictionary<string, string?> idDict = new()
+        {
+            ["bgm"] = ids[(int)RssType.Bangumi],
+            ["vndb"] = ids[(int)RssType.Vndb],
+            ["ymgal"] = ids[(int)RssType.Ymgal]
+        };
+        return IdDict2Id(idDict);
     }
 
     public RssType GetPhraseType() => RssType.Mixed;
