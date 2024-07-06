@@ -14,6 +14,7 @@ const vitepressSidebarOptions: Options[] = [
         useTitleFromFileHeading: true,
         useFolderTitleFromIndexFile: true,
         sortMenusByFrontmatterOrder: true,
+        collapseDepth: 2,
     },
 ];
 
