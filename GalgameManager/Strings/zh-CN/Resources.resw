@@ -1592,4 +1592,7 @@
   <data name="SourceMoveTask_MovingIn" xml:space="preserve">
     <value>正在执行游戏搬入另一个源的任务</value>
   </data>
+  <data name="LocalFolderSourceService_MoveOutError" xml:space="preserve">
+    <value>一个游戏只能属于一个本地文件夹，要移入其他本地文件夹必须从当前本地文件夹中移出。</value>
+  </data>
 </root>

@@ -134,6 +134,15 @@ public class LocalFolderSourceService : IGalgameSourceService
         return "LocalFolderSourceService_MoveOutDescription".GetLocalized(path);
     }
 
+    public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame)
+    {
+        if (moveIn?.SourceType == GalgameSourceType.LocalFolder)
+            return moveOut?.SourceType == GalgameSourceType.LocalFolder
+                ? null
+                : "LocalFolderSourceService_MoveOutError".GetLocalized();
+        return null;
+    }
+
     private static void CopyImg(string? src, string target)
     {
         if (src is null or Galgame.DefaultImagePath) return;

@@ -50,7 +50,8 @@ public interface IGalgameSourceService
     public Task<(long total, long used)> GetSpaceAsync(GalgameSourceBase source);
 
     /// <summary>
-    /// 获取移入描述
+    /// 获取移入描述 <br/>
+    /// 该方法只会在移动游戏对话框中被调用
     /// </summary>
     /// <param name="target"></param>
     /// <param name="targetPath"></param>
@@ -58,10 +59,20 @@ public interface IGalgameSourceService
     public string GetMoveInDescription(GalgameSourceBase target, string targetPath);
 
     /// <summary>
-    /// 获取将游戏移出某个库的描述
+    /// 获取将游戏移出某个库的描述 <br/>
+    /// 该方法只会在移动游戏对话框中被调用
     /// </summary>
     /// <param name="target"></param>
     /// <param name="galgame"></param>
     /// <returns></returns>
     public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame);
+
+    /// <summary>
+    /// 检查移动操作是否合法，若合法返回null，否则返回错误信息 <br/>
+    /// 该方法只会在移动游戏对话框中被调用
+    /// </summary>
+    /// <param name="moveIn">要移入的库</param>
+    /// <param name="moveOut">要移出的库</param>
+    /// <param name="galgame">要移动的游戏</param>
+    public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame);
 }

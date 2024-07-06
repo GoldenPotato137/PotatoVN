@@ -39,4 +39,7 @@ public class VirtualSourceService : IGalgameSourceService
     public string GetMoveInDescription(GalgameSourceBase target, string targetPath) => string.Empty;
 
     public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame) => string.Empty;
+
+    public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame) =>
+        null;
 }

@@ -18,7 +18,7 @@ public sealed partial class ChangeSourceDialog
     public bool Ok { get; private set; }
     public string TargetPath => _targetPath;
     public GalgameSourceBase MoveInSource => Sources[_selectSourceIndex];
-    public GalgameSourceBase? MoveOutSource { get; private set; }
+    public GalgameSourceBase? MoveOutSource => RemoveFromSource ? GalgameSources![RemoveFromSourceIndex] : null;
     
     [ObservableProperty] private int _selectSourceIndex;
     [ObservableProperty] private Visibility _spacePanelVisibility = Visibility.Collapsed;
@@ -35,6 +35,7 @@ public sealed partial class ChangeSourceDialog
     [ObservableProperty] private string _moveInDescription = string.Empty;
     [ObservableProperty] private string? _moveOutDescription;
     [ObservableProperty] private Visibility _operatePanelDescriptionVisibility = Visibility.Collapsed;
+    [ObservableProperty] private string? _warningText;
 
     private readonly Galgame _game;
     private ChangeSourceDialogAttachSetting _attachSetting = new();
@@ -48,11 +49,7 @@ public sealed partial class ChangeSourceDialog
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         PrimaryButtonText = "Yes".GetLocalized();
         IsPrimaryButtonEnabled = false;
-        PrimaryButtonClick += (_, _) =>
-        {
-            Ok = true;
-            MoveOutSource = RemoveFromSource ? GalgameSources![RemoveFromSourceIndex] : null;
-        };
+        PrimaryButtonClick += (_, _) => Ok = true;
         CloseButtonText = "Cancel".GetLocalized();
         DefaultButton = ContentDialogButton.Close;
 
@@ -74,7 +71,7 @@ public sealed partial class ChangeSourceDialog
             _getAdditionSettingControlTask = null;
             IsPrimaryButtonEnabled = false;
             _space = (-1, -1);
-            UpdateDisplay();
+            Update();
             GalgameSourceBase selectedSource = Sources[value];
             _targetPath = selectedSource.Path;
             IGalgameSourceService service = SourceServiceFactory.GetSourceService(selectedSource.SourceType);
@@ -85,14 +82,13 @@ public sealed partial class ChangeSourceDialog
             _attachSetting = new();
             _attachSetting.OnValueChanged += () =>
             {
-                IsPrimaryButtonEnabled = _attachSetting.OkClickable;
                 _targetPath = _attachSetting.TargetPath ?? selectedSource.Path;
-                UpdateDisplay();
+                Update();
             };
             _getAdditionSettingControlTask = service.GetAdditionSettingControlAsync(selectedSource, _attachSetting);
-            UpdateDisplay();
+            Update();
             AdditionSettingControl = await _getAdditionSettingControlTask;
-            UpdateDisplay();
+            Update();
         }
         catch (Exception exception)
         {
@@ -103,12 +99,12 @@ public sealed partial class ChangeSourceDialog
     }
 
     // ReSharper disable once UnusedParameterInPartialMethod
-    partial void OnRemoveFromSourceChanged(bool value) => UpdateDisplay();
+    partial void OnRemoveFromSourceChanged(bool value) => Update();
 
     // ReSharper disable once UnusedParameterInPartialMethod
-    partial void OnRemoveFromSourceIndexChanged(int value) => UpdateDisplay();
+    partial void OnRemoveFromSourceIndexChanged(int value) => Update();
 
-    private void UpdateDisplay()
+    private void Update()
     {
         //额外设置面板相关
         // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract //假阳性
@@ -127,9 +123,15 @@ public sealed partial class ChangeSourceDialog
                 CapacityToStringConverter.Convert(_space.total));
             SpacePanelVisibility = Visibility.Visible;
         }
-
+        //警告文本及判断是否允许点击确定按钮
+        if (Sources.Count > 0)
+        {
+            WarningText = SourceServiceFactory.GetSourceService(MoveInSource.SourceType)
+                .CheckMoveOperateValid(MoveInSource, MoveOutSource, _game);
+            IsPrimaryButtonEnabled = WarningText is null && _attachSetting.OkClickable;
+        }
         //移出源面板相关
-        RemovePanelVisibility = IsPrimaryButtonEnabled.ToVisibility();
+        RemovePanelVisibility = (_attachSetting.OkClickable && GalgameSources.Count > 0).ToVisibility() ;
         //操作提示面板相关
         OperatePanelDescriptionVisibility = IsPrimaryButtonEnabled.ToVisibility();
         GalgameSourceBase selectedSource = Sources[SelectSourceIndex];
