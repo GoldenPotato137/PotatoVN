@@ -23,12 +23,11 @@
         <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
         <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
         <converters:SourcesToStringConverter x:Key="SourcesToStringConverter"/>
-        
-        <CommandBarFlyout Placement="Right" x:Name="GalFlyout">
-            <AppBarButton Icon="Edit" ToolTipService.ToolTip="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
-            <AppBarButton Icon="Download" ToolTipService.ToolTip="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
-            <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiRemove}" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
-        </CommandBarFlyout>
+        <MenuFlyout x:Name="GalFlyout">
+            <MenuFlyoutItem Icon="Edit" Text="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Download" Text="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Delete" Text="{x:Bind ViewModel.UiRemove}" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
+        </MenuFlyout>
     </Page.Resources>
 
     <Grid AllowDrop="True" Drop="{x:Bind ViewModel.Grid_Drop}"
