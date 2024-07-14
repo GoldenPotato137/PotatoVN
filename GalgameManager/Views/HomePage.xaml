@@ -46,7 +46,7 @@
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
                             <control:GalgameSearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.SearchCommand}" 
-                                                                 SearchKey="{x:Bind ViewModel.SearchKey}"/>
+                                                                 SearchKey="{x:Bind ViewModel.SearchKey, Mode=TwoWay}"/>
                         </Flyout>
                     </AppBarButton.Flyout>
                     <AppBarButton.KeyboardAccelerators>

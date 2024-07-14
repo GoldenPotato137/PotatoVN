@@ -18,7 +18,9 @@ using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml.Media.Animation;
-using CommunityToolkit.WinUI.Collections;
+using CommunityToolkit.WinUI.Helpers;
+using CommunityToolkit.WinUI.UI;
+
 // ReSharper disable CollectionNeverQueried.Global
 
 namespace GalgameManager.ViewModels;
@@ -59,7 +61,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-        Source = new AdvancedCollectionView(_galgameService.Galgames.ToList());
+        Source = new AdvancedCollectionView(_galgameService.Galgames.ToList(), true);
         Filters = _filterService.GetFilters();
         
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
@@ -75,14 +77,20 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
-        _filterService.OnFilterChanged += FilterServiceOnOnFilterChanged;
-        Source.Filter = x=>CheckDisplay((Galgame)x);
+        _filterService.OnFilterChanged += ()=>Source.RefreshFilter();
+        Source.Filter = CheckDisplay;
+        Source.SortDescriptions.Add(new SortDescription(SortDirection.Descending));
         UpdateFilterPanelDisplay(null,null!);
     }
 
-    private void FilterServiceOnOnFilterChanged()
+    private bool CheckDisplay(object obj)
     {
-        throw new NotImplementedException();
+        if (obj is Galgame g)
+        {
+            return CheckDisplay(g);
+        }
+
+        return false;
     }
 
     private void OnSettingChanged(string key, object? value)
@@ -238,6 +246,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private void Search(string searchKey)
     {
         SearchTitle = searchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
+        Source.RefreshFilter();
     }
     
     /// <summary>
