@@ -45,18 +45,8 @@
                 <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <AutoSuggestBox x:Uid="HomePage_Search" AllowFocusOnInteraction="True" MinWidth="250"
-                                            Text="{x:Bind ViewModel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            ItemsSource="{x:Bind ViewModel.SearchSuggestions, Mode=OneWay}">
-                                <interactivity:Interaction.Behaviors>
-                                    <core:EventTriggerBehavior EventName="TextChanged">
-                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchChangeCommand}" />
-                                    </core:EventTriggerBehavior>
-                                    <core:EventTriggerBehavior EventName="QuerySubmitted">
-                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchSubmittedCommand}" />
-                                    </core:EventTriggerBehavior>
-                                </interactivity:Interaction.Behaviors>
-                            </AutoSuggestBox>
+                            <control:GalgameSearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.SearchCommand}" 
+                                                                 SearchKey="{x:Bind ViewModel.SearchKey}"/>
                         </Flyout>
                     </AppBarButton.Flyout>
                     <AppBarButton.KeyboardAccelerators>

@@ -27,6 +27,15 @@ public partial class CategorySettingViewModel : ObservableObject, INavigationAwa
     [ObservableProperty] private string _infoBarMessage = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     [ObservableProperty] private bool _infoBarIsOpen;
+    [ObservableProperty] private string _galgameSearchKey = string.Empty;
+    
+    [RelayCommand]
+    private void GalgameSearch(string searchKey)
+    {
+        // var filteredGames =
+        //     _galgameCollectionService.Galgames.Where(g => GalgameCollectionService.ApplySearchKey(g, searchKey));
+        // Games.
+    }
 
     public CategorySettingViewModel(INavigationService navigationService, ICategoryService categoryService, 
         IGalgameCollectionService dataCollectionService)
@@ -55,7 +64,7 @@ public partial class CategorySettingViewModel : ObservableObject, INavigationAwa
                 tmp.Click += ClickCategoryGroup;
                 CategoryGroups.Add(tmp);
             }
-            List<Galgame> games = _galgameCollectionService.Galgames;
+            IList<Galgame> games = _galgameCollectionService.Galgames;
             foreach (Galgame game in games)
             {
                 Games.Add(new GameChecker()

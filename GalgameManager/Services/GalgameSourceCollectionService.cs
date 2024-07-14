@@ -209,7 +209,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
     {
         if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SourceUpgrade)) return;
         // 将游戏搬入对应的源中
-        List<Galgame> games = _galgameService.Galgames;
+        IList<Galgame> games = _galgameService.Galgames;
         foreach (Galgame g in games)
         {
             var gamePath = g.Path;

@@ -47,7 +47,7 @@ public sealed partial class UnpackDialog
         if (StorageFile is null) return;
         SourceSelect.Visibility = showSources ? Visibility.Visible : Visibility.Collapsed;
         SourceListView.ItemsSource = 
-            (await App.GetService<IGalgameCollectionService>().GetGalgameSourcesAsync())
+            App.GetService<IGalgameSourceCollectionService>().GetGalgameSources()
             .Where(s=>s.SourceType == GalgameSourceType.LocalFolder);
         await base.ShowAsync();
     }

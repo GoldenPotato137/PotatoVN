@@ -20,7 +20,7 @@ public class JumpListService : IJumpListService
         _jumpList.SystemGroupKind = JumpListSystemGroupKind.None;
     }
 
-    public async Task CheckJumpListAsync(List<Galgame> galgames)
+    public async Task CheckJumpListAsync(IList<Galgame> galgames)
     {
         if (_jumpList == null) await Init();
         List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"/j \"{gal.Url}\"" != item.Arguments)).ToList();

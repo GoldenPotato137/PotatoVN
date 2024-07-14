@@ -198,7 +198,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         try
         {
             process.Start();
-            _galgameService.Sort();
+            // _galgameService.Sort();
             if (Item.ProcessName is not null)
             {
                 await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出

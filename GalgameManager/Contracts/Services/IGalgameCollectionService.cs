@@ -9,11 +9,6 @@ public interface IGalgameCollectionService
     public Task InitAsync();
 
     public Task StartAsync();
-
-    /// <summary>
-    /// 获取要显示的galgame列表
-    /// </summary>
-    public Task<ObservableCollection<Galgame>> GetGalgameSourcesAsync();
     
     /// <summary>
     /// 获取UID相似度最高的游戏，若全为0则返回null<br/>
