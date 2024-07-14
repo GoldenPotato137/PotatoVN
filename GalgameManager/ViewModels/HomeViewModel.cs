@@ -46,7 +46,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
     #endregion
 
-    public AdvancedCollectionView Source { get; private set; } = new();
+    public DisplayCollection<Galgame> Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IGalgameCollectionService dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
@@ -61,7 +61,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-        Source = new AdvancedCollectionView(_galgameService.Galgames.ToList(), true);
+        Source = new DisplayCollection<Galgame>(_galgameService.Galgames);
         Filters = _filterService.GetFilters();
         
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
@@ -77,20 +77,11 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
-        _filterService.OnFilterChanged += ()=>Source.RefreshFilter();
-        Source.Filter = CheckDisplay;
-        Source.SortDescriptions.Add(new SortDescription(SortDirection.Descending));
+        _filterService.OnFilterChanged += () => Source.ApplyFilter();
+        Source.Filter = g=>_filterService.ApplyFilters(g);
+        Source.ApplySearchKey = ApplySearchKey;
+        Source.Refresh();
         UpdateFilterPanelDisplay(null,null!);
-    }
-
-    private bool CheckDisplay(object obj)
-    {
-        if (obj is Galgame g)
-        {
-            return CheckDisplay(g);
-        }
-
-        return false;
     }
 
     private void OnSettingChanged(string key, object? value)
@@ -246,22 +237,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private void Search(string searchKey)
     {
         SearchTitle = searchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-        Source.RefreshFilter();
-    }
-    
-    /// <summary>
-    /// <b>不要手动调用这个函数</b><p/>
-    /// 检查一个Galgame是否应该显示在列表中<p/>
-    /// 具体规则如下：
-    /// (若有搜索关键字) 该Galgame是否满足搜索关键字<br/>
-    /// (若没有搜索关键字) 该Galgame是否满足Filters条件<br/>
-    /// </summary>
-    /// <returns></returns>
-    private bool CheckDisplay(Galgame galgame)
-    {
-        if (_searchKey == string.Empty)
-            return _filterService.ApplyFilters(galgame);
-        return ApplySearchKey(galgame, _searchKey);
+        Source.ApplySearch(searchKey);
     }
 
     public static bool ApplySearchKey(Galgame galgame, string searchKey)
@@ -299,7 +275,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
-    private void OnGalgameLoadedEvent() => Source = new AdvancedCollectionView(_galgameService.Galgames.ToList());
+    private void OnGalgameLoadedEvent() => Source = new DisplayCollection<Galgame>(_galgameService.Galgames);
 
     [RelayCommand]
     private async Task AddGalgame()
@@ -401,7 +377,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                 new []{toggleSwitch1.IsOn, toggleSwitch2.IsOn});
             await _localSettingsService.SaveSettingAsync(KeyValues.SortKeys, Galgame.SortKeysList);
             await _localSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, Galgame.SortKeysAscending);
-            Source.RefreshSorting();
         };
         Grid content = new();
         content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});

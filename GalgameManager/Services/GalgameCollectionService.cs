@@ -361,7 +361,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// <summary>
     /// 获取所有galgame
     /// </summary>
-    public IList<Galgame> Galgames => _galgames;
+    public ObservableCollection<Galgame> Galgames => _galgames;
 
     /// <summary>
     /// 获取搜索建议
