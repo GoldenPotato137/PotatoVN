@@ -11,7 +11,7 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject, IComparable<Galgame>
+public partial class Galgame : ObservableObject
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -84,18 +84,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public string? TextPath; //记录的要打开的文本的路径
     public bool PvnUpdate; //是否需要更新
     public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
-
-    [JsonIgnore] public static SortKeys[] SortKeysList
-    {
-        get;
-        private set;
-    } = { SortKeys.LastPlay , SortKeys.Developer};
-
-    [JsonIgnore] public static bool[] SortKeysAscending
-    {
-        get;
-        private set;
-    } = {false, false};
 
     [JsonIgnore] public string? Id
     {
@@ -198,63 +186,6 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             return (long)(dateTime - DateTime.MinValue).TotalDays;
         }
 
-        return 0;
-    }
-
-    /// <summary>
-    /// 更新CompareTo参数，可用于Sort
-    /// sortKeysList 和 sortKeysAscending长度相同
-    /// </summary>
-    /// <param name="sortKeysList"></param>
-    /// <param name="sortKeysAscending">升序/降序: true/false</param>
-    public static void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
-    {
-        SortKeysList = sortKeysList;
-        SortKeysAscending = sortKeysAscending;
-    }
-    
-    public static void UpdateSortKeys(SortKeys[] sortKeysList)
-    {
-        SortKeysList = sortKeysList;
-    }
-    
-    public static void UpdateSortKeysAscending(bool[] sortKeysAscending)
-    {
-        SortKeysAscending = sortKeysAscending;
-    }
-
-    public int CompareTo(Galgame? b)
-    {
-        if (b is null ) return 1;
-        for (var i = 0; i < Math.Min(SortKeysList.Length, SortKeysAscending.Length); i++)
-        {
-            var result = 0;
-            var take = SortKeysAscending[i]?-1:1; //true升序, false降序
-            switch (SortKeysList[i])
-            {
-                case SortKeys.Developer:
-                    result = string.Compare(Developer.Value!, b.Developer.Value, StringComparison.Ordinal);
-                    break;
-                case SortKeys.Name:
-                    result = string.Compare(Name.Value!, b.Name.Value, StringComparison.CurrentCultureIgnoreCase);
-                    take *= -1;
-                    break;
-                case SortKeys.Rating:
-                    result = Rating.Value.CompareTo(b.Rating.Value);
-                    break;
-                case SortKeys.LastPlay:
-                    result = GetTime(LastPlay.Value!).CompareTo(GetTime(b.LastPlay.Value!));
-                    break;
-                case SortKeys.ReleaseDate:
-                    if (ReleaseDate != null && b.ReleaseDate != null )
-                    {
-                        result = ReleaseDate.Value.CompareTo(b.ReleaseDate.Value);
-                    }
-                    break;
-            }
-            if (result != 0)
-                return take * result; 
-        }
         return 0;
     }
 

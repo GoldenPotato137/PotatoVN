@@ -56,12 +56,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
         PhraserList[(int)RssType.Vndb] = vndbPhraser;
         PhraserList[(int)RssType.Mixed] = new MixedPhraser(bgmPhraser, vndbPhraser);
-        
-        SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
-            { SortKeys.LastPlay , SortKeys.Developer};
-        var sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
-            {false,false};
-        Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
 
         App.OnAppClosing += async () =>
         {
@@ -643,20 +637,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         {
             case KeyValues.BangumiAccount:
                 PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
-                break;
-            case KeyValues.SortKeys:
-                Galgame.UpdateSortKeys(await LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys) ?? new[]
-                {
-                    SortKeys.Name,
-                    SortKeys.Rating
-                });
-                break;
-            case KeyValues.SortKeysAscending:
-                Galgame.UpdateSortKeysAscending(await LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending) ?? new[]
-                {
-                    false,
-                    false
-                });
                 break;
         }
     }

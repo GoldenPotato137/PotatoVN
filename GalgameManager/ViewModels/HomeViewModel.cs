@@ -38,6 +38,38 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _displayPlayTypePolygon = true; // 是否显示游玩状态的小三角形
     [ObservableProperty] private bool _displayVirtualGame; //是否显示虚拟游戏
     [ObservableProperty] private bool _specialDisplayVirtualGame; //是否特殊显示虚拟游戏（降低透明度）
+    public static SortKeys[] SortKeysList
+    {
+        get;
+        private set;
+    } = { SortKeys.LastPlay , SortKeys.Developer};
+
+    public static bool[] SortKeysAscending
+    {
+        get;
+        private set;
+    } = {false, false};
+    
+    /// <summary>
+    /// 更新sort参数
+    /// </summary>
+    /// <param name="sortKeysList"></param>
+    /// <param name="sortKeysAscending">升序/降序: true/false</param>
+    public void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
+    {
+        SortKeysList = sortKeysList;
+        SortKeysAscending = sortKeysAscending;
+        if (SortKeysList.Length != SortKeysAscending.Length)
+            throw new PvnException("SortKeysList.Length != SortKeysAscending.Length");
+        Source.SortDescriptions.Clear();
+        for (var i = 0; i < SortKeysList.Length; i++)
+        {
+            Source.SortDescriptions.Add(new SortDescription(sortKeysList[i].ToString(), 
+                SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
+            ));
+        }
+        Source.RefreshSorting();
+    }
 
     #region UI
     public readonly string UiEdit = "HomePage_Edit".GetLocalized();
@@ -46,7 +78,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
     #endregion
 
-    public DisplayCollection<Galgame> Source { get; private set; } = new();
+    public AdvancedCollectionView Source { get; private set; } = new();
 
     public HomeViewModel(INavigationService navigationService, IGalgameCollectionService dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
@@ -56,12 +88,17 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _localSettingsService = localSettingsService;
         _filterService = filterService;
         _infoService = infoService;
+        SortKeys[] sortKeysList = _localSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
+            { SortKeys.LastPlay , SortKeys.Developer};
+        var sortKeysAscending = _localSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
+            {false,false};
+        UpdateSortKeys(sortKeysList, sortKeysAscending);
     }
     
     public async void OnNavigatedTo(object parameter)
     {
         SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-        Source = new DisplayCollection<Galgame>(_galgameService.Galgames);
+        Source = new AdvancedCollectionView(_galgameService.Galgames, true);
         Filters = _filterService.GetFilters();
         
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
@@ -77,9 +114,18 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
-        _filterService.OnFilterChanged += () => Source.ApplyFilter();
-        Source.Filter = g=>_filterService.ApplyFilters(g);
-        Source.ApplySearchKey = ApplySearchKey;
+        _filterService.OnFilterChanged += () => Source.RefreshFilter();
+        Source.Filter = g =>
+        {
+            if (g is Galgame game && _filterService.ApplyFilters(game))
+            {
+                return SearchKey.IsNullOrEmpty() || ApplySearchKey(game, SearchKey);
+            }
+
+            return false;
+        };
+        Source.SortDescriptions.Clear();
+        
         Source.Refresh();
         UpdateFilterPanelDisplay(null,null!);
     }
@@ -91,6 +137,20 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             case KeyValues.DisplayVirtualGame:
                 DisplayVirtualGame = value is true;
                 break;
+            // case KeyValues.SortKeys:
+            //     UpdateSortKeys(_localSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
+            //     {
+            //         SortKeys.Name,
+            //         SortKeys.Rating
+            //     });
+            //     break;
+            // case KeyValues.SortKeysAscending:
+            //     UpdateSortKeysAscending(_localSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
+            //     {
+            //         false,
+            //         false
+            //     });
+            //     break;
         }
     }
 
@@ -237,10 +297,10 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private void Search(string searchKey)
     {
         SearchTitle = searchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-        Source.ApplySearch(searchKey);
+        Source.RefreshFilter();
     }
 
-    public static bool ApplySearchKey(Galgame galgame, string searchKey)
+    private static bool ApplySearchKey(Galgame galgame, string searchKey)
     {
         return galgame.Name.Value!.ContainX(searchKey) || 
                galgame.Developer.Value!.ContainX(searchKey) || 
@@ -275,7 +335,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
-    private void OnGalgameLoadedEvent() => Source = new DisplayCollection<Galgame>(_galgameService.Galgames);
+    private void OnGalgameLoadedEvent() => Source = new AdvancedCollectionView(_galgameService.Galgames, true);
 
     [RelayCommand]
     private async Task AddGalgame()
@@ -331,7 +391,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = sortKeysList,
             Margin = new Thickness(0, 0, 5, 0),
-            SelectedItem = Galgame.SortKeysList[0]
+            SelectedItem = SortKeysList[0]
         };
         ToggleSwitch toggleSwitch1 = new()
         {
@@ -340,7 +400,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             Margin = new Thickness(5, 0, 0, 0),
             OnContent = "升序",
             OffContent = "降序",
-            IsOn = Galgame.SortKeysAscending[0]
+            IsOn = SortKeysAscending[0]
         };
         StackPanel panel1 = new ();
         panel1.Children.Add(comboBox1);
@@ -353,7 +413,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = sortKeysList,
             Margin = new Thickness(0, 0, 5, 0),
-            SelectedItem = Galgame.SortKeysList[1]
+            SelectedItem = SortKeysList[1]
         };
         ToggleSwitch toggleSwitch2 = new()
         {
@@ -362,7 +422,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             Margin = new Thickness(5, 0, 0, 0),
             OnContent = "升序",
             OffContent = "降序",
-            IsOn = Galgame.SortKeysAscending[1]
+            IsOn = SortKeysAscending[1]
         };
         StackPanel panel2 = new ();
         panel2.Children.Add(comboBox2);
@@ -372,11 +432,11 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
 
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            Galgame.UpdateSortKeys(
+            UpdateSortKeys(
                 new[] { (SortKeys)comboBox1.SelectedItem, (SortKeys)comboBox2.SelectedItem },
                 new []{toggleSwitch1.IsOn, toggleSwitch2.IsOn});
-            await _localSettingsService.SaveSettingAsync(KeyValues.SortKeys, Galgame.SortKeysList);
-            await _localSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, Galgame.SortKeysAscending);
+            await _localSettingsService.SaveSettingAsync(KeyValues.SortKeys, SortKeysList);
+            await _localSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, SortKeysAscending);
         };
         Grid content = new();
         content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
