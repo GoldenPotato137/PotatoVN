@@ -11,10 +11,10 @@
     mc:Ignorable="d">
     
     <Page.Resources>
-        <CommandBarFlyout Placement="Right" x:Key="Flyout">
-            <AppBarButton Icon="Delete" ToolTipService.ToolTip="{x:Bind ViewModel.UiDeleteFolder}" 
+        <MenuFlyout Placement="Right" x:Key="Flyout">
+            <MenuFlyoutItem Icon="Delete" Text="{x:Bind ViewModel.UiDeleteFolder}" 
                           Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
-        </CommandBarFlyout>
+        </MenuFlyout>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
         <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
     </Page.Resources>
