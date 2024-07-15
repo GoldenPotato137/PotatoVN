@@ -3,7 +3,6 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
@@ -27,6 +26,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     private readonly IBgTaskService _bgTaskService;
+    private readonly IGalgameSourceCollectionService _galSrcService;
     private string _searchKey = string.Empty;
     public event Action<Galgame>? GalgameAddedEvent; //当有galgame添加时触发
     public event Action<Galgame>? GalgameDeletedEvent; //当有galgame删除时触发
@@ -42,7 +42,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     } = new IGalInfoPhraser[5];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
-        IFileService fileService, IFilterService filterService, IInfoService infoService, IBgTaskService bgTaskService)
+        IGalgameSourceCollectionService galgameSourceService, IFilterService filterService, IInfoService infoService, 
+        IBgTaskService bgTaskService)
     {
         LocalSettingsService = localSettingsService;
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
@@ -51,6 +52,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         _infoService = infoService;
         _bgTaskService = bgTaskService;
+        _galSrcService = galgameSourceService;
+        _galSrcService.OnSourceDeleted += HandleSourceDelete;
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new();
@@ -127,16 +130,12 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     {
         UpdateDisplay(UpdateType.Sort);
     }
-
-    /// <summary>
-    /// 移除一个galgame
-    /// </summary>
-    /// <param name="galgame">galgame</param>
-    /// <param name="commitSync">是否要将变化同步到云盘</param>
-    /// <param name="removeFromDisk">是否要从硬盘移除游戏</param>
-    public async Task RemoveGalgame(Galgame galgame,bool commitSync, bool removeFromDisk = false)
+    
+    public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
+        foreach (GalgameSourceBase s in galgame.Sources)
+            _galSrcService.MoveOutOperate(s, galgame);
         if(galgame.CheckExistLocal())
             _galgameMap.Remove(galgame.Url);
         UpdateDisplay(UpdateType.Remove, galgame);
@@ -378,11 +377,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     }
 
     /// <summary>
-    /// 获取所有galgame
-    /// </summary>
-    public List<Galgame> Galgames => _galgames;
-
-    /// <summary>
     /// 搜索galgame并更新显示列表
     /// </summary>
     /// <param name="searchKey">搜索关键字</param>
@@ -427,6 +421,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     {
         return (string)_searchKey.Clone();
     }
+    
+    public List<Galgame> Galgames => _galgames;
 
     /// <summary>
     /// 从Url获取galgame
@@ -791,6 +787,23 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         GalgameSourceBase? source = dialog.Source;
         if (file == null || source is not GalgameFolderSource folderSource) return;
         _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
+    }
+
+    private async void HandleSourceDelete(GalgameSourceBase source)
+    {
+        try
+        {
+            foreach (Galgame galgame in source.GetGalgameList())
+            {
+                _galSrcService.MoveOutOperate(source, galgame);
+                if(galgame.Sources.Count == 0)
+                    await RemoveGalgame(galgame);
+            }
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(InfoBarSeverity.Error, e: e);
+        }
     }
 }
 

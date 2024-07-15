@@ -35,6 +35,11 @@ public class GalgameSourceBase
 
     public IEnumerable<Galgame> GetGalgameList() => Galgames.Select(g => g.Galgame);
 
+    /// <summary>
+    /// 检查这个库是否包含某个游戏
+    /// </summary>
+    public bool Contain(Galgame? galgame) => Galgames.Exists(g => g.Galgame == galgame);
+
     public virtual Galgame GetGalgameByName(string name)
     {
         return Galgames.Where(g => g.Galgame.Name == name).ToList()[0].Galgame;

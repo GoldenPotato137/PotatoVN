@@ -24,13 +24,13 @@ public class LocalFolderSourceService : IGalgameSourceService
     public BgTaskBase MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null)
     {
         if (targetPath is null) throw new PvnException("targetPath is null");
-        if (target is not GalgameFolderSource source) throw new ArgumentException("target is not GalgameFolderSource");
-        return new LocalFolderSourceMoveInTask(game, source, targetPath);
+        if (target is not GalgameFolderSource) throw new ArgumentException("target is not GalgameFolderSource");
+        return new LocalFolderSourceMoveInTask(game, targetPath);
     }
 
     public BgTaskBase MoveOutAsync(GalgameSourceBase target, Galgame game)
     {
-        return new LocalFolderSourceMoveOutTask();
+        return new LocalFolderSourceMoveOutTask(game, target);
     }
 
     public async Task SaveMetaAsync(Galgame game)

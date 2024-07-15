@@ -11,9 +11,21 @@ public interface IGalgameCollectionService
     public Task StartAsync();
 
     /// <summary>
+    /// 移除一个galgame
+    /// </summary>
+    /// <param name="galgame">galgame</param>
+    /// <param name="removeFromDisk">是否要从硬盘移除游戏</param>
+    public Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false);
+
+    /// <summary>
     /// 获取要显示的galgame列表
     /// </summary>
     public Task<ObservableCollection<Galgame>> GetGalgameSourcesAsync();
+
+    /// <summary>
+    /// 获取所有galgame
+    /// </summary>
+    public List<Galgame> Galgames { get; }
     
     /// <summary>
     /// 获取UID相似度最高的游戏，若全为0则返回null<br/>
