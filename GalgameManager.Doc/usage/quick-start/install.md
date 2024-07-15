@@ -1,3 +1,7 @@
+---
+order: 1 
+---
+
 # 下载与安装
 PotatoVN 目前仅支持以`msix`包格式安装，免安装版还在路上（coming sooooooon）。
 
