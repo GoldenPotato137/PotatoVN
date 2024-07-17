@@ -1616,4 +1616,43 @@
   <data name="LocalFolderSourceMoveTask_MoveOut_Success" xml:space="preserve">
     <value>成功删除文件夹 {0}</value>
   </data>
+  <data name="MixedPhraserOrderDialog_Title" xml:space="preserve">
+    <value>设置信息源优先级</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Name" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Des" xml:space="preserve">
+    <value>简介</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Order.Title" xml:space="preserve">
+    <value>信息混合方法</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Order.Description" xml:space="preserve">
+    <value>设置混合搜刮器从不同数据源混合搜刮下来的数据时各个源的优先级</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Exp" xml:space="preserve">
+    <value>预计游玩时长</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Rating" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Image" xml:space="preserve">
+    <value>封面图</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_ReleaseDate" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Character" xml:space="preserve">
+    <value>角色</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_CnName" xml:space="preserve">
+    <value>中文名</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Dev" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Tag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
 </root>

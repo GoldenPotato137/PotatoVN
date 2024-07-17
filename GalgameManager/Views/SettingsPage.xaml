@@ -15,12 +15,12 @@
         <converter:PageToStringConverter x:Key="PageToStringConverter"/>
         <converter:AuthenticationTypeToStringConverter x:Key="AuthenticationTypeToStringConverter"/>
         <converter:WindowModeToStringConverter x:Key="WindowModeToStringConverter"/>
-        <converter:ImagePathConverter x:Key="ImagePathConverter"/>
         <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
         </Style>
         <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
+        <x:Double x:Key="ButtonMinWidth">75</x:Double>
     </Page.Resources>
 
 
@@ -124,8 +124,7 @@
                                 </RelativePanel>
                             </control:Panel>
                             <!-- bangumi -->
-                            <control:Panel Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Bangumi}"
-                                           Margin="0 0 0 -26"> <!--这里的margin是显示bug的workaround-->
+                            <control:Panel Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Bangumi}">
                                 <StackPanel>
                                     <HyperlinkButton x:Uid="SettingsPage_Rss_Bangumi" Padding="0"/>
                                     <TextBlock x:Uid="SettingsPage_Rss_Bangumi_Description" TextWrapping="Wrap"
@@ -135,8 +134,7 @@
                             </control:Panel>
                             <!-- VNDB -->
                             <control:Panel
-                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Vndb}"
-                                Margin="0 -13 0 -13">
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Vndb}">
                                 <StackPanel>
                                     <HyperlinkButton x:Uid="SettingsPage_Rss_VNDB" Padding="0" />
                                     <TextBlock x:Uid="SettingsPage_Rss_VNDB_Description" TextWrapping="Wrap"
@@ -146,13 +144,16 @@
                             </control:Panel>
                             <!-- Mixed -->
                             <control:Panel
-                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Mixed}"
-                                Margin="0 -26 0 0">
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Mixed}">
                                 <StackPanel>
                                     <HyperlinkButton x:Uid="SettingsPage_Rss_Mixed" Padding="0"/>
                                     <TextBlock x:Uid="SettingsPage_Rss_Mixed_Description" TextWrapping="Wrap"
                                                Style="{StaticResource DescriptionTextStyle}"
                                                Margin="{StaticResource XSmallBottomMargin}"/>
+                                    <control:Setting x:Uid="SettingsPage_Rss_Mixed_Order">
+                                        <Button Content="Go" MinWidth="{StaticResource ButtonMinWidth}"
+                                                Command="{x:Bind ViewModel.SetMixedPhraserOrderCommand}"/>
+                                    </control:Setting>
                                 </StackPanel>
                             </control:Panel>
                         </StackPanel>
