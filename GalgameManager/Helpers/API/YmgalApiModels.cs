@@ -23,7 +23,7 @@ public class Archive
     public required string PublishTime { get; set; }
     public int Publisher { get; set; }
     public required string Name { get; set; }
-    public required string ChineseName { get; set; }
+    public string? ChineseName { get; set; }
     public required ExtensionName[] ExtensionName { get; set; }
     public required string Introduction { get; set; }
     public required string State { get; set; }

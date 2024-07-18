@@ -32,7 +32,7 @@ public class YmgalPhraser: IGalInfoPhraser
 
     public YmgalPhraser()
     {
-        _httpClient = new HttpClient();
+        _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();;
         GetHttpClient();
     }
 
@@ -68,9 +68,10 @@ public class YmgalPhraser: IGalInfoPhraser
                 Galgame result = new()
                 {
                     Name = g.Name,
-                    CnName = g.ChineseName,
+                    CnName = g.ChineseName ?? "",
                     Description = g.Introduction,
                     ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue, 
+                    ImageUrl = g.MainImg,
                 };
                 var organizationUrl = _baseUrl + $"open/archive/?orgId={g.DeveloperId}";
                 HttpResponseMessage dResponse = await _httpClient.GetAsync(organizationUrl);

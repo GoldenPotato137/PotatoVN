@@ -40,7 +40,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public IGalInfoPhraser[] PhraserList
     {
         get;
-    } = new IGalInfoPhraser[5];
+    } = new IGalInfoPhraser[6];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
         IGalgameSourceCollectionService galgameSourceService, IFilterService filterService, IInfoService infoService, 
@@ -58,9 +58,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new();
-        MixedPhraser mixedPhraser = new(bgmPhraser, vndbPhraser, GetMixData());
+        YmgalPhraser ymgalPhraser = new();
+        MixedPhraser mixedPhraser = new(bgmPhraser, vndbPhraser, ymgalPhraser, GetMixData());
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
         PhraserList[(int)RssType.Vndb] = vndbPhraser;
+        PhraserList[(int)RssType.Ymgal] = ymgalPhraser;
         PhraserList[(int)RssType.Mixed] = mixedPhraser;
         
         SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]

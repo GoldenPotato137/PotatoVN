@@ -73,7 +73,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    public string?[] Ids = new string?[6]; //magic number: 钦定了一个最大Phraser数目
     [JsonIgnore] public readonly ObservableCollection<Category> Categories = new();
     [JsonIgnore] public ObservableCollection<GalgameSourceBase> Sources { get; } = new(); //所属的源
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
@@ -418,6 +418,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
         Dictionary<string, string> tmp = MixedPhraser.Id2IdDict(Ids[(int)RssType.Mixed] ?? "");
         tmp.TryGetValue("bgm", out Ids[(int)RssType.Bangumi]);
         tmp.TryGetValue("vndb", out Ids[(int)RssType.Vndb]);
+        tmp.TryGetValue("ymgal", out Ids[(int)RssType.Ymgal]);
     }
 
     /// <summary>

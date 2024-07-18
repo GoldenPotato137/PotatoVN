@@ -10,6 +10,7 @@ public class MixedPhraserTest
     private MixedPhraser? _mixedPhraser;
     private BgmPhraser _bgmPhraser = null!;
     private VndbPhraser _vndbPhraser = null!;
+    private YmgalPhraser _ymgalPhraser = null!;
     
     [SetUp]
     public void Init()
@@ -21,7 +22,7 @@ public class MixedPhraserTest
         };
         _bgmPhraser = new(data);
         _vndbPhraser = new();
-        _mixedPhraser = new MixedPhraser(_bgmPhraser, _vndbPhraser, new MixedPhraserData
+        _mixedPhraser = new MixedPhraser(_bgmPhraser, _vndbPhraser, _ymgalPhraser, new MixedPhraserData
         {
             Order = new MixedPhraserOrder().SetToDefault(),
         });
@@ -66,7 +67,7 @@ public class MixedPhraserTest
         order.NameOrder = new() { RssType.Vndb, RssType.Bangumi };
         order.ImageUrlOrder = new() { RssType.Bangumi, RssType.Vndb };
         order.DescriptionOrder = new() { RssType.Vndb, RssType.Bangumi };
-        MixedPhraser phraser = new MixedPhraser(_bgmPhraser, _vndbPhraser, new MixedPhraserData
+        MixedPhraser phraser = new MixedPhraser(_bgmPhraser, _vndbPhraser, _ymgalPhraser, new MixedPhraserData
         {
             Order = order,
         });
