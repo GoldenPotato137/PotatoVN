@@ -27,6 +27,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
                                       "length_minutes, tags.id, tags.rating, developers.original, developers.name, released";
 
     private bool _authed;
+    private Task? _checkAuthTask;
 
     public VndbPhraser()
     {
@@ -43,17 +44,20 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
     {
         if (data is VndbPhraserData vndbData)
         {
-            _vndbApi.UpdateToken(vndbData.Token);
-            try
+            _checkAuthTask = Task.Run(async () =>
             {
-                _vndbApi.GetAuthInfo().Wait();
-                _authed = true;
-            }
-            catch (InvalidTokenException)
-            {
-                _authed = false;
-                _vndbApi.UpdateToken(null);
-            }
+                _vndbApi.UpdateToken(vndbData.Token);
+                try
+                {
+                    await _vndbApi.GetAuthInfo();
+                    _authed = true;
+                }
+                catch (InvalidTokenException)
+                {
+                    _authed = false;
+                    _vndbApi.UpdateToken(null);
+                }
+            });
         }
     }
 
@@ -330,6 +334,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
 
     public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
     {
+        if (_checkAuthTask != null) await _checkAuthTask;
         if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UploadAsync_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Vndb]))
             return (GalStatusSyncResult.NoId, "VndbPhraser_UploadAsync_NoId".GetLocalized());
@@ -344,9 +349,10 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
             {
                 Fields = "vote, labels.id", Filters = VndbFilters.Equal("id", id)
             });
+            var labelSet = galgame.PlayType.ToVndbCollectionType();
             PatchUserListRequest patchUserListRequest = new()
             {
-                LabelsSet = new List<int> { [0] = galgame.PlayType.ToVndbCollectionType() },
+                LabelsSet = new List<int> {labelSet},
                 Notes = galgame.Comment,
                 Vote = galgame.MyRate * 10 // BgmRate: 0~10, VndbRate: 10~100, vndb的一个奇怪的点, 它网站上是 0~10
                 // Vndb无private选项
@@ -357,7 +363,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
                 // 去除旧标签
                 foreach (UserLabel userListItem in tryGetResponse.Results![0].Labels!)
                 {
-                    if (userListItem.Id is <= 6 and >= 1)
+                    if (userListItem.Id is <= 6 and >= 1 && userListItem.Id != labelSet)
                         patchUserListRequest.LabelsUnset.Add(userListItem.Id);
                 }
             }
@@ -373,6 +379,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
 
     public async Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame)
     {
+        if (_checkAuthTask != null) await _checkAuthTask;
         if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UploadAsync_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Vndb]))
             return (GalStatusSyncResult.NoId, "VndbPhraser_UploadAsync_NoId".GetLocalized());
@@ -404,6 +411,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
 
     public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(List<Galgame> galgames)
     {
+        if (_checkAuthTask != null) await _checkAuthTask;
         if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UploadAsync_UnAuthorized".GetLocalized());
         try
         {

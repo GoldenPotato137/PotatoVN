@@ -240,9 +240,12 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         if(selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
-        //TODO
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
+        {
+            // 优先Bgm
+            await DownLoadPlayStatusAsync(galgame, RssType.Vndb);
             await DownLoadPlayStatusAsync(galgame, RssType.Bangumi);
+        }
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();

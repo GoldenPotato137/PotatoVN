@@ -7,7 +7,7 @@ namespace GalgameManager.Test.Helpers.Phraser;
 [TestFixture]
 public class VndbPhraserTest
 {
-    private VndbPhraser _vndbPhraser;
+    private VndbPhraser _vndbPhraser = null!;
 
     [SetUp]
     public void Init()

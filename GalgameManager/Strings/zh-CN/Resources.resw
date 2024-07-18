@@ -484,6 +484,12 @@
   <data name="GalgamePage_OpenInVndb.Label" xml:space="preserve">
     <value>在Vndb中打开</value>
   </data>
+  <data name="GalgamePage_SyncFromVndb.Label" xml:space="preserve">
+    <value>下载Vndb游玩状态</value>
+  </data>
+  <data name="GalgamePage_SyncFromBgm.Label" xml:space="preserve">
+    <value>下载Bangumi游玩状态</value>
+  </data>
   <data name="SettingsPage_Library_IgnoreFetchResult.Title" xml:space="preserve">
     <value>忽略游戏查询结果</value>
   </data>
