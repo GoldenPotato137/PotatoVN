@@ -15,6 +15,7 @@ public class YmgalPhraser: IGalInfoPhraser
     private static string _baseUrl = "https://www.ymgal.games/";
     private static string _publicClientId = "ymgal";
     private static string _publicClientSecret = "luna0327";
+    private Task? _getOAuthTask;
 
     private readonly JsonSerializerSettings _snakeCaseSerializerSettings = new()
     {
@@ -38,6 +39,7 @@ public class YmgalPhraser: IGalInfoPhraser
 
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
+        if (_getOAuthTask != null) await _getOAuthTask;
         var name = galgame.Name.Value ?? "";
         var url = "";
         int? id;
@@ -72,6 +74,7 @@ public class YmgalPhraser: IGalInfoPhraser
                     Description = g.Introduction,
                     ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue, 
                     ImageUrl = g.MainImg,
+                    Id = g.Gid.ToString()
                 };
                 var organizationUrl = _baseUrl + $"open/archive/?orgId={g.DeveloperId}";
                 HttpResponseMessage dResponse = await _httpClient.GetAsync(organizationUrl);
@@ -109,10 +112,13 @@ public class YmgalPhraser: IGalInfoPhraser
     
     private void GetHttpClient()
     {
-        var accessToken = OauthGet().Result;
-        _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
-        _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
-        _httpClient.DefaultRequestHeaders.Add("version", "1");
+        _getOAuthTask = Task.Run(async () =>
+        {
+            var accessToken = await OauthGet();
+            _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+            _httpClient.DefaultRequestHeaders.Add("version", "1");
+        });
     }
 }
 

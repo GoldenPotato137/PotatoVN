@@ -94,7 +94,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         // 合并信息
         Galgame result = new();
         result.RssType = RssType.Mixed;
-        result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}"; 
+        result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)},ymgal:{(ymgal == null ? "null" : ymgal.Id)}"; 
         // name
         result.Name = (LockableProperty<string>)GetValue(metas, nameof(Galgame.Name), 
             _ => true, string.Empty);
