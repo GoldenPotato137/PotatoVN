@@ -44,6 +44,7 @@ public sealed partial class ChangePlayStatusDialog
         SecondaryButtonClick += (_, _) => Canceled = true;
         Loaded += Init;
 
+        _playStatusList.Add(PlayType.WantToPlay.GetLocalized());
         _playStatusList.Add(PlayType.Played.GetLocalized());
         _playStatusList.Add(PlayType.Playing.GetLocalized());
         _playStatusList.Add(PlayType.Shelved.GetLocalized());
@@ -55,7 +56,7 @@ public sealed partial class ChangePlayStatusDialog
     private void Init(object sender, RoutedEventArgs routedEventArgs)
     {
         RateBox.SelectedItem = _galgame.MyRate;
-        PlayType tmp = _galgame.PlayType == PlayType.None ? PlayType.Playing : _galgame.PlayType;
+        PlayType tmp = _galgame.PlayType == PlayType.None ? PlayType.WantToPlay : _galgame.PlayType;
         PlayStatusBox.SelectedItem = _playStatusList.First(x => x == tmp.GetLocalized());
         CommentBox.Text = _galgame.Comment;
         PrivateCheckBox.IsChecked = _galgame.PrivateComment;

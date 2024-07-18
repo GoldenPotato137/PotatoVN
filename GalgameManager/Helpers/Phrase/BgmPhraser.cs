@@ -200,7 +200,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
         var charactersUrl = $"https://api.bgm.tv/v0/subjects/{id}/characters";
         HttpResponseMessage charactersResponse = await _httpClient.GetAsync(charactersUrl);
         if (!charactersResponse.IsSuccessStatusCode) return result;
-        List<JToken>? charactersList = JToken.Parse(await charactersResponse.Content.ReadAsStringAsync())?.ToObject<List<JToken>>();
+        List<JToken>? charactersList = JToken.Parse(await charactersResponse.Content.ReadAsStringAsync()).ToObject<List<JToken>>();
         result.Characters = new ObservableCollection<GalgameCharacter>();
         if (charactersList == null) return result;
         foreach (JToken character in charactersList)
@@ -336,31 +336,31 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
             JToken? bloodTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("血型") ?? false);
             if (bloodTypeInfoBox?["value"] != null)
             {
-                character.BloodType = bloodTypeInfoBox!["value"]!.ToObject<string>();
+                character.BloodType = bloodTypeInfoBox["value"]!.ToObject<string>();
             }
             
             JToken? heightTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("身高") ?? false);
             if (heightTypeInfoBox?["value"] != null)
             {
-                character.Height = heightTypeInfoBox!["value"]!.ToObject<string>();
+                character.Height = heightTypeInfoBox["value"]!.ToObject<string>();
             }
             
             JToken? weightTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("体重") ?? false);
             if (weightTypeInfoBox?["value"] != null)
             {
-                character.Weight = weightTypeInfoBox!["value"]!.ToObject<string>();
+                character.Weight = weightTypeInfoBox["value"]!.ToObject<string>();
             }
             
             JToken? BWHTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("BWH") ?? false);
             if (BWHTypeInfoBox?["value"] != null)
             {
-                character.BWH = BWHTypeInfoBox!["value"]!.ToObject<string>();
+                character.BWH = BWHTypeInfoBox["value"]!.ToObject<string>();
             }
             
             JToken? birthDateTypeInfoBox = infoBox?.Find(x => x["key"]?.ToObject<string>()?.Contains("生日") ?? false);
             if (birthDateTypeInfoBox?["value"] != null)
             {
-                character.BirthDate = birthDateTypeInfoBox!["value"]!.ToObject<string>();
+                character.BirthDate = birthDateTypeInfoBox["value"]!.ToObject<string>();
             }
 
             character.Gender = jsonToken["gender"]?.ToObject<string?>() switch

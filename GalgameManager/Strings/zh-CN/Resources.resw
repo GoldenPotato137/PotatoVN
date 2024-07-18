@@ -656,6 +656,9 @@
   <data name="PlayType_Abandoned" xml:space="preserve">
     <value>抛弃</value>
   </data>
+  <data name="PlayType_WantToPlay" xml:space="preserve">
+    <value>想玩</value>
+  </data>
   <data name="GalgamePage_PlayStatus.Label" xml:space="preserve">
     <value>游玩状态</value>
   </data>

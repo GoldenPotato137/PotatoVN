@@ -11,6 +11,7 @@ public enum PlayType
     Played,
     Shelved,
     Abandoned,
+    WantToPlay
 }
 
 public static class PlayTypeHelper
@@ -30,6 +31,8 @@ public static class PlayTypeHelper
             return PlayType.Shelved;
         if (localizedString == "PlayType_Abandoned".GetLocalized())
             return PlayType.Abandoned;
+        if (localizedString == "PlayType_WantToPlay".GetLocalized())
+            return PlayType.WantToPlay;
         return PlayType.None;
     }
 
@@ -42,6 +45,8 @@ public static class PlayTypeHelper
         {
             default:
             case PlayType.None:
+            case PlayType.WantToPlay: 
+                return 1;
             case PlayType.Played:
                 return 2;
             case PlayType.Playing:
@@ -62,6 +67,8 @@ public static class PlayTypeHelper
         {
             default:
             case PlayType.None:
+            case PlayType.WantToPlay:
+                return 5;
             case PlayType.Played:
                 return 2;
             case PlayType.Playing:
@@ -70,7 +77,6 @@ public static class PlayTypeHelper
                 return 3;
             case PlayType.Abandoned:
                 return 4;
-            // WantToPlay: 5
             // Blacklist: 6
         }
     }
@@ -92,6 +98,8 @@ public static class PlayTypeHelper
                 return PlayType.Shelved;
             case 4:
                 return PlayType.Abandoned;
+            case 5:
+                return PlayType.WantToPlay;
         }
     }
 
@@ -103,8 +111,9 @@ public static class PlayTypeHelper
         switch (bgmCollectionType)
         {
             default:
-            case 1:
                 return PlayType.None;
+            case 1:
+                return PlayType.WantToPlay;
             case 2:
                 return PlayType.Played;
             case 3:
@@ -126,6 +135,8 @@ public static class PlayTypeHelper
             default:
             case PlayType.None:
                 return Colors.Gray;
+            case PlayType.WantToPlay:
+                return Colors.Pink;
             case PlayType.Played:
                 return Colors.LimeGreen;
             case PlayType.Playing:
