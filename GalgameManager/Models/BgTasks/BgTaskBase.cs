@@ -29,6 +29,10 @@ public abstract class BgTaskBase
     public Task Run()
     {
         Task = RunInternal();
+        Task.ContinueWith(t =>
+        {
+            ChangeProgress(-1, 1, t.Exception?.Message ?? "Task Failed");
+        }, TaskContinuationOptions.OnlyOnFaulted);
         return Task;
     }
 

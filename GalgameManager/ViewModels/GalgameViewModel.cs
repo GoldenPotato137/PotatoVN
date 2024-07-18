@@ -264,7 +264,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            await _galgameService.RemoveGalgame(Item, true, true);
+            await _galgameService.RemoveGalgame(Item, true);
             _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         };
         await dialog.ShowAsync();

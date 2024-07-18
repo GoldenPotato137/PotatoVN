@@ -137,7 +137,7 @@ public class PvnSyncTask : BgTaskBase
             Galgame? game = gameService.GetGalgameFromId(id.ToString(), RssType.PotatoVn);
             if (game is null) continue;
             Result += "PvnSyncTask_Pull_Deleted".GetLocalized(game.Name.Value ?? string.Empty, id) + "\n";
-            await gameService.RemoveGalgame(game, false);
+            await gameService.RemoveGalgame(game);
         }
 
         await gameService.SaveGalgamesAsync();

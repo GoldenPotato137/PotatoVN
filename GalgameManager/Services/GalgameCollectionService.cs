@@ -1,9 +1,9 @@
 ﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
@@ -27,6 +27,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     private readonly IBgTaskService _bgTaskService;
+    private readonly IGalgameSourceCollectionService _galSrcService;
     private string _searchKey = string.Empty;
     public event Action<Galgame>? GalgameAddedEvent; //当有galgame添加时触发
     public event Action<Galgame>? GalgameDeletedEvent; //当有galgame删除时触发
@@ -42,7 +43,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     } = new IGalInfoPhraser[5];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
-        IFileService fileService, IFilterService filterService, IInfoService infoService, IBgTaskService bgTaskService)
+        IGalgameSourceCollectionService galgameSourceService, IFilterService filterService, IInfoService infoService, 
+        IBgTaskService bgTaskService)
     {
         LocalSettingsService = localSettingsService;
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
@@ -51,12 +53,15 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         _infoService = infoService;
         _bgTaskService = bgTaskService;
+        _galSrcService = galgameSourceService;
+        _galSrcService.OnSourceDeleted += HandleSourceDelete;
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new();
+        MixedPhraser mixedPhraser = new(bgmPhraser, vndbPhraser, GetMixData());
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
         PhraserList[(int)RssType.Vndb] = vndbPhraser;
-        PhraserList[(int)RssType.Mixed] = new MixedPhraser(bgmPhraser, vndbPhraser);
+        PhraserList[(int)RssType.Mixed] = mixedPhraser;
         
         SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
             { SortKeys.LastPlay , SortKeys.Developer};
@@ -106,18 +111,23 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// </summary>
     private async Task Upgrade()
     {
-        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.IdFromMixedUpgraded) == false)
+        if (!await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.IdFromMixedUpgraded))
         {
             foreach (Galgame galgame in _galgames)
                 galgame.UpdateIdFromMixed();
             await LocalSettingsService.SaveSettingAsync(KeyValues.IdFromMixedUpgraded, true);
         }
 
-        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SavePathUpgraded) == false)
+        if (!await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SavePathUpgraded))
         {
             _galgames.ForEach(galgame => galgame.FindSaveInPath());
             await LocalSettingsService.SaveSettingAsync(KeyValues.SavePathUpgraded, true);
         }
+        
+        // 给混合搜刮器设置的搜刮优先级添加新添加的搜刮器
+        if (await LocalSettingsService.ReadSettingAsync<int>(KeyValues.MixedPhraserOrderVersion) !=
+            MixedPhraserOrder.Version)
+            await MixedPhraserOrderUpdate();
     }
 
     /// <summary>
@@ -127,16 +137,12 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     {
         UpdateDisplay(UpdateType.Sort);
     }
-
-    /// <summary>
-    /// 移除一个galgame
-    /// </summary>
-    /// <param name="galgame">galgame</param>
-    /// <param name="commitSync">是否要将变化同步到云盘</param>
-    /// <param name="removeFromDisk">是否要从硬盘移除游戏</param>
-    public async Task RemoveGalgame(Galgame galgame,bool commitSync, bool removeFromDisk = false)
+    
+    public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
+        foreach (GalgameSourceBase s in galgame.Sources)
+            _galSrcService.MoveOutOperate(s, galgame);
         if(galgame.CheckExistLocal())
             _galgameMap.Remove(galgame.Url);
         UpdateDisplay(UpdateType.Remove, galgame);
@@ -378,11 +384,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     }
 
     /// <summary>
-    /// 获取所有galgame
-    /// </summary>
-    public List<Galgame> Galgames => _galgames;
-
-    /// <summary>
     /// 搜索galgame并更新显示列表
     /// </summary>
     /// <param name="searchKey">搜索关键字</param>
@@ -427,6 +428,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     {
         return (string)_searchKey.Clone();
     }
+    
+    public List<Galgame> Galgames => _galgames;
 
     /// <summary>
     /// 从Url获取galgame
@@ -758,12 +761,23 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         return data;
     }
 
+    private MixedPhraserData GetMixData()
+    {
+        return new MixedPhraserData
+        {
+            Order = LocalSettingsService.ReadSettingAsync<MixedPhraserOrder>(KeyValues.MixedPhraserOrder).Result!,
+        };
+    }
+
     private async Task OnSettingChanged(string key)
     {
         switch (key)
         {
             case KeyValues.BangumiAccount:
                 PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
+                break;
+            case KeyValues.MixedPhraserOrder:
+                PhraserList[(int)RssType.Mixed].UpdateData(GetMixData());
                 break;
             case KeyValues.SortKeys:
                 Galgame.UpdateSortKeys(await LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys) ?? new[]
@@ -791,6 +805,51 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         GalgameSourceBase? source = dialog.Source;
         if (file == null || source is not GalgameFolderSource folderSource) return;
         _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
+    }
+
+    private async void HandleSourceDelete(GalgameSourceBase source)
+    {
+        try
+        {
+            foreach (Galgame galgame in source.GetGalgameList())
+            {
+                _galSrcService.MoveOutOperate(source, galgame);
+                if(galgame.Sources.Count == 0)
+                    await RemoveGalgame(galgame);
+            }
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(InfoBarSeverity.Error, e: e);
+        }
+    }
+
+    private async Task MixedPhraserOrderUpdate()
+    {
+        try
+        {
+            MixedPhraserOrder orders =
+                (await LocalSettingsService.ReadSettingAsync<MixedPhraserOrder>(KeyValues.MixedPhraserOrder))!;
+            IEnumerable<PropertyInfo> properties = orders.GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.PropertyType == typeof(ObservableCollection<RssType>));
+            MixedPhraserOrder defOrder = new MixedPhraserOrder().SetToDefault();
+            foreach (PropertyInfo prop in properties)
+            {
+                ObservableCollection<RssType> order = (ObservableCollection<RssType>)prop.GetValue(orders)!;
+                ObservableCollection<RssType> target = (ObservableCollection<RssType>)prop.GetValue(defOrder)!;
+                foreach (RssType type in target.Where(type => !order.Contains(type)))
+                    order.Add(type);
+            }
+
+            await LocalSettingsService.SaveSettingAsync(KeyValues.MixedPhraserOrderVersion,
+                MixedPhraserOrder.Version);
+            await LocalSettingsService.SaveSettingAsync(KeyValues.MixedPhraserOrder, orders);
+        }
+        catch (Exception e) //不应该发生
+        {
+            _infoService.Event(EventType.AppError, InfoBarSeverity.Error, "Upgrade failed", e);
+        }
     }
 }
 

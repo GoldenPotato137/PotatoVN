@@ -1,4 +1,6 @@
-﻿
+﻿---
+order: 2
+---
 # PotatoVN 是什么
 
 PotatoVN 是一个用于管理galgame的游戏的工具，旨在为galgame屯屯鼠们提供一个方便的游戏管理平台。
