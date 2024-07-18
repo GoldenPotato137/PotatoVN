@@ -34,6 +34,7 @@ public class VndbPhraserTest
             return;
         }
         
+        
         switch (name)
         {
             case "スタディ§ステディ":
@@ -45,6 +46,8 @@ public class VndbPhraserTest
                 break;
             case "喫茶ステラと死神の蝶":
                 if (game.Id != "26414" || game.CnName != "星光咖啡馆与死神之蝶") Assert.Fail();
+                if (game.Characters.All(
+                        c => _vndbPhraser.GetGalgameCharacter(c).Result?.Name != "明月 栞那")) Assert.Fail();
                 break;
             case "妹調教日記～こんなツンデレが俺の妹なわけない!～":
                 if (game.Id != "9303" || game.CnName != "妹调教日记") Assert.Fail();

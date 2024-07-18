@@ -8,10 +8,12 @@
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:enums="using:GalgameManager.Enums"
     xmlns:views="using:GalgameManager.Views"
+    xmlns:viewModels="using:GalgameManager.ViewModels"
     mc:Ignorable="d">
     <Page.Resources>
         <x:Double x:Key="ToggleSwitchWidth">20</x:Double>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
+        <converter:BoolToVisibilityConverter x:Key="BoolVisibilityConverter" />
         <Style x:Key="AccountStackPanelStyle" TargetType="control:StackPanelWithSpacing">
             <Setter Property="Space" Value="13" />
             <Setter Property="Orientation" Value="Vertical" />
@@ -29,7 +31,7 @@
                     <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
                         <!-- 账号状态 -->
                         <control:Panel>
-                            <control:Setting x:Uid="AccountPage_Pvn_AccountStatus"
+                            <control:Setting x:Uid="AccountPage_AccountStatus"
                                              Description="{x:Bind ViewModel.PvnLoginDescription, Mode=OneWay}">
                                 <Button MinWidth="{StaticResource ToggleSwitchWidth}"
                                         Content="{x:Bind ViewModel.PvnLoginButtonText, Mode=OneWay}"
@@ -104,7 +106,7 @@
                     <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
                         <!-- 账号状态 -->
                         <control:Panel>
-                            <control:Setting x:Uid="AccountPage_Pvn_AccountStatus"
+                            <control:Setting x:Uid="AccountPage_AccountStatus"
                                              Description="{x:Bind ViewModel.BgmDescription, Mode=OneWay}">
                                 <Button MinWidth="{StaticResource ToggleSwitchWidth}"
                                         Content="{x:Bind ViewModel.BgmLoginBtnText, Mode=OneWay}"
@@ -116,6 +118,24 @@
                             <control:Setting x:Uid="AccountPage_Bgm_RefreshToken">
                                 <Button MinWidth="{StaticResource ToggleSwitchWidth}" Content="Go"
                                         Command="{x:Bind ViewModel.BgmRefreshTokenCommand}" />
+                            </control:Setting>
+                        </control:Panel>
+                    </control:StackPanelWithSpacing>
+                </control:AccountPanel>
+                <!-- Vndb -->
+                <control:AccountPanel Title="Vndb"
+                                      UserName="{x:Bind ViewModel.VndbUsername, Mode=OneWay}"
+                                      DefaultAvatar="ms-appx:///Assets/Pictures/vndb.png"
+                                      Description="{x:Bind ViewModel.VndbDescription, Mode=OneWay}"
+                                      Expand="True">
+                    <control:StackPanelWithSpacing Style="{StaticResource AccountStackPanelStyle}">
+                        <!-- 账号状态 -->
+                        <control:Panel>
+                            <control:Setting x:Uid="AccountPage_AccountStatus"
+                                             Description="{x:Bind ViewModel.VndbDescription, Mode=OneWay}">
+                                <Button MinWidth="{StaticResource ToggleSwitchWidth}"
+                                        Content="{x:Bind ViewModel.VndbLoginBtnText, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.VndbLoginBtnCommand, Mode=OneWay}" />
                             </control:Setting>
                         </control:Panel>
                     </control:StackPanelWithSpacing>

@@ -724,7 +724,7 @@ Failure reasons:</value>
   <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Description" xml:space="preserve">
     <value>Whether to download the play status while fetching information (login to third party accounts)</value>
   </data>
-  <data name="BgmAccount_NoName" xml:space="preserve">
+  <data name="NoName" xml:space="preserve">
     <value>Akkarin</value>
   </data>
   <data name="BgmOAuthService_NoLogin" xml:space="preserve">

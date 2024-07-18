@@ -705,13 +705,25 @@
     <value>尚未登录，需要在设置中登录Bangumi账号</value>
   </data>
   <data name="BgmPhraser_UploadAsync_NoId" xml:space="preserve">
-    <value>这个游戏目前没有bangumi id，请在编辑界面手动设置一个</value>
+    <value>这个游戏目前没有Bangumi Id，请在编辑界面手动设置一个</value>
   </data>
   <data name="BgmPhraser_UploadAsync_Success" xml:space="preserve">
-    <value>已成功同步游玩状态到bangumi</value>
+    <value>已成功同步游玩状态到Bangumi</value>
+  </data>
+  <data name="VndbPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
+    <value>尚未登录，需要在设置中登录Vndb账号</value>
+  </data>
+  <data name="VndbPhraser_UploadAsync_NoId" xml:space="preserve">
+    <value>这个游戏目前没有Vndb Id，请在编辑界面手动设置一个</value>
+  </data>
+  <data name="VndbPhraser_UploadAsync_Success" xml:space="preserve">
+    <value>已成功同步游玩状态到Vndb</value>
   </data>
   <data name="HomePage_UploadingToBgm" xml:space="preserve">
-    <value>将游玩信息同步到bangumi中</value>
+    <value>将游玩信息同步到Bangumi中</value>
+  </data>
+  <data name="HomePage_UploadingToVndb" xml:space="preserve">
+    <value>将游玩信息同步到Vndb中</value>
   </data>
   <data name="HomePage_FixHorizontalPicture.Label" xml:space="preserve">
     <value>裁剪水平封面图</value>
@@ -725,7 +737,7 @@
   <data name="SettingsPage_Download_SyncPlayStatusWhenPhrasing.Description" xml:space="preserve">
     <value>是否在获取信息时下载游玩状态（需登录第三方账号）</value>
   </data>
-  <data name="BgmAccount_NoName" xml:space="preserve">
+  <data name="NoName" xml:space="preserve">
     <value>阿~卡~林~</value>
   </data>
   <data name="BgmOAuthService_NoLogin" xml:space="preserve">
@@ -760,6 +772,12 @@
   </data>
   <data name="SettingsPage_Download_SyncBgmPlayStatusNow.Description" xml:space="preserve">
     <value>立刻从Bangumi获取游玩状态，需登录Bangumi账号</value>
+  </data>
+  <data name="SettingsPage_Download_SyncVndbPlayStatusNow.Title" xml:space="preserve">
+    <value>从Vndb获取游玩状态</value>
+  </data>
+  <data name="SettingsPage_Download_SyncVndbPlayStatusNow.Description" xml:space="preserve">
+    <value>立刻从Vndb获取游玩状态，需登录Vndb账号</value>
   </data>
   <data name="BgmPhraser_DownloadPlayStatus_Success" xml:space="preserve">
     <value>已成功下载{0}个游戏的游玩状态</value>
@@ -1166,7 +1184,7 @@
   <data name="AccountPage_Pvn_ServerType.Description" xml:space="preserve">
     <value>选择要连接至哪一个服务器</value>
   </data>
-  <data name="AccountPage_Pvn_AccountStatus.Title" xml:space="preserve">
+  <data name="AccountPage_AccountStatus.Title" xml:space="preserve">
     <value>账号状态</value>
   </data>
   <data name="AccountPage_Pvn_AccountStatus_Unlogin" xml:space="preserve">
@@ -1463,9 +1481,6 @@
   <data name="App_Error" xml:space="preserve">
     <value>Oops, 上次运行崩溃了</value>
   </data>
-  <data name="AccountPage_Bgm_NoName" xml:space="preserve">
-    <value>阿~卡~林~</value>
-  </data>
   <data name="AccountPage_Bgm_NoLogin" xml:space="preserve">
     <value>还没登录Bangumi账号呢~</value>
   </data>
@@ -1510,6 +1525,30 @@
   </data>
   <data name="AccountPage_Bgm_RefreshSuccess" xml:space="preserve">
     <value>Bangumi账号授权与信息刷新成功</value>
+  </data>
+  <data name="AccountPage_Vndb_NoLogin" xml:space="preserve">
+    <value>还没登录Vndb账号呢~</value>
+  </data>
+  <data name="AccountPage_Vndb_LoginedDescription" xml:space="preserve">
+    <value>用户ID: {0}, Token权限: {1}</value>
+  </data>
+  <data name="VndbAuthService_InvalidToken" xml:space="preserve">
+    <value>Vndb Token错误</value>
+  </data>
+  <data name="VndbAuthService_Success" xml:space="preserve">
+    <value>Vndb登录成功</value>
+  </data>
+  <data name="VndbAuthService_Success" xml:space="preserve">
+    <value>Vndb登录成功</value>
+  </data>
+  <data name="VndbApiPermission_ListRead" xml:space="preserve">
+    <value>用户列表读取</value>
+  </data>
+  <data name="VndbApiPermission_ListWrite" xml:space="preserve">
+    <value>用户列表增改</value>
+  </data>
+  <data name="AccountPage_VndbTokenPermissions.Text" xml:space="preserve">
+    <value>Token权限</value>
   </data>
   <data name="AddSourceDialog.Title" xml:space="preserve">
     <value>添加源</value>

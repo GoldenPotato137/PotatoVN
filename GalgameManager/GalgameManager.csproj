@@ -93,6 +93,8 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls" Version="7.1.3" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240607001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+    <PackageReference Include="Refit" Version="7.1.2" />
+    <PackageReference Include="Refit.Newtonsoft.Json" Version="7.1.2" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
     <PackageReference Include="TinyPinyin" Version="1.1.0" />
@@ -119,9 +121,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Dialog\SelectProcessDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Dialog\ChangePlayStatusDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\SettingExpander.xaml">

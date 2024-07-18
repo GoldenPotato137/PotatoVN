@@ -37,7 +37,7 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="15" Margin="0 20 0 0">
             <CheckBox x:Name="BgmCheckBox" x:Uid="ChangePlayStatusDialog_SyncToBgm" />
-            <CheckBox x:Name="VndbCheckBox" x:Uid="ChangePlayStatusDialog_SyncToVNDB" IsEnabled="False"/>
+            <CheckBox x:Name="VndbCheckBox" x:Uid="ChangePlayStatusDialog_SyncToVNDB"/>
             <CheckBox x:Name="PrivateCheckBox" x:Uid="ChangePlayStatusDialog_Private" />
         </StackPanel>
     </Grid>

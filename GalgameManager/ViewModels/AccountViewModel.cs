@@ -18,15 +18,18 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgmOAuthService _bgmService;
+    private readonly IVndbAuthService _vndbAuthService;
     private readonly IInfoService _infoService;
     
+    
     public AccountViewModel(ILocalSettingsService localSettingsService, IPvnService pvnService, 
-        IBgmOAuthService bgmService, IInfoService infoService)
+        IBgmOAuthService bgmService, IVndbAuthService vndbAuthService, IInfoService infoService)
     {
         _localSettingsService = localSettingsService;
         _pvnService = pvnService;
         _bgmService = bgmService;
         _infoService = infoService;
+        _vndbAuthService = vndbAuthService;
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -53,6 +56,7 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
         {
             case KeyValues.PvnAccount:
             case KeyValues.BangumiAccount:
+            case KeyValues.VndbAccount:
                 await UpdateAccountDisplay();
                 break;
             case KeyValues.SyncGames:
@@ -65,6 +69,7 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
     {
         PvnAccount? account = await _localSettingsService.ReadSettingAsync<PvnAccount>(KeyValues.PvnAccount);
         BgmAccount? bgmAccount = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
+        VndbAccount? vndbAccount = await _localSettingsService.ReadSettingAsync<VndbAccount>(KeyValues.VndbAccount);
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
             PvnAvatar = account?.Avatar;
@@ -73,7 +78,7 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
                 ? "AccountPage_Pvn_AccountStatus_Unlogin".GetLocalized()
                 : "AccountPage_Pvn_AccountStatus_Login".GetLocalized(account.Id, account.LoginMethod.GetLocalized());
             PvnLoginButtonCommand = account is null ? new RelayCommand(PvnLogin) : new RelayCommand(PvnLogout);
-            PvnDisplayName = account?.UserDisplayName ?? "BgmAccount_NoName".GetLocalized();
+            PvnDisplayName = account?.UserDisplayName ?? "NoName".GetLocalized();
             PvnStateMsg = "AccountPage_Pvn_ConnectTo".GetLocalized(_pvnService.BaseUri.ToString());
             UsedSpace = $"{((double)(account?.UsedSpace ?? 0) / 1024 / 1024)
                 .ToString("F1", CultureInfo.InvariantCulture)} MB";
@@ -85,6 +90,8 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
             IsPvnLogin = account is not null;
             
             BgmAccount = bgmAccount;
+
+            VndbAccount = vndbAccount;
         });
     }
 
@@ -203,7 +210,7 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
 
     #region BANUGMI_ACCOUNT
 
-    public string BgmName => _bgmAccount?.Name ?? "AccountPage_Bgm_NoName".GetLocalized();
+    public string BgmName => _bgmAccount?.Name ?? "NoName".GetLocalized();
     public string? BgmAvatar => _bgmAccount?.Avatar;
     public string BgmDescription => _bgmAccount is null
         ? "AccountPage_Bgm_NoLogin".GetLocalized()
@@ -240,7 +247,7 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
 
     private async void BgmLogin()
     {
-        SelectAuthModeDialog selectAuthModeDialog = new();
+        BgmAuthDialog selectAuthModeDialog = new();
         ContentDialogResult result = await selectAuthModeDialog.ShowAsync();
         if (result != ContentDialogResult.Primary) return;
         switch (selectAuthModeDialog.SelectItem)
@@ -271,5 +278,49 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
             _infoService.Info(InfoBarSeverity.Error); //失败走事件通知，关闭消息栏
     }
     
+    #endregion
+
+    #region VNDB_ACCOUNT
+    
+    public bool IsVndbLogin => _vndbAccount is not null;
+
+    public string VndbUsername => _vndbAccount?.Username ?? "NoName".GetLocalized();
+
+    
+    public string VndbDescription => _vndbAccount is null
+        ? "AccountPage_Vndb_NoLogin".GetLocalized()
+        : "AccountPage_Vndb_LoginedDescription".GetLocalized(
+            _vndbAccount.Id,
+            string.Join(", ", _vndbAccount.Permissions.Select(p=>p.GetLocalized()).ToList())
+            );
+
+    public string VndbLoginBtnText => _vndbAccount is null ? "Login".GetLocalized() : "Logout".GetLocalized();
+
+    public ICommand VndbLoginBtnCommand => _vndbAccount is null ? new RelayCommand(VndbLogin) : new RelayCommand(VndbLogout);
+
+    
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsVndbLogin))]
+    [NotifyPropertyChangedFor(nameof(VndbUsername))]
+    [NotifyPropertyChangedFor(nameof(VndbDescription))]
+    [NotifyPropertyChangedFor(nameof(VndbLoginBtnText))]
+    [NotifyPropertyChangedFor(nameof(VndbLoginBtnCommand))]
+    private VndbAccount? _vndbAccount;
+    
+    private async void VndbLogin()
+    {
+        VndbAuthDialog vndbAuthDialog = new VndbAuthDialog();
+        ContentDialogResult result = await vndbAuthDialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+        if (vndbAuthDialog.Token.IsNullOrEmpty()) return;
+        await _vndbAuthService.AuthWithToken(vndbAuthDialog.Token);
+    }
+
+    private async void VndbLogout()
+    {
+        await _bgmService.LogoutAsync();
+        _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_LogoutSuccess".GetLocalized());
+    }
+
     #endregion
 }

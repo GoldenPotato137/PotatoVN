@@ -292,6 +292,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand]
     private async Task ChangePlayStatus()
     {
+        //Idea: 加一个检测是否有对应源的ID
         if (Item == null) return;
         ChangePlayStatusDialog dialog = new(Item)
         {
@@ -305,8 +306,13 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             (GalStatusSyncResult, string) result = await _galgameService.UploadPlayStatusAsync(Item, RssType.Bangumi);
             await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
         }
+
         if (dialog.UploadToVndb)
-            throw new NotImplementedException();
+        {
+            _ = DisplayMsg(InfoBarSeverity.Informational, "HomePage_UploadingToVndb".GetLocalized(), 1000 * 10);
+            (GalStatusSyncResult, string) result = await _galgameService.UploadPlayStatusAsync(Item, RssType.Vndb);
+            await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
+        }
         _pvnService.Upload(Item, PvnUploadProperties.Review);
     }
 
@@ -316,6 +322,15 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         if (Item == null) return;
         _ =  DisplayMsg(InfoBarSeverity.Informational, "HomePage_Downloading".GetLocalized(), 1000 * 100);
         (GalStatusSyncResult, string) result = await _galgameService.DownLoadPlayStatusAsync(Item, RssType.Bangumi);
+        await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
+    }
+    
+    [RelayCommand]
+    private async Task SyncFromVndb()
+    {
+        if (Item == null) return;
+        _ =  DisplayMsg(InfoBarSeverity.Informational, "HomePage_Downloading".GetLocalized(), 1000 * 100);
+        (GalStatusSyncResult, string) result = await _galgameService.DownLoadPlayStatusAsync(Item, RssType.Vndb);
         await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
     }
 
