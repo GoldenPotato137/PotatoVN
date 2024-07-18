@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using GalgameManager.Contracts.Phrase;
@@ -57,9 +58,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new(GetVndbData().Result);
+        MixedPhraser mixedPhraser = new(bgmPhraser, vndbPhraser, GetMixData());
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
         PhraserList[(int)RssType.Vndb] = vndbPhraser;
-        PhraserList[(int)RssType.Mixed] = new MixedPhraser(bgmPhraser, vndbPhraser);
+        PhraserList[(int)RssType.Mixed] = mixedPhraser;
         
         SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
             { SortKeys.LastPlay , SortKeys.Developer};
@@ -109,18 +111,23 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// </summary>
     private async Task Upgrade()
     {
-        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.IdFromMixedUpgraded) == false)
+        if (!await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.IdFromMixedUpgraded))
         {
             foreach (Galgame galgame in _galgames)
                 galgame.UpdateIdFromMixed();
             await LocalSettingsService.SaveSettingAsync(KeyValues.IdFromMixedUpgraded, true);
         }
 
-        if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SavePathUpgraded) == false)
+        if (!await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SavePathUpgraded))
         {
             _galgames.ForEach(galgame => galgame.FindSaveInPath());
             await LocalSettingsService.SaveSettingAsync(KeyValues.SavePathUpgraded, true);
         }
+        
+        // 给混合搜刮器设置的搜刮优先级添加新添加的搜刮器
+        if (await LocalSettingsService.ReadSettingAsync<int>(KeyValues.MixedPhraserOrderVersion) !=
+            MixedPhraserOrder.Version)
+            await MixedPhraserOrderUpdate();
     }
 
     /// <summary>
@@ -770,6 +777,14 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         return data;
     }
 
+    private MixedPhraserData GetMixData()
+    {
+        return new MixedPhraserData
+        {
+            Order = LocalSettingsService.ReadSettingAsync<MixedPhraserOrder>(KeyValues.MixedPhraserOrder).Result!,
+        };
+    }
+
     private async Task OnSettingChanged(string key)
     {
         switch (key)
@@ -779,6 +794,9 @@ public partial class GalgameCollectionService : IGalgameCollectionService
                 break;
             case KeyValues.VndbAccount:
                 PhraserList[(int)RssType.Vndb].UpdateData(await GetVndbData());
+                break;
+            case KeyValues.MixedPhraserOrder:
+                PhraserList[(int)RssType.Mixed].UpdateData(GetMixData());
                 break;
             case KeyValues.SortKeys:
                 Galgame.UpdateSortKeys(await LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys) ?? new[]
@@ -822,6 +840,34 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         catch (Exception e)
         {
             _infoService.DeveloperEvent(InfoBarSeverity.Error, e: e);
+        }
+    }
+
+    private async Task MixedPhraserOrderUpdate()
+    {
+        try
+        {
+            MixedPhraserOrder orders =
+                (await LocalSettingsService.ReadSettingAsync<MixedPhraserOrder>(KeyValues.MixedPhraserOrder))!;
+            IEnumerable<PropertyInfo> properties = orders.GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.PropertyType == typeof(ObservableCollection<RssType>));
+            MixedPhraserOrder defOrder = new MixedPhraserOrder().SetToDefault();
+            foreach (PropertyInfo prop in properties)
+            {
+                ObservableCollection<RssType> order = (ObservableCollection<RssType>)prop.GetValue(orders)!;
+                ObservableCollection<RssType> target = (ObservableCollection<RssType>)prop.GetValue(defOrder)!;
+                foreach (RssType type in target.Where(type => !order.Contains(type)))
+                    order.Add(type);
+            }
+
+            await LocalSettingsService.SaveSettingAsync(KeyValues.MixedPhraserOrderVersion,
+                MixedPhraserOrder.Version);
+            await LocalSettingsService.SaveSettingAsync(KeyValues.MixedPhraserOrder, orders);
+        }
+        catch (Exception e) //不应该发生
+        {
+            _infoService.Event(EventType.AppError, InfoBarSeverity.Error, "Upgrade failed", e);
         }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Security.Credentials.UI;
 using Windows.Security.Credentials;
+using GalgameManager.Helpers.Phrase;
 using GalgameManager.Views.Dialog;
 
 namespace GalgameManager.ViewModels;
@@ -244,6 +245,17 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     partial void OnRssTypeChanged(RssType value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.RssType, value);
+    }
+    
+    [RelayCommand]
+    public async Task SetMixedPhraserOrderAsync()
+    {
+        MixedPhraserOrder order = (await _localSettingsService.
+            ReadSettingAsync<MixedPhraserOrder>(KeyValues.MixedPhraserOrder))!;
+        MixedPhraserOrderDialog dialog = new(order);
+        ContentDialogResult result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+        await _localSettingsService.SaveSettingAsync(KeyValues.MixedPhraserOrder, order);
     }
 
 

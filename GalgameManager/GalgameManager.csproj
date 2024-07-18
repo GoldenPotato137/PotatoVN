@@ -69,6 +69,7 @@
     <None Remove="Views\Control\HomeItem.xaml" />
     <None Remove="Views\Dialog\ChangePlayStatusDialog.xaml" />
     <None Remove="Views\Dialog\ChangeSourceDialog.xaml" />
+    <None Remove="Views\Dialog\MixedPhraserOrderDialog.xaml" />
     <None Remove="Views\Dialog\PvnLoginDialog.xaml" />
     <None Remove="Views\Dialog\PvnSetAccountDialog.xaml" />
     <None Remove="Views\Dialog\SelectProcessDialog.xaml" />
@@ -108,6 +109,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Dialog\MixedPhraserOrderDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Dialog\ChangeSourceDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
