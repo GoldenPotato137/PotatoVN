@@ -1664,6 +1664,9 @@
   <data name="MixedPhraserOrderDialog_Title" xml:space="preserve">
     <value>设置信息源优先级</value>
   </data>
+  <data name="MixedPhraserOrderDialog_Description.Text" xml:space="preserve">
+    <value>拖动设置优先级</value>
+  </data>
   <data name="MixedPhraserOrderDialog_It_Name" xml:space="preserve">
     <value>游戏名</value>
   </data>

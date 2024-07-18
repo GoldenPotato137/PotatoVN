@@ -10,6 +10,7 @@
     Style="{ThemeResource DefaultContentDialogStyle}">
 
     <StackPanel>
+        <TextBlock Style="{StaticResource DescriptionTextStyle}" x:Uid="MixedPhraserOrderDialog_Description"/>
         <ListView ItemsSource="{x:Bind Items}" SelectionMode="None" IsItemClickEnabled="False" MinWidth="400"
                   MaxHeight="200">
             <ListView.ItemTemplate>
