@@ -318,7 +318,7 @@ public partial class AccountViewModel : ObservableObject, INavigationAware
 
     private async void VndbLogout()
     {
-        await _bgmService.LogoutAsync();
+        await _vndbAuthService.LogoutAsync();
         _infoService.Info(InfoBarSeverity.Success, msg: "AccountPage_LogoutSuccess".GetLocalized());
     }
 

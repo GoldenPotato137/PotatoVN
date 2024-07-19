@@ -17,6 +17,9 @@
             <Paragraph>
                 通过Token登录, Token可在<Hyperlink NavigateUri="https://vndb.org/u/tokens">Vndb</Hyperlink>获取
             </Paragraph>
+            <Paragraph>
+                需要勾选 <Run FontStyle="Italic" FontWeight="Bold">"Add/remove/edit items on my list"</Run>
+            </Paragraph>
         </RichTextBlock>
     </StackPanel>
 </ContentDialog>

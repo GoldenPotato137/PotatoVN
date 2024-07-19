@@ -719,14 +719,17 @@
   <data name="BgmPhraser_UploadAsync_Success" xml:space="preserve">
     <value>已成功同步游玩状态到Bangumi</value>
   </data>
-  <data name="VndbPhraser_UploadAsync_UnAuthorized" xml:space="preserve">
+  <data name="VndbPhraser_UnAuthorized" xml:space="preserve">
     <value>尚未登录，需要在设置中登录Vndb账号</value>
   </data>
-  <data name="VndbPhraser_UploadAsync_NoId" xml:space="preserve">
+  <data name="VndbPhraser_NoId" xml:space="preserve">
     <value>这个游戏目前没有Vndb Id，请在编辑界面手动设置一个</value>
   </data>
   <data name="VndbPhraser_UploadAsync_Success" xml:space="preserve">
     <value>已成功同步游玩状态到Vndb</value>
+  </data>
+  <data name="VndbPhraser_DownloadAsync_Success" xml:space="preserve">
+    <value>已成功从Vndb下载游玩状态</value>
   </data>
   <data name="HomePage_UploadingToBgm" xml:space="preserve">
     <value>将游玩信息同步到Bangumi中</value>

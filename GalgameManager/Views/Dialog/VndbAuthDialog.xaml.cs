@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,8 +21,22 @@ public sealed partial class VndbAuthDialog : ContentDialog
         nameof(Token),
         typeof(string),
         typeof(VndbAuthDialog),
-        new PropertyMetadata("")
+        new PropertyMetadata("", 
+            propertyChangedCallback:new PropertyChangedCallback(PropertyChangedCallback))
     );
+
+    private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d.GetValue(TokenProperty) is string a && Regex.IsMatch(a, @"^[0-9a-z]{4}-[0-9a-z]{5}-[0-9a-z]{5}-[0-9a-z]{4}-[0-9a-z]{5}-[0-9a-z]{5}-[0-9a-z]{4}$"))
+        {
+            d.SetValue(IsPrimaryButtonEnabledProperty, true);
+        }
+        else
+        {
+            d.SetValue(IsPrimaryButtonEnabledProperty, false);
+        }
+    }
+
     public VndbAuthDialog()
     {
         InitializeComponent();
@@ -31,5 +46,6 @@ public sealed partial class VndbAuthDialog : ContentDialog
         //TODO: 界面优化
         PrimaryButtonText = "Login".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
+        IsPrimaryButtonEnabled = false;
     }
 }

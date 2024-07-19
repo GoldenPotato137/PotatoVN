@@ -335,9 +335,9 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
     public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
     {
         if (_checkAuthTask != null) await _checkAuthTask;
-        if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Vndb]))
-            return (GalStatusSyncResult.NoId, "VndbPhraser_UploadAsync_NoId".GetLocalized());
+            return (GalStatusSyncResult.NoId, "VndbPhraser_NoId".GetLocalized());
         var id = galgame.Ids[(int)RssType.Vndb]!.StartsWith("v")
             ? galgame.Ids[(int)RssType.Vndb]!
             : "v" + galgame.Ids[(int)RssType.Vndb]!;
@@ -380,9 +380,9 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
     public async Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame)
     {
         if (_checkAuthTask != null) await _checkAuthTask;
-        if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Vndb]))
-            return (GalStatusSyncResult.NoId, "VndbPhraser_UploadAsync_NoId".GetLocalized());
+            return (GalStatusSyncResult.NoId, "VndbPhraser_NoId".GetLocalized());
         var id = galgame.Ids[(int)RssType.Vndb]!.StartsWith("v")
             ? galgame.Ids[(int)RssType.Vndb]!
             : "v" + galgame.Ids[(int)RssType.Vndb]!;
@@ -394,7 +394,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
             });
 
             if (response.Results?.Count != 1)
-                return (GalStatusSyncResult.Ok, "VndbPhraser_UploadAsync_Success".GetLocalized());
+                return (GalStatusSyncResult.Ok, "VndbPhraser_DownloadAsync_Success".GetLocalized());
 
             VndbUserListItem r = response.Results[0];
             if (r.Vote.HasValue) galgame.MyRate = r.Vote.Value / 10;
@@ -405,14 +405,14 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
         {
             return (GalStatusSyncResult.Other, e.Message);
         }
-        return (GalStatusSyncResult.Ok, "VndbPhraser_UploadAsync_Success".GetLocalized());
+        return (GalStatusSyncResult.Ok, "VndbPhraser_DownloadAsync_Success".GetLocalized());
 
     }
 
     public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(List<Galgame> galgames)
     {
         if (_checkAuthTask != null) await _checkAuthTask;
-        if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UnAuthorized".GetLocalized());
         try
         {
             VndbResponse<VndbUserListItem> response = await _vndbApi.GetUserVisualNovelListAsync(new VndbQuery
@@ -433,7 +433,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
         {
             return (GalStatusSyncResult.Other, e.Message);
         }
-        return (GalStatusSyncResult.Ok, "VndbPhraser_UploadAsync_Success".GetLocalized());
+        return (GalStatusSyncResult.Ok, "VndbPhraser_DownloadAsync_Success".GetLocalized());
     }
 }
 

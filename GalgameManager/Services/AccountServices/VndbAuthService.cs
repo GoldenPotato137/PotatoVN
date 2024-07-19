@@ -37,17 +37,19 @@ public class VndbAuthService: IVndbAuthService
         catch (InvalidTokenException)
         {
             _infoService.Info(InfoBarSeverity.Warning, msg: "VndbAuthService_InvalidToken".GetLocalized());
+            return;
         }
         catch (HttpRequestException e)
         {
             _infoService.Info(InfoBarSeverity.Warning, msg: e.Message);
+            return;
         }
         _infoService.Info(InfoBarSeverity.Success, msg: "VndbAuthService_Success".GetLocalized());
     }
 
     public async Task LogoutAsync()
     {
-        await _localSettingsService.RemoveSettingAsync(KeyValues.BangumiAccount);
+        await _localSettingsService.RemoveSettingAsync(KeyValues.VndbAccount);
     }
 }
 
