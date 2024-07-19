@@ -72,13 +72,13 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         }
         if (ids.TryGetValue("vndb", out var v))
         {
-            bgm.RssType = RssType.Bangumi;
-            bgm.Id = v;
+            vndb.RssType = RssType.Vndb;
+            vndb.Id = v;
         }
         if (ids.TryGetValue("ymgal", out var y))
         {
-            bgm.RssType = RssType.Bangumi;
-            bgm.Id = y;
+            ymgal.RssType = RssType.Ymgal;
+            ymgal.Id = y;
         }
         // 从bgm和vndb中获取信息
         bgm = await _bgmPhraser.GetGalgameInfo(bgm);

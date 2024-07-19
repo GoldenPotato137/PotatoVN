@@ -48,6 +48,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private Visibility _isSelectProcessVisible = Visibility.Collapsed;
     [ObservableProperty] private bool _canOpenInBgm;
     [ObservableProperty] private bool _canOpenInVndb;
+    [ObservableProperty] private bool _canOpenInYmgal;
 
     [ObservableProperty] private bool _infoBarOpen;
     [ObservableProperty] private string _infoBarMsg = string.Empty;
@@ -123,6 +124,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         IsCharacterVisible = Item?.Characters.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
         CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
+        CanOpenInYmgal = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Ymgal]);
         IsRemoveSelectedThreadVisible = Item?.ProcessName is not null ? Visibility.Visible : Visibility.Collapsed;
         IsSelectProcessVisible = Item?.ProcessName is null ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -174,6 +176,13 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     {
         if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Vndb])) return;
         await Launcher.LaunchUriAsync(new Uri("https://vndb.org/v"+Item!.Ids[(int)RssType.Vndb]));
+    }
+    
+    [RelayCommand]
+    private async Task OpenInYmgal()
+    {
+        if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Ymgal])) return;
+        await Launcher.LaunchUriAsync(new Uri("https://www.ymgal.games/ga"+Item!.Ids[(int)RssType.Ymgal]));
     }
     
     [RelayCommand(CanExecute = nameof(IsLocalGame))]

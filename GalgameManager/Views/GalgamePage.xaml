@@ -132,6 +132,13 @@
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
+                    <AppBarButton x:Uid="GalgamePage_OpenInYmgal" Command="{x:Bind ViewModel.OpenInYmgalCommand}" 
+                                  Visibility="{x:Bind ViewModel.CanOpenInYmgal, 
+                                  Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" 
                                         IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>

@@ -484,6 +484,9 @@
   <data name="GalgamePage_OpenInVndb.Label" xml:space="preserve">
     <value>在Vndb中打开</value>
   </data>
+  <data name="GalgamePage_OpenInYmgal.Label" xml:space="preserve">
+    <value>在月幕Galgame中打开</value>
+  </data>
   <data name="GalgamePage_SyncFromVndb.Label" xml:space="preserve">
     <value>下载Vndb游玩状态</value>
   </data>
