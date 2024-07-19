@@ -14,7 +14,7 @@ public class ApiResponse<T>
     public bool Success { get; set; }
     public int Code { get; set; }
     public required string Msg { get; set; }
-    public required T Data { get; set; }
+    public T? Data { get; set; }
 }
 
 public class Archive
@@ -35,6 +35,7 @@ public class Archive
 public class Game : Archive
 {
     public int Gid { get; set; }
+    public int Id { get; set; }
     public int DeveloperId { get; set; }
     public bool HaveChinese { get; set; }
     public required string TypeDesc { get; set; }
@@ -145,3 +146,14 @@ public class Organization
     public required string Type { get; set; }
     public bool Freeze { get; set; }
 }
+
+public class Page<T>
+{
+    public required List<T> Result { get; set; }
+    public int Total { get; set; }
+    public bool HasNext { get; set; }
+    public int PageNum { get; set; }
+    public int PageSize { get; set; }
+}
+
+

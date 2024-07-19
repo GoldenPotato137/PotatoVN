@@ -41,22 +41,32 @@ public class YmgalPhraser: IGalInfoPhraser
     {
         if (_getOAuthTask != null) await _getOAuthTask;
         var name = galgame.Name.Value ?? "";
-        var url = "";
         int? id;
         try
         {
             if (galgame.RssType != RssType.Ymgal) throw new Exception();
             id = Convert.ToInt32(galgame.Id ?? "");
-            url = _baseUrl + $"open/archive/?gid={id}";
+            
         }
         catch (Exception)
         {
-            url = _baseUrl + 
-                  $"open/archive/search-game?mode=accurate&keyword={name}&similarity=50";
+            var url = _baseUrl + 
+                  $"open/archive/search-game?mode=list&keyword={name}&pageNum=1&pageSize=20";
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode) return null;
+            ApiResponse<Page<Game>>? gameResponse =
+                JsonConvert.DeserializeObject<ApiResponse<Page<Game>>>(
+                    await response.Content.ReadAsStringAsync(),
+                    _camelCaseSerializerSettings
+                );
+            if (gameResponse?.Data?.Result.Count != 0) id = gameResponse?.Data?.Result[0].Id;
+            else return null;
         }
+        
 
         try
         {
+            var url = _baseUrl + $"open/archive/?gid={id}";
             HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
@@ -64,31 +74,32 @@ public class YmgalPhraser: IGalInfoPhraser
                     JsonConvert.DeserializeObject<ApiResponse<GameResponse>>(
                         await response.Content.ReadAsStringAsync(),
                         _camelCaseSerializerSettings
-                        );
-                if (!gameResponse?.Success ?? gameResponse == null) return null;
-                Game g = gameResponse?.Data?.Game ?? throw new PvnException("");
-                Galgame result = new()
-                {
-                    Name = g.Name,
-                    CnName = g.ChineseName ?? "",
-                    Description = g.Introduction,
-                    ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue, 
-                    ImageUrl = g.MainImg,
-                    Id = g.Gid.ToString()
-                };
-                var organizationUrl = _baseUrl + $"open/archive/?orgId={g.DeveloperId}";
-                HttpResponseMessage dResponse = await _httpClient.GetAsync(organizationUrl);
-                if (dResponse.IsSuccessStatusCode)
-                {
-                    ApiResponse<OrganizationResponse>? developerResponse =
-                        JsonConvert.DeserializeObject<ApiResponse<OrganizationResponse>>(
-                            await dResponse.Content.ReadAsStringAsync(),
-                            _camelCaseSerializerSettings
-                        );
-                    result.Developer = developerResponse?.Data.Org.Name ?? Galgame.DefaultString;
+                    );
+                if (gameResponse?.Data?.Game is { } g){
+                    Galgame result = new()
+                    {
+                        Name = g.Name,
+                        CnName = g.ChineseName ?? "",
+                        Description = g.Introduction,
+                        ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue, 
+                        ImageUrl = g.MainImg,
+                        Id = g.Gid != 0 ? g.Gid.ToString() : g.Id.ToString()
+                    };
+                    var organizationUrl = _baseUrl + $"open/archive/?orgId={g.DeveloperId}";
+                    HttpResponseMessage dResponse = await _httpClient.GetAsync(organizationUrl);
+                    if (dResponse.IsSuccessStatusCode)
+                    {
+                        ApiResponse<OrganizationResponse>? developerResponse =
+                            JsonConvert.DeserializeObject<ApiResponse<OrganizationResponse>>(
+                                await dResponse.Content.ReadAsStringAsync(),
+                                _camelCaseSerializerSettings
+                            );
+                        result.Developer = developerResponse?.Data?.Org.Name ?? Galgame.DefaultString;
+                    }
+                    return result;
                 }
-                return result;
             }
+            
         }
         catch (Exception)
         {
