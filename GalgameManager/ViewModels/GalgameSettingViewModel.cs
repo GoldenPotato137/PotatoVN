@@ -23,7 +23,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
     private readonly IPvnService _pvnService;
-    private readonly string[] _searchUrlList = new string[5];
+    private readonly string[] _searchUrlList = new string[10];
     [ObservableProperty] private string _searchUri = "";
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private RssType _selectedRss = RssType.None;
@@ -38,9 +38,11 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         RssTypes.Add(RssType.Bangumi);
         RssTypes.Add(RssType.Vndb);
         RssTypes.Add(RssType.Mixed);
+        RssTypes.Add(RssType.Ymgal);
         _searchUrlList[(int)RssType.Bangumi] = "https://bgm.tv/subject_search/";
         _searchUrlList[(int)RssType.Vndb] = "https://vndb.org/v/all?sq=";
         _searchUrlList[(int)RssType.Mixed] = "https://bgm.tv/subject_search/";
+        _searchUrlList[(int)RssType.Ymgal] = "https://www.ymgal.games/search?type=ga&keyword=";
         SearchUri = _searchUrlList[(int)RssType.Vndb]; // default
     }
 

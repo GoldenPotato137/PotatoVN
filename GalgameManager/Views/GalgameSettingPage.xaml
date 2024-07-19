@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:control="using:GalgameManager.Views.Control"
-    xmlns:converters="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -42,16 +41,21 @@
 
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="0">
-                            <TextBlock x:Uid = "GalgameSettingPage_GalgameId" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBox Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}" VerticalAlignment="Center" AcceptsReturn="False"/>
-                        </StackPanel>
+                        <Grid Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" x:Uid = "GalgameSettingPage_GalgameId" 
+                                       Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                     AcceptsReturn="False"/>
+                        </Grid>
 
                         <Grid Grid.Column="1" Margin="50 0 0 0">
                             <Grid.ColumnDefinitions>
@@ -59,7 +63,8 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock x:Uid="GalgameSettingPage_GalgameRssType" VerticalAlignment="Center" Margin="0 0 15 0"/>
+                            <TextBlock x:Uid="GalgameSettingPage_GalgameRssType" VerticalAlignment="Center" 
+                                       Margin="0 0 15 0" HorizontalAlignment="Stretch"/>
                             <ComboBox 
                                 Grid.Column="1" 
                                 ItemsSource="{x:Bind ViewModel.RssTypes}"
@@ -67,22 +72,30 @@
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"/>
                             <HyperlinkButton Grid.Column="2" VerticalAlignment="Center" 
-                                             NavigateUri="{x:Bind ViewModel.SearchUri, Mode=OneWay}">
+                                             NavigateUri="{x:Bind ViewModel.SearchUri, Mode=OneWay}"
+                                             Margin="20 0 0 0">
                                 <SymbolIcon Symbol="Find"/>
                             </HyperlinkButton>
                         </Grid>
-
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="50 0 0 0">
+                    </Grid>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
                             <TextBlock x:Uid="GalgameSettingPage_GalgameSavePosition" Margin="0 0 15 0" VerticalAlignment="Center"/>
                             <TextBox Text="{x:Bind ViewModel.Gal.SavePosition}" IsEnabled="False" VerticalAlignment="Center" AcceptsReturn="False"/>
                         </StackPanel>
 
                         <control:LockableNumberBox 
-                            Grid.Column="3" 
+                            Grid.Column="1" 
                             x:Uid="GalgameSettingPage_GalgameRating"
                             Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
-                            Margin="50 0 0 0"/>
+                            HorizontalAlignment="Right"/>
                     </Grid>
 
                     <control:LockableTextBox 
