@@ -416,16 +416,16 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     /// </summary>
     public void UpdateIdFromMixed()
     {
-        Dictionary<string, string> tmp = MixedPhraser.Id2IdDict(Ids[(int)RssType.Mixed] ?? "");
-        if (tmp.TryGetValue("bgm", out var bgm) && bgm != "null")
+        Dictionary<string, string?> tmp = MixedPhraser.Id2IdDict(Ids[(int)RssType.Mixed] ?? "");
+        if (tmp.TryGetValue("bgm", out var bgm) && bgm != "null" && bgm != null)
         {
             Ids[(int)RssType.Bangumi] = bgm;
         }
-        if (tmp.TryGetValue("vndb", out var vndb) && bgm != "null")
+        if (tmp.TryGetValue("vndb", out var vndb) && vndb != "null"&& vndb != null)
         {
             Ids[(int)RssType.Vndb] = vndb;
         }
-        if (tmp.TryGetValue("ymgal", out var ymgal) && bgm != "null")
+        if (tmp.TryGetValue("ymgal", out var ymgal) && ymgal != "null"&& ymgal != null)
         {
             Ids[(int)RssType.Ymgal] = ymgal;
         }

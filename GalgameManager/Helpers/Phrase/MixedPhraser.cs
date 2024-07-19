@@ -25,7 +25,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
     
     private string? GetDeveloperFromTags(Galgame galgame)
     {
-        if (_init == false)
+        if (!_init)
             Init();
         string? result = null;
         foreach (var tag in galgame.Tags.Value!)
@@ -63,7 +63,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         vndb.Name = galgame.Name;
         ymgal.Name = galgame.Name;
         // 试图从Id中获取bgmId和vndbId
-        Dictionary<string, string> ids = Id2IdDict(galgame.Ids[(int)RssType.Mixed] ?? "");
+        Dictionary<string, string?> ids = Id2IdDict(galgame.Ids[(int)RssType.Mixed] ?? "");
         
         if (ids.TryGetValue("bgm", out var b))
         {
@@ -80,10 +80,13 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
             ymgal.RssType = RssType.Ymgal;
             ymgal.Id = y;
         }
-        // 从bgm和vndb中获取信息
-        bgm = await _bgmPhraser.GetGalgameInfo(bgm);
-        vndb = await _vndbPhraser.GetGalgameInfo(vndb);
-        ymgal = await _ymgalPhraser.GetGalgameInfo(ymgal);
+        Task<Galgame?> bgmTask = _bgmPhraser.GetGalgameInfo(bgm);
+        Task<Galgame?> vndbTask = _vndbPhraser.GetGalgameInfo(vndb);
+        Task<Galgame?> ymgalTask = _ymgalPhraser.GetGalgameInfo(ymgal);
+        await Task.WhenAll(new List<Task> {bgmTask, vndbTask, ymgalTask}); //这几个源可以并行搜刮
+        bgm = bgmTask.Result;
+        vndb = vndbTask.Result;
+        ymgal = ymgalTask.Result;
         if(bgm == null && vndb == null && ymgal == null)
             return null;
         Dictionary<RssType, Galgame> metas = new();
@@ -94,7 +97,11 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         // 合并信息
         Galgame result = new();
         result.RssType = RssType.Mixed;
-        result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)},ymgal:{(ymgal == null ? "null" : ymgal.Id)}"; 
+        ids.Clear();
+        ids["bgm"] = bgm?.Id;
+        ids["vndb"] = vndb?.Id;
+        ids["ymgal"] = ymgal?.Id;
+        result.Id = IdDict2Id(ids); 
         // name
         result.Name = GetValue(metas, nameof(Galgame.Name), _ => true, 
             new LockableProperty<string>(string.Empty));
@@ -144,20 +151,15 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
 
     public void UpdateData(IGalInfoPhraserData data) => _data = (MixedPhraserData) data;
     
-    public static Dictionary<string, string> Id2IdDict(string ids)
+    public static Dictionary<string, string?> Id2IdDict(string ids)
     {
-        Dictionary<string, string> idDict = new();
+        Dictionary<string, string?> idDict = new();
         ids = ids.Replace("，", ",").Replace(" ", "");
-        foreach (var id in ids.Split(","))
+        foreach (var id in ids.Split(",").Where(s => s.Contains(':')))
         {
-            if (id.Contains(':'))
-            {
-                var parts = id.Split(":");
-                if (parts.Length == 2 && _sourcesNames.Contains(parts[0]))
-                {
-                    idDict.Add(parts[0], parts[1]);
-                }
-            }
+            var parts = id.Split(":");
+            if (parts.Length == 2 && _sourcesNames.Contains(parts[0])) 
+                idDict[parts[0]] = parts[1] == "null" ? null : parts[1];
         }
 
         return idDict;
@@ -239,7 +241,7 @@ public class MixedPhraserOrder
     public MixedPhraserOrder SetToDefault()
     {
         NameOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
-        DescriptionOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
+        DescriptionOrder = new() { RssType.Ymgal, RssType.Bangumi, RssType.Vndb };
         ExpectedPlayTimeOrder = new() { RssType.Vndb};
         RatingOrder = new() { RssType.Bangumi, RssType.Vndb };
         ImageUrlOrder = new() { RssType.Vndb, RssType.Bangumi, RssType.Ymgal };
