@@ -91,35 +91,39 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         result.RssType = RssType.Mixed;
         result.Id = $"bgm:{(bgm == null ? "null" : bgm.Id)},vndb:{(vndb == null ? "null" : vndb.Id)}"; 
         // name
-        result.Name = (LockableProperty<string>)GetValue(metas, nameof(Galgame.Name), 
-            _ => true, string.Empty);
+        result.Name = GetValue(metas, nameof(Galgame.Name), _ => true, 
+            new LockableProperty<string>(string.Empty));
         // description
-        result.Description = (LockableProperty<string>)GetValue(metas, nameof(Galgame.Description), 
-            _ => true, string.Empty);
+        result.Description = GetValue(metas, nameof(Galgame.Description), 
+            _ => true, new LockableProperty<string>(string.Empty));
         // expectedPlayTime
-        result.ExpectedPlayTime = (LockableProperty<string>)GetValue(metas, nameof(Galgame.ExpectedPlayTime), 
-            meta => CheckStr(meta.ExpectedPlayTime.Value), Galgame.DefaultString);
+        result.ExpectedPlayTime = GetValue(metas, nameof(Galgame.ExpectedPlayTime), 
+            meta => CheckStr(meta.ExpectedPlayTime.Value), 
+            new LockableProperty<string>(Galgame.DefaultString));
         // rating
-        result.Rating = (LockableProperty<float>)GetValue(metas, nameof(Galgame.Rating), 
-            _ => true, 0);
+        result.Rating = GetValue(metas, nameof(Galgame.Rating), 
+            _ => true, new LockableProperty<float>(0));
         // imageUrl
-        result.ImageUrl = (string)GetValue(metas, nameof(Galgame.ImageUrl), 
+        result.ImageUrl = GetValue<string>(metas, nameof(Galgame.ImageUrl), 
             meta => CheckStr(meta.ImageUrl), null!);
         // release date
-        result.ReleaseDate = (LockableProperty<DateTime>)GetValue(metas, nameof(Galgame.ReleaseDate),
-            meta => meta.ReleaseDate != DateTime.MinValue, DateTime.MinValue);
+        result.ReleaseDate = GetValue(metas, nameof(Galgame.ReleaseDate),
+            meta => meta.ReleaseDate.Value != DateTime.MinValue, 
+            new LockableProperty<DateTime>(DateTime.MinValue));
         // characters
-        result.Characters = (ObservableCollection<GalgameCharacter>)GetValue(metas, nameof(Galgame.Characters),
+        result.Characters = GetValue(metas, nameof(Galgame.Characters),
             meta => meta.Characters.Count > 0, new ObservableCollection<GalgameCharacter>());
         // Chinese name
-        result.CnName = (string)GetValue(metas, nameof(Galgame.CnName),
+        result.CnName = GetValue(metas, nameof(Galgame.CnName),
             meta => CheckStr(meta.CnName), string.Empty);
         // developer
-        result.Developer = (LockableProperty<string>)GetValue(metas, nameof(Galgame.Developer),
-            meta => CheckStr(meta.Developer), Galgame.DefaultString);
+        result.Developer = GetValue(metas, nameof(Galgame.Developer),
+            meta => CheckStr(meta.Developer), 
+            new LockableProperty<string>(Galgame.DefaultString));
         // tags
-        result.Tags = (LockableProperty<ObservableCollection<string>>)GetValue(metas, nameof(Galgame.Tags),
-            meta => meta.Tags.Value?.Count > 0, new ObservableCollection<string>());
+        result.Tags = GetValue(metas, nameof(Galgame.Tags),
+            meta => meta.Tags.Value?.Count > 0, 
+            new LockableProperty<ObservableCollection<string>>(new ObservableCollection<string>()));
         
         // developer from tag
         if (result.Developer == Galgame.DefaultString)
@@ -163,16 +167,16 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return await _bgmPhraser.GetGalgameCharacter(galgameCharacter);
     }
 
-    private object GetValue(Dictionary<RssType, Galgame> metas, string propName, Func<Galgame, bool> isValueAvailable, 
-        object defaultValue)
+    private T GetValue<T>(Dictionary<RssType, Galgame> metas, string propName, Func<Galgame, bool> isValueAvailable, 
+        T defaultValue)
     {
         ObservableCollection<RssType> order = GetOrder();
         foreach (RssType rssType in order)
         {
             if(!metas.TryGetValue(rssType, out Galgame? meta)) continue;
             if (isValueAvailable(meta))
-                return meta.GetType().GetProperty(propName)?.GetValue(meta) ??
-                       meta.GetType().GetField(propName)?.GetValue(meta)!;
+                return (T)(meta.GetType().GetProperty(propName)?.GetValue(meta) ??
+                           meta.GetType().GetField(propName)?.GetValue(meta)!);
         }
         return defaultValue;
         

@@ -79,4 +79,18 @@ public static class FileHelper
         _ = FileService; //确保初始化
         return File.Exists(Path.Combine(_appDataPath, subFolder ?? string.Empty, fileName));
     }
+    
+    public static async Task<StorageFolder> GetFolderAsync(FolderType folderType)
+    {
+        StorageFolder? localFolder = ApplicationData.Current.LocalFolder;
+        if (folderType == FolderType.Root) return localFolder;
+        return await localFolder.CreateFolderAsync(folderType.ToString(),
+            CreationCollisionOption.OpenIfExists);
+    }
+
+    public enum FolderType
+    {
+        Root,
+        Images,
+    }
 }

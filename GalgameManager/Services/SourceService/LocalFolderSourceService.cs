@@ -146,8 +146,9 @@ public class LocalFolderSourceService : IGalgameSourceService
     private static void CopyImg(string? src, string target)
     {
         if (src is null or Galgame.DefaultImagePath) return;
-        if (!File.Exists(src) || File.Exists(target)) return;
-        File.Copy(src, target);
+        if (!File.Exists(src)) return;
+        if (File.Exists(target) && new FileInfo(target).Length == new FileInfo(src).Length) return; //文件已存在且大小相同就不复制
+        File.Copy(src, target, true);
     }
 
     private static string? LoadImg(string? target, string path, string defaultTarget = Galgame.DefaultImagePath, 
