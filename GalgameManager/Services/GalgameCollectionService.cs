@@ -40,7 +40,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public IGalInfoPhraser[] PhraserList
     {
         get;
-    } = new IGalInfoPhraser[6];
+    } = new IGalInfoPhraser[Galgame.PhraserNumber];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
         IGalgameSourceCollectionService galgameSourceService, IFilterService filterService, IInfoService infoService, 
@@ -104,6 +104,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             _galgameMap[g.Url] = g;
             g.ErrorOccurred += e =>
                 _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
+            // 数目增加
+            if (g.Ids.Length < Galgame.PhraserNumber)
+            {
+                g.Ids = g.Ids.ResizeArray(Galgame.PhraserNumber);
+            }
         }
         GalgameLoadedEvent?.Invoke();
     }

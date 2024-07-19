@@ -172,7 +172,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         return string.Join(",", idParts);
     }
     
-    public static string IdList2Id(string?[] ids)
+    public static string IdList2Id(IList<string?> ids)
     {
         Dictionary<string, string?> idDict = new()
         {
@@ -237,13 +237,13 @@ public class MixedPhraserOrder
         NameOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
         DescriptionOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
         ExpectedPlayTimeOrder = new() { RssType.Vndb};
-        RatingOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
-        ImageUrlOrder = new() { RssType.Vndb, RssType.Bangumi };
+        RatingOrder = new() { RssType.Bangumi, RssType.Vndb };
+        ImageUrlOrder = new() { RssType.Vndb, RssType.Bangumi, RssType.Ymgal };
         ReleaseDateOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
-        CharactersOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
+        CharactersOrder = new() { RssType.Bangumi, RssType.Vndb };
         CnNameOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
         DeveloperOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
-        TagsOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal };
+        TagsOrder = new() { RssType.Bangumi, RssType.Vndb };
         return this;
     }
 }

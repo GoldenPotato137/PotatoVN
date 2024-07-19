@@ -16,6 +16,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
     public const string MetaPath = ".PotatoVN";
+    public static int PhraserNumber = 6;
     
     public event GenericDelegate<(Galgame, string)>? GalPropertyChanged;
     public event GenericDelegate<Exception>? ErrorOccurred; //非致命异常产生时触发
@@ -73,7 +74,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public string?[] Ids = new string?[6]; //magic number: 钦定了一个最大Phraser数目
+    public string?[] Ids = new string?[PhraserNumber]; //magic number: 钦定了一个最大Phraser数目
     [JsonIgnore] public readonly ObservableCollection<Category> Categories = new();
     [JsonIgnore] public ObservableCollection<GalgameSourceBase> Sources { get; } = new(); //所属的源
     [ObservableProperty] private string _comment = string.Empty; //吐槽（评论）
@@ -346,7 +347,7 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
             TotalPlayTime = TotalPlayTime,
             RunAsAdmin = RunAsAdmin,
             PlayType = PlayType,
-            Ids = (string[])Ids.Clone(),
+            Ids = Ids,
             RssType = RssType,
             Comment = Comment,
             MyRate = MyRate,
@@ -416,9 +417,18 @@ public partial class Galgame : ObservableObject, IComparable<Galgame>
     public void UpdateIdFromMixed()
     {
         Dictionary<string, string> tmp = MixedPhraser.Id2IdDict(Ids[(int)RssType.Mixed] ?? "");
-        tmp.TryGetValue("bgm", out Ids[(int)RssType.Bangumi]);
-        tmp.TryGetValue("vndb", out Ids[(int)RssType.Vndb]);
-        tmp.TryGetValue("ymgal", out Ids[(int)RssType.Ymgal]);
+        if (tmp.TryGetValue("bgm", out var bgm))
+        {
+            Ids[(int)RssType.Bangumi] = bgm;
+        }
+        if (tmp.TryGetValue("vndb", out var vndb))
+        {
+            Ids[(int)RssType.Vndb] = vndb;
+        }
+        if (tmp.TryGetValue("ymgal", out var ymgal))
+        {
+            Ids[(int)RssType.Ymgal] = ymgal;
+        }
     }
 
     /// <summary>
