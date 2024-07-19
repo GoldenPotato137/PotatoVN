@@ -1,9 +1,11 @@
-﻿using Windows.Storage.Pickers;
+﻿using Windows.Storage;
+using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
@@ -21,7 +23,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
     private readonly IPvnService _pvnService;
-    private readonly string[] _searchUrlList = new string[5];
+    private readonly string[] _searchUrlList = new string[10];
     [ObservableProperty] private string _searchUri = "";
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private RssType _selectedRss = RssType.None;
@@ -36,9 +38,11 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         RssTypes.Add(RssType.Bangumi);
         RssTypes.Add(RssType.Vndb);
         RssTypes.Add(RssType.Mixed);
+        RssTypes.Add(RssType.Ymgal);
         _searchUrlList[(int)RssType.Bangumi] = "https://bgm.tv/subject_search/";
         _searchUrlList[(int)RssType.Vndb] = "https://vndb.org/v/all?sq=";
         _searchUrlList[(int)RssType.Mixed] = "https://bgm.tv/subject_search/";
+        _searchUrlList[(int)RssType.Ymgal] = "https://www.ymgal.games/search?type=ga&keyword=";
         SearchUri = _searchUrlList[(int)RssType.Vndb]; // default
     }
 
@@ -93,7 +97,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [RelayCommand]
     private async Task PickImageAsync()
     {
-        var openPicker = new FileOpenPicker
+        FileOpenPicker openPicker = new()
         {
             ViewMode = PickerViewMode.Thumbnail,
             SuggestedStartLocation = PickerLocationId.PicturesLibrary
@@ -103,10 +107,10 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         openPicker.FileTypeFilter.Add(".jpeg");
         openPicker.FileTypeFilter.Add(".png");
         openPicker.FileTypeFilter.Add(".bmp");
-        var file = await openPicker.PickSingleFileAsync();
-        if (file != null)
-        {
-            Gal.ImagePath.Value = file.Path;
-        }
+        StorageFile? file = await openPicker.PickSingleFileAsync();
+        if (file == null) return;
+        StorageFile newFile = await file.CopyAsync(await FileHelper.GetFolderAsync(FileHelper.FolderType.Images), 
+            $"{Gal.Name.Value}{file.FileType}", NameCollisionOption.ReplaceExisting);
+        Gal.ImagePath.Value= newFile.Path;
     }
 }

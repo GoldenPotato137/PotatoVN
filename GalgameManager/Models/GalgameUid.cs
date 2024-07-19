@@ -32,4 +32,16 @@ public class GalgameUid
         result += Name == rhs.Name ? 1 : 0;
         return result;
     }
+    
+    public override string ToString()
+    {
+        List<string> parts = new();
+        if (!string.IsNullOrWhiteSpace(Name)) parts.Add($"Name: {Name}");
+        if (!string.IsNullOrWhiteSpace(CnName)) parts.Add($"CnName: {CnName}");
+        if (!string.IsNullOrWhiteSpace(BangumiId)) parts.Add($"BangumiId: {BangumiId}");
+        if (!string.IsNullOrWhiteSpace(VndbId)) parts.Add($"VndbId: {VndbId}");
+        if (!string.IsNullOrWhiteSpace(PvnId)) parts.Add($"PvnId: {PvnId}");
+
+        return $"GalgameUid [{string.Join(", ", parts)}]";
+    }
 }

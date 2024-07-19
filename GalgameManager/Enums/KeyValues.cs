@@ -60,6 +60,9 @@ public static class KeyValues
     public const string PvnSyncTimestamp = "pvnSyncTimestamp"; //long, 上一次同步时间戳
     public const string ToDeleteGames = "toDeleteGames"; //List<int>, 待删除的游戏id
     
+    //搜刮设置
+    public const string MixedPhraserOrder = "mixedPhraserOrder"; //MixedPhraserOrder,混合搜刮器的顺序
+    
     //显示相关
     public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 主页是否显示游玩状态的小三角形
     public const string FixHorizontalPicture = "fixHorizontalPictrue"; //bool, 主页是否裁剪横图
@@ -91,6 +94,7 @@ public static class KeyValues
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
     public const string CategoryUpgraded = "categoryUpgraded"; //分类索引升级
     public const string SourceUpgrade = "sourceUpgrade"; //Source升级
+    public const string MixedPhraserOrderVersion = "mixedPhraserOrderVersion"; //int，当前配置中的混合搜刮器顺序的版本
     
     
     //废弃Key，只读，仅用于升级

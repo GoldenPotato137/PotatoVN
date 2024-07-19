@@ -441,6 +441,9 @@ public class PvnService : IPvnService
 
     private void StartSyncTask()
     {
+        if (_settingsService.ReadSettingAsync<PvnAccount?>(KeyValues.PvnAccount).Result is null) return;
+        if (!_settingsService.ReadSettingAsync<bool>(KeyValues.SyncGames).Result) return;
+        
         SyncTask = _bgTaskService.GetBgTask<PvnSyncTask>(string.Empty);
         if (SyncTask is not null && SyncTask.IsRunning) return;
         SyncTask = new PvnSyncTask();

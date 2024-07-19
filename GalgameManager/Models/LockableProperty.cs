@@ -23,6 +23,15 @@ public partial class LockableProperty<T> : ObservableObject
     [ObservableProperty]
     private bool _isLock;
 
+    public LockableProperty()
+    {
+    }
+
+    public LockableProperty(T value)
+    {
+        _value = value;
+    }
+
     // 隐式类型转换
     public static implicit operator LockableProperty<T>(T value)
     {

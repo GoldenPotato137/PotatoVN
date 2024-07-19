@@ -1574,16 +1574,13 @@
   <data name="LocalFolderSourceMoveTask_MoveIn_Title" xml:space="preserve">
     <value>复制游戏任务</value>
   </data>
-  <data name="LocalFolderSourceTask_MoveIn_Error" xml:space="preserve">
-    <value>复制游戏失败</value>
-  </data>
-  <data name="LocalFolderSourceTask_MoveIn_Progress" xml:space="preserve">
-    <value>正在复制 {0} 到 {1}</value>
+  <data name="LocalFolderSourceMoveTask_MoveIn_Progress" xml:space="preserve">
+    <value>正在复制 {0}</value>
   </data>
   <data name="SourceMoveInBase_Success" xml:space="preserve">
     <value>成功将游戏复制至另一个源</value>
   </data>
-  <data name="LocalFolderSourceTask_MoveIn_Success" xml:space="preserve">
+  <data name="LocalFolderSourceMoveTask_MoveIn_Success" xml:space="preserve">
     <value>成功将游戏 {0} 复制到 {1}</value>
   </data>
   <data name="SourceMoveTask_Title" xml:space="preserve">
@@ -1594,5 +1591,68 @@
   </data>
   <data name="LocalFolderSourceService_MoveOutError" xml:space="preserve">
     <value>一个游戏只能属于一个本地文件夹，要移入其他本地文件夹必须从当前本地文件夹中移出。</value>
+  </data>
+  <data name="SourceMoveTask_MovingIn_Fail" xml:space="preserve">
+    <value>移入源任务失败</value>
+  </data>
+  <data name="SourceMoveTask_MovingOut" xml:space="preserve">
+    <value>正在执行游戏搬出指定源的任务</value>
+  </data>
+  <data name="SourceMoveTask_MovingOut_Fail" xml:space="preserve">
+    <value>移除源任务失败</value>
+  </data>
+  <data name="SourceMoveTask_Success_MoveIn" xml:space="preserve">
+    <value>已成功将 {0} 移入 {1}</value>
+  </data>
+  <data name="SourceMoveTask_Success_MoveOut" xml:space="preserve">
+    <value>已成功将 {0} 移出 {1}</value>
+  </data>
+  <data name="LocalFolderSourceMoveTask_MoveOut_Title" xml:space="preserve">
+    <value>从文件夹中删除游戏任务</value>
+  </data>
+  <data name="LocalFolderSourceMoveTask_MoveOut_Progress" xml:space="preserve">
+    <value>正在删除 {0}</value>
+  </data>
+  <data name="LocalFolderSourceMoveTask_MoveOut_Success" xml:space="preserve">
+    <value>成功删除文件夹 {0}</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_Title" xml:space="preserve">
+    <value>设置信息源优先级</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Name" xml:space="preserve">
+    <value>游戏名</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Des" xml:space="preserve">
+    <value>简介</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Order.Title" xml:space="preserve">
+    <value>信息混合方法</value>
+  </data>
+  <data name="SettingsPage_Rss_Mixed_Order.Description" xml:space="preserve">
+    <value>设置混合搜刮器从不同数据源混合搜刮下来的数据时各个源的优先级</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Exp" xml:space="preserve">
+    <value>预计游玩时长</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Rating" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Image" xml:space="preserve">
+    <value>封面图</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_ReleaseDate" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Character" xml:space="preserve">
+    <value>角色</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_CnName" xml:space="preserve">
+    <value>中文名</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Dev" xml:space="preserve">
+    <value>开发商</value>
+  </data>
+  <data name="MixedPhraserOrderDialog_It_Tag" xml:space="preserve">
+    <value>Tag</value>
   </data>
 </root>
