@@ -40,7 +40,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public IGalInfoPhraser[] PhraserList
     {
         get;
-    } = new IGalInfoPhraser[5];
+    } = new IGalInfoPhraser[Galgame.PhraserNumber];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
         IGalgameSourceCollectionService galgameSourceService, IFilterService filterService, IInfoService infoService, 
@@ -58,9 +58,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new(GetVndbData().Result);
+        YmgalPhraser ymgalPhraser = new();
         MixedPhraser mixedPhraser = new(bgmPhraser, vndbPhraser, GetMixData());
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
         PhraserList[(int)RssType.Vndb] = vndbPhraser;
+        PhraserList[(int)RssType.Ymgal] = ymgalPhraser;
         PhraserList[(int)RssType.Mixed] = mixedPhraser;
         
         SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
@@ -102,6 +104,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             _galgameMap[g.Url] = g;
             g.ErrorOccurred += e =>
                 _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
+            // 数目增加
+            if (g.Ids.Length < Galgame.PhraserNumber)
+            {
+                g.Ids = g.Ids.ResizeArray(Galgame.PhraserNumber);
+            }
         }
         GalgameLoadedEvent?.Invoke();
     }
