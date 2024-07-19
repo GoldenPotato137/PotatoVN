@@ -1,9 +1,11 @@
-﻿using Windows.Storage.Pickers;
+﻿using Windows.Storage;
+using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
@@ -93,7 +95,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [RelayCommand]
     private async Task PickImageAsync()
     {
-        var openPicker = new FileOpenPicker
+        FileOpenPicker openPicker = new()
         {
             ViewMode = PickerViewMode.Thumbnail,
             SuggestedStartLocation = PickerLocationId.PicturesLibrary
@@ -103,10 +105,10 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         openPicker.FileTypeFilter.Add(".jpeg");
         openPicker.FileTypeFilter.Add(".png");
         openPicker.FileTypeFilter.Add(".bmp");
-        var file = await openPicker.PickSingleFileAsync();
-        if (file != null)
-        {
-            Gal.ImagePath.Value = file.Path;
-        }
+        StorageFile? file = await openPicker.PickSingleFileAsync();
+        if (file == null) return;
+        StorageFile newFile = await file.CopyAsync(await FileHelper.GetFolderAsync(FileHelper.FolderType.Images), 
+            $"{Gal.Name.Value}{file.FileType}", NameCollisionOption.ReplaceExisting);
+        Gal.ImagePath.Value = newFile.Path;
     }
 }
