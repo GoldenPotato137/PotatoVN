@@ -8,6 +8,9 @@ namespace GalgameManager.Test.Helpers.Phraser;
 public class MixedPhraserTest
 {
     private MixedPhraser? _mixedPhraser;
+    private BgmPhraser _bgmPhraser = null!;
+    private VndbPhraser _vndbPhraser = null!;
+    private YmgalPhraser _ymgalPhraser = null!;
     
     [SetUp]
     public void Init()
@@ -17,9 +20,13 @@ public class MixedPhraserTest
         {
             Token = string.IsNullOrEmpty(token) ? null : token
         };
-        BgmPhraser bgmPhraser = new(data);
-        VndbPhraser vndbPhraser = new();
-        _mixedPhraser = new MixedPhraser(bgmPhraser, vndbPhraser);
+        _bgmPhraser = new(data);
+        _vndbPhraser = new();
+        _ymgalPhraser = new();
+        _mixedPhraser = new MixedPhraser(_bgmPhraser, _vndbPhraser, _ymgalPhraser, new MixedPhraserData
+        {
+            Order = new MixedPhraserOrder().SetToDefault(),
+        });
     }
 
     [Test]
@@ -37,13 +44,60 @@ public class MixedPhraserTest
             return;
         }
 
+        Dictionary<string, string?> id = MixedPhraser.Id2IdDict(game.Id!);
         switch (name)
         {
             case "近月少女的礼仪":
                 if(game.Name != "月に寄りそう乙女の作法") Assert.Fail();
-                if(game.Id != "bgm:44123,vndb:10680") Assert.Fail();
-                if(game.Description.Value!.StartsWith("主人公身为“大藏游星”") == false) Assert.Fail();
+                Assert.That(id["bgm"], Is.EqualTo("44123"));
+                Assert.That(id["vndb"], Is.EqualTo("10680"));
+                Assert.That(id["ymgal"], Is.EqualTo("31147"));
+                if(!game.Description.Value!.StartsWith("主人公大藏游星")) Assert.Fail(); //默认来自YMGAL
                 if(game.Developer != "Navel") Assert.Fail();
+                Assert.That(game.ImageUrl?.StartsWith("https://t.vndb.org/"), Is.True); //默认来自VNDB
+                break;
+        }
+        
+        Assert.Pass();
+    }
+    
+    [Test]
+    [TestCase("千恋万花")]
+    [TestCase("近月少女的礼仪")]
+    public async Task PhraseTestWithCustomOrder(string name)
+    {
+        // Arrange
+        Galgame? game = new(name);
+        MixedPhraserOrder order = new MixedPhraserOrder().SetToDefault();
+        order.NameOrder = new() { RssType.Vndb, RssType.Bangumi };
+        order.ImageUrlOrder = new() { RssType.Bangumi, RssType.Vndb };
+        order.DescriptionOrder = new() { RssType.Vndb, RssType.Bangumi };
+        MixedPhraser phraser = new MixedPhraser(_bgmPhraser, _vndbPhraser, _ymgalPhraser, new MixedPhraserData
+        {
+            Order = order,
+        });
+        // Act
+        game = await phraser.GetGalgameInfo(game);
+        // Assert
+        if(game == null)
+        {
+            Assert.Fail();
+            return;
+        }
+
+        switch (name)
+        {
+            case "千恋万花":
+                // VNDB搜不到游戏，fallback到Bangumi
+                Assert.That(game.Description.Value?.StartsWith("電車も通っていない山の中に"), Is.True); // 从BGM中获取
+                break;
+            case "近月少女的礼仪":
+                Assert.That(game.Name.Value, Is.EqualTo("Tsuki ni Yorisou Otome no Sahou")); // 从VNDB中获取
+                Assert.That(MixedPhraser.Id2IdDict(game.Id!)["bgm"], Is.EqualTo("44123"));
+                Assert.That(MixedPhraser.Id2IdDict(game.Id!)["vndb"], Is.EqualTo("10680"));
+                Assert.That(MixedPhraser.Id2IdDict(game.Id!)["ymgal"], Is.EqualTo("31147"));
+                Assert.That(game.Description.Value?.StartsWith("Navel tenth anniversary project"), Is.True); // 从VNDB中获取
+                Assert.That(game.ImageUrl?.StartsWith("https://lain.bgm.tv/"), Is.True); // 从BGM中获取
                 break;
         }
         

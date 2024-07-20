@@ -1,57 +1,72 @@
-﻿using GalgameManager.Helpers;
+﻿/*
+ * 游戏源移动任务，当进入托盘模式时由SourceMoveTask恢复
+ */
+
+using GalgameManager.Helpers;
 using GalgameManager.Models.Sources;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class LocalFolderSourceMoveInTask : SourceMoveInBase
+public class LocalFolderSourceMoveInTask : BgTaskBase
 {
-    public override string Title { get; } = "LocalFolderSourceMoveTask_MoveIn_Title".GetLocalized();
-
-    public LocalFolderSourceMoveInTask(Galgame game, GalgameFolderSource targetSource, string targetPath) : base(game,
-        targetSource,
-        targetPath)
+    private readonly Galgame _game;
+    private readonly string _targetPath;
+    
+    public LocalFolderSourceMoveInTask(Galgame game, string targetPath)
     {
+        _game = game;
+        _targetPath = targetPath;
     }
+    
+    protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
 
-    protected override string ErrorEventTitle { get; init; } = "LocalFolderSourceTask_MoveIn_Error".GetLocalized();
-    protected override string SuccessMsg() => "LocalFolderSourceTask_MoveIn_Success".GetLocalized(Game!.Name, TargetPath);
-
-    protected async override Task RunIternal2Async()
+    protected async override Task RunInternal()
     {
         await Task.CompletedTask;
-        var originPath = Game!.Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder)
-            ?.GetPath(Game);
+        var originPath = _game.Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder)
+            ?.GetPath(_game);
         if (originPath is null) throw new PvnException("originPath is null");
-        if (Utils.IsPathContained(originPath, TargetPath))
+        if (Utils.IsPathContained(originPath, _targetPath))
             throw new PvnException("TargetPath is contained in originPath");
-
-        Queue<string> queue = new();
-        queue.Enqueue(originPath);
-        while (queue.Count > 0)
+        
+        FolderOperations.Copy(originPath, _targetPath, info =>
         {
-            var path = queue.Dequeue();
-            var relativeP = Path.GetRelativePath(originPath, path);
-            if (!Directory.Exists(Path.Combine(TargetPath, relativeP)))
-                Directory.CreateDirectory(Path.Combine(TargetPath, relativeP));
-            DirectoryInfo dir = new(path);
-            foreach (FileInfo file in dir.GetFiles())
-            {
-                var targetFileP = Path.Combine(TargetPath, relativeP, file.Name);
-                ChangeProgress(0, 1, "LocalFolderSourceTask_MoveIn_Progress".GetLocalized(file.Name, targetFileP));
-                file.CopyTo(targetFileP, true);
-            }
+            ChangeProgress(0, 1, "LocalFolderSourceMoveTask_MoveIn_Progress".GetLocalized(info.FullName));
+        });
 
-            foreach (DirectoryInfo subDir in dir.GetDirectories())
-                queue.Enqueue(subDir.FullName);
-        }
+        ChangeProgress(1, 1, "LocalFolderSourceMoveTask_MoveIn_Success".GetLocalized(_game.Name, _targetPath));
     }
+
+    public override string Title { get; } = "LocalFolderSourceMoveTask_MoveIn_Title".GetLocalized();
 }
 
 public class LocalFolderSourceMoveOutTask : BgTaskBase
 {
-    protected override Task RecoverFromJsonInternal() => throw new NotImplementedException();
+    private readonly Galgame _game;
+    private readonly GalgameSourceBase _target;
 
-    protected override Task RunInternal() => throw new NotImplementedException();
+    public LocalFolderSourceMoveOutTask(Galgame game, GalgameSourceBase target)
+    {
+        _game = game;
+        _target = target;
+    }
 
-    public override string Title { get; } = string.Empty;
+    protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
+
+    protected async override Task RunInternal()
+    {
+        await Task.CompletedTask;
+        var root = _target.GetPath(_game);
+        if (root is null) throw new PvnException("root is null"); //不应该发生
+        if (!Directory.Exists(root)) throw new PvnException($"{root} not exists");
+        
+        FolderOperations.Delete(root, info =>
+        {
+            ChangeProgress(0, 1, "LocalFolderSourceMoveTask_MoveOut_Progress".GetLocalized(info.FullName));
+        });
+        
+        ChangeProgress(1, 1, "LocalFolderSourceMoveTask_MoveOut_Success".GetLocalized(_game.Name, _target.Url));
+    }
+
+    public override string Title { get; } = "LocalFolderSourceMoveTask_MoveOut_Title".GetLocalized();
 }

@@ -4,11 +4,10 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Phrase;
 using GalgameManager.Models;
-using GalgameManager.Models.Sources;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
 
@@ -208,6 +207,8 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.NotifyWhenUnpackGame:
             case KeyValues.EventPvnSyncNotify:
                 return (T?)(object)true;
+            case KeyValues.MixedPhraserOrder:
+                return (T?)(object)new MixedPhraserOrder().SetToDefault();
             default:
                 return default;
         }

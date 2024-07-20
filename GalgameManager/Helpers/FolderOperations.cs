@@ -98,17 +98,46 @@ public static class FolderOperations
     /// </summary>
     /// <param name="sourcePath">源</param>
     /// <param name="targetPath">目的地</param>
-    public static void Copy(string sourcePath, string targetPath)
+    /// <param name="onCopy">复制文件前触发</param>
+    public static void Copy(string sourcePath, string targetPath, Action<FileInfo>? onCopy = null)
     {
         if(!Directory.Exists(targetPath))
             Directory.CreateDirectory(targetPath);
         foreach(var file in Directory.GetFiles(sourcePath))
         {
+            onCopy?.Invoke(new FileInfo(file));
             File.Copy(file, Path.Combine(targetPath, Path.GetFileName(file)), true);
         }
         foreach(var subDir in Directory.GetDirectories(sourcePath))
+            Copy(subDir, Path.Combine(targetPath, Path.GetFileName(subDir)), onCopy);
+    }
+
+    /// <summary>
+    /// 删除文件夹，其中的符号链接将被删除（但不删除符号链接指向的文件）
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="onDelete"></param>
+    /// <exception cref="DirectoryNotFoundException">path不存在</exception>
+    public static void Delete(string path, Action<FileInfo>? onDelete = null)
+    {
+        if(!Directory.Exists(path)) throw new DirectoryNotFoundException();
+        Queue<string> queue = new();
+        queue.Enqueue(path);
+        while(queue.Count > 0)
         {
-            Copy(subDir, Path.Combine(targetPath, Path.GetFileName(subDir)));
+            var p = queue.Dequeue();
+            if (IsSymbolicLink(p))
+                File.Delete(p);
+            else
+            {
+                foreach(var file in Directory.GetFiles(p))
+                {
+                    onDelete?.Invoke(new FileInfo(file));
+                    File.Delete(file);
+                }
+            }
+            foreach(var dir in Directory.GetDirectories(p))
+                queue.Enqueue(dir);
         }
     }
     

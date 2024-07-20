@@ -8,6 +8,11 @@ namespace GalgameManager.Contracts.Services;
 public interface IGalgameSourceCollectionService
 {
     /// <summary>
+    /// 当库被删除时触发
+    /// </summary>
+    public Action<GalgameSourceBase>? OnSourceDeleted { get; set; }
+    
+    /// <summary>
     /// 初始化
     /// </summary>
     /// <returns></returns>
@@ -56,22 +61,30 @@ public interface IGalgameSourceCollectionService
     public Task DeleteGalgameFolderAsync(GalgameSourceBase source);
 
     /// <summary>
-    /// 将游戏移入某个库
-    /// </summary>
-    /// <param name="target">目标库</param>
-    /// <param name="game">游戏</param>
-    /// <param name="operate">
-    /// 是否需要进行实际的操作（如复制文件夹、上传游戏等）
-    /// <b>值为false时，path为必填项</b>
-    /// </param>
-    /// <param name="path">目标路径，若为null则表示可以由对应的sourceService自行决定路径</param>
-    public BgTaskBase MoveIntoSourceAsync(GalgameSourceBase target, Galgame game, bool operate, string? path = null);
-
-    /// <summary>
-    /// 将游戏移出某个库
+    /// 将一个游戏移入某个库，不进行物理移动操作（如复制文件节、上传游戏等）
     /// </summary>
     /// <param name="target"></param>
     /// <param name="game"></param>
-    /// <param name="operate">是否要进行实际操作（如删除文件夹、从云端删除游戏压缩包等）</param>
-    public BgTaskBase RemoveFromSourceAsync(GalgameSourceBase target, Galgame game, bool operate);
+    /// <param name="path">游戏在库中的路径</param>
+    public void MoveInNoOperate(GalgameSourceBase target, Galgame game, string path);
+
+    /// <summary>
+    /// 将一个游戏移出某个库，不进行物理移动操作（如删除文件节、在云端删除游戏等）
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="game"></param>
+    public void MoveOutOperate(GalgameSourceBase target, Galgame game);
+
+    /// <summary>
+    /// 移动游戏，<b>会进行物理操作</b>（如删除文件夹、复制文件夹、上传游戏到云端等）<br/>
+    /// 可以组合移入和移出操作，例如可以不移入任何库，只移出；也可以不移出任何库，只移入；也可以同时移入和移出 <br/>
+    /// 若不需要物理移动位置，请用<see cref="MoveInNoOperate"/>与<see cref="MoveOutOperate"/>>>
+    /// </summary>
+    /// <param name="moveInSrc">要移入的库，若设为null则表示不移入任何库</param>
+    /// <param name="moveInPath">要移入的路径，若设置为null则表示让service自行决定路径</param>
+    /// <param name="moveOutSrc">要移出的库</param>
+    /// <param name="game">游戏</param>
+    /// <returns>一个已经启动的BgTask</returns>
+    public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc,
+        Galgame game);
 }
