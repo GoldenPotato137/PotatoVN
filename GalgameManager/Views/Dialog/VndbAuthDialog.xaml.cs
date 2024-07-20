@@ -21,21 +21,8 @@ public sealed partial class VndbAuthDialog : ContentDialog
         nameof(Token),
         typeof(string),
         typeof(VndbAuthDialog),
-        new PropertyMetadata("", 
-            propertyChangedCallback:new PropertyChangedCallback(PropertyChangedCallback))
+        new PropertyMetadata("")
     );
-
-    private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d.GetValue(TokenProperty) is string a && Regex.IsMatch(a, @"^[0-9a-z]{4}-[0-9a-z]{5}-[0-9a-z]{5}-[0-9a-z]{4}-[0-9a-z]{5}-[0-9a-z]{5}-[0-9a-z]{4}$"))
-        {
-            d.SetValue(IsPrimaryButtonEnabledProperty, true);
-        }
-        else
-        {
-            d.SetValue(IsPrimaryButtonEnabledProperty, false);
-        }
-    }
 
     public VndbAuthDialog()
     {
@@ -43,9 +30,7 @@ public sealed partial class VndbAuthDialog : ContentDialog
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         DefaultButton = ContentDialogButton.Primary;
         Title = "Vndb登录";
-        //TODO: 界面优化
         PrimaryButtonText = "Login".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
-        IsPrimaryButtonEnabled = false;
     }
 }

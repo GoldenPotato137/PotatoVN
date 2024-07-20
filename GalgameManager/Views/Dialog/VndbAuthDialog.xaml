@@ -5,12 +5,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     Style="{StaticResource DefaultContentDialogStyle}"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    IsPrimaryButtonEnabled="{Binding (ui:TextBoxExtensions.IsValid), ElementName=TokenTextBox}">
 
     <StackPanel>
-        <TextBox Header="输入AccessToken" PlaceholderText="Token" 
-                 Text="{x:Bind Token, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Header="输入AccessToken" PlaceholderText="Token"  x:Name="TokenTextBox"
+                 Text="{x:Bind Token, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 ui:TextBoxExtensions.Regex="^[0-9a-z]{4}-[0-9a-z]{5}-[0-9a-z]{5}-[0-9a-z]{4}-[0-9a-z]{5}-[0-9a-z]{5}-[0-9a-z]{4}$"
+                 ui:TextBoxExtensions.CustomMask="t:[0-9a-z]"
+                 ui:TextBoxExtensions.MaskPlaceholder=" "
+                 ui:TextBoxExtensions.Mask="tttt-ttttt-ttttt-tttt-ttttt-ttttt-tttt"
+                 />
         <RichTextBlock TextWrapping="Wrap"
                        Style="{StaticResource DescriptionRichTextStyle}"
                        Margin="{StaticResource XSmallBottomMargin}">
