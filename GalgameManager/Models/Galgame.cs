@@ -67,7 +67,7 @@ public partial class Galgame : ObservableObject
     [ObservableProperty] private ObservableCollection<GalgameCharacter> _characters = new();
     [JsonIgnore][ObservableProperty] private string _savePosition = string.Empty;
     [ObservableProperty] private string? _exePath;
-    [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags = new();
+    [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags;
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
     private RssType _rssType = RssType.None;
@@ -131,7 +131,7 @@ public partial class Galgame : ObservableObject
 
     public Galgame()
     {
-        _tags.Value = new ObservableCollection<string>();
+        _tags = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
 
@@ -140,14 +140,14 @@ public partial class Galgame : ObservableObject
         SourceType = sourceType;
         Name = name;
         Path = path;
-        _tags.Value = new ObservableCollection<string>();
+        _tags = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
 
     public Galgame(string name)
     {
         Name = name;
-        _tags.Value = new ObservableCollection<string>();
+        _tags = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
     
@@ -347,16 +347,16 @@ public partial class Galgame : ObservableObject
     /// </summary>
     public void UpdateIdFromMixed()
     {
-        Dictionary<string, string> tmp = MixedPhraser.Id2IdDict(Ids[(int)RssType.Mixed] ?? "");
-        if (tmp.TryGetValue("bgm", out var bgm))
+        Dictionary<string, string?> tmp = MixedPhraser.Id2IdDict(Ids[(int)RssType.Mixed] ?? "");
+        if (tmp.TryGetValue("bgm", out var bgm) && bgm != "null" && bgm != null)
         {
             Ids[(int)RssType.Bangumi] = bgm;
         }
-        if (tmp.TryGetValue("vndb", out var vndb))
+        if (tmp.TryGetValue("vndb", out var vndb) && vndb != "null"&& vndb != null)
         {
             Ids[(int)RssType.Vndb] = vndb;
         }
-        if (tmp.TryGetValue("ymgal", out var ymgal))
+        if (tmp.TryGetValue("ymgal", out var ymgal) && ymgal != "null"&& ymgal != null)
         {
             Ids[(int)RssType.Ymgal] = ymgal;
         }
@@ -388,6 +388,13 @@ public partial class Galgame : ObservableObject
     }
     
     public string GetLogName() => $"Galgame_{Url.ToBase64().Replace("/", "").Replace("=", "")}.txt";
+    
+    public bool ApplySearchKey(string searchKey)
+    {
+        return Name.Value!.ContainX(searchKey) || 
+               Developer.Value!.ContainX(searchKey) || 
+               Tags.Value!.Any(str => str.ContainX(searchKey));
+    }
 }
 
 

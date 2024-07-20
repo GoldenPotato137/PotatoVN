@@ -78,7 +78,8 @@
                 <!-- 包含游戏 -->
                 <TextBlock x:Uid="CategorySettingPage_Games" VerticalAlignment="Center" />
                 <control:GalgameSearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.GalgameSearchCommand}" 
-                                                     SearchKey="{x:Bind ViewModel.GalgameSearchKey}"/>
+                                                     SearchKey="{x:Bind ViewModel.GalgameSearchKey, Mode=TwoWay}"
+                                                     Width="500" HorizontalAlignment="Left"/>
                 <ItemsRepeater
                     ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}" Margin="0 -15 0 0">
                     <ItemsRepeater.ItemTemplate>

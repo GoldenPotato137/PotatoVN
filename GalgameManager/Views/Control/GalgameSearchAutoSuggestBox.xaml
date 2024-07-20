@@ -9,6 +9,8 @@
     <AutoSuggestBox x:Uid="HomePage_Search" AllowFocusOnInteraction="True" MinWidth="250"
                     Text="{x:Bind SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     ItemsSource="{x:Bind SearchSuggestions, Mode=OneWay}" 
+                    MaxSuggestionListHeight="500"
+                    AutoMaximizeSuggestionArea="True"
                     TextChanged="AutoSuggestBox_OnTextChanged" 
                     QuerySubmitted="AutoSuggestBox_OnQuerySubmitted">
         

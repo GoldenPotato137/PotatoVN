@@ -3,6 +3,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.UI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Enums;
@@ -21,7 +22,7 @@ public partial class CategorySettingViewModel : ObservableObject, INavigationAwa
     private readonly GalgameCollectionService _galgameCollectionService;
     public Category Category = new();
     public ObservableCollection<CategoryGroupChecker> CategoryGroups = new();
-    public ObservableCollection<GameChecker> Games = new();
+    public AdvancedCollectionView Games = new();
     private int _displayIndex;
     [ObservableProperty] private Visibility _downloadImgVisibility = Visibility.Collapsed;
     [ObservableProperty] private string _infoBarMessage = string.Empty;
@@ -32,9 +33,7 @@ public partial class CategorySettingViewModel : ObservableObject, INavigationAwa
     [RelayCommand]
     private void GalgameSearch(string searchKey)
     {
-        // var filteredGames =
-        //     _galgameCollectionService.Galgames.Where(g => GalgameCollectionService.ApplySearchKey(g, searchKey));
-        // Games.
+        Games.RefreshFilter();
     }
 
     public CategorySettingViewModel(INavigationService navigationService, ICategoryService categoryService, 
@@ -76,6 +75,15 @@ public partial class CategorySettingViewModel : ObservableObject, INavigationAwa
         }
         else
             throw new ArgumentException("parameter is not Category");
+        Games.Filter += g =>
+        {
+            if (g is GameChecker gameChecker)
+            {
+                return GalgameSearchKey.IsNullOrEmpty() || gameChecker.Game.ApplySearchKey(GalgameSearchKey);
+            }
+
+            return false;
+        };
     }
 
     public void OnNavigatedFrom()

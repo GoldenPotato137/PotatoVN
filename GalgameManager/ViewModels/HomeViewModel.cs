@@ -18,7 +18,6 @@ using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml.Media.Animation;
-using CommunityToolkit.WinUI.Helpers;
 using CommunityToolkit.WinUI.UI;
 
 // ReSharper disable CollectionNeverQueried.Global
@@ -38,38 +37,18 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _displayPlayTypePolygon = true; // 是否显示游玩状态的小三角形
     [ObservableProperty] private bool _displayVirtualGame; //是否显示虚拟游戏
     [ObservableProperty] private bool _specialDisplayVirtualGame; //是否特殊显示虚拟游戏（降低透明度）
-    public static SortKeys[] SortKeysList
+
+    private SortKeys[] SortKeysList
     {
         get;
-        private set;
+        set;
     } = { SortKeys.LastPlay , SortKeys.Developer};
 
-    public static bool[] SortKeysAscending
+    private bool[] SortKeysAscending
     {
         get;
-        private set;
+        set;
     } = {false, false};
-    
-    /// <summary>
-    /// 更新sort参数
-    /// </summary>
-    /// <param name="sortKeysList"></param>
-    /// <param name="sortKeysAscending">升序/降序: true/false</param>
-    public void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
-    {
-        SortKeysList = sortKeysList;
-        SortKeysAscending = sortKeysAscending;
-        if (SortKeysList.Length != SortKeysAscending.Length)
-            throw new PvnException("SortKeysList.Length != SortKeysAscending.Length");
-        Source.SortDescriptions.Clear();
-        for (var i = 0; i < SortKeysList.Length; i++)
-        {
-            Source.SortDescriptions.Add(new SortDescription(sortKeysList[i].ToString(), 
-                SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
-            ));
-        }
-        Source.RefreshSorting();
-    }
 
     #region UI
     public readonly string UiEdit = "HomePage_Edit".GetLocalized();
@@ -77,8 +56,12 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     public readonly string UiRemove = "HomePage_Remove".GetLocalized();
     private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
     #endregion
-
-    public AdvancedCollectionView Source { get; private set; } = new();
+    
+    /// <summary>
+    /// 一定要有ObservableProperty，不然切换页面后不会更新
+    /// </summary>
+    [ObservableProperty]
+    private AdvancedCollectionView _source = new(null, true);
 
     public HomeViewModel(INavigationService navigationService, IGalgameCollectionService dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
@@ -88,19 +71,15 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _localSettingsService = localSettingsService;
         _filterService = filterService;
         _infoService = infoService;
-        SortKeys[] sortKeysList = _localSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
-            { SortKeys.LastPlay , SortKeys.Developer};
-        var sortKeysAscending = _localSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
-            {false,false};
-        UpdateSortKeys(sortKeysList, sortKeysAscending);
     }
     
     public async void OnNavigatedTo(object parameter)
     {
         SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-        Source = new AdvancedCollectionView(_galgameService.Galgames, true);
+        Source.Source = _galgameService.Galgames;
         Filters = _filterService.GetFilters();
         
+        //Read Settings
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
             ? Stretch.UniformToFill : Stretch.Uniform;
         FixHorizontalPicture = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture);
@@ -109,7 +88,13 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         SpecialDisplayVirtualGame = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SpecialDisplayVirtualGame);
         KeepFilters = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters);
         GameToOpacityConverter.SpecialDisplayVirtualGame = SpecialDisplayVirtualGame;
+        SortKeys[] sortKeysList = _localSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
+            { SortKeys.LastPlay , SortKeys.Developer};
+        var sortKeysAscending = _localSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
+            {false,false};
+        UpdateSortKeys(sortKeysList, sortKeysAscending);
         
+        //Add Event
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
@@ -119,13 +104,11 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         {
             if (g is Galgame game && _filterService.ApplyFilters(game))
             {
-                return SearchKey.IsNullOrEmpty() || ApplySearchKey(game, SearchKey);
+                return SearchKey.IsNullOrEmpty() || game.ApplySearchKey(SearchKey);
             }
 
             return false;
         };
-        Source.SortDescriptions.Clear();
-        
         Source.Refresh();
         UpdateFilterPanelDisplay(null,null!);
     }
@@ -137,26 +120,13 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             case KeyValues.DisplayVirtualGame:
                 DisplayVirtualGame = value is true;
                 break;
-            // case KeyValues.SortKeys:
-            //     UpdateSortKeys(_localSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
-            //     {
-            //         SortKeys.Name,
-            //         SortKeys.Rating
-            //     });
-            //     break;
-            // case KeyValues.SortKeysAscending:
-            //     UpdateSortKeysAscending(_localSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
-            //     {
-            //         false,
-            //         false
-            //     });
-            //     break;
         }
     }
 
     public async void OnNavigatedFrom()
     {
         await Task.Delay(200); //等待动画结束
+        Source.Filter = null;
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
             _filterService.ClearFilters();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
@@ -300,65 +270,58 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         Source.RefreshFilter();
     }
 
-    private static bool ApplySearchKey(Galgame galgame, string searchKey)
-    {
-        return galgame.Name.Value!.ContainX(searchKey) || 
-               galgame.Developer.Value!.ContainX(searchKey) || 
-               galgame.Tags.Value!.Any(str => str.ContainX(searchKey));
-    }
-
     #endregion
-    
+
+    #region SORT
+
     /// <summary>
-    /// 添加Galgame
+    /// 更新sort参数
     /// </summary>
-    /// <param name="path">游戏文件夹路径</param>
-    private async Task AddGalgameInternal(string path)
+    /// <param name="sortKeysList"></param>
+    /// <param name="sortKeysAscending">升序/降序: true/false</param>
+    private void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
     {
-        //TODO
-        IsPhrasing = true;
-        AddGalgameResult result = AddGalgameResult.Other;
-        string msg;
-        try
+        SortKeysList = sortKeysList;
+        SortKeysAscending = sortKeysAscending;
+        if (SortKeysList.Length != SortKeysAscending.Length)
+            throw new PvnException("SortKeysList.Length != SortKeysAscending.Length");
+        Source.SortDescriptions.Clear();
+        for (var i = 0; i < SortKeysList.Length; i++)
         {
-            result = await _galgameService.TryAddGalgameAsync(
-                new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(path), path), true);
-            msg = result.ToMsg();
-        }
-        catch (Exception e)
-        {
-            msg = e.Message;
-        }
-        IsPhrasing = false;
-        _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
-    }
-
-    private void OnGalgameServicePhrased() => IsPhrasing = false;
-    
-    private void OnGalgameLoadedEvent() => Source = new AdvancedCollectionView(_galgameService.Galgames, true);
-
-    [RelayCommand]
-    private async Task AddGalgame()
-    {
-        try
-        {
-            FileOpenPicker openPicker = new();
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.FileTypeFilter.Add(".exe");
-            openPicker.FileTypeFilter.Add(".bat");
-            openPicker.FileTypeFilter.Add(".EXE");
-            StorageFile? file = await openPicker.PickSingleFileAsync();
-            if (file is not null)
+            switch (SortKeysList[i])
             {
-                var folder = file.Path[..file.Path.LastIndexOf('\\')];
-                await AddGalgameInternal(folder);
+                case SortKeys.Developer:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Developer), 
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending, 
+                        StringComparer.Ordinal
+                    ));
+                    break;
+                case SortKeys.Name:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Developer), 
+                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending, 
+                        StringComparer.CurrentCultureIgnoreCase
+                    ));
+                    // take *= -1;
+                    break;
+                case SortKeys.Rating:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Rating), 
+                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending
+                    ));
+                    break;
+                case SortKeys.LastPlay:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlay), 
+                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending
+                    ));
+                    break;
+                case SortKeys.ReleaseDate:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.ReleaseDate), 
+                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending
+                    ));
+                    break;
             }
+            
         }
-        catch (Exception e)
-        {
-            _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
-        }
+        Source.RefreshSorting();
     }
     
     /// <summary>
@@ -447,6 +410,61 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         await dialog.ShowAsync();
     }
     
+
+    #endregion
+    
+    /// <summary>
+    /// 添加Galgame
+    /// </summary>
+    /// <param name="path">游戏文件夹路径</param>
+    private async Task AddGalgameInternal(string path)
+    {
+        //TODO
+        IsPhrasing = true;
+        AddGalgameResult result = AddGalgameResult.Other;
+        string msg;
+        try
+        {
+            result = await _galgameService.TryAddGalgameAsync(
+                new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(path), path), true);
+            msg = result.ToMsg();
+        }
+        catch (Exception e)
+        {
+            msg = e.Message;
+        }
+        IsPhrasing = false;
+        _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
+    }
+
+    private void OnGalgameServicePhrased() => IsPhrasing = false;
+    
+    private void OnGalgameLoadedEvent() => Source.Source = _galgameService.Galgames;
+
+    [RelayCommand]
+    private async Task AddGalgame()
+    {
+        try
+        {
+            FileOpenPicker openPicker = new();
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.FileTypeFilter.Add(".exe");
+            openPicker.FileTypeFilter.Add(".bat");
+            openPicker.FileTypeFilter.Add(".EXE");
+            StorageFile? file = await openPicker.PickSingleFileAsync();
+            if (file is not null)
+            {
+                var folder = file.Path[..file.Path.LastIndexOf('\\')];
+                await AddGalgameInternal(folder);
+            }
+        }
+        catch (Exception e)
+        {
+            _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
+        }
+    }
+    
     [RelayCommand]
     private async Task GalFlyOutDelete(Galgame? galgame)
     {
@@ -501,6 +519,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         _localSettingsService.SaveSettingAsync(KeyValues.SpecialDisplayVirtualGame, value);
         GameToOpacityConverter.SpecialDisplayVirtualGame = value;
-        _galgameService.RefreshDisplay();
+        Source.Refresh();
     }
 }
