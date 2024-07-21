@@ -95,8 +95,7 @@
                                                 Text="{x:Bind ViewModel.FilterInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 ItemsSource="{x:Bind ViewModel.FilterInputSuggestions, Mode=OneWay}"
                                                 Visibility="{x:Bind ViewModel.FilterInputVisible, Mode=OneWay}"
-                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}"
-                                                Transitions="{x:Bind ViewModel.FilterFlyoutTransitions}">
+                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}">
                                     <interactivity:Interaction.Behaviors>
                                         <core:EventTriggerBehavior EventName="TextChanged">
                                             <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTextChangeCommand}" />
@@ -109,6 +108,9 @@
                                         <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
                                         <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
                                     </animations:Implicit.ShowAnimations>
+                                    <animations:Implicit.Animations>
+                                        <animations:OffsetAnimation Duration="0:0:1" />
+                                    </animations:Implicit.Animations>
                                 </AutoSuggestBox>
                             </Grid>
                             <interactivity:Interaction.Behaviors>

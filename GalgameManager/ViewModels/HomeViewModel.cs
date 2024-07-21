@@ -185,7 +185,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
     [ObservableProperty] private string _uiFilter = string.Empty; //过滤器在AppBar上的文本
     [ObservableProperty] private bool _keepFilters; //是否保留过滤器
-    public TransitionCollection FilterFlyoutTransitions = new();
+    // public TransitionCollection FilterFlyoutTransitions = new();
     public ObservableCollection<FilterBase> Filters = null!;
     public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
@@ -195,12 +195,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         FilterListVisible = Filters.Count > 0;
         if (Filters.Count == 0)
             FilterInputVisible = true;
-        //Trick: 在这里设置而不在xaml里面设置是为了防止出现动画播放两次(一次为RepositoryThemeTransition，一次为Implicit.ShowAnimations)
-        //用两个动画的原因是因为RepositoryThemeTransition的出现动画只能在控件第一次显示时播放
-        if (FilterInputVisible && FilterFlyoutTransitions.Count == 0)
-            FilterFlyoutTransitions.Add(new RepositionThemeTransition());
-        else if (FilterInputVisible == false)
-            FilterFlyoutTransitions.Clear();
     }
     
     [RelayCommand]
