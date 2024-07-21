@@ -1,5 +1,6 @@
 ﻿using Windows.Foundation.Metadata;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Helpers;
 using Newtonsoft.Json;
 
 namespace GalgameManager.Models;
@@ -59,5 +60,10 @@ public partial class Category : ObservableObject
     public override string ToString()
     {
         return Name;
+    }
+    
+    public bool ApplySearchKey(string searchKey)
+    {
+        return Name.ContainX(searchKey);
     }
 }

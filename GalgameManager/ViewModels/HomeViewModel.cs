@@ -54,7 +54,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     public readonly string UiEdit = "HomePage_Edit".GetLocalized();
     public readonly string UiDownLoad = "HomePage_Download".GetLocalized();
     public readonly string UiRemove = "HomePage_Remove".GetLocalized();
-    private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
+    private readonly string _uiSearch = "Search".GetLocalized();
     #endregion
     
     /// <summary>
@@ -256,6 +256,8 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     #region SEARCH
     [ObservableProperty] private string _searchKey = string.Empty;
     [ObservableProperty] private string _searchTitle = string.Empty;
+    [ObservableProperty]
+    private GalgameSearchSuggestionsProvider _galgameSearchSuggestionsProvider = new();
     
     [RelayCommand]
     private void Search(string searchKey)
@@ -299,17 +301,17 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                     break;
                 case SortKeys.Rating:
                     Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Rating), 
-                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
                     ));
                     break;
                 case SortKeys.LastPlay:
                     Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlay), 
-                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
                     ));
                     break;
                 case SortKeys.ReleaseDate:
                     Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.ReleaseDate), 
-                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
                     ));
                     break;
             }
@@ -514,5 +516,18 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _localSettingsService.SaveSettingAsync(KeyValues.SpecialDisplayVirtualGame, value);
         GameToOpacityConverter.SpecialDisplayVirtualGame = value;
         Source.Refresh();
+    }
+}
+
+public class GalgameSearchSuggestionsProvider : ISearchSuggestionsProvider
+{
+    private GalgameCollectionService _galgameCollectionService;
+    public GalgameSearchSuggestionsProvider()
+    {
+        _galgameCollectionService = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
+    }
+    public async Task<IEnumerable<string>?> GetSearchSuggestionsAsync(string key)
+    {
+        return await _galgameCollectionService.GetSearchSuggestions(key);
     }
 }

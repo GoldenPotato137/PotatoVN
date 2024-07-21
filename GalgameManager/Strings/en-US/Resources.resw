@@ -457,7 +457,7 @@ Failure reasons:</value>
   <data name="GalgameFolderPage_DownloadSelectedInfo" xml:space="preserve">
     <value>Download metadata</value>
   </data>
-  <data name="HomePage_Search_Label" xml:space="preserve">
+  <data name="Search" xml:space="preserve">
     <value>Search</value>
   </data>
   <data name="SettingsPage_Library_MetaBackup" xml:space="preserve">

@@ -8,15 +8,12 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Views.Control
 {
-    public sealed partial class GalgameSearchAutoSuggestBox: UserControl
+    public sealed partial class SearchAutoSuggestBox: UserControl
     {
-        public GalgameSearchAutoSuggestBox()
+        public SearchAutoSuggestBox()
         {
             InitializeComponent();
-            _galgameCollectionService = (GalgameCollectionService)App.GetService<IGalgameCollectionService>();
         }
-
-        private GalgameCollectionService _galgameCollectionService;
         
         private const int SearchDelay = 500;
     
@@ -26,7 +23,7 @@ namespace GalgameManager.Views.Control
         public static readonly DependencyProperty SearchKeyProperty = DependencyProperty.Register(
             nameof(SearchKey),
             typeof(string),
-            typeof(GalgameSearchAutoSuggestBox),
+            typeof(SearchAutoSuggestBox),
             new PropertyMetadata(string.Empty));
 
         public string SearchKey
@@ -42,7 +39,16 @@ namespace GalgameManager.Views.Control
         }
     
         public static readonly DependencyProperty SearchCommandProperty = DependencyProperty.Register(nameof(SearchCommand),
-            typeof(ICommand), typeof(GalgameSearchAutoSuggestBox), new PropertyMetadata(null));
+            typeof(ICommand), typeof(SearchAutoSuggestBox), new PropertyMetadata(null));
+        
+        public ISearchSuggestionsProvider? SearchSuggestionsProvider
+        {
+            get => (ISearchSuggestionsProvider)GetValue(SearchSuggestionsProviderProperty);
+            set => SetValue(SearchSuggestionsProviderProperty, value);
+        }
+    
+        public static readonly DependencyProperty SearchSuggestionsProviderProperty = DependencyProperty.Register(nameof(SearchSuggestionsProvider),
+            typeof(ISearchSuggestionsProvider), typeof(SearchAutoSuggestBox), new PropertyMetadata(null));
 
         private async void AutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
@@ -68,15 +74,16 @@ namespace GalgameManager.Views.Control
             })!);
             //更新建议
             if(args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
-            if (SearchKey == string.Empty)
-            {
-                SearchSuggestions.Clear();
-                return;
-            }
-            List<string> result = await _galgameCollectionService.GetSearchSuggestions(SearchKey);
             SearchSuggestions.Clear();
-            foreach (var suggestion in result)
-                SearchSuggestions.Add(suggestion);
+            
+            if (SearchKey == string.Empty)return;
+            
+            if (SearchSuggestionsProvider != null && 
+                await SearchSuggestionsProvider.GetSearchSuggestionsAsync(SearchKey) is {} result)
+            {
+                foreach (var suggestion in result)
+                    SearchSuggestions.Add(suggestion);
+            }
         }
 
         private void AutoSuggestBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -85,4 +92,9 @@ namespace GalgameManager.Views.Control
             SearchCommand?.Execute(SearchKey);
         }
     }
+}
+
+public interface ISearchSuggestionsProvider
+{
+    public Task<IEnumerable<string>?> GetSearchSuggestionsAsync(string key);
 }

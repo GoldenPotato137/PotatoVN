@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.UI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Helpers;
@@ -17,14 +18,31 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly GalgameSourceCollectionService _galSourceCollectionService;
     
-    public ObservableCollection<GalgameSourceBase> Source { get; private set; } = new();
+    [ObservableProperty]
+    private AdvancedCollectionView _source = null!;
     public ICommand ItemClickCommand { get; }
     public ICommand AddLibraryCommand { get; }
     
     #region UI
 
     public readonly string UiDeleteFolder = "LibraryPage_DeleteFolder".GetLocalized();
+    public readonly string UiSearch = "Search".GetLocalized();
 
+    #endregion
+
+    #region SERACH
+
+    [ObservableProperty] private string _searchTitle = "Search".GetLocalized();
+    [ObservableProperty] private string _searchKey = "";
+    [ObservableProperty] private ObservableCollection<string> _searchSuggestions = new();
+    
+    [RelayCommand]
+    private void Search(string searchKey)
+    {
+        SearchTitle = searchKey == string.Empty ? UiSearch : UiSearch + " ●";
+        Source.RefreshFilter();
+    }
+    
     #endregion
 
     public LibraryViewModel(INavigationService navigationService, IGalgameSourceCollectionService galFolderService)
@@ -38,7 +56,16 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedTo(object parameter)
     {
-        Source = _galSourceCollectionService.GetGalgameSources();
+        Source = new AdvancedCollectionView(_galSourceCollectionService.GetGalgameSources(), true);
+        Source.Filter = s =>
+        {
+            if (s is GalgameSourceBase source)
+            {
+                return SearchKey.IsNullOrEmpty() || source.ApplySearchKey(SearchKey);
+            }
+
+            return false;
+        };
     }
 
     public void OnNavigatedFrom(){}

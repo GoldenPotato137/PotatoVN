@@ -99,6 +99,7 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
     <PackageReference Include="TinyPinyin" Version="1.1.0" />
+    <PackageReference Include="WanaKanaShaapu" Version="1.0.2" />
     <PackageReference Include="WinUIEx" Version="2.2.0" />
   </ItemGroup>
 

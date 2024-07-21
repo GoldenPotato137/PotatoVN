@@ -45,8 +45,9 @@
                 <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <control:GalgameSearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.SearchCommand}" 
-                                                                 SearchKey="{x:Bind ViewModel.SearchKey, Mode=TwoWay}"/>
+                            <control:SearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.SearchCommand}" 
+                                                                 SearchKey="{x:Bind ViewModel.SearchKey, Mode=TwoWay}"
+                                                                 SearchSuggestionsProvider="{x:Bind ViewModel.GalgameSearchSuggestionsProvider}"/>
                         </Flyout>
                     </AppBarButton.Flyout>
                     <AppBarButton.KeyboardAccelerators>

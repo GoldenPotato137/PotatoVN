@@ -173,7 +173,7 @@ public class CategoryService : ICategoryService
         IList<Galgame> games = _galgameService.Galgames;
         foreach (Galgame game in games)
             UpdateCategory(game);
-        await Task.CompletedTask;
+        await SaveAsync();
         //todo:空Category删除
     }
 

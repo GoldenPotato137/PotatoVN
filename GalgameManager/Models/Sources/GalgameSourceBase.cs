@@ -102,6 +102,11 @@ public class GalgameSourceBase
         yield break;
     }
 
+    public virtual bool ApplySearchKey(string searchKey)
+    {
+        return Path.ContainX(searchKey);
+    }
+
 }
 
 public enum GalgameSourceType

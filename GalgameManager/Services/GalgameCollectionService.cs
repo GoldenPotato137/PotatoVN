@@ -19,7 +19,8 @@ namespace GalgameManager.Services;
 
 public partial class GalgameCollectionService : IGalgameCollectionService
 {
-    private ObservableCollection<Galgame> _galgames = new();
+    // _galgames 无序, _displayGalgames有序
+    private List<Galgame> _galgames = new();
     private readonly Dictionary<string, Galgame> _galgameMap = new(); // Url->Galgame
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
@@ -89,7 +90,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     {
         List<Galgame> galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
         galgames = galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
-        _galgames = new ObservableCollection<Galgame>(galgames);
+        _galgames = new List<Galgame>(galgames);
         foreach (Galgame g in _galgames)
         {
             // if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
@@ -368,7 +369,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// <summary>
     /// 获取所有galgame
     /// </summary>
-    public ObservableCollection<Galgame> Galgames => _galgames;
+    public ObservableCollection<Galgame> Galgames => new(_galgames);
 
     /// <summary>
     /// 获取搜索建议
