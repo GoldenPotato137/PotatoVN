@@ -184,7 +184,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
                 VndbResponse<VndbCharacter> vndbCharacterResponse = await _vndbApi.GetVnCharacterAsync(new VndbQuery
                 {
                     Filters = VndbFilters.Equal("vn", VndbFilters.Equal("id", id)),
-                    Fields = "id, name, vns.id, vns.role"
+                    Fields = "id, name, original, vns.id, vns.role"
                 });
                 if (vndbCharacterResponse.Results is not null && vndbResponse.Results.Count != 0)
                 {
@@ -192,7 +192,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
                     {
                         GalgameCharacter c = new()
                         {
-                            Name = character.Name ?? "",
+                            Name = character.Original ?? character.Name ?? "",
                             Ids =
                             {
                                 [(int)GetPhraseType()] =
