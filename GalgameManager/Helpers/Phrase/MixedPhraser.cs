@@ -9,13 +9,16 @@ namespace GalgameManager.Helpers.Phrase;
 
 public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
 {
-    private readonly BgmPhraser _bgmPhraser;
-    private readonly VndbPhraser _vndbPhraser;
-    private readonly YmgalPhraser _ymgalPhraser;
     private MixedPhraserData _data;
     private IEnumerable<string> _developerList;
     private bool _init;
-    private static string[] _sourcesNames = { "vndb", "bgm", "ymgal" };
+    private Dictionary<RssType, IGalInfoPhraser?> _phrasers = new();
+
+    private static readonly RssType[] UsablePhrasers = {
+        RssType.Bangumi,
+        RssType.Ymgal,
+        RssType.Vndb
+    };
     
     private void Init()
     {
@@ -48,9 +51,9 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
     
     public MixedPhraser(BgmPhraser bgmPhraser, VndbPhraser vndbPhraser, YmgalPhraser ymgalPhraser, MixedPhraserData data)
     {
-        _bgmPhraser = bgmPhraser;
-        _vndbPhraser = vndbPhraser;
-        _ymgalPhraser = ymgalPhraser;
+        _phrasers[RssType.Bangumi] = bgmPhraser;
+        _phrasers[RssType.Vndb] = vndbPhraser;
+        _phrasers[RssType.Ymgal] = ymgalPhraser;
         _data = data;
         _developerList = new List<string>();
     }
@@ -58,49 +61,38 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
     public async Task<Galgame?> GetGalgameInfo(Galgame galgame)
     {
         if (!_init) Init();
-        Galgame? bgm = new(), vndb = new(), ymgal = new();
-        bgm.Name = galgame.Name;
-        vndb.Name = galgame.Name;
-        ymgal.Name = galgame.Name;
-        // 试图从Id中获取bgmId和vndbId
         Dictionary<string, string?> ids = Id2IdDict(galgame.Ids[(int)RssType.Mixed] ?? "");
-        
-        if (ids.TryGetValue("bgm", out var b))
+        Dictionary<RssType, Task<Galgame?>?> PhraserTasks = new ();
+        foreach (RssType phraserType in UsablePhrasers)
         {
-            bgm.RssType = RssType.Bangumi;
-            bgm.Id = b;
+            if (_phrasers.TryGetValue(phraserType, out IGalInfoPhraser? phraser) && phraser != null)
+            {
+                Galgame game = new() { Name = galgame.Name };
+                if ( phraserType.GetAbbr() is {} n && ids.TryGetValue(n, out var id))
+                {
+                    game.RssType = phraserType;
+                    game.Id = id;
+                }
+                PhraserTasks[phraserType] = phraser.GetGalgameInfo(galgame);
+            }
         }
-        if (ids.TryGetValue("vndb", out var v))
-        {
-            vndb.RssType = RssType.Vndb;
-            vndb.Id = v;
-        }
-        if (ids.TryGetValue("ymgal", out var y))
-        {
-            ymgal.RssType = RssType.Ymgal;
-            ymgal.Id = y;
-        }
-        Task<Galgame?> bgmTask = _bgmPhraser.GetGalgameInfo(bgm);
-        Task<Galgame?> vndbTask = _vndbPhraser.GetGalgameInfo(vndb);
-        Task<Galgame?> ymgalTask = _ymgalPhraser.GetGalgameInfo(ymgal);
-        await Task.WhenAll(new List<Task> {bgmTask, vndbTask, ymgalTask}); //这几个源可以并行搜刮
-        bgm = bgmTask.Result;
-        vndb = vndbTask.Result;
-        ymgal = ymgalTask.Result;
-        if(bgm == null && vndb == null && ymgal == null)
-            return null;
+        await Task.WhenAll(PhraserTasks.Values.Where(t=>t != null)!); //这几个源可以并行搜刮
         Dictionary<RssType, Galgame> metas = new();
-        if(bgm is not null) metas[RssType.Bangumi] = bgm;
-        if(vndb is not null) metas[RssType.Vndb] = vndb;
-        if(ymgal is not null) metas[RssType.Ymgal] = ymgal;
+        ids.Clear();
+        foreach (RssType phraserType in UsablePhrasers)
+        {
+            if (PhraserTasks.TryGetValue(phraserType, out Task<Galgame?>? t) && t?.Result != null)
+            {
+                metas[phraserType] = t.Result;
+                ids[phraserType.GetAbbr()!] = t.Result.Id;
+            }
+                
+        }
+        if(metas.Count == 0) return null;
         
         // 合并信息
         Galgame result = new();
         result.RssType = RssType.Mixed;
-        ids.Clear();
-        ids["bgm"] = bgm?.Id;
-        ids["vndb"] = vndb?.Id;
-        ids["ymgal"] = ymgal?.Id;
         result.Id = IdDict2Id(ids); 
         // name
         result.Name = GetValue(metas, nameof(Galgame.Name), _ => true, 
@@ -158,7 +150,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         foreach (var id in ids.Split(",").Where(s => s.Contains(':')))
         {
             var parts = id.Split(":");
-            if (parts.Length == 2 && _sourcesNames.Contains(parts[0])) 
+            if (parts.Length == 2 && parts[0].GetRssType() != null) 
                 idDict[parts[0]] = parts[1] == "null" ? null : parts[1];
         }
 
@@ -170,7 +162,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
         List<string> idParts = new();
         foreach (var (name, id) in ids)
         {
-            if (_sourcesNames.Contains(name) && !id.IsNullOrEmpty())
+            if (name.GetRssType() != null && !id.IsNullOrEmpty())
             {
                 idParts.Add($"{name}:{id}");
             }
@@ -180,12 +172,14 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
     
     public static string IdList2Id(IList<string?> ids)
     {
-        Dictionary<string, string?> idDict = new()
+        Dictionary<string, string?> idDict = new();
+        foreach (RssType phraserType in UsablePhrasers)
         {
-            ["bgm"] = ids[(int)RssType.Bangumi],
-            ["vndb"] = ids[(int)RssType.Vndb],
-            ["ymgal"] = ids[(int)RssType.Ymgal]
-        };
+            if (ids.Count > (int)phraserType)
+            {
+                idDict[phraserType.GetAbbr()!] = ids[(int)phraserType];
+            }
+        }
         return IdDict2Id(idDict);
     }
 
@@ -193,7 +187,15 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
 
     public async Task<GalgameCharacter?> GetGalgameCharacter(GalgameCharacter galgameCharacter)
     {
-        return await _bgmPhraser.GetGalgameCharacter(galgameCharacter);
+        foreach (RssType phraserType in _data.Order.CharactersOrder)
+        {
+            if (galgameCharacter.Ids[(int)phraserType] != null &&
+                _phrasers.TryGetValue(phraserType, out IGalInfoPhraser? phraser) &&
+                phraser is IGalCharacterPhraser characterPhraser)
+                return await characterPhraser.GetGalgameCharacter(galgameCharacter);
+        }
+        
+        return null;
     }
 
     private T GetValue<T>(Dictionary<RssType, Galgame> metas, string propName, Func<Galgame, bool> isValueAvailable, 
