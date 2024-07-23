@@ -29,7 +29,7 @@ public sealed partial class VndbAuthDialog : ContentDialog
         InitializeComponent();
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         DefaultButton = ContentDialogButton.Primary;
-        Title = "Vndb登录";
+        Title = "VndbAuthDialog_Title".GetLocalized();
         PrimaryButtonText = "Login".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
     }

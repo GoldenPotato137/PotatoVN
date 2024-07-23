@@ -143,7 +143,7 @@
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" 
                                         IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                     <AppBarSeparator/>
-                    <!-- 下载游戏数据 -->
+                    <!-- 下载游玩状态 -->
                     <AppBarButton x:Uid="GalgamePage_SyncFromBgm" Command="{x:Bind ViewModel.SyncFromBgmCommand}" 
                                   Visibility="{x:Bind ViewModel.CanOpenInBgm, 
                                   Mode=OneWay}">

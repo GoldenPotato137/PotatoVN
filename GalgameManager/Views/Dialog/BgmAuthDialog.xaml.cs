@@ -40,7 +40,7 @@ public sealed partial class BgmAuthDialog : ContentDialog
         InitializeComponent();
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         DefaultButton = ContentDialogButton.Primary;
-        Title = "选择登录方式";
+        Title = "BgmAuthDialog_Title".GetLocalized();
         PrimaryButtonText = "Login".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
     }
