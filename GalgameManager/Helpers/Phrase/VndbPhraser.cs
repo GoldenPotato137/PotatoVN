@@ -1,15 +1,10 @@
 ﻿using System.Collections.ObjectModel;
-using System.Net;
 using System.Reflection;
-using CommunityToolkit.WinUI;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Enums;
 using GalgameManager.Helpers.API;
 using GalgameManager.Models;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using Refit;
 
 namespace GalgameManager.Helpers.Phrase;
 
@@ -408,8 +403,8 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
         return (GalStatusSyncResult.Ok, "VndbPhraser_DownloadAsync_Success".GetLocalized());
 
     }
-
-    public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(List<Galgame> galgames)
+    
+    public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(IList<Galgame> galgames)
     {
         if (_checkAuthTask != null) await _checkAuthTask;
         if (!_authed) return (GalStatusSyncResult.UnAuthorized, "VndbPhraser_UnAuthorized".GetLocalized());
