@@ -200,7 +200,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
     {
         if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SourceUpgrade)) return;
         // 将游戏搬入对应的源中
-        List<Galgame> games = App.GetService<IGalgameCollectionService>().Galgames;
+        IList<Galgame> games = App.GetService<IGalgameCollectionService>().Galgames;
         foreach (Galgame g in games)
         {
             var gamePath = g.Path;

@@ -21,5 +21,5 @@ public interface IJumpListService
     /// 更新jump list，去掉不存在（可能在本地被删除的）galgame
     /// </summary>
     /// <param name="galgames">当前galgame</param>
-    Task CheckJumpListAsync(List<Galgame> galgames);
+    Task CheckJumpListAsync(IList<Galgame> galgames);
 }

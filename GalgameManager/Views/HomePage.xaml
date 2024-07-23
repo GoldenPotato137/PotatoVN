@@ -45,18 +45,9 @@
                 <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <AutoSuggestBox x:Uid="HomePage_Search" AllowFocusOnInteraction="True" MinWidth="250"
-                                            Text="{x:Bind ViewModel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            ItemsSource="{x:Bind ViewModel.SearchSuggestions, Mode=OneWay}">
-                                <interactivity:Interaction.Behaviors>
-                                    <core:EventTriggerBehavior EventName="TextChanged">
-                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchChangeCommand}" />
-                                    </core:EventTriggerBehavior>
-                                    <core:EventTriggerBehavior EventName="QuerySubmitted">
-                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.SearchSubmittedCommand}" />
-                                    </core:EventTriggerBehavior>
-                                </interactivity:Interaction.Behaviors>
-                            </AutoSuggestBox>
+                            <control:SearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.SearchCommand}" 
+                                                                 SearchKey="{x:Bind ViewModel.SearchKey, Mode=TwoWay}"
+                                                                 SearchSuggestionsProvider="{x:Bind ViewModel.GalgameSearchSuggestionsProvider}"/>
                         </Flyout>
                     </AppBarButton.Flyout>
                     <AppBarButton.KeyboardAccelerators>
@@ -105,8 +96,7 @@
                                                 Text="{x:Bind ViewModel.FilterInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 ItemsSource="{x:Bind ViewModel.FilterInputSuggestions, Mode=OneWay}"
                                                 Visibility="{x:Bind ViewModel.FilterInputVisible, Mode=OneWay}"
-                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}"
-                                                Transitions="{x:Bind ViewModel.FilterFlyoutTransitions}">
+                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}">
                                     <interactivity:Interaction.Behaviors>
                                         <core:EventTriggerBehavior EventName="TextChanged">
                                             <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTextChangeCommand}" />
@@ -119,6 +109,9 @@
                                         <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
                                         <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
                                     </animations:Implicit.ShowAnimations>
+                                    <animations:Implicit.Animations>
+                                        <animations:OffsetAnimation Duration="0:0:1" />
+                                    </animations:Implicit.Animations>
                                 </AutoSuggestBox>
                             </Grid>
                             <interactivity:Interaction.Behaviors>

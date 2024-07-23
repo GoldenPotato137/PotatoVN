@@ -97,6 +97,7 @@ public static class Utils
 
     /// <summary>
     /// self是否包含target，忽略大小写与空格，对于中文串也会比较拼音与拼音首字母
+    /// 罗马化日语支持 eg: ゆずソフト 与 yuzusofuto
     /// </summary>
     /// <param name="self"></param>
     /// <param name="target"></param>
@@ -108,8 +109,8 @@ public static class Utils
         if (self.Contains(target)) return true;
         if (IsFullyAscii(target) == false) return false;
         if (PinyinHelper.GetPinyinInitials(self).ToLower().Contains(target)) return true;
-        if (PinyinHelper.GetPinyin(self, string.Empty).ToLower().Contains(target)) 
-            return true;
+        if (PinyinHelper.GetPinyin(self, string.Empty).ToLower().Contains(target)) return true;
+        if (WanaKanaShaapu.WanaKana.ToRomaji(self).ToLower().Contains(target)) return true;
         return false;
     }
     

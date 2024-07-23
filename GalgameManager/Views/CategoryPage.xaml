@@ -7,6 +7,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:GalgameManager.Models"
     xmlns:converters="using:GalgameManager.Helpers.Converter"
+    xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -32,10 +33,32 @@
             <AppBarButton Icon="Add" x:Uid="CategoryPage_AddCategory" 
                           Command="{x:Bind ViewModel.AddCategoryCommand}"
                           IsEnabled="{x:Bind ViewModel.CanAddCategory, Mode=OneWay}"/>
+            <AppBarButton Icon="Find" Label="{x:Bind ViewModel.SearchTitle, Mode=OneWay}" AllowFocusOnInteraction="True">
+                <AppBarButton.Flyout>
+                    <Flyout Placement="Bottom">
+                        <control:SearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.SearchCommand}" 
+                                                      SearchKey="{x:Bind ViewModel.SearchKey, Mode=TwoWay}"
+                                                      SearchSuggestionsProvider="{x:Bind ViewModel}"/>
+                    </Flyout>
+                </AppBarButton.Flyout>
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="F" />
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
             <AppBarButton Icon="ViewAll" x:Uid="CategoryPage_CategoryGroup" AllowFocusOnInteraction="True">
                 <AppBarButton.Flyout>
                     <MenuFlyout Placement="Bottom" x:Name="CategoryGroupFlyout" Opening="CategoryGroupFlyout_OnOpening"/>
                 </AppBarButton.Flyout>
+            </AppBarButton>
+            <AppBarButton Command="{x:Bind ViewModel.CategoryNowCommand}" x:Uid="CategoryPage_CategoryNow">
+                <AppBarButton.Flyout>
+                    <Flyout Placement="Bottom">
+                        <TextBlock Text="Done!"/>
+                    </Flyout>
+                </AppBarButton.Flyout>
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE777;"/>
+                </AppBarButton.Icon>
             </AppBarButton>
             <CommandBar.SecondaryCommands>
                 <AppBarButton Icon="Flag" x:Uid="CategoryPage_AddCategoryGroup" 

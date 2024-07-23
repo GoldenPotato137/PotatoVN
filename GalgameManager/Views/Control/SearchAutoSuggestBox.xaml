@@ -1,0 +1,18 @@
+<UserControl
+    x:Class="GalgameManager.Views.Control.SearchAutoSuggestBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <AutoSuggestBox x:Uid="SearchAutoSuggestBox_Search" AllowFocusOnInteraction="True" MinWidth="250"
+                    Text="{x:Bind SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    ItemsSource="{x:Bind SearchSuggestions, Mode=OneWay}" 
+                    MaxSuggestionListHeight="500"
+                    AutoMaximizeSuggestionArea="True"
+                    TextChanged="AutoSuggestBox_OnTextChanged" 
+                    QuerySubmitted="AutoSuggestBox_OnQuerySubmitted">
+        
+    </AutoSuggestBox>
+</UserControl>

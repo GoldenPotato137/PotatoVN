@@ -457,7 +457,7 @@
   <data name="GalgameFolderPage_DownloadSelectedInfo" xml:space="preserve">
     <value>下载选定游戏数据</value>
   </data>
-  <data name="HomePage_Search_Label" xml:space="preserve">
+  <data name="Search" xml:space="preserve">
     <value>搜索</value>
   </data>
   <data name="SettingsPage_Library_MetaBackup" xml:space="preserve">
@@ -667,6 +667,9 @@
   </data>
   <data name="CategoryPage_CategoryGroup.Label" xml:space="preserve">
     <value>分类组</value>
+  </data>
+  <data name="CategoryPage_CategoryNow.Label" xml:space="preserve">
+    <value>分类所有游戏</value>
   </data>
   <data name="SettingsPage_Start_AuthenticationType.Title" xml:space="preserve">
     <value>身份验证类型</value>
@@ -1169,8 +1172,8 @@
   <data name="GalgamePage_TextFlyout_ClearText.Text" xml:space="preserve">
     <value>清除选择记录？</value>
   </data>
-  <data name="HomePage_Search.PlaceholderText" xml:space="preserve">
-    <value>支持拼音/拼音首字母搜索</value>
+  <data name="SearchAutoSuggestBox_Search.PlaceholderText" xml:space="preserve">
+    <value>支持拼音/罗马化日语搜索</value>
   </data>
   <data name="Shell_Account.Content" xml:space="preserve">
     <value>账户</value>

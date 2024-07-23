@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:control="using:GalgameManager.Views.Control"
     xmlns:viewModels="using:GalgameManager.ViewModels"
     mc:Ignorable="d">
 
@@ -76,6 +77,9 @@
 
                 <!-- 包含游戏 -->
                 <TextBlock x:Uid="CategorySettingPage_Games" VerticalAlignment="Center" />
+                <control:SearchAutoSuggestBox SearchCommand="{x:Bind ViewModel.GalgameSearchCommand}" 
+                                                     SearchKey="{x:Bind ViewModel.GalgameSearchKey, Mode=TwoWay}"
+                                                     Width="500" HorizontalAlignment="Left"/>
                 <ItemsRepeater
                     ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}" Margin="0 -15 0 0">
                     <ItemsRepeater.ItemTemplate>

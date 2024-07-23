@@ -18,6 +18,8 @@ using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml.Media.Animation;
+using CommunityToolkit.WinUI.UI;
+
 // ReSharper disable CollectionNeverQueried.Global
 
 namespace GalgameManager.ViewModels;
@@ -25,7 +27,6 @@ namespace GalgameManager.ViewModels;
 public partial class HomeViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private readonly IGalgameCollectionService _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
@@ -37,21 +38,36 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _displayVirtualGame; //是否显示虚拟游戏
     [ObservableProperty] private bool _specialDisplayVirtualGame; //是否特殊显示虚拟游戏（降低透明度）
 
+    private SortKeys[] SortKeysList
+    {
+        get;
+        set;
+    } = { SortKeys.LastPlay , SortKeys.Developer};
+
+    private bool[] SortKeysAscending
+    {
+        get;
+        set;
+    } = {false, false};
+
     #region UI
     public readonly string UiEdit = "HomePage_Edit".GetLocalized();
     public readonly string UiDownLoad = "HomePage_Download".GetLocalized();
     public readonly string UiRemove = "HomePage_Remove".GetLocalized();
-    private readonly string _uiSearch = "HomePage_Search_Label".GetLocalized();
+    private readonly string _uiSearch = "Search".GetLocalized();
     #endregion
-
-    public ObservableCollection<Galgame> Source { get; private set; } = new();
+    
+    /// <summary>
+    /// 一定要有ObservableProperty，不然切换页面后不会更新
+    /// </summary>
+    [ObservableProperty]
+    private AdvancedCollectionView _source = new(null, true);
 
     public HomeViewModel(INavigationService navigationService, IGalgameCollectionService dataCollectionService,
         ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
     {
         _navigationService = navigationService;
-        _dataCollectionService = dataCollectionService;
-        _galgameService = (GalgameCollectionService)_dataCollectionService;
+        _galgameService = (GalgameCollectionService)dataCollectionService;
         _localSettingsService = localSettingsService;
         _filterService = filterService;
         _infoService = infoService;
@@ -59,11 +75,11 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     
     public async void OnNavigatedTo(object parameter)
     {
-        SearchKey = _galgameService.GetSearchKey();
-        UpdateSearchTitle();
-        Source = await _galgameService.GetGalgameSourcesAsync();
+        SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
+        Source.Source = _galgameService.Galgames;
         Filters = _filterService.GetFilters();
         
+        //Read Settings
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
             ? Stretch.UniformToFill : Stretch.Uniform;
         FixHorizontalPicture = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture);
@@ -72,11 +88,28 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         SpecialDisplayVirtualGame = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SpecialDisplayVirtualGame);
         KeepFilters = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters);
         GameToOpacityConverter.SpecialDisplayVirtualGame = SpecialDisplayVirtualGame;
+        SortKeys[] sortKeysList = _localSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
+            { SortKeys.LastPlay , SortKeys.Developer};
+        var sortKeysAscending = _localSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
+            {false,false};
+        UpdateSortKeys(sortKeysList, sortKeysAscending);
         
+        //Add Event
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
+        _filterService.OnFilterChanged += () => Source.RefreshFilter();
+        Source.Filter = g =>
+        {
+            if (g is Galgame game && _filterService.ApplyFilters(game))
+            {
+                return SearchKey.IsNullOrEmpty() || game.ApplySearchKey(SearchKey);
+            }
+
+            return false;
+        };
+        Source.Refresh();
         UpdateFilterPanelDisplay(null,null!);
     }
 
@@ -93,6 +126,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     public async void OnNavigatedFrom()
     {
         await Task.Delay(200); //等待动画结束
+        Source.Filter = null;
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
             _filterService.ClearFilters();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
@@ -151,7 +185,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
     [ObservableProperty] private string _uiFilter = string.Empty; //过滤器在AppBar上的文本
     [ObservableProperty] private bool _keepFilters; //是否保留过滤器
-    public TransitionCollection FilterFlyoutTransitions = new();
+    // public TransitionCollection FilterFlyoutTransitions = new();
     public ObservableCollection<FilterBase> Filters = null!;
     public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
@@ -161,12 +195,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         FilterListVisible = Filters.Count > 0;
         if (Filters.Count == 0)
             FilterInputVisible = true;
-        //Trick: 在这里设置而不在xaml里面设置是为了防止出现动画播放两次(一次为RepositoryThemeTransition，一次为Implicit.ShowAnimations)
-        //用两个动画的原因是因为RepositoryThemeTransition的出现动画只能在控件第一次显示时播放
-        if (FilterInputVisible && FilterFlyoutTransitions.Count == 0)
-            FilterFlyoutTransitions.Add(new RepositionThemeTransition());
-        else if (FilterInputVisible == false)
-            FilterFlyoutTransitions.Clear();
     }
     
     [RelayCommand]
@@ -226,63 +254,158 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     #endregion
 
     #region SEARCH
-    
-    private const int SearchDelay = 500;
-    
-    public readonly ObservableCollection<string> SearchSuggestions = new();
-    private DateTime _lastSearchTime = DateTime.Now;
     [ObservableProperty] private string _searchKey = string.Empty;
     [ObservableProperty] private string _searchTitle = string.Empty;
+    [ObservableProperty]
+    private GalgameSearchSuggestionsProvider _galgameSearchSuggestionsProvider = new();
+    
+    [RelayCommand]
+    private void Search(string searchKey)
+    {
+        SearchTitle = searchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
+        Source.RefreshFilter();
+    }
 
-    private void UpdateSearchTitle()
+    #endregion
+
+    #region SORT
+
+    /// <summary>
+    /// 更新sort参数
+    /// </summary>
+    /// <param name="sortKeysList"></param>
+    /// <param name="sortKeysAscending">升序/降序: true/false</param>
+    private void UpdateSortKeys(SortKeys[] sortKeysList, bool[] sortKeysAscending)
     {
-        SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
-    }
-    
-    [RelayCommand]
-    private async Task SearchChange(AutoSuggestBoxTextChangedEventArgs args)
-    {
-        if (string.IsNullOrEmpty(SearchKey))
+        SortKeysList = sortKeysList;
+        SortKeysAscending = sortKeysAscending;
+        if (SortKeysList.Length != SortKeysAscending.Length)
+            throw new PvnException("SortKeysList.Length != SortKeysAscending.Length");
+        Source.SortDescriptions.Clear();
+        for (var i = 0; i < SortKeysList.Length; i++)
         {
-            UpdateSearchTitle();
-            _galgameService.Search(string.Empty);
-            SearchSuggestions.Clear();
-            return;
-        }
-        
-        _ = Task.Run((async Task() =>
-        {
-            _lastSearchTime = DateTime.Now;
-            DateTime tmp = _lastSearchTime;
-            await Task.Delay(SearchDelay);
-            if (tmp == _lastSearchTime) //如果在延迟时间内没有再次输入，则开始搜索
+            switch (SortKeysList[i])
             {
-                await UiThreadInvokeHelper.InvokeAsync(() =>
-                {
-                    _galgameService.Search(SearchKey);
-                    UpdateSearchTitle();
-                });
+                case SortKeys.Developer:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Developer), 
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending, 
+                        StringComparer.Ordinal
+                    ));
+                    break;
+                case SortKeys.Name:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Developer), 
+                        SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending, 
+                        StringComparer.CurrentCultureIgnoreCase
+                    ));
+                    // take *= -1;
+                    break;
+                case SortKeys.Rating:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Rating), 
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
+                    ));
+                    break;
+                case SortKeys.LastPlay:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlay), 
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
+                    ));
+                    break;
+                case SortKeys.ReleaseDate:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.ReleaseDate), 
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
+                    ));
+                    break;
             }
-        })!);
-        //更新建议
-        if(args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
-        if (SearchKey == string.Empty)
-        {
-            SearchSuggestions.Clear();
-            return;
+            
         }
-        List<string> result = await _galgameService.GetSearchSuggestions(SearchKey);
-        SearchSuggestions.Clear();
-        foreach (var suggestion in result)
-            SearchSuggestions.Add(suggestion);
+        Source.RefreshSorting();
     }
     
+    /// <summary>
+    /// 获取并设置galgame排序的关键字
+    /// </summary>
     [RelayCommand]
-    private void SearchSubmitted(AutoSuggestBoxQuerySubmittedEventArgs args)
+    private async Task Sort()
+    
     {
-        if (string.IsNullOrEmpty(SearchKey)) return;
-        _galgameService.Search(SearchKey);
+        // Move to homepage
+        List<SortKeys> sortKeysList = new()
+        {
+            SortKeys.Name,
+            SortKeys.Developer,
+            SortKeys.Rating,
+            SortKeys.LastPlay,
+            SortKeys.ReleaseDate
+        };
+        ContentDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
+            Title = "排序",
+            PrimaryButtonText = "Yes".GetLocalized(),
+            SecondaryButtonText = "Cancel".GetLocalized(),
+        };
+        
+        ComboBox comboBox1 = new()
+        {
+            Header = "第一关键字",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            ItemsSource = sortKeysList,
+            Margin = new Thickness(0, 0, 5, 0),
+            SelectedItem = SortKeysList[0]
+        };
+        ToggleSwitch toggleSwitch1 = new()
+        {
+            Header = "降序/升序",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(5, 0, 0, 0),
+            OnContent = "升序",
+            OffContent = "降序",
+            IsOn = SortKeysAscending[0]
+        };
+        StackPanel panel1 = new ();
+        panel1.Children.Add(comboBox1);
+        panel1.Children.Add(toggleSwitch1);
+        Grid.SetColumn(panel1, 0 );
+        
+        ComboBox comboBox2 = new()
+        {
+            Header = "第二关键字",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            ItemsSource = sortKeysList,
+            Margin = new Thickness(0, 0, 5, 0),
+            SelectedItem = SortKeysList[1]
+        };
+        ToggleSwitch toggleSwitch2 = new()
+        {
+            Header = "降序/升序",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(5, 0, 0, 0),
+            OnContent = "升序",
+            OffContent = "降序",
+            IsOn = SortKeysAscending[1]
+        };
+        StackPanel panel2 = new ();
+        panel2.Children.Add(comboBox2);
+        panel2.Children.Add(toggleSwitch2);
+        Grid.SetColumn(panel2, 1 );
+        
+
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            UpdateSortKeys(
+                new[] { (SortKeys)comboBox1.SelectedItem, (SortKeys)comboBox2.SelectedItem },
+                new []{toggleSwitch1.IsOn, toggleSwitch2.IsOn});
+            await _localSettingsService.SaveSettingAsync(KeyValues.SortKeys, SortKeysList);
+            await _localSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, SortKeysAscending);
+        };
+        Grid content = new();
+        content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
+        content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
+        content.Children.Add(panel1);
+        content.Children.Add(panel2);
+        dialog.Content = content;
+        await dialog.ShowAsync();
     }
+    
 
     #endregion
     
@@ -312,7 +435,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
-    private async void OnGalgameLoadedEvent() => Source = await _galgameService.GetGalgameSourcesAsync();
+    private void OnGalgameLoadedEvent() => Source.Source = _galgameService.Galgames;
 
     [RelayCommand]
     private async Task AddGalgame()
@@ -336,13 +459,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         {
             _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
         }
-    }
-    
-    [RelayCommand]
-    private async Task Sort()
-    
-    {
-        await _galgameService.SetSortKeysAsync();
     }
     
     [RelayCommand]
@@ -399,6 +515,19 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         _localSettingsService.SaveSettingAsync(KeyValues.SpecialDisplayVirtualGame, value);
         GameToOpacityConverter.SpecialDisplayVirtualGame = value;
-        _galgameService.RefreshDisplay();
+        Source.Refresh();
+    }
+}
+
+public class GalgameSearchSuggestionsProvider : ISearchSuggestionsProvider
+{
+    private GalgameCollectionService _galgameCollectionService;
+    public GalgameSearchSuggestionsProvider()
+    {
+        _galgameCollectionService = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!;
+    }
+    public async Task<IEnumerable<string>?> GetSearchSuggestionsAsync(string key)
+    {
+        return await _galgameCollectionService.GetSearchSuggestions(key);
     }
 }

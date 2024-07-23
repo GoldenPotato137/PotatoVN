@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.UI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Enums;
@@ -13,14 +14,15 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.ViewModels;
 
-public partial class CategoryViewModel : ObservableObject, INavigationAware
+public partial class CategoryViewModel : ObservableObject, INavigationAware, ISearchSuggestionsProvider
 {
     private readonly CategoryService _categoryService;
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
     // ReSharper disable once CollectionNeverQueried.Global
-    public readonly ObservableCollection<Category> Source = new();
+    // 必须用new ObservableCollection<Category>()初始化
+    public readonly AdvancedCollectionView Source = new(new ObservableCollection<Category>());
     private ObservableCollection<CategoryGroup> _categoryGroups = new();
     private CategoryGroup? _currentGroup;
     [ObservableProperty] private bool _canDeleteCategoryGroup; //能否删除当前分类组（仅custom分类组能删除）
@@ -42,9 +44,25 @@ public partial class CategoryViewModel : ObservableObject, INavigationAware
         _filterService.AddFilter(new CategoryFilter(category));
         _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
     }
+    
+    [RelayCommand]
+    private async Task CategoryNow()
+    {
+        await _categoryService.UpdateAllGames();
+        await SelectCategoryGroup(await GetCategoryGroup());
+    }
 
     public async void OnNavigatedTo(object parameter)
     {
+        Source.Filter = s =>
+        {
+            if (s is Category source)
+            {
+                return SearchKey.IsNullOrEmpty() || source.ApplySearchKey(SearchKey);
+            }
+
+            return false;
+        };
         _categoryGroups = await _categoryService.GetCategoryGroupsAsync();
         await SelectCategoryGroup(await GetCategoryGroup());
     }
@@ -242,5 +260,29 @@ public partial class CategoryViewModel : ObservableObject, INavigationAware
         };
         
         await dialog.ShowAsync();
+    }
+    
+    #region SERACH
+
+    public static string UiSearch = "Search".GetLocalized();
+    [ObservableProperty] private string _searchTitle = "Search".GetLocalized();
+    [ObservableProperty] private string _searchKey = "";
+    [ObservableProperty] private ObservableCollection<string> _searchSuggestions = new();
+    
+    [RelayCommand]
+    private void Search(string searchKey)
+    {
+        SearchTitle = searchKey == string.Empty ? UiSearch : UiSearch + " ●";
+        Source.RefreshFilter();
+    }
+    
+    #endregion
+
+    public async Task<IEnumerable<string>?> GetSearchSuggestionsAsync(string key)
+    {
+        await Task.CompletedTask;
+        return from category in  _currentGroup?.Categories
+            where category.Name.ContainX(key)
+            select category.Name;
     }
 }

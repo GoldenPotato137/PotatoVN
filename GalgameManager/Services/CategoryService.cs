@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.WinUI;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Phrase;
@@ -171,10 +170,10 @@ public class CategoryService : ICategoryService
     /// </summary>
     public async Task UpdateAllGames()
     {
-        List<Galgame> games = _galgameService.Galgames;
+        IList<Galgame> games = _galgameService.Galgames;
         foreach (Galgame game in games)
             UpdateCategory(game);
-        await Task.CompletedTask;
+        await SaveAsync();
         //todo:空Category删除
     }
 

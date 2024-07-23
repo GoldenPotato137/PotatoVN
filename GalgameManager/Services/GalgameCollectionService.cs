@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -21,14 +22,12 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     // _galgames 无序, _displayGalgames有序
     private List<Galgame> _galgames = new();
     private readonly Dictionary<string, Galgame> _galgameMap = new(); // Url->Galgame
-    private ObservableCollection<Galgame> _displayGalgames = new(); //用于显示的galgame列表
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IGalgameSourceCollectionService _galSrcService;
-    private string _searchKey = string.Empty;
     public event Action<Galgame>? GalgameAddedEvent; //当有galgame添加时触发
     public event Action<Galgame>? GalgameDeletedEvent; //当有galgame删除时触发
     public event Action<Galgame>? MetaSavedEvent; //当有galgame元数据保存时触发
@@ -50,7 +49,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
         _jumpListService = jumpListService;
         _filterService = filterService;
-        _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
+        // _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         _infoService = infoService;
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
@@ -65,12 +64,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         PhraserList[(int)RssType.Ymgal] = ymgalPhraser;
         PhraserList[(int)RssType.Mixed] = mixedPhraser;
         
-        SortKeys[] sortKeysList = LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys).Result ?? new[]
-            { SortKeys.LastPlay , SortKeys.Developer};
-        var sortKeysAscending = LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending).Result ?? new[]
-            {false,false};
-        Galgame.UpdateSortKeys(sortKeysList, sortKeysAscending);
-
+        
         App.OnAppClosing += async () =>
         {
             await SaveGalgamesAsync();
@@ -79,21 +73,24 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     
     public async Task InitAsync()
     {
-        await GetGalgames();
+        await LoadGalgames();
         await _jumpListService.CheckJumpListAsync(_galgames);
         await Upgrade();
     }
 
-    public Task StartAsync()
+    public async Task StartAsync()
     {
-        UpdateDisplay(UpdateType.Init);
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
 
-    private async Task GetGalgames()
+    /// <summary>
+    /// 从设置中读取galgames
+    /// </summary>
+    private async Task LoadGalgames()
     {
-        _galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
-        _galgames = _galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
+        List<Galgame> galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
+        galgames = galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
+        _galgames = new List<Galgame>(galgames);
         foreach (Galgame g in _galgames)
         {
             // if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
@@ -127,7 +124,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
 
         if (!await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SavePathUpgraded))
         {
-            _galgames.ForEach(galgame => galgame.FindSaveInPath());
+            _galgames.ToList().ForEach(galgame => galgame.FindSaveInPath());
             await LocalSettingsService.SaveSettingAsync(KeyValues.SavePathUpgraded, true);
         }
         
@@ -135,14 +132,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         if (await LocalSettingsService.ReadSettingAsync<int>(KeyValues.MixedPhraserOrderVersion) !=
             MixedPhraserOrder.Version)
             await MixedPhraserOrderUpdate();
-    }
-
-    /// <summary>
-    /// 排序并更新显示的列表
-    /// </summary>
-    public void Sort()
-    {
-        UpdateDisplay(UpdateType.Sort);
     }
     
     public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
@@ -152,7 +141,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             _galSrcService.MoveOutOperate(s, galgame);
         if(galgame.CheckExistLocal())
             _galgameMap.Remove(galgame.Url);
-        UpdateDisplay(UpdateType.Remove, galgame);
         if (removeFromDisk)
             galgame.Delete();
         GalgameDeletedEvent?.Invoke(galgame);
@@ -228,7 +216,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _galgameMap[galgame.Url] = galgame;
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
-        UpdateDisplay(virtualGame is null ? UpdateType.Add : UpdateType.Update, galgame);
         galgame.ErrorOccurred += e =>
             _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
         return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
@@ -238,7 +225,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     {
         _galgames.Add(game);
         GalgameAddedEvent?.Invoke(game);
-        UpdateDisplay(UpdateType.Add, game);
     }
 
     /// <summary>
@@ -363,20 +349,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     }
 
     /// <summary>
-    /// 获取要显示的galgame列表
-    /// </summary>
-    public async Task<ObservableCollection<Galgame>> GetGalgameSourcesAsync()
-    {
-        await Task.CompletedTask;
-        return _displayGalgames;
-    }
-
-    /// <summary>
     /// 刷新显示列表
     /// </summary>
     public void RefreshDisplay()
     {
-        UpdateDisplay(UpdateType.Init);
     }
 
     /// <summary>
@@ -395,14 +371,9 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     }
 
     /// <summary>
-    /// 搜索galgame并更新显示列表
+    /// 获取所有galgame
     /// </summary>
-    /// <param name="searchKey">搜索关键字</param>
-    public void Search(string searchKey)
-    {
-        _searchKey = searchKey;
-        UpdateDisplay(UpdateType.ApplySearch);
-    }
+    public ObservableCollection<Galgame> Galgames => new(_galgames);
 
     /// <summary>
     /// 获取搜索建议
@@ -431,16 +402,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         tmp.Sort((a,b)=> a.CompareX(b));
         return tmp.Where((t, i) => i == 0 || t.CompareX(tmp[i - 1]) !=0).ToList();
     }
-
-    /// <summary>
-    /// 获取搜索关键字(的clone)
-    /// </summary>
-    public string GetSearchKey()
-    {
-        return (string)_searchKey.Clone();
-    }
-    
-    public List<Galgame> Galgames => _galgames;
 
     /// <summary>
     /// 从Url获取galgame
@@ -474,7 +435,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public Galgame? GetGalgameFromName(string? name)
     {
         if (string.IsNullOrEmpty(name)) return null;
-        return _galgames.Find(g => g.Name.Value == name);
+        return _galgames.FirstOrDefault(g => g.Name.Value == name);
     }
     
     /// <summary>
@@ -677,90 +638,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     }
 
     /// <summary>
-    /// 获取并设置galgame排序的关键字
-    /// </summary>
-    public async Task SetSortKeysAsync()
-    {
-        List<SortKeys> sortKeysList = new()
-        {
-            SortKeys.Name,
-            SortKeys.Developer,
-            SortKeys.Rating,
-            SortKeys.LastPlay,
-            SortKeys.ReleaseDate
-        };
-        ContentDialog dialog = new()
-        {
-            XamlRoot = App.MainWindow!.Content.XamlRoot,
-            Title = "排序",
-            PrimaryButtonText = "Yes".GetLocalized(),
-            SecondaryButtonText = "Cancel".GetLocalized(),
-        };
-        
-        ComboBox comboBox1 = new()
-        {
-            Header = "第一关键字",
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            ItemsSource = sortKeysList,
-            Margin = new Thickness(0, 0, 5, 0),
-            SelectedItem = Galgame.SortKeysList[0]
-        };
-        ToggleSwitch toggleSwitch1 = new()
-        {
-            Header = "降序/升序",
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Margin = new Thickness(5, 0, 0, 0),
-            OnContent = "升序",
-            OffContent = "降序",
-            IsOn = Galgame.SortKeysAscending[0]
-        };
-        StackPanel panel1 = new ();
-        panel1.Children.Add(comboBox1);
-        panel1.Children.Add(toggleSwitch1);
-        Grid.SetColumn(panel1, 0 );
-        
-        ComboBox comboBox2 = new()
-        {
-            Header = "第二关键字",
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            ItemsSource = sortKeysList,
-            Margin = new Thickness(0, 0, 5, 0),
-            SelectedItem = Galgame.SortKeysList[1]
-        };
-        ToggleSwitch toggleSwitch2 = new()
-        {
-            Header = "降序/升序",
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Margin = new Thickness(5, 0, 0, 0),
-            OnContent = "升序",
-            OffContent = "降序",
-            IsOn = Galgame.SortKeysAscending[1]
-        };
-        StackPanel panel2 = new ();
-        panel2.Children.Add(comboBox2);
-        panel2.Children.Add(toggleSwitch2);
-        Grid.SetColumn(panel2, 1 );
-        
-
-        dialog.PrimaryButtonClick += async (_, _) =>
-        {
-            Galgame.UpdateSortKeys(
-                new[] { (SortKeys)comboBox1.SelectedItem, (SortKeys)comboBox2.SelectedItem },
-                new []{toggleSwitch1.IsOn, toggleSwitch2.IsOn});
-            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKeys, Galgame.SortKeysList);
-            await LocalSettingsService.SaveSettingAsync(KeyValues.SortKeysAscending, Galgame.SortKeysAscending);
-            Sort();
-        };
-        Grid content = new();
-        content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
-        content.ColumnDefinitions.Add(new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)});
-        content.Children.Add(panel1);
-        content.Children.Add(panel2);
-        dialog.Content = content;
-        await dialog.ShowAsync();
-    }
-
-    /// <summary>
     /// 从设置中读取bangumi的设置
     /// </summary>
     private async Task<BgmPhraserData> GetBgmData()
@@ -804,20 +681,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
                 break;
             case KeyValues.MixedPhraserOrder:
                 PhraserList[(int)RssType.Mixed].UpdateData(GetMixData());
-                break;
-            case KeyValues.SortKeys:
-                Galgame.UpdateSortKeys(await LocalSettingsService.ReadSettingAsync<SortKeys[]>(KeyValues.SortKeys) ?? new[]
-                {
-                    SortKeys.Name,
-                    SortKeys.Rating
-                });
-                break;
-            case KeyValues.SortKeysAscending:
-                Galgame.UpdateSortKeysAscending(await LocalSettingsService.ReadSettingAsync<bool[]>(KeyValues.SortKeysAscending) ?? new[]
-                {
-                    false,
-                    false
-                });
                 break;
         }
     }

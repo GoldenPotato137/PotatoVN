@@ -438,7 +438,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
         return (GalStatusSyncResult.Other, errorMsg);
     }
 
-    public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(List<Galgame> galgames)
+    public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(IList<Galgame> galgames)
     {
         if (_checkAuthTask is not null) await _checkAuthTask;
         if (_authed == false) return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
