@@ -7,7 +7,7 @@ public partial class GalgameCharacter: ObservableObject
 {
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public string?[] Ids = new string?[5]; //magic number: 钦定了一个最大Phraser数目
+    public string?[] Ids = new string?[Galgame.PhraserNumber];
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _relation = "";
     [ObservableProperty] private string _previewImagePath = Galgame.DefaultImagePath;

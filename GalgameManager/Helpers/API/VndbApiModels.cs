@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Helpers.API;
@@ -13,7 +15,7 @@ public class VndbQuery
     public bool? Reverse { get; set; }
     public int? Results { get; set; }
     public int? Page { get; set; }
-    public object? User { get; set; }
+    public string? User { get; set; }
     public bool? Count { get; set; }
     public bool? CompactFilters { get; set; }
     public bool? NormalizedFilters { get; set; }
@@ -53,6 +55,12 @@ public class VndbVn
     public List<VnTag>? Tags { get; set; }
     public List<VndbProducer>? Developers { get; set; }
     
+    // Only with character
+    
+    public VndbRole? Role { get; set; }
+    
+    public int? Spoiler { get; set; }
+    
     public enum VnLenth
     {
         VeryShort = 1,
@@ -67,6 +75,14 @@ public class VndbVn
         Finished=0,
         InDevelopment=1,
         Cancelled=2
+    }
+    
+    public enum VndbRole
+    {
+        Main,
+        Primary,
+        Side,
+        Appears
     }
 }
 
@@ -117,6 +133,8 @@ public class VnTag : VndbTag
     public bool? Lie { get; set; }
 }
 
+
+
 public class VndbTitle
 {
     public string? Lang { get; set; }
@@ -126,6 +144,26 @@ public class VndbTitle
     public bool? Main { get; set; }
 }
 
+public class VndbCharacter
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Original { get; set; }
+    public List<string>? Aliases { get; set; }
+    public string? Description { get; set; }
+    public VndbImage? Image { get; set; }
+    public string? BloodType { get; set; }
+    public int? Height { get; set; } 
+    public int? Weight { get; set; }
+    public int? Bust { get; set; }
+    public int? Waist { get; set; }
+    public int? Hips { get; set; }
+    public string? Cup { get; set; }
+    public int? Age { get; set; }
+    public int[]? Birthday { get; set; }
+    public string[]? Sex { get; set; }
+    public List<VndbVn>? Vns { get; set; }
+}
 public class VndbFilters
 {
     private readonly JArray? _jsonArray;
@@ -165,6 +203,12 @@ public class VndbFilters
     public static VndbFilters Equal(string name, string value)
     {
         JArray jsonArray = new(name, "=", value);
+        return new VndbFilters(jsonArray);
+    }
+    
+    public static VndbFilters Equal(string name, VndbFilters value)
+    {
+        JArray jsonArray = new(name, "=", value._jsonArray ?? new JArray());
         return new VndbFilters(jsonArray);
     }
     
@@ -221,5 +265,77 @@ public class VndbFilters
         }
     }
 }
+
+public class UserLabelsResponse
+{
+    public required List<UserLabel> Labels { get; set; }
+}
+
+public class UserLabel
+{
+    public int Id { get; set; }
+    public string? Label { get; set; }
+    public bool Private { get; set; }
+}
+
+public class AuthInfoResponse
+{
+    public required string Id { get; set; }
+    public required string Username { get; set; }
+    
+    public required List<VndbApiPermission> Permissions { get; set; }
+}
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum VndbApiPermission
+{
+    [EnumMember(Value = "listread")]
+    ListRead, 
+    [EnumMember(Value = "listwrite")]
+    ListWrite
+}
+
+public class PatchUserListRequest
+{
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public int? Vote { get; set; } = null;
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string? Notes { get; set; } = null;
+    /// <summary>
+    /// Started Date
+    /// </summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string? Started  { get; set; } = null;
+    /// <summary>
+    /// Finished Date
+    /// </summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string? Finished  { get; set; } = null;
+    /// <summary>
+    /// 覆盖所有Labels
+    /// </summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public List<int>? Labels  { get; set; } = null;
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public List<int>? LabelsSet  { get; set; } = null;
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public List<int>? LabelsUnset  { get; set; } = null;
+}
+
+public class VndbUserListItem
+{
+    public string? Id { get; set; }
+    public int? Added { get; set; }
+    public int? Voted { get; set; }
+    public int? Lastmod { get; set; }
+    public int? Vote { get; set; }
+    public string? Started { get; set; }
+    public string? Finished { get; set; }
+    public string? Notes { get; set; }
+    public List<UserLabel>? Labels { get; set; }
+    public VndbVn? Vn { get; set; }
+    //TODO: Add releases
+}
+
 
 

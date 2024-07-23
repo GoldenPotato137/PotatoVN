@@ -11,6 +11,7 @@ public enum PlayType
     Played,
     Shelved,
     Abandoned,
+    WantToPlay
 }
 
 public static class PlayTypeHelper
@@ -30,6 +31,8 @@ public static class PlayTypeHelper
             return PlayType.Shelved;
         if (localizedString == "PlayType_Abandoned".GetLocalized())
             return PlayType.Abandoned;
+        if (localizedString == "PlayType_WantToPlay".GetLocalized())
+            return PlayType.WantToPlay;
         return PlayType.None;
     }
 
@@ -42,6 +45,8 @@ public static class PlayTypeHelper
         {
             default:
             case PlayType.None:
+            case PlayType.WantToPlay: 
+                return 1;
             case PlayType.Played:
                 return 2;
             case PlayType.Playing:
@@ -52,17 +57,63 @@ public static class PlayTypeHelper
                 return 5;
         }
     }
+    
+    /// <summary>
+    /// 转换为Vndb的收藏类型
+    /// </summary>
+    public static int ToVndbCollectionType(this PlayType playType)
+    {
+        switch (playType)
+        {
+            default:
+            case PlayType.None:
+            case PlayType.WantToPlay:
+                return 5;
+            case PlayType.Played:
+                return 2;
+            case PlayType.Playing:
+                return 1;
+            case PlayType.Shelved:
+                return 3;
+            case PlayType.Abandoned:
+                return 4;
+            // Blacklist: 6
+        }
+    }
+    
+    /// <summary>
+    /// Vndb转换为游玩状态
+    /// </summary>
+    public static PlayType VndbCollectionTypeToPlayType(this int vndbCollectionType)
+    {
+        switch (vndbCollectionType)
+        {
+            default:
+                return PlayType.None;
+            case 1:
+                return PlayType.Playing;
+            case 2:
+                return PlayType.Played;
+            case 3:
+                return PlayType.Shelved;
+            case 4:
+                return PlayType.Abandoned;
+            case 5:
+                return PlayType.WantToPlay;
+        }
+    }
 
     /// <summary>
-    /// 转换为游玩状态
+    /// Bgm转换为游玩状态
     /// </summary>
     public static PlayType BgmCollectionTypeToPlayType(this int bgmCollectionType)
     {
         switch (bgmCollectionType)
         {
             default:
-            case 1:
                 return PlayType.None;
+            case 1:
+                return PlayType.WantToPlay;
             case 2:
                 return PlayType.Played;
             case 3:
@@ -84,6 +135,8 @@ public static class PlayTypeHelper
             default:
             case PlayType.None:
                 return Colors.Gray;
+            case PlayType.WantToPlay:
+                return Colors.Pink;
             case PlayType.Played:
                 return Colors.LimeGreen;
             case PlayType.Playing:

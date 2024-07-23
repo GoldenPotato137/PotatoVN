@@ -98,6 +98,7 @@ public partial class App : Application
             services.AddSingleton<IInfoService, InfoService>();
             services.AddSingleton<IBgTaskService, BgTaskService>();
             services.AddSingleton<IPvnService, PvnService>();
+            services.AddSingleton<IVndbAuthService, VndbAuthService>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();

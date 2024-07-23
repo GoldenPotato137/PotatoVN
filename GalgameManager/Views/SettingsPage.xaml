@@ -205,6 +205,10 @@
                                     <control:Setting x:Uid="SettingsPage_Download_SyncBgmPlayStatusNow">
                                         <Button Content="Go" Width="75" Command="{x:Bind ViewModel.DownloadPlayStatusFormBgmNowCommand}"/>
                                     </control:Setting>
+                                    
+                                    <control:Setting x:Uid="SettingsPage_Download_SyncVndbPlayStatusNow">
+                                        <Button Content="Go" Width="75" Command="{x:Bind ViewModel.DownloadPlayStatusFormVndbNowCommand}"/>
+                                    </control:Setting>
                                 </StackPanel>
                             </control:Panel>
                         </StackPanel>

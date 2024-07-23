@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Views.Dialog;
 
-public sealed partial class SelectAuthModeDialog : ContentDialog
+public sealed partial class BgmAuthDialog : ContentDialog
 {
     public string AccessToken
     {
@@ -19,7 +19,7 @@ public sealed partial class SelectAuthModeDialog : ContentDialog
     public static readonly DependencyProperty AccessTokenProperty = DependencyProperty.Register(
         nameof(AccessToken),
         typeof(string),
-        typeof(SelectAuthModeDialog),
+        typeof(BgmAuthDialog),
         new PropertyMetadata("")
     );
     
@@ -32,16 +32,16 @@ public sealed partial class SelectAuthModeDialog : ContentDialog
     public static readonly DependencyProperty SelectItemProperty = DependencyProperty.Register(
         nameof(SelectItem),
         typeof(int),
-        typeof(SelectAuthModeDialog),
+        typeof(BgmAuthDialog),
         new PropertyMetadata(0)
     );
-    public SelectAuthModeDialog()
+    public BgmAuthDialog()
     {
         InitializeComponent();
         XamlRoot = App.MainWindow!.Content.XamlRoot;
         DefaultButton = ContentDialogButton.Primary;
-        Title = "选择登录方式";
-        PrimaryButtonText = "登录";
+        Title = "BgmAuthDialog_Title".GetLocalized();
+        PrimaryButtonText = "Login".GetLocalized();
         CloseButtonText = "Cancel".GetLocalized();
     }
 

@@ -23,7 +23,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
     private readonly IPvnService _pvnService;
-    private readonly string[] _searchUrlList = new string[10];
+    private readonly string[] _searchUrlList = new string[Galgame.PhraserNumber];
     [ObservableProperty] private string _searchUri = "";
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private RssType _selectedRss = RssType.None;

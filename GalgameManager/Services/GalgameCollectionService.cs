@@ -57,7 +57,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _galSrcService.OnSourceDeleted += HandleSourceDelete;
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
-        VndbPhraser vndbPhraser = new();
+        VndbPhraser vndbPhraser = new(GetVndbData().Result);
         YmgalPhraser ymgalPhraser = new();
         MixedPhraser mixedPhraser = new(bgmPhraser, vndbPhraser, ymgalPhraser, GetMixData());
         PhraserList[(int)RssType.Bangumi] = bgmPhraser;
@@ -255,7 +255,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
+        {
+            // 优先Bgm
+            await DownLoadPlayStatusAsync(galgame, RssType.Vndb);
             await DownLoadPlayStatusAsync(galgame, RssType.Bangumi);
+        }
         await LocalSettingsService.SaveSettingAsync(KeyValues.Galgames, _galgames, true);
         IsPhrasing = false;
         PhrasedEvent?.Invoke();
@@ -338,8 +342,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// <returns>(下载结果，结果解释)</returns>
     public async Task<(GalStatusSyncResult, string)> DownLoadPlayStatusAsync(Galgame galgame, RssType source)
     {
-        if (source == RssType.Bangumi && PhraserList[(int)RssType.Bangumi] is BgmPhraser bgmPhraser)
-            return await bgmPhraser.DownloadAsync(galgame);
+        if (PhraserList[(int)source] is IGalStatusSync galStatusSync)
+            return await galStatusSync.DownloadAsync(galgame);
         return (GalStatusSyncResult.Other, "这个数据源不支持同步游玩状态");
     }
 
@@ -767,6 +771,18 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         };
         return data;
     }
+    
+    /// <summary>
+    /// 从设置中读取Vndb的设置
+    /// </summary>
+    private async Task<VndbPhraserData> GetVndbData()
+    {
+        VndbPhraserData data = new()
+        {
+            Token = (await LocalSettingsService.ReadSettingAsync<VndbAccount>(KeyValues.VndbAccount))?.Token
+        };
+        return data;
+    }
 
     private MixedPhraserData GetMixData()
     {
@@ -782,6 +798,9 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         {
             case KeyValues.BangumiAccount:
                 PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
+                break;
+            case KeyValues.VndbAccount:
+                PhraserList[(int)RssType.Vndb].UpdateData(await GetVndbData());
                 break;
             case KeyValues.MixedPhraserOrder:
                 PhraserList[(int)RssType.Mixed].UpdateData(GetMixData());

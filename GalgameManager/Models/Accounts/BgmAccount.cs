@@ -13,5 +13,5 @@ public class BgmAccount
     /// 用户头像路径
     public string Avatar = string.Empty;
     /// 用户名
-    public string Name = "BgmAccount_NoName".GetLocalized();
+    public string Name = "NoName".GetLocalized();
 }

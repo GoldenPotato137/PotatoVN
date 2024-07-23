@@ -39,6 +39,7 @@ public static class KeyValues
     public const string PvnServerEndpoint = "pvnServerEndpoint"; //string, 自定义服务器Url
     public const string PvnAccount = "pvnAccount"; //PvnAccount?, PotatoVN账户, 若为null则未登录
     public const string PvnAccountUserName = "pvnAccountUserName"; //string, PotatoVN账户名
+    public const string VndbAccount = "vndbAccount"; //VndbAccount?, Vndb账户, 若为null则未登录
     
     //游玩相关
     public const string RecordOnlyWhenForeground = "recordOnlyWhenForeground"; //bool, 是否只在游戏窗口在前台时记录游玩时间
