@@ -13,10 +13,8 @@ namespace GalgameManager.ViewModels;
 
 public partial class GalgameSettingViewModel : ObservableObject, INavigationAware
 {
-    public Galgame Gal
-    {
-        get; set;
-    }
+    [ObservableProperty]
+    private Galgame _gal = null!;
     // ReSharper disable once CollectionNeverQueried.Global
     public readonly List<RssType> RssTypes = new();
 

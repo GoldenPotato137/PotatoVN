@@ -1724,4 +1724,7 @@
   <data name="VndbAuthDialog_TokenTextBox.Header" xml:space="preserve">
     <value>输入AccessToken</value>
   </data>
+  <data name="GalgameSettingPage_TagsTitle.Text" xml:space="preserve">
+    <value>Tags</value>
+  </data>
 </root>

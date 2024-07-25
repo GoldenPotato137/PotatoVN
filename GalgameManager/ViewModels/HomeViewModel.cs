@@ -14,11 +14,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
+using CommunityToolkit.WinUI.UI;
+using CommunityToolkit.WinUI.UI.Controls;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
-using Microsoft.UI.Xaml.Media.Animation;
-using CommunityToolkit.WinUI.UI;
 
 // ReSharper disable CollectionNeverQueried.Global
 
@@ -179,32 +179,23 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     #endregion
     
     #region FILTER
-    
-    [ObservableProperty] private bool _filterListVisible; //是否显示过滤器列表
-    [ObservableProperty] private bool _filterInputVisible; //是否显示过滤器输入框
-    [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
     [ObservableProperty] private string _uiFilter = string.Empty; //过滤器在AppBar上的文本
     [ObservableProperty] private bool _keepFilters; //是否保留过滤器
-    // public TransitionCollection FilterFlyoutTransitions = new();
+    [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
     public ObservableCollection<FilterBase> Filters = null!;
     public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
     private void UpdateFilterPanelDisplay(object? sender, NotifyCollectionChangedEventArgs e)
     {
         UiFilter = "HomePage_Filter".GetLocalized() + (ContainNonVirtualGameFilter() ? " ●" : string.Empty);
-        FilterListVisible = Filters.Count > 0;
-        if (Filters.Count == 0)
-            FilterInputVisible = true;
+        Source.RefreshFilter();
     }
     
     [RelayCommand]
-    private void DeleteFilter(FilterBase filter)
+    private void FilterRemoved(object args)
     {
-        _filterService.RemoveFilter(filter);
+        if (args is FilterBase filter) _filterService.RemoveFilter(filter);
     }
-
-    [RelayCommand]
-    private void SetFilterInputVisible() => FilterInputVisible = !FilterInputVisible;
 
     [RelayCommand]
     private async Task FilterInputTextChange(AutoSuggestBoxTextChangedEventArgs args)
@@ -222,25 +213,28 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     }
     
     [RelayCommand]
-    private async Task FilterInputQuerySubmitted(AutoSuggestBoxQuerySubmittedEventArgs args)
+    private async Task FilterInputTokenItemAdding(TokenItemAddingEventArgs args)
     {
-        if (args.ChosenSuggestion is FilterBase filter)
+        var i = args.Item;
+        var t = args.TokenText;
+        args.Cancel = true;
+        args.Item = null;
+        if (i is FilterBase filter)
             _filterService.AddFilter(filter);
-        else if (string.IsNullOrEmpty(args.QueryText) == false)
+        else if (string.IsNullOrEmpty(t) == false)
         {
-            List<FilterBase> result = await _filterService.SearchFilters(args.QueryText);
+            List<FilterBase> result = await _filterService.SearchFilters(t);
             if (result.Count > 1)
                 _filterService.AddFilter(result[0]);
             else
                 _infoService.Info(InfoBarSeverity.Error, msg: "HomePage_Filter_Not_Found".GetLocalized());
         }
-        FilterInputText = string.Empty;
+        
     }
 
     [RelayCommand]
     private void OnFilterFlyoutOpening(object arg)
     {
-        FilterInputVisible = false;
         UpdateFilterPanelDisplay(null, null!);
     }
     

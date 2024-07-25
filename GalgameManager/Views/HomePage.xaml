@@ -61,59 +61,48 @@
                     </AppBarButton.Icon>
                     <AppBarButton.Flyout>
                         <Flyout Placement="Bottom">
-                            <Grid Width="250">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <control:ObservableList Grid.Row="0"
-                                                        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
-                                                        AddCommand="{x:Bind ViewModel.SetFilterInputVisibleCommand}"
-                                                        Visibility="{x:Bind ViewModel.FilterListVisible, Mode=OneWay}">
-                                    <control:ObservableList.ItemTemplate>
-                                        <DataTemplate x:DataType="filters:FilterBase">
-                                            <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" 
-                                                  CornerRadius="10" Margin="5 7 5 7">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0" Padding="5" Text="{x:Bind ToString()}" 
-                                                           VerticalAlignment="Center"/>
-                                                <Button Grid.Column="1" Margin="2 0 0 0"
-                                                        Content="&#xE894;" FontFamily="{ThemeResource SymbolThemeFontFamily}" 
-                                                        Background="Transparent" BorderBrush="{x:Null}"
-                                                        CornerRadius="10" Padding="3"
-                                                        VerticalAlignment="Center" VerticalContentAlignment="Center"
-                                                        Loaded="FilterDeleteButton_OnLoaded"
-                                                        CommandParameter="{x:Bind}"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </control:ObservableList.ItemTemplate>
-                                </control:ObservableList>
-                                <AutoSuggestBox Grid.Row="1" x:Uid="HomePage_FilterInputBox" 
-                                                AllowFocusOnInteraction="True"
-                                                Text="{x:Bind ViewModel.FilterInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                ItemsSource="{x:Bind ViewModel.FilterInputSuggestions, Mode=OneWay}"
-                                                Visibility="{x:Bind ViewModel.FilterInputVisible, Mode=OneWay}"
-                                                QueryIcon="{ui:FontIcon Glyph=&#xE73E;}">
-                                    <interactivity:Interaction.Behaviors>
-                                        <core:EventTriggerBehavior EventName="TextChanged">
-                                            <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTextChangeCommand}" />
-                                        </core:EventTriggerBehavior>
-                                        <core:EventTriggerBehavior EventName="QuerySubmitted">
-                                            <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputQuerySubmittedCommand}" />
-                                        </core:EventTriggerBehavior>
-                                    </interactivity:Interaction.Behaviors>
-                                    <animations:Implicit.ShowAnimations>
-                                        <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
-                                        <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
-                                    </animations:Implicit.ShowAnimations>
-                                    <animations:Implicit.Animations>
-                                        <animations:OffsetAnimation Duration="0:0:1" />
-                                    </animations:Implicit.Animations>
-                                </AutoSuggestBox>
-                            </Grid>
+                            <controls:TokenizingTextBox 
+                                x:Uid="HomePage_FilterTokenizingTextBox"
+                                Width="250" HorizontalAlignment="Left"
+                                TokenDelimiter=","
+                                ItemsSource="{x:Bind ViewModel.Filters, Mode=TwoWay}"
+                                QueryIcon="{ui:FontIconSource Glyph=&#xE721;,
+                                                                  FontSize=12}"
+                                SuggestedItemsSource="{x:Bind ViewModel.FilterInputSuggestions, Mode=OneWay}"
+                                AllowFocusOnInteraction="True"
+                                Text="{x:Bind ViewModel.FilterInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                >
+                                <controls:TokenizingTextBox.AutoSuggestBoxStyle>
+                                    <Style TargetType="AutoSuggestBox">
+                                        <Setter Property="MinWidth" Value="200"/>
+                                    </Style>
+                                </controls:TokenizingTextBox.AutoSuggestBoxStyle>
+                                <controls:TokenizingTextBox.SuggestedItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding }" />
+                                    </DataTemplate>
+                                </controls:TokenizingTextBox.SuggestedItemTemplate>
+                                <controls:TokenizingTextBox.TokenItemTemplate>
+                                    <DataTemplate x:DataType="filters:FilterBase">
+                                        <TextBlock Text="{x:Bind ToString() }" />
+                                    </DataTemplate>
+                                </controls:TokenizingTextBox.TokenItemTemplate>
+                                <interactivity:Interaction.Behaviors>
+                                    <core:EventTriggerBehavior EventName="TokenItemRemoved">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterRemovedCommand}" />
+                                    </core:EventTriggerBehavior>
+                                    <core:EventTriggerBehavior EventName="TextChanged">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTextChangeCommand}" />
+                                    </core:EventTriggerBehavior>
+                                    <core:EventTriggerBehavior EventName="TokenItemAdding">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTokenItemAddingCommand}" />
+                                    </core:EventTriggerBehavior>
+                                    <core:EventTriggerBehavior EventName="TokenItemAdding">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTokenItemAddingCommand}" />
+                                    </core:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </controls:TokenizingTextBox>
+                            
                             <interactivity:Interaction.Behaviors>
                                 <core:EventTriggerBehavior EventName="Opening">
                                     <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterFlyoutOpeningCommand}" />
