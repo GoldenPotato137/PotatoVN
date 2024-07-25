@@ -95,7 +95,12 @@ public class CategoryService : ICategoryService
                 }
             };
         }
-        
+
+        // 给Galgame注入Category
+        foreach (Category category in _categoryGroups.Where(g => g.Type != CategoryGroupType.Status)
+                     .SelectMany(group => group.Categories))
+            category.GalgamesX.ForEach(g => g.Categories.Add(category));
+
         _isInit = true;
     }
 

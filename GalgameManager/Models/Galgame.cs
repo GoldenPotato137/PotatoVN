@@ -150,7 +150,9 @@ public partial class Galgame : ObservableObject
         _tags = new ObservableCollection<string>();
         _developer.OnValueChanged += _ => GalPropertyChanged?.Invoke((this, "developer"));
     }
-    
+
+    public override string ToString() => Name.Value ?? string.Empty;
+
     /// <summary>
     /// 检查游戏文件夹是否存在
     /// </summary>
