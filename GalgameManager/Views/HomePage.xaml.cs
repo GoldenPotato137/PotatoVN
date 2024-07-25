@@ -17,12 +17,4 @@ public sealed partial class HomePage : Page
         DataContext = ViewModel;
         InitializeComponent();
     }
-
-    //已知bug: https://github.com/microsoft/microsoft-ui-xaml/issues/560
-    //临时解决方案，见：https://www.youtube.com/watch?v=vVmtt89G8q8
-    private void FilterDeleteButton_OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (sender is not Button button || button.Command is not null) return;
-        button.Command = ViewModel.DeleteFilterCommand;
-    }
 }

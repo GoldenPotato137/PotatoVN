@@ -5,9 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
     
     <Page.Resources>
+        <converter:InverseBooleanConverter x:Key="InverseBooleanConverter" />
     </Page.Resources>
     
     <Grid Margin="0 0 0 40">
@@ -52,7 +55,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" x:Uid = "GalgameSettingPage_GalgameId" 
                                        Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1" Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay}" 
+                            <TextBox Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                      VerticalAlignment="Center" HorizontalAlignment="Stretch"
                                      AcceptsReturn="False"/>
                         </Grid>
@@ -100,19 +104,19 @@
 
                     <control:LockableTextBox 
                         x:Uid="GalgameSettingPage_GalgameDeveloper"
-                        Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay}"
+                        Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" 
                         AcceptsReturn="False"/>
 
                     <control:LockableTextBox 
                         x:Uid="GalgameSettingPage_GalgameExpectedPlayTime"
-                        Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay}"
+                        Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" 
                         AcceptsReturn="False"/>
 
                     <control:LockableTextBox
                         x:Uid="GalgameSettingPage_GalgameDescription"
-                        Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay}"
+                        Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}" 
                         AcceptsReturn="True"/>
 
@@ -127,9 +131,37 @@
                             Value="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}"
                             Readonly="True" 
-                            AcceptsReturn="False"/>
+                            AcceptsReturn="False"></control:LockableTextBox>
                         <Button Grid.Column="1" x:Uid="GalgameSettingPage_PickImage" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
                     </Grid>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock x:Uid="GalgameSettingPage_TagsTitle" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.Gal.Tags.IsLock, Mode=TwoWay}"
+                                          OnContent="已锁定"
+                                          OffContent="已解锁" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <controls:TokenizingTextBox
+                            IsEnabled="{x:Bind ViewModel.Gal.Tags.IsLock,
+                                Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.Gal.Tags.Value, Mode=TwoWay}"
+                            PlaceholderText="Add Tags"
+                            x:Name="TagsBox"
+                            >
+                            <controls:TokenizingTextBox.SuggestedItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding }" />
+                                </DataTemplate>
+                            </controls:TokenizingTextBox.SuggestedItemTemplate>
+                            <controls:TokenizingTextBox.TokenItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding }" />
+                                </DataTemplate>
+                            </controls:TokenizingTextBox.TokenItemTemplate>
+                        </controls:TokenizingTextBox>
+                        
+                    </StackPanel>
+                    
                 </StackPanel>
             </Grid>
         </ScrollViewer>

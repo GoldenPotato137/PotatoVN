@@ -62,7 +62,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
     {
         if (!_init) Init();
         Dictionary<string, string?> ids = Id2IdDict(galgame.Ids[(int)RssType.Mixed] ?? "");
-        Dictionary<RssType, Task<Galgame?>?> PhraserTasks = new ();
+        Dictionary<RssType, Task<Galgame?>?> phraserTasks = new ();
         foreach (RssType phraserType in UsablePhrasers)
         {
             if (_phrasers.TryGetValue(phraserType, out IGalInfoPhraser? phraser) && phraser != null)
@@ -73,15 +73,15 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser
                     game.RssType = phraserType;
                     game.Id = id;
                 }
-                PhraserTasks[phraserType] = phraser.GetGalgameInfo(galgame);
+                phraserTasks[phraserType] = phraser.GetGalgameInfo(game);
             }
         }
-        await Task.WhenAll(PhraserTasks.Values.Where(t=>t != null)!); //这几个源可以并行搜刮
+        await Task.WhenAll(phraserTasks.Values.Where(t=>t != null)!); //这几个源可以并行搜刮
         Dictionary<RssType, Galgame> metas = new();
         ids.Clear();
         foreach (RssType phraserType in UsablePhrasers)
         {
-            if (PhraserTasks.TryGetValue(phraserType, out Task<Galgame?>? t) && t?.Result != null)
+            if (phraserTasks.TryGetValue(phraserType, out Task<Galgame?>? t) && t?.Result != null)
             {
                 metas[phraserType] = t.Result;
                 ids[phraserType.GetAbbr()!] = t.Result.Id;

@@ -16,7 +16,7 @@ public partial class Galgame : ObservableObject
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
     public const string MetaPath = ".PotatoVN";
-    public static int PhraserNumber = 6;
+    public static readonly int PhraserNumber = 6;
     
     public event GenericDelegate<(Galgame, string)>? GalPropertyChanged;
     public event GenericDelegate<Exception>? ErrorOccurred; //非致命异常产生时触发
