@@ -24,9 +24,9 @@
         <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
         <converters:SourcesToStringConverter x:Key="SourcesToStringConverter"/>
         <MenuFlyout x:Name="GalFlyout">
-            <MenuFlyoutItem Icon="Edit" Text="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
-            <MenuFlyoutItem Icon="Download" Text="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
-            <MenuFlyoutItem Icon="Delete" Text="{x:Bind ViewModel.UiRemove}" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Edit" x:Uid="HomePage_Edit" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Download" x:Uid="HomePage_Download" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Delete" x:Uid="HomePage_Remove" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
         </MenuFlyout>
     </Page.Resources>
 
@@ -97,9 +97,6 @@
                                     <core:EventTriggerBehavior EventName="TokenItemAdding">
                                         <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTokenItemAddingCommand}" />
                                     </core:EventTriggerBehavior>
-                                    <core:EventTriggerBehavior EventName="TokenItemAdding">
-                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.FilterInputTokenItemAddingCommand}" />
-                                    </core:EventTriggerBehavior>
                                 </interactivity:Interaction.Behaviors>
                             </controls:TokenizingTextBox>
                             
@@ -134,6 +131,9 @@
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
+                    <!-- 编辑模式 -->
+                    <AppBarToggleButton x:Uid="HomePage_EditMode" Icon="Edit"
+                                        IsChecked="{x:Bind ViewModel.IsEditMode, Mode=TwoWay}"/>
                     <!-- 裁剪横图 -->
                     <AppBarToggleButton x:Uid="HomePage_FixHorizontalPicture" Icon="Crop"
                                         IsChecked="{x:Bind ViewModel.FixHorizontalPicture, Mode=TwoWay}"/>
@@ -171,13 +171,14 @@
                 Grid.Row="1"
                 DesiredWidth="175"
                 ItemHeight="300"
-                IsItemClickEnabled="True"
+                IsItemClickEnabled="{x:Bind ViewModel.IsEditMode, Converter={StaticResource InverseBooleanConverter},Mode=OneWay}"
                 ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
                 ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
-                SelectionMode="None"
+                SelectionChanged="Selector_OnSelectionChanged"
                 StretchContentForSingleRow="False"
                 animations:Connected.ListItemKey="galgameItem"
-                animations:Connected.ListItemElementName="ConnectedElement">
+                animations:Connected.ListItemElementName="ConnectedElement"
+                SelectionMode="{x:Bind ViewModel.GalgameSelectionMode,Mode=OneWay}">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
                         <Grid
@@ -253,5 +254,31 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center" />
         </Grid>
+        
+        <RelativePanel Grid.Row="0"  Visibility="{x:Bind ViewModel.IsEditMode, Mode=OneWay}">
+            <Border CornerRadius="5" 
+                    Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}" 
+                    Padding="10"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    >
+                <StackPanel>
+                    <TextBlock Text="编辑模式" Padding="10, 10, 10, 10" RelativePanel.AlignLeftWithPanel="True" 
+                               RelativePanel.AlignTopWithPanel="True"/>
+
+                    <CommandBar DefaultLabelPosition="Right" Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+                        <AppBarButton Icon="Download" 
+                                      x:Uid="HomePage_EditBar_GetInfoFromRss" 
+                                      Command="{x:Bind ViewModel.EditBarGetInfoFromRssCommand}"/>
+                        <AppBarButton Icon="Delete" 
+                                      x:Uid="HomePage_EditBar_DeleteGalgame"
+                                      Command="{x:Bind ViewModel.EditBarDeleteGalgameCommand}"/>
+                        <AppBarButton Icon="Cancel" 
+                                      x:Uid="HomePage_EditBar_CancelEditMode"
+                                      Command="{x:Bind ViewModel.EditBarQuitEditModeCommand}"/>
+                    </CommandBar>
+                </StackPanel>
+            </Border>
+        </RelativePanel>
     </Grid>
 </Page>
