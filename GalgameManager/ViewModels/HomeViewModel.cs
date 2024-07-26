@@ -241,7 +241,7 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware, IRec
         if (args.Item is FilterBase) return;
         if (string.IsNullOrEmpty(args.TokenText) == false)
         {
-            if (FilterInputSuggestions.Count > 1 && !Filters.Contains(FilterInputSuggestions[0]))
+            if (FilterInputSuggestions.Count >= 1 && !Filters.Contains(FilterInputSuggestions[0]))
             {
                 args.Item = FilterInputSuggestions[0];
                 return;
@@ -459,13 +459,14 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware, IRec
         };
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            foreach (Galgame g in SelectedGalgames)
+            List<Galgame> galgames = SelectedGalgames.ToList();
+            foreach (Galgame g in galgames)
             {
                 await _galgameService.RemoveGalgame(g);
             }
         };
 
-        await dialog.ShowAsync();
+        await dialog.ShowAsync(); 
     }
 
     [RelayCommand]
@@ -473,7 +474,8 @@ public partial class HomeViewModel : ObservableRecipient, INavigationAware, IRec
     {
         if (SelectedGalgames.Count == 0) return;
         IsPhrasing = true;
-        foreach (Galgame galgame in SelectedGalgames)
+        List<Galgame> galgames = SelectedGalgames.ToList();
+        foreach (Galgame galgame in galgames)
         {
             await _galgameService.PhraseGalInfoAsync(galgame);
         }
