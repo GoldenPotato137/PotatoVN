@@ -9,10 +9,12 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    Loaded="GalgameSettingPage_OnLoaded"
     mc:Ignorable="d">
     
     <Page.Resources>
         <converter:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converter:DateTimeToDateTimeOffsetConverter x:Key="DateTimeDateTimeOffsetConverter" />
     </Page.Resources>
     
     <Grid Margin="0 0 0 40">
@@ -106,7 +108,8 @@
                         
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
                             <TextBlock x:Uid="GalgameSettingPage_GalgameReleaseDate_Text" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <DatePicker Date="{x:Bind ViewModel.Gal.ReleaseDate.Value}" 
+                            <DatePicker SelectedDate="{x:Bind ViewModel.Gal.ReleaseDate.Value, 
+                            Mode=TwoWay, Converter={StaticResource DateTimeDateTimeOffsetConverter}}" 
                                         IsEnabled="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, 
                                     Converter={StaticResource InverseBooleanConverter},
                                     Mode=OneWay}"/>
@@ -168,6 +171,7 @@
                             ItemsSource="{x:Bind ViewModel.Gal.Tags.Value, Mode=TwoWay}"
                             PlaceholderText="Add Tags"
                             x:Name="TagsBox"
+                            x:Load="False"
                             >
                             <controls:TokenizingTextBox.SuggestedItemTemplate>
                                 <DataTemplate>
