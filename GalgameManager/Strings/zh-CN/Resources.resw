@@ -1745,4 +1745,7 @@
   <data name="GalgameSettingPage_GalgameReleaseDate_Clear.Content" xml:space="preserve">
     <value>清除</value>
   </data>
+  <data name="GalgameSettingPage_TagsTitle.Text" xml:space="preserve">
+    <value>Tags</value>
+  </data>
 </root>

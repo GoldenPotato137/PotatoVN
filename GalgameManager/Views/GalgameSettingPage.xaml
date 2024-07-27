@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:tokenizingTextBox="using:GalgameManager.Views.Control.TokenizingTextBox"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
@@ -15,6 +16,7 @@
     <Page.Resources>
         <converter:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converter:DateTimeToDateTimeOffsetConverter x:Key="DateTimeDateTimeOffsetConverter" />
+        <converter:InterspersedObservableCollectionConverter x:Key="InterspersedObservableCollectionConverter"/>
     </Page.Resources>
     
     <Grid Margin="0 0 0 40">
@@ -165,25 +167,26 @@
                                           OnContent="已锁定"
                                           OffContent="已解锁" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <controls:TokenizingTextBox
+                        <tokenizingTextBox:TokenizingTextBox
                             IsEnabled="{x:Bind ViewModel.Gal.Tags.IsLock,
                                 Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}"
-                            ItemsSource="{x:Bind ViewModel.Gal.Tags.Value, Mode=TwoWay}"
+                            ItemsSource="{x:Bind ViewModel.Gal.Tags.Value, 
+                            Converter={StaticResource InterspersedObservableCollectionConverter}, Mode=TwoWay}"
                             PlaceholderText="Add Tags"
                             x:Name="TagsBox"
                             x:Load="False"
                             >
-                            <controls:TokenizingTextBox.SuggestedItemTemplate>
+                            <tokenizingTextBox:TokenizingTextBox.SuggestedItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding }" />
                                 </DataTemplate>
-                            </controls:TokenizingTextBox.SuggestedItemTemplate>
-                            <controls:TokenizingTextBox.TokenItemTemplate>
+                            </tokenizingTextBox:TokenizingTextBox.SuggestedItemTemplate>
+                            <tokenizingTextBox:TokenizingTextBox.TokenItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding }" />
                                 </DataTemplate>
-                            </controls:TokenizingTextBox.TokenItemTemplate>
-                        </controls:TokenizingTextBox>
+                            </tokenizingTextBox:TokenizingTextBox.TokenItemTemplate>
+                        </tokenizingTextBox:TokenizingTextBox>
                         
                     </StackPanel>
                     
