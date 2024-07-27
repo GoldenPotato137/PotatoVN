@@ -7,6 +7,8 @@
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -86,6 +88,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         
@@ -100,6 +103,24 @@
                             Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
                             IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
                             HorizontalAlignment="Right"/>
+                        
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <TextBlock x:Uid="GalgameSettingPage_GalgameReleaseDate_Text" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <DatePicker Date="{x:Bind ViewModel.Gal.ReleaseDate.Value}" 
+                                        IsEnabled="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, 
+                                    Converter={StaticResource InverseBooleanConverter},
+                                    Mode=OneWay}"/>
+                            <Button x:Uid="GalgameSettingPage_GalgameReleaseDate_Clear" 
+                                    IsEnabled="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, 
+                                    Converter={StaticResource InverseBooleanConverter},
+                                    Mode=OneWay}" 
+                                    Command="{x:Bind ViewModel.GalgameReleaseDateClearCommand}"
+                                    Margin="10 0 0 0"/>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, Mode=TwoWay}"
+                                          Margin="30 0 -50 0"
+                                          OnContent="已锁定"
+                                          OffContent="已解锁"/>
+                        </StackPanel>
                     </Grid>
 
                     <control:LockableTextBox 

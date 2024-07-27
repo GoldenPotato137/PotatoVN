@@ -1739,4 +1739,10 @@
   <data name="HomePage_EditBar_CancelEditMode.Label" xml:space="preserve">
     <value>退出编辑模式</value>
   </data>
+  <data name="GalgameSettingPage_GalgameReleaseDate_Text.Text" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameReleaseDate_Clear.Content" xml:space="preserve">
+    <value>清除</value>
+  </data>
 </root>

@@ -111,4 +111,10 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
             $"{Gal.Name.Value}{file.FileType}", NameCollisionOption.ReplaceExisting);
         Gal.ImagePath.Value= newFile.Path;
     }
+
+    [RelayCommand]
+    private void GalgameReleaseDateClear()
+    {
+        Gal.ReleaseDate = DateTime.MinValue;
+    }
 }
