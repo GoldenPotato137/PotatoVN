@@ -46,10 +46,10 @@ public sealed partial class EditPlayTimeDialog
 
     private void DatePickerFlyout_OnDatePicked(DatePickerFlyout sender, DatePickedEventArgs args)
     {
-        if (_playTimes.Any(time => time.Date == sender.Date.ToString("yyyy/MM/dd"))) return;
+        if (_playTimes.Any(time => time.Date == sender.Date.ToString("yyyy/M/d"))) return;
         DisplayPlayTime newTime = new()
         {
-            Date = sender.Date.ToString("yyyy/MM/dd"),
+            Date = sender.Date.ToString("yyyy/M/d"),
             PlayedTime = 0
         };
         foreach (DisplayPlayTime time in _playTimes)

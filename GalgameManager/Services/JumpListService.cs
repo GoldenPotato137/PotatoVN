@@ -13,9 +13,12 @@ public class JumpListService : IJumpListService
 {
     private JumpList? _jumpList;
     private const int MaxItems = 5;
+    private bool _isSupported;
 
     private async Task Init()
     {
+        _isSupported = JumpList.IsSupported();
+        if (!_isSupported)return;
         _jumpList = await JumpList.LoadCurrentAsync();
         _jumpList.SystemGroupKind = JumpListSystemGroupKind.None;
     }
@@ -23,6 +26,7 @@ public class JumpListService : IJumpListService
     public async Task CheckJumpListAsync(IList<Galgame> galgames)
     {
         if (_jumpList == null) await Init();
+        if (!_isSupported) return;
         List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"/j \"{gal.Url}\"" != item.Arguments)).ToList();
         foreach (JumpListItem item in toRemove)
         {
@@ -34,6 +38,7 @@ public class JumpListService : IJumpListService
     public async Task AddToJumpListAsync(Galgame galgame)
     {
         if (_jumpList == null) await Init();
+        if (!_isSupported) return;
         IList<JumpListItem>? items = _jumpList!.Items;
         JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Url}\"");
         if (item == null)
@@ -52,6 +57,7 @@ public class JumpListService : IJumpListService
     public async Task RemoveFromJumpListAsync(Galgame galgame)
     {
         if (_jumpList == null) await Init();
+        if (!_isSupported) return;
         IList<JumpListItem>? items = _jumpList!.Items;
         JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Url}\"");
         if (item != null)
