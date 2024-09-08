@@ -16,4 +16,14 @@ public sealed partial class GalgameSettingPage : Page
         ViewModel = App.GetService<GalgameSettingViewModel>();
         InitializeComponent();
     }
+
+    private void GalgameSettingPage_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        // 延迟加载，减少卡顿
+        Task.Run(() =>
+        {
+            Task.Delay(100);
+            App.DispatcherQueue.TryEnqueue(() => FindName("TagsBox"));
+        });
+    }
 }

@@ -162,13 +162,13 @@
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
     <value>GalgameSetting</value>
   </data>
-  <data name="HomePage_Edit" xml:space="preserve">
+  <data name="HomePage_Edit.Text" xml:space="preserve">
     <value>修改游戏信息</value>
   </data>
-  <data name="HomePage_Download" xml:space="preserve">
+  <data name="HomePage_Download.Text" xml:space="preserve">
     <value>下载游戏信息</value>
   </data>
-  <data name="HomePage_Remove" xml:space="preserve">
+  <data name="HomePage_Remove.Text" xml:space="preserve">
     <value>从库中移除游戏</value>
   </data>
   <data name="GalgamePage_Delete.Label" xml:space="preserve">
@@ -192,10 +192,10 @@
   <data name="AddGalgameResult_NotFoundInRss" xml:space="preserve">
     <value>没有从信息源中找到这个游戏的信息</value>
   </data>
-  <data name="HomePage_Remove_Title" xml:space="preserve">
+  <data name="HomePage_RemoveDialog_Title" xml:space="preserve">
     <value>取消托管</value>
   </data>
-  <data name="HomePage_Remove_Message" xml:space="preserve">
+  <data name="HomePage_RemoveDialog_GameMessage" xml:space="preserve">
     <value>确定要取消托管这个游戏吗</value>
   </data>
   <data name="Yes" xml:space="preserve">
@@ -742,6 +742,9 @@
   </data>
   <data name="HomePage_UploadingToVndb" xml:space="preserve">
     <value>将游玩信息同步到Vndb中</value>
+  </data>
+  <data name="HomePage_EditMode.Label" xml:space="preserve">
+    <value>编辑模式</value>
   </data>
   <data name="HomePage_FixHorizontalPicture.Label" xml:space="preserve">
     <value>裁剪水平封面图</value>
@@ -1556,9 +1559,6 @@
   <data name="VndbAuthService_Success" xml:space="preserve">
     <value>Vndb登录成功</value>
   </data>
-  <data name="VndbAuthService_Success" xml:space="preserve">
-    <value>Vndb登录成功</value>
-  </data>
   <data name="VndbApiPermission_ListRead" xml:space="preserve">
     <value>用户列表读取</value>
   </data>
@@ -1723,6 +1723,27 @@
   </data>
   <data name="VndbAuthDialog_TokenTextBox.Header" xml:space="preserve">
     <value>输入AccessToken</value>
+  </data>
+  <data name="GalgameSettingPage_TagsTitle.Text" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="HomePage_EditBar_DeleteGalgame.Label" xml:space="preserve">
+    <value>取消托管游戏</value>
+  </data>
+  <data name="HomePage_EditBar_GetInfoFromRss.Label" xml:space="preserve">
+    <value>下载游戏信息</value>
+  </data>
+  <data name="HomePage_RemoveDialog_GamesMessage" xml:space="preserve">
+    <value>确定要取消托管这些游戏吗</value>
+  </data>
+  <data name="HomePage_EditBar_CancelEditMode.Label" xml:space="preserve">
+    <value>退出编辑模式</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameReleaseDate_Text.Text" xml:space="preserve">
+    <value>发布日期</value>
+  </data>
+  <data name="GalgameSettingPage_GalgameReleaseDate_Clear.Content" xml:space="preserve">
+    <value>清除</value>
   </data>
   <data name="GalgameSettingPage_TagsTitle.Text" xml:space="preserve">
     <value>Tags</value>

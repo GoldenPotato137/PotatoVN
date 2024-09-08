@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using Windows.Storage;
@@ -17,14 +16,13 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
-public partial class GalgameCollectionService : IGalgameCollectionService
+public class GalgameCollectionService : IGalgameCollectionService
 {
     // _galgames 无序, _displayGalgames有序
     private List<Galgame> _galgames = new();
     private readonly Dictionary<string, Galgame> _galgameMap = new(); // Url->Galgame
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
-    private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IGalgameSourceCollectionService _galSrcService;
@@ -42,14 +40,12 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     } = new IGalInfoPhraser[Galgame.PhraserNumber];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
-        IGalgameSourceCollectionService galgameSourceService, IFilterService filterService, IInfoService infoService, 
+        IGalgameSourceCollectionService galgameSourceService, IInfoService infoService, 
         IBgTaskService bgTaskService)
     {
         LocalSettingsService = localSettingsService;
         LocalSettingsService.OnSettingChanged += async (key, _) => await OnSettingChanged(key);
         _jumpListService = jumpListService;
-        _filterService = filterService;
-        // _filterService.OnFilterChanged += () => UpdateDisplay(UpdateType.ApplyFilter);
         _infoService = infoService;
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;

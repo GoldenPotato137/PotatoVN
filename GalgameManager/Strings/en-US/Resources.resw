@@ -162,13 +162,13 @@
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
     <value>GalgameSetting</value>
   </data>
-  <data name="HomePage_Edit" xml:space="preserve">
+  <data name="HomePage_Edit.Text" xml:space="preserve">
     <value>Edit Game Info</value>
   </data>
-  <data name="HomePage_Download" xml:space="preserve">
+  <data name="HomePage_Download.Text" xml:space="preserve">
     <value>Download Game Info</value>
   </data>
-  <data name="HomePage_Remove" xml:space="preserve">
+  <data name="HomePage_Remove.Text" xml:space="preserve">
     <value>Remove Game from Library</value>
   </data>
   <data name="GalgamePage_Delete.Label" xml:space="preserve">
@@ -192,10 +192,10 @@
   <data name="AddGalgameResult_NotFoundInRss" xml:space="preserve">
     <value>No information found for this game from the feed</value>
   </data>
-  <data name="HomePage_Remove_Title" xml:space="preserve">
+  <data name="HomePage_RemoveDialog_Title" xml:space="preserve">
     <value>Unhosted</value>
   </data>
-  <data name="HomePage_Remove_Message" xml:space="preserve">
+  <data name="HomePage_RemoveDialog_GameMessage" xml:space="preserve">
     <value>Are you sure you want to unhost this game?</value>
   </data>
   <data name="Yes" xml:space="preserve">

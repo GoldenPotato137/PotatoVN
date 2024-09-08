@@ -14,6 +14,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using CommunityToolkit.WinUI.UI;
 using CommunityToolkit.WinUI.UI.Controls;
 using GalgameManager.Helpers.Converter;
@@ -24,12 +26,11 @@ using GalgameManager.Models.Sources;
 
 namespace GalgameManager.ViewModels;
 
-public partial class HomeViewModel : ObservableObject, INavigationAware
+public partial class HomeViewModel : ObservableRecipient, INavigationAware, IRecipient<HomePageSetFilterMessage>
 {
     private readonly INavigationService _navigationService;
     private readonly GalgameCollectionService _galgameService;
     private readonly ILocalSettingsService _localSettingsService;
-    private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
@@ -38,22 +39,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _displayVirtualGame; //是否显示虚拟游戏
     [ObservableProperty] private bool _specialDisplayVirtualGame; //是否特殊显示虚拟游戏（降低透明度）
 
-    private SortKeys[] SortKeysList
-    {
-        get;
-        set;
-    } = { SortKeys.LastPlay , SortKeys.Developer};
-
-    private bool[] SortKeysAscending
-    {
-        get;
-        set;
-    } = {false, false};
-
     #region UI
-    public readonly string UiEdit = "HomePage_Edit".GetLocalized();
-    public readonly string UiDownLoad = "HomePage_Download".GetLocalized();
-    public readonly string UiRemove = "HomePage_Remove".GetLocalized();
     private readonly string _uiSearch = "Search".GetLocalized();
     #endregion
     
@@ -64,12 +50,11 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private AdvancedCollectionView _source = new(null, true);
 
     public HomeViewModel(INavigationService navigationService, IGalgameCollectionService dataCollectionService,
-        ILocalSettingsService localSettingsService, IFilterService filterService, IInfoService infoService)
+        ILocalSettingsService localSettingsService, IInfoService infoService)
     {
         _navigationService = navigationService;
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _localSettingsService = localSettingsService;
-        _filterService = filterService;
         _infoService = infoService;
     }
     
@@ -77,7 +62,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         SearchTitle = SearchKey == string.Empty ? _uiSearch : _uiSearch + " ●";
         Source.Source = _galgameService.Galgames;
-        Filters = _filterService.GetFilters();
         
         //Read Settings
         Stretch = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture)
@@ -94,15 +78,32 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             {false,false};
         UpdateSortKeys(sortKeysList, sortKeysAscending);
         
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.DisplayVirtualGame))
+        {
+            if (Filters.FirstOrDefault(filter => filter.GetType() == typeof(VirtualGameFilter)) is { } f)
+            {
+                Filters.Remove(f);
+            }
+        }
+        else
+        {
+
+            if (Filters.All(filter => filter.GetType() != typeof(VirtualGameFilter)))
+            {
+                Filters.Add(new VirtualGameFilter());
+            }
+        }
+        
         //Add Event
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
+        _galgameService.GalgameDeletedEvent += OnGalgameDeletedEvent;
+        _galgameService.GalgameAddedEvent += OnGalgameAddedEvent;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
-        _filterService.OnFilterChanged += () => Source.RefreshFilter();
         Source.Filter = g =>
         {
-            if (g is Galgame game && _filterService.ApplyFilters(game))
+            if (g is Galgame game && Filters.All(filter => filter.Apply(game)))
             {
                 return SearchKey.IsNullOrEmpty() || game.ApplySearchKey(SearchKey);
             }
@@ -111,6 +112,18 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         };
         Source.Refresh();
         UpdateFilterPanelDisplay(null,null!);
+        IsActive = true;
+    }
+
+    private void OnGalgameAddedEvent(Galgame obj)
+    {
+        if (!Source.Contains(obj))Source.Add(obj);
+    }
+
+    private void OnGalgameDeletedEvent(Galgame obj)
+    {
+        if (Source.Contains(obj)) Source.Remove(obj);
+
     }
 
     private void OnSettingChanged(string key, object? value)
@@ -127,8 +140,8 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         await Task.Delay(200); //等待动画结束
         Source.Filter = null;
-        if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
-            _filterService.ClearFilters();
+        if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false) 
+            Filters.Clear();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
         _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
         Filters.CollectionChanged -= UpdateFilterPanelDisplay;
@@ -182,7 +195,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private string _uiFilter = string.Empty; //过滤器在AppBar上的文本
     [ObservableProperty] private bool _keepFilters; //是否保留过滤器
     [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
-    public ObservableCollection<FilterBase> Filters = null!;
+    public ObservableCollection<FilterBase> Filters = new();
     public readonly ObservableCollection<FilterBase> FilterInputSuggestions = new();
 
     private void UpdateFilterPanelDisplay(object? sender, NotifyCollectionChangedEventArgs e)
@@ -194,7 +207,12 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [RelayCommand]
     private void FilterRemoved(object args)
     {
-        if (args is FilterBase filter) _filterService.RemoveFilter(filter);
+        if (args is FilterBase filter && Filters.Contains(filter))
+        {
+            Filters.Remove(filter);
+            if (filter is VirtualGameFilter)
+                _localSettingsService.SaveSettingAsync(KeyValues.DisplayVirtualGame, true);
+        }
     }
 
     [RelayCommand]
@@ -206,30 +224,32 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             FilterInputSuggestions.Clear();
             return;
         }
-        List<FilterBase> result = await _filterService.SearchFilters(FilterInputText);
+        List<FilterBase> result = await SearchFilters(FilterInputText);
         FilterInputSuggestions.Clear();
         foreach (FilterBase filter in result)
             FilterInputSuggestions.Add(filter);
     }
     
+    /// <summary>
+    /// TokenItemAdding响应
+    /// 注意不可以用async会有bug
+    /// </summary>
+    /// <param name="args"></param>
     [RelayCommand]
-    private async Task FilterInputTokenItemAdding(TokenItemAddingEventArgs args)
+    private void FilterInputTokenItemAdding(TokenItemAddingEventArgs args)
     {
-        var i = args.Item;
-        var t = args.TokenText;
-        args.Cancel = true;
-        args.Item = null;
-        if (i is FilterBase filter)
-            _filterService.AddFilter(filter);
-        else if (string.IsNullOrEmpty(t) == false)
+        if (args.Item is FilterBase) return;
+        if (string.IsNullOrEmpty(args.TokenText) == false)
         {
-            List<FilterBase> result = await _filterService.SearchFilters(t);
-            if (result.Count > 1)
-                _filterService.AddFilter(result[0]);
-            else
-                _infoService.Info(InfoBarSeverity.Error, msg: "HomePage_Filter_Not_Found".GetLocalized());
+            if (FilterInputSuggestions.Count >= 1 && !Filters.Contains(FilterInputSuggestions[0]))
+            {
+                args.Item = FilterInputSuggestions[0];
+                return;
+            }
         }
-        
+
+        args.Cancel = true;
+        _infoService.Info(InfoBarSeverity.Error, msg: "HomePage_Filter_Not_Found".GetLocalized());
     }
 
     [RelayCommand]
@@ -263,6 +283,17 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     #endregion
 
     #region SORT
+    private SortKeys[] SortKeysList
+    {
+        get;
+        set;
+    } = { SortKeys.LastPlay , SortKeys.Developer};
+
+    private bool[] SortKeysAscending
+    {
+        get;
+        set;
+    } = {false, false};
 
     /// <summary>
     /// 更新sort参数
@@ -402,7 +433,63 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     
 
     #endregion
-    
+
+    #region EDIT_MODE
+
+    [NotifyPropertyChangedFor(nameof(GalgameSelectionMode))]
+    [ObservableProperty] private bool _isEditMode;
+
+    public ListViewSelectionMode GalgameSelectionMode =>
+        _isEditMode ? ListViewSelectionMode.Extended : ListViewSelectionMode.None;
+
+    public readonly ObservableCollection<Galgame> SelectedGalgames = new();
+
+    [RelayCommand]
+    private async Task EditBarDeleteGalgame()
+    {
+        if (SelectedGalgames.Count == 0) return;
+        ContentDialog dialog = new()
+        {
+            XamlRoot = App.MainWindow!.Content.XamlRoot,
+            Title = "HomePage_RemoveDialog_Title".GetLocalized(),
+            Content = (SelectedGalgames.Count == 1 ? 
+                "HomePage_RemoveDialog_GameMessage" : "HomePage_RemoveDialog_GamesMessage").GetLocalized(),
+            PrimaryButtonText = "Yes".GetLocalized(),
+            SecondaryButtonText = "Cancel".GetLocalized()
+        };
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            List<Galgame> galgames = SelectedGalgames.ToList();
+            foreach (Galgame g in galgames)
+            {
+                await _galgameService.RemoveGalgame(g);
+            }
+        };
+
+        await dialog.ShowAsync(); 
+    }
+
+    [RelayCommand]
+    private async Task EditBarGetInfoFromRss()
+    {
+        if (SelectedGalgames.Count == 0) return;
+        IsPhrasing = true;
+        List<Galgame> galgames = SelectedGalgames.ToList();
+        foreach (Galgame galgame in galgames)
+        {
+            await _galgameService.PhraseGalInfoAsync(galgame);
+        }
+        IsPhrasing = false;
+    }
+
+    [RelayCommand]
+    private void EditBarQuitEditMode()
+    {
+        IsEditMode = false;
+    }
+
+    #endregion
+
     /// <summary>
     /// 添加Galgame
     /// </summary>
@@ -462,8 +549,8 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow!.Content.XamlRoot,
-            Title = "HomePage_Remove_Title".GetLocalized(),
-            Content = "HomePage_Remove_Message".GetLocalized(),
+            Title = "HomePage_RemoveDialog_Title".GetLocalized(),
+            Content = "HomePage_RemoveDialog_GameMessage".GetLocalized(),
             PrimaryButtonText = "Yes".GetLocalized(),
             SecondaryButtonText = "Cancel".GetLocalized()
         };
@@ -511,7 +598,53 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         GameToOpacityConverter.SpecialDisplayVirtualGame = value;
         Source.Refresh();
     }
+    
+    public async Task<List<FilterBase>> SearchFilters(string str)
+    {
+        List<FilterBase> result = new();
+        if (str.Contains('/'))
+            str = str[..(str.LastIndexOf('/') - 1)];
+        await Task.Run((async Task() =>
+        {
+            IList<Galgame> games = (App.GetService<IGalgameCollectionService>() as GalgameCollectionService)!.Galgames;
+            IEnumerable<CategoryGroup> categoryGroups = await App.GetService<ICategoryService>().GetCategoryGroupsAsync();
+            //Category
+            HashSet<string> addedCategories = new();
+            result.AddRange(from categoryGroup in categoryGroups
+                from category in categoryGroup.Categories
+                where category.Name.ContainX(str)
+                where addedCategories.Add(category.Name)
+                select new CategoryFilter(category));
+            result.RemoveAll(filter => Filters.Any(f => f is CategoryFilter && f.Name == filter.Name));
+            //Tags
+            HashSet<string> addedTags = new();
+            result.AddRange(from game in games
+                from tag in game.Tags.Value ?? new ObservableCollection<string>()
+                where tag.ContainX(str)
+                where addedTags.Add(tag)
+                select new TagFilter(tag));
+            result.RemoveAll(filter => Filters.Any(f => f is TagFilter && f.Name == filter.Name));
+            //本地游戏
+            if(Filters.Any(f => f is VirtualGameFilter) == false)
+                result.Add(new VirtualGameFilter());
+        })!);
+        return result;
+    }
+
+    public void Receive(HomePageSetFilterMessage message)
+    {
+        Filters.Clear();
+        Filters.Add(message.Value);
+    }
 }
+
+public class HomePageSetFilterMessage : ValueChangedMessage<FilterBase>
+{
+    public HomePageSetFilterMessage(FilterBase filter) : base(filter)
+    {        
+    }
+}
+
 
 public class GalgameSearchSuggestionsProvider : ISearchSuggestionsProvider
 {

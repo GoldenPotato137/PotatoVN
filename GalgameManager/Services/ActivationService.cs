@@ -25,7 +25,6 @@ public class ActivationService : IActivationService
     private readonly IAuthenticationService _authenticationService;
     private readonly IBgmOAuthService _bgmOAuthService;
     private readonly ILocalSettingsService _localSettingsService;
-    private readonly IFilterService _filterService;
     private readonly IPageService _pageService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IPvnService _pvnService;
@@ -36,8 +35,8 @@ public class ActivationService : IActivationService
         IGalgameCollectionService galgameCollectionService,
         IUpdateService updateService, IAppCenterService appCenterService,
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
-        IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
-        IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService, IPvnService pvnService)
+        IAuthenticationService authenticationService, ILocalSettingsService localSettingsService, 
+        IPageService pageService, IBgTaskService bgTaskService, IPvnService pvnService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -49,7 +48,6 @@ public class ActivationService : IActivationService
         _bgmOAuthService = bgmOAuthService;
         _authenticationService = authenticationService;
         _localSettingsService = localSettingsService;
-        _filterService = filterService;
         _pageService = pageService;
         _bgTaskService = bgTaskService;
         _pvnService = pvnService;
@@ -85,7 +83,6 @@ public class ActivationService : IActivationService
         await _galgameCollectionService.InitAsync();
         await _galgameFolderCollectionService.InitAsync();
         await _categoryService.Init();
-        await _filterService.InitAsync();
         
         if (IsRestart() == false)
         {

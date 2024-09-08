@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI.UI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
@@ -19,7 +20,6 @@ public partial class CategoryViewModel : ObservableObject, INavigationAware, ISe
     private readonly CategoryService _categoryService;
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
-    private readonly IFilterService _filterService;
     // ReSharper disable once CollectionNeverQueried.Global
     // 必须用new ObservableCollection<Category>()初始化
     public readonly AdvancedCollectionView Source = new(new ObservableCollection<Category>());
@@ -29,19 +29,17 @@ public partial class CategoryViewModel : ObservableObject, INavigationAware, ISe
     [ObservableProperty] private bool _canAddCategory; //能否添加分类（状态分类组不能添加）
 
     public CategoryViewModel(ICategoryService categoryService, INavigationService navigationService,
-        ILocalSettingsService localSettingsService, IFilterService filterService)
+        ILocalSettingsService localSettingsService)
     {
         _categoryService = (categoryService as CategoryService)!;
         _localSettingsService = localSettingsService;
         _navigationService = navigationService;
-        _filterService = filterService;
     }
 
     [RelayCommand]
     private void OnItemClick(Category category)
     {
-        _filterService.ClearFilters();
-        _filterService.AddFilter(new CategoryFilter(category));
+        WeakReferenceMessenger.Default.Send(new HomePageSetFilterMessage(new CategoryFilter(category)));
         _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
     }
     
