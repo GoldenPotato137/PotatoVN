@@ -25,6 +25,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         _localSettingsService = localSettingsService;
         _bgTaskService = bgTaskService;
         _infoService = infoService;
+        App.OnAppClosing += async () => await Save();
     }
     
     public async Task InitAsync()

@@ -10,6 +10,8 @@ public interface IGalgameCollectionService
 
     public Task StartAsync();
 
+    public Task<AddGalgameResult> AddLocalGameAsync(string path, bool force);
+
     /// <summary>
     /// 移除一个galgame
     /// </summary>

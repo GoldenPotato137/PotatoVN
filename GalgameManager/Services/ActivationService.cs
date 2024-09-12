@@ -147,8 +147,9 @@ public class ActivationService : IActivationService
         App.SystemTray.ForceCreate(false);
     }
 
-    private async Task StartupAsync() 
+    private async Task StartupAsync()
     {
+        await _galgameCollectionService.StartAsync();
         if (IsRestart() == false) App.SetWindowMode(WindowMode.Normal);
         if (IsRestart() == false) _pvnService.Startup();
         if (IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
