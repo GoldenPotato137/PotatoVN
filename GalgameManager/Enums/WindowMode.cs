@@ -26,5 +26,11 @@ public enum WindowMode
     /// 启动中
     /// </summary>
     Booting,
+    
+    
+    /// <summary>
+    /// 游玩时pvn状态，None为什么都不做
+    /// </summary>
+    None,
 
 }

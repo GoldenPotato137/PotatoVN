@@ -1727,4 +1727,7 @@
   <data name="GalgameSettingPage_TagsTitle.Text" xml:space="preserve">
     <value>Tags</value>
   </data>
+  <data name="WindowMode_None" xml:space="preserve">
+    <value>什么都不做</value>
+  </data>
 </root>

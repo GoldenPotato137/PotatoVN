@@ -216,6 +216,8 @@ public partial class App : Application
                 SystemTray?.Dispose();
                 _instance.Exit();
                 break;
+            case WindowMode.None:
+                break;
         }
     }
 }
