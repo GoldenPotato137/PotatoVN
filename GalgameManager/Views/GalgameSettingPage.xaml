@@ -23,6 +23,11 @@
                 </Grid.RowDefinitions>
 
                 <CommandBar  Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+                    <CommandBar.Content>
+                        <!-- 上次拉取信息时间 -->
+                        <TextBlock Text="{x:Bind ViewModel.LastFetchInfoStr, Mode=OneWay}" Padding="0"
+                                   Margin="-4 15 0 0"/>
+                    </CommandBar.Content>
                     <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>

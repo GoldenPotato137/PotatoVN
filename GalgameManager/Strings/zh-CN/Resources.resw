@@ -1730,4 +1730,7 @@
   <data name="WindowMode_None" xml:space="preserve">
     <value>什么都不做</value>
   </data>
+  <data name="GalgameSettingPage_LastFetchInfoTime" xml:space="preserve">
+    <value>上次拉取数据：{0}</value>
+  </data>
 </root>

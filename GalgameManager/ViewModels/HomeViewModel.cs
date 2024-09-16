@@ -291,7 +291,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                         SortKeysAscending[i]?SortDirection.Descending:SortDirection.Ascending, 
                         StringComparer.CurrentCultureIgnoreCase
                     ));
-                    // take *= -1;
                     break;
                 case SortKeys.Rating:
                     Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.Rating), 
@@ -305,6 +304,11 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                     break;
                 case SortKeys.ReleaseDate:
                     Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.ReleaseDate), 
+                        SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
+                    ));
+                    break;
+                case SortKeys.LastFetchInfoTime:
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastFetchInfoTime), 
                         SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
                     ));
                     break;
@@ -328,7 +332,8 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             SortKeys.Developer,
             SortKeys.Rating,
             SortKeys.LastPlay,
-            SortKeys.ReleaseDate
+            SortKeys.ReleaseDate,
+            SortKeys.LastFetchInfoTime,
         };
         ContentDialog dialog = new()
         {
@@ -380,6 +385,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         StackPanel panel2 = new ();
         panel2.Children.Add(comboBox2);
         panel2.Children.Add(toggleSwitch2);
+        panel2.Margin = new Thickness(10, 0, 0, 0);
         Grid.SetColumn(panel2, 1 );
         
 

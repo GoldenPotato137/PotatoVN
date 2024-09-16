@@ -331,6 +331,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         galgame.Characters = tmp.Characters;
         galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;
         galgame.ReleaseDate = tmp.ReleaseDate.Value;
+        galgame.LastFetchInfoTime = DateTime.Now;
         return galgame;
     }
     

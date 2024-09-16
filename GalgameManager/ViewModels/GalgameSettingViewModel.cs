@@ -6,6 +6,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Helpers.Converter;
 using GalgameManager.Models;
 using GalgameManager.Services;
 
@@ -15,8 +16,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
 {
     [ObservableProperty]
     private Galgame _gal = null!;
-    // ReSharper disable once CollectionNeverQueried.Global
-    public readonly List<RssType> RssTypes = new();
+    public List<RssType> RssTypes { get; }= new() { RssType.Bangumi, RssType.Vndb, RssType.Mixed, RssType.Ymgal };
 
     private readonly GalgameCollectionService _galService;
     private readonly INavigationService _navigationService;
@@ -25,6 +25,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [ObservableProperty] private string _searchUri = "";
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private RssType _selectedRss = RssType.None;
+    [ObservableProperty] private string _lastFetchInfoStr = string.Empty;
 
     public GalgameSettingViewModel(IGalgameCollectionService galCollectionService, INavigationService navigationService,
         IPvnService pvnService)
@@ -33,10 +34,6 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         _galService = (GalgameCollectionService)galCollectionService;
         _navigationService = navigationService;
         _pvnService = pvnService;
-        RssTypes.Add(RssType.Bangumi);
-        RssTypes.Add(RssType.Vndb);
-        RssTypes.Add(RssType.Mixed);
-        RssTypes.Add(RssType.Ymgal);
         _searchUrlList[(int)RssType.Bangumi] = "https://bgm.tv/subject_search/";
         _searchUrlList[(int)RssType.Vndb] = "https://vndb.org/v/all?sq=";
         _searchUrlList[(int)RssType.Mixed] = "https://bgm.tv/subject_search/";
@@ -46,11 +43,11 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
 
     public async void OnNavigatedFrom()
     {
-        if (Gal.ImagePath.Value != Galgame.DefaultImagePath && File.Exists(Gal.ImagePath.Value) == false)
+        if (Gal.ImagePath.Value != Galgame.DefaultImagePath && !File.Exists(Gal.ImagePath.Value))
             Gal.ImagePath.Value = Galgame.DefaultImagePath;
         await _galService.SaveGalgamesAsync(Gal);
         _pvnService.Upload(Gal, PvnUploadProperties.Infos | PvnUploadProperties.ImageLoc);
-        _galService.PhrasedEvent -= UpdateIsPhrasing;
+        _galService.PhrasedEvent -= Update;
     }
 
     public void OnNavigatedTo(object parameter)
@@ -62,7 +59,8 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
 
         Gal = galgame;
         SelectedRss = Gal.RssType;
-        _galService.PhrasedEvent += UpdateIsPhrasing;
+        _galService.PhrasedEvent += Update;
+        Update();
     }
 
     partial void OnSelectedRssChanged(RssType value)
@@ -86,10 +84,12 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         IsPhrasing = true;
         await _galService.PhraseGalInfoAsync(Gal);
     }
-    
-    private void UpdateIsPhrasing()
+
+    private void Update()
     {
         IsPhrasing = _galService.IsPhrasing;
+        LastFetchInfoStr = "GalgameSettingPage_LastFetchInfoTime".GetLocalized(
+            new DateTimeToStringConverter().Convert(Gal.LastFetchInfoTime, default!, default!, default!));
     }
 
     [RelayCommand]
