@@ -31,6 +31,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private readonly IBgTaskService _bgTaskService;
     private readonly IPvnService _pvnService;
     private readonly IFilterService _filterService;
+    private readonly ICategoryService _categoryService;
+    private readonly IInfoService _infoService;
     [ObservableProperty] private Galgame? _item;
     public ObservableCollection<GalgameViewModelTag> Tags { get; } = new();
     [NotifyCanExecuteChangedFor(nameof(PlayCommand))]
@@ -82,7 +84,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
     public GalgameViewModel(IGalgameCollectionService dataCollectionService, INavigationService navigationService, 
         IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
-        IPvnService pvnService, IFilterService filterService)
+        IPvnService pvnService, IFilterService filterService, ICategoryService categoryService, IInfoService infoService)
     {
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
@@ -92,6 +94,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         _bgTaskService = bgTaskService;
         _pvnService = pvnService;
         _filterService = filterService;
+        _categoryService = categoryService;
+        _infoService = infoService;
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -313,6 +317,21 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private void JumpToPlayedTimePage()
     {
         _navigationService.NavigateTo(typeof(PlayedTimeViewModel).FullName!, Item);
+    }
+
+    [RelayCommand]
+    private void JumpToHomePageWithDeveloperFilter()
+    {
+        if (_item is null) return;
+        Category? category = _categoryService.GetDeveloperCategory(_item);
+        if (category is null)
+        {
+            _infoService.Info(InfoBarSeverity.Error, msg:"HomePage_NoDeveloperCategory".GetLocalized());
+            return;
+        }
+        _filterService.ClearFilters();
+        _filterService.AddFilter(new CategoryFilter(category));
+        _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
     }
 
     [RelayCommand]

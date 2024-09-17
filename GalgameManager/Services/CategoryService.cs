@@ -239,7 +239,7 @@ public class CategoryService : ICategoryService
     /// <summary>
     /// 获取开发商分类，如果没有则返回null
     /// </summary>
-    private Category? GetDeveloperCategory(Galgame galgame)
+    public Category? GetDeveloperCategory(Galgame galgame)
     {
         foreach(Category category in galgame.Categories)
             if(_developerGroup!.Categories.Contains(category))

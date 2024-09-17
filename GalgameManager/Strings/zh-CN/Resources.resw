@@ -1733,4 +1733,7 @@
   <data name="GalgameSettingPage_LastFetchInfoTime" xml:space="preserve">
     <value>上次拉取数据：{0}</value>
   </data>
+  <data name="HomePage_NoDeveloperCategory" xml:space="preserve">
+    <value>无任何开发商分类包含本游戏</value>
+  </data>
 </root>

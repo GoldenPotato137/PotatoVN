@@ -231,11 +231,14 @@
                             />
 
                         <StackPanel x:Name="GameInfoBlock" RelativePanel.Below="ImageBlock">
+                            <!-- 开发商 -->
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
                                            x:Uid="GalgamePage_Developers" />
-                                <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.Item.Developer, Mode=OneWay, FallbackValue={}}" />
+                                <HyperlinkButton
+                                    Content="{x:Bind ViewModel.Item.Developer.Value, Mode=OneWay, FallbackValue={}}"
+                                    Padding="0 0 0 0" 
+                                    Command="{x:Bind ViewModel.JumpToHomePageWithDeveloperFilterCommand}"/>
                             </StackPanel>
 
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
