@@ -33,7 +33,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public event Action<Galgame>? MetaSavedEvent; //当有galgame元数据保存时触发
     public event Action? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event Action? PhrasedEvent; //当有galgame信息下载完成时触发
-    public event GenericDelegate<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
+    public event Action<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
     public bool IsPhrasing;
 
     public IGalInfoPhraser[] PhraserList

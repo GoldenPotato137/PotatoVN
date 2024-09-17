@@ -10,6 +10,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:models="using:GalgameManager.Models"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:viewModels="using:GalgameManager.ViewModels"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -311,14 +312,17 @@
                             Text="Tags"
                             Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}" />
                         <ItemsRepeater
-                            ItemsSource="{x:Bind ViewModel.Item.Tags.Value, Mode=OneWay, FallbackValue={}}"
+                            ItemsSource="{x:Bind ViewModel.Tags}"
                             Visibility="{x:Bind ViewModel.IsTagVisible, Mode=OneWay}">
                             <ItemsRepeater.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Grid Background="{ThemeResource  ControlAltFillColorSecondaryBrush}" CornerRadius="10"
-                                          Margin="5 7 5 7">
-                                        <TextBlock Padding="5" Text="{x:Bind}" />
-                                    </Grid>
+                                <DataTemplate x:DataType="viewModels:GalgameViewModelTag">
+                                    <Button 
+                                            CornerRadius="10" Padding="0" BorderBrush="{x:Null}"
+                                            Margin="5 7 5 7"
+                                            BorderThickness="0"
+                                            Command="{x:Bind ClickCommand}">
+                                        <TextBlock Padding="5" Text="{x:Bind Tag}" />
+                                    </Button>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
                             <ItemsRepeater.Layout>

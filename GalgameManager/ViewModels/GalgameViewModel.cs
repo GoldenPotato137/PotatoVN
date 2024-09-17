@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -11,6 +12,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
@@ -28,7 +30,9 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private readonly JumpListService _jumpListService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IPvnService _pvnService;
+    private readonly IFilterService _filterService;
     [ObservableProperty] private Galgame? _item;
+    public ObservableCollection<GalgameViewModelTag> Tags { get; } = new();
     [NotifyCanExecuteChangedFor(nameof(PlayCommand))]
     [NotifyCanExecuteChangedFor(nameof(ChangeSavePositionCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResetExePathCommand))]
@@ -78,15 +82,16 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
     public GalgameViewModel(IGalgameCollectionService dataCollectionService, INavigationService navigationService, 
         IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
-        IPvnService pvnService)
+        IPvnService pvnService, IFilterService filterService)
     {
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _navigationService = navigationService;
-        _galgameService.PhrasedEvent += OnGalgameServiceOnPhrasedEvent;
+        _galgameService.PhrasedEvent2 += Update;
         _jumpListService = (JumpListService)jumpListService;
         _localSettingsService = localSettingsService;
         _bgTaskService = bgTaskService;
         _pvnService = pvnService;
+        _filterService = filterService;
     }
     
     public async void OnNavigatedTo(object parameter)
@@ -101,7 +106,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         IsLocalGame = Item.CheckExistLocal();
         IsZipGame = Item.CheckIsZip();
         Item.SavePath = Item.SavePath; //更新存档位置显示
-        UpdateVisibility();
+        Update(_item);
         
         if (param.StartGame && await _localSettingsService.ReadSettingAsync<bool>(KeyValues.QuitStart))
             await Play();
@@ -114,19 +119,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedFrom()
     {
-        _galgameService.PhrasedEvent -= OnGalgameServiceOnPhrasedEvent;
-    }
-    
-    private void UpdateVisibility()
-    {
-        IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
-        IsCharacterVisible = Item?.Characters.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
-        CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
-        CanOpenInYmgal = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Ymgal]);
-        IsRemoveSelectedThreadVisible = Item?.ProcessName is not null ? Visibility.Visible : Visibility.Collapsed;
-        IsSelectProcessVisible = Item?.ProcessName is null ? Visibility.Visible : Visibility.Collapsed;
+        _galgameService.PhrasedEvent2 -= Update;
     }
     
     /// <summary>
@@ -147,7 +140,38 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         return processes[0];
     }
     
-    private void OnGalgameServiceOnPhrasedEvent() => IsPhrasing = false;
+    private void Update(Galgame? game)
+    {
+        if (game is null || game != _item) return;
+        IsPhrasing = false;
+        IsTagVisible = Item?.Tags.Value?.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        IsDescriptionVisible = Item?.Description! != string.Empty ? Visibility.Visible : Visibility.Collapsed;
+        IsCharacterVisible = Item?.Characters.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
+        CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
+        CanOpenInYmgal = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Ymgal]);
+        IsRemoveSelectedThreadVisible = Item?.ProcessName is not null ? Visibility.Visible : Visibility.Collapsed;
+        IsSelectProcessVisible = Item?.ProcessName is null ? Visibility.Visible : Visibility.Collapsed;
+
+        var tagChanged = game.Tags.Value?.Count != Tags.Count;
+        for (var i = 0; i < Tags.Count && !tagChanged; i++)
+            tagChanged = Tags[i].Tag != game.Tags.Value?[i];
+        if (tagChanged)
+        {
+            Tags.Clear();
+            foreach (var tag in game.Tags.Value ?? new())
+                Tags.Add(new GalgameViewModelTag
+                {
+                    Tag = tag,
+                    ClickCommand = new RelayCommand(() =>
+                    {
+                        _filterService.ClearFilters();
+                        _filterService.AddFilter(new TagFilter(tag));
+                        _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+                    }),
+                });
+        }
+    }
 
     #region INFOBAR_CTRL
 
@@ -234,7 +258,6 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         if (Item == null) return;
         IsPhrasing = true;
         await _galgameService.PhraseGalInfoAsync(Item);
-        UpdateVisibility();
     }
 
     [RelayCommand]
@@ -379,7 +402,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private async Task RemoveSelectedThread()
     {
         Item!.ProcessName = null;
-        UpdateVisibility();
+        Update(_item);
         _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_RemoveSelectedThread_Success".GetLocalized());
         await SaveAsync();
     }
@@ -393,7 +416,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         if (dialog.SelectedProcessName is not null)
         {
             Item.ProcessName = dialog.SelectedProcessName;
-            UpdateVisibility();
+            Update(_item);
             await SaveAsync();
             _ = DisplayMsg(InfoBarSeverity.Success, "HomePage_ProcessNameSet".GetLocalized());
         }
@@ -450,4 +473,10 @@ public class GalgamePageParameter
 public class GalgameCharacterParameter
 {
     [Required] public GalgameCharacter GalgameCharacter = null!;
+}
+
+public class GalgameViewModelTag
+{
+    public required string Tag { get; init; }
+    public required IRelayCommand ClickCommand { get; init; }
 }
