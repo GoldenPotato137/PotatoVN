@@ -15,8 +15,10 @@
     
     <Page.Resources>
         <MenuFlyout Placement="Right" x:Key="Flyout">
-            <MenuFlyoutItem Icon="Delete" Text="{x:Bind ViewModel.UiDeleteFolder}" 
-                          Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Edit" x:Uid="LibraryPage_EditFolder"
+                            Command="{x:Bind ViewModel.EditLibraryCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Delete" x:Uid="LibraryPage_DeleteFolder"
+                            Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </MenuFlyout>
         <converter:EnumToStringConverter x:Key="EnumStringConverter" />
         <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
@@ -98,16 +100,11 @@
                                 Style="{ThemeResource DescriptionTextStyle}"
                                 Text="{x:Bind SourceType, Converter={StaticResource EnumStringConverter}}" />
                         </StackPanel>
+                        <!-- 透明控件，确保右键时射线检测能够打到Item上 -->
+                        <Rectangle Fill="Transparent"/> 
                     </Grid>
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>
         </controls:AdaptiveGridView>
-        
-        <InfoBar
-            Grid.Row="2" 
-            IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-            Margin="0 0 0 20"
-            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
     </Grid>
 </Page>

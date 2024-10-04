@@ -448,7 +448,7 @@
   <data name="GalgameFolderCollectionService_DeleteGalgameFolderAsync_Content" xml:space="preserve">
     <value>删除库会把库中的所有游戏都取消托管哦？</value>
   </data>
-  <data name="LibraryPage_DeleteFolder" xml:space="preserve">
+  <data name="LibraryPage_DeleteFolder.Text" xml:space="preserve">
     <value>删除游戏库</value>
   </data>
   <data name="GalgameFolderPage_DownloadInfo" xml:space="preserve">
@@ -1735,5 +1735,8 @@
   </data>
   <data name="HomePage_NoDeveloperCategory" xml:space="preserve">
     <value>无任何开发商分类包含本游戏</value>
+  </data>
+  <data name="LibraryPage_EditFolder.Text" xml:space="preserve">
+    <value>管理库</value>
   </data>
 </root>

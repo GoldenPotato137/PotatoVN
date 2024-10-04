@@ -1,11 +1,11 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI.UI;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Helpers;
+using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
@@ -17,15 +17,14 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly GalgameSourceCollectionService _galSourceCollectionService;
+    private readonly IInfoService _infoService;
+    private readonly IFilterService _filterService;
     
     [ObservableProperty]
     private AdvancedCollectionView _source = null!;
-    public ICommand ItemClickCommand { get; }
-    public ICommand AddLibraryCommand { get; }
     
     #region UI
 
-    public readonly string UiDeleteFolder = "LibraryPage_DeleteFolder".GetLocalized();
     public readonly string UiSearch = "Search".GetLocalized();
 
     #endregion
@@ -45,18 +44,18 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     
     #endregion
 
-    public LibraryViewModel(INavigationService navigationService, IGalgameSourceCollectionService galFolderService)
+    public LibraryViewModel(INavigationService navigationService, IGalgameSourceCollectionService galFolderService,
+        IInfoService infoService, IFilterService filterService)
     {
         _navigationService = navigationService;
         _galSourceCollectionService = (GalgameSourceCollectionService) galFolderService;
-
-        ItemClickCommand = new RelayCommand<GalgameSourceBase>(OnItemClick);
-        AddLibraryCommand = new RelayCommand(AddLibrary);
+        _infoService = infoService;
+        _filterService = filterService;
     }
 
     public void OnNavigatedTo(object parameter)
     {
-        Source = new AdvancedCollectionView(_galSourceCollectionService.GetGalgameSources(), true);
+        Source = new AdvancedCollectionView(new ObservableCollection<GalgameSourceBase>(), true);
         Source.Filter = s =>
         {
             if (s is GalgameSourceBase source)
@@ -66,18 +65,49 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 
             return false;
         };
+        OnItemClick(null); //显示根库
+        _galSourceCollectionService.OnSourceChanged += HandleSourceCollectionChanged;
     }
 
-    public void OnNavigatedFrom(){}
+    public void OnNavigatedFrom()
+    {
+        _galSourceCollectionService.OnSourceChanged -= HandleSourceCollectionChanged;
+    }
     
+    private void HandleSourceCollectionChanged() => OnItemClick(null);
+
+    /// <summary>
+    /// 点击了某个库（若clickItem为null则显示所有根库）<br/>
+    /// 若这个库有子库，保持在LibraryViewModel界面，否则以库为Filter进入主界面
+    /// </summary>
+    /// <param name="clickedItem"></param>
+    [RelayCommand]
     private void OnItemClick(GalgameSourceBase? clickedItem)
     {
-        if (clickedItem != null)
+        Source.Clear();
+        if (clickedItem == null)
         {
-            _navigationService.NavigateTo(typeof(GalgameSourceViewModel).FullName!, clickedItem.Url);
+            foreach (GalgameSourceBase src in _galSourceCollectionService.GetGalgameSources()
+                         .Where(s => s.ParentSource is null))
+                Source.Add(src);
+            return;
+        }
+
+        if (clickedItem.SubSources.Count > 0)
+        {
+            foreach (GalgameSourceBase src in _galSourceCollectionService.GetGalgameSources()
+                         .Where(s => s.ParentSource == clickedItem))
+                Source.Add(src);
+        }
+        else
+        {
+            _filterService.ClearFilters();
+            _filterService.AddFilter(new SourceFilter(clickedItem));
+            _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         }
     }
 
+    [RelayCommand]
     private async void AddLibrary()
     {
         try
@@ -101,8 +131,15 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
         }
         catch (Exception e)
         {
-            _ = DisplayMsgAsync(InfoBarSeverity.Error, e.Message);
+            _infoService.Info(InfoBarSeverity.Error, msg:e.Message);
         }
+    }
+
+    [RelayCommand]
+    private void EditLibrary(GalgameSourceBase? source)
+    {
+        if (source is null) return;
+        _navigationService.NavigateTo(typeof(GalgameSourceViewModel).FullName!, source.Url);
     }
 
     [RelayCommand]
@@ -116,32 +153,6 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     private void ScanAll()
     {
         _galSourceCollectionService.ScanAll();
-        _ = DisplayMsgAsync(InfoBarSeverity.Success, "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
+        _infoService.Info(InfoBarSeverity.Success, msg: "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
     }
-    
-    #region INFO_BAR_CTRL
-
-    private int _infoBarIndex;
-    [ObservableProperty] private bool _isInfoBarOpen;
-    [ObservableProperty] private string _infoBarMessage = string.Empty;
-    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
-
-    /// <summary>
-    /// 使用InfoBar显示信息
-    /// </summary>
-    /// <param name="infoBarSeverity">信息严重程度</param>
-    /// <param name="msg">信息</param>
-    /// <param name="delayMs">显示时长(ms)</param>
-    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
-    {
-        var currentIndex = ++_infoBarIndex;
-        InfoBarSeverity = infoBarSeverity;
-        InfoBarMessage = msg;
-        IsInfoBarOpen = true;
-        await Task.Delay(delayMs);
-        if (currentIndex == _infoBarIndex)
-            IsInfoBarOpen = false;
-    }
-
-    #endregion
 }
