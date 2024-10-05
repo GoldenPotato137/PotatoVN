@@ -1739,4 +1739,7 @@
   <data name="LibraryPage_EditFolder.Text" xml:space="preserve">
     <value>管理库</value>
   </data>
+  <data name="LibraryPage_Back.Label" xml:space="preserve">
+    <value>回到上个库</value>
+  </data>
 </root>

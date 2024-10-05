@@ -5,11 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:models="using:GalgameManager.Models"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:sources="using:GalgameManager.Models.Sources"
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d">
     
@@ -32,6 +29,14 @@
         </Grid.RowDefinitions>
         
         <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+            <!-- 返回 -->
+            <AppBarButton Icon="Back" x:Uid="LibraryPage_Back"
+                          Command="{x:Bind ViewModel.BackCommand}"
+                          IsEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="Left"/>
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
             <!-- 新增游戏库 -->
             <AppBarButton Icon="Add" x:Uid="LibraryPage_AddGalgameFolder"
                           Command="{x:Bind ViewModel.AddLibraryCommand}">
@@ -72,10 +77,11 @@
             DesiredWidth="180"
             ItemHeight="160"
             IsItemClickEnabled="True"
-            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
+            ItemClickCommand="{x:Bind ViewModel.NavigateToCommand}"
             ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
             SelectionMode="None"
-            StretchContentForSingleRow="False">
+            StretchContentForSingleRow="False"
+            PointerPressed="UIElement_OnPointerPressed">
             <controls:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="sources:GalgameSourceBase">
                     <Grid

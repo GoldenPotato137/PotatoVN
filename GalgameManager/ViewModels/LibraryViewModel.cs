@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI.UI;
@@ -19,6 +20,9 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     private readonly GalgameSourceCollectionService _galSourceCollectionService;
     private readonly IInfoService _infoService;
     private readonly IFilterService _filterService;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsBackEnabled))]
+    private GalgameSourceBase? _currentSource;
+    private GalgameSourceBase? _lastBackSource;
     
     [ObservableProperty]
     private AdvancedCollectionView _source = null!;
@@ -26,6 +30,10 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     #region UI
 
     public readonly string UiSearch = "Search".GetLocalized();
+    public bool IsBackEnabled => _currentSource != null;
+
+    private void UpdateIsBackEnabled(object? o, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs) =>
+        OnPropertyChanged(nameof(IsBackEnabled));
 
     #endregion
 
@@ -65,24 +73,28 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 
             return false;
         };
-        OnItemClick(null); //显示根库
+        NavigateTo(null); //显示根库
         _galSourceCollectionService.OnSourceChanged += HandleSourceCollectionChanged;
     }
 
     public void OnNavigatedFrom()
     {
         _galSourceCollectionService.OnSourceChanged -= HandleSourceCollectionChanged;
+        _lastBackSource = _currentSource = null;
     }
-    
-    private void HandleSourceCollectionChanged() => OnItemClick(null);
+
+    private void HandleSourceCollectionChanged()
+    {
+        _currentSource = _lastBackSource = null;
+        NavigateTo(null);
+    }
 
     /// <summary>
     /// 点击了某个库（若clickItem为null则显示所有根库）<br/>
     /// 若这个库有子库，保持在LibraryViewModel界面，否则以库为Filter进入主界面
     /// </summary>
-    /// <param name="clickedItem"></param>
     [RelayCommand]
-    private void OnItemClick(GalgameSourceBase? clickedItem)
+    private void NavigateTo(GalgameSourceBase? clickedItem)
     {
         Source.Clear();
         if (clickedItem == null)
@@ -90,10 +102,8 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
             foreach (GalgameSourceBase src in _galSourceCollectionService.GetGalgameSources()
                          .Where(s => s.ParentSource is null))
                 Source.Add(src);
-            return;
         }
-
-        if (clickedItem.SubSources.Count > 0)
+        else if (clickedItem.SubSources.Count > 0)
         {
             foreach (GalgameSourceBase src in _galSourceCollectionService.GetGalgameSources()
                          .Where(s => s.ParentSource == clickedItem))
@@ -105,6 +115,23 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
             _filterService.AddFilter(new SourceFilter(clickedItem));
             _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         }
+
+        _currentSource = clickedItem;
+    }
+
+    [RelayCommand]
+    private void Back()
+    {
+        if (_currentSource is null) return;
+        _lastBackSource = _currentSource;
+        NavigateTo(_currentSource.ParentSource);
+    }
+
+    [RelayCommand]
+    private void Forward()
+    {
+        if (_lastBackSource is null || _lastBackSource == _currentSource) return;
+        NavigateTo(_lastBackSource);
     }
 
     [RelayCommand]
