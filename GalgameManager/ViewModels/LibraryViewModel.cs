@@ -30,10 +30,7 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     #region UI
 
     public readonly string UiSearch = "Search".GetLocalized();
-    public bool IsBackEnabled => _currentSource != null;
-
-    private void UpdateIsBackEnabled(object? o, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs) =>
-        OnPropertyChanged(nameof(IsBackEnabled));
+    public bool IsBackEnabled => CurrentSource != null;
 
     #endregion
 
@@ -80,12 +77,12 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     public void OnNavigatedFrom()
     {
         _galSourceCollectionService.OnSourceChanged -= HandleSourceCollectionChanged;
-        _lastBackSource = _currentSource = null;
+        _lastBackSource = CurrentSource = null;
     }
 
     private void HandleSourceCollectionChanged()
     {
-        _currentSource = _lastBackSource = null;
+        CurrentSource = _lastBackSource = null;
         NavigateTo(null);
     }
 
@@ -116,21 +113,21 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
             _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
         }
 
-        _currentSource = clickedItem;
+        CurrentSource = clickedItem;
     }
 
     [RelayCommand]
     private void Back()
     {
-        if (_currentSource is null) return;
-        _lastBackSource = _currentSource;
-        NavigateTo(_currentSource.ParentSource);
+        if (CurrentSource is null) return;
+        _lastBackSource = CurrentSource;
+        NavigateTo(CurrentSource.ParentSource);
     }
 
     [RelayCommand]
     private void Forward()
     {
-        if (_lastBackSource is null || _lastBackSource == _currentSource) return;
+        if (_lastBackSource is null || _lastBackSource == CurrentSource) return;
         NavigateTo(_lastBackSource);
     }
 

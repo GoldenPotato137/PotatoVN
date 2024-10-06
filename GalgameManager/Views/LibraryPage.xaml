@@ -8,6 +8,7 @@
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:sources="using:GalgameManager.Models.Sources"
     xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:prefab="using:GalgameManager.Views.Prefab"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -17,8 +18,6 @@
             <MenuFlyoutItem Icon="Delete" x:Uid="LibraryPage_DeleteFolder"
                             Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </MenuFlyout>
-        <converter:EnumToStringConverter x:Key="EnumStringConverter" />
-        <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -84,31 +83,8 @@
             PointerPressed="UIElement_OnPointerPressed">
             <controls:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="sources:GalgameSourceBase">
-                    <Grid
-                        x:Name="itemThumbnail"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-                        ContextFlyout="{StaticResource Flyout}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <FontIcon
-                                Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyphConverter}}"
-                                FontFamily="Segoe Fluent Icons"
-                                FontSize="50"/>
-                            <TextBlock
-                                MaxHeight="85"
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource BodyTextStyle}"
-                                Text="{x:Bind Path}" />
-                            <TextBlock
-                                MaxHeight="85"
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource DescriptionTextStyle}"
-                                Text="{x:Bind SourceType, Converter={StaticResource EnumStringConverter}}" />
-                        </StackPanel>
-                        <!-- 透明控件，确保右键时射线检测能够打到Item上 -->
-                        <Rectangle Fill="Transparent"/> 
-                    </Grid>
+                    <prefab:SourcePrefab Source="{x:Bind}"
+                                         Flyout="{StaticResource Flyout}" />
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>
         </controls:AdaptiveGridView>
