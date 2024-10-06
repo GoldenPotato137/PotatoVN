@@ -12,7 +12,7 @@ public class GameToOpacityConverter : IValueConverter
     {
         if (value is Galgame game)
             return SpecialDisplayVirtualGame && game.SourceType == GalgameSourceType.Virtual ? 0.5 : 1;
-        return 1;
+        return 1.0;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) => true; //不需要
