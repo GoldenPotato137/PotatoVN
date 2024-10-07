@@ -1,11 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Contracts;
 using GalgameManager.Helpers;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models.Sources;
 
-public partial class GalgameSourceBase : ObservableObject
+public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObject
 {
     [JsonIgnore] public bool IsRunning;
     /// 所有游戏和路径，只用于序列化，任何时候都不应该直接操作这个列表

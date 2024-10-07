@@ -14,7 +14,8 @@
         <converter:SourcesToStringConverter x:Key="SourcesToStringConverter" />
     </UserControl.Resources>
 
-    <Grid ContextFlyout="{x:Bind Flyout}" Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+    <Grid MinWidth="175" MinHeight="300" 
+          ContextFlyout="{x:Bind Flyout}" Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
         <StackPanel HorizontalAlignment="Center">
             <Grid
                 Opacity="{x:Bind Galgame, 

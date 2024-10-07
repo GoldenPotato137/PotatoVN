@@ -5,10 +5,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:sources="using:GalgameManager.Models.Sources"
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:prefab="using:GalgameManager.Views.Prefab"
+    xmlns:models="using:GalgameManager.Models"
+    xmlns:dataTemplateSelector="using:GalgameManager.Helpers.DataTemplateSelector"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -18,16 +19,28 @@
             <MenuFlyoutItem Icon="Delete" x:Uid="LibraryPage_DeleteFolder"
                             Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </MenuFlyout>
+        <DataTemplate x:Key="GalgameTemplate" x:DataType="models:Galgame">
+            <prefab:GalgamePrefab Galgame="{x:Bind}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="SourceTemplate" x:DataType="sources:GalgameSourceBase">
+            <prefab:SourcePrefab Source="{x:Bind}"
+                                 Flyout="{StaticResource Flyout}"/>
+        </DataTemplate>
+        <dataTemplateSelector:DisplayableGameObjectTemplateSelector 
+            x:Key="ObjectSelector"
+            GalgameTemplate="{StaticResource GalgameTemplate}"
+            SourceTemplate="{StaticResource SourceTemplate}"/>
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="0 0 0 20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="0 -67 0 0">
             <!-- 返回 -->
             <AppBarButton Icon="Back" x:Uid="LibraryPage_Back"
                           Command="{x:Bind ViewModel.BackCommand}"
@@ -70,23 +83,16 @@
                 </AppBarButton>
             </CommandBar.SecondaryCommands>
         </CommandBar>
-        
+
         <controls:AdaptiveGridView
-            Grid.Row="1" 
-            DesiredWidth="180"
-            ItemHeight="160"
+            Grid.Row="1"
+            DesiredWidth="175"
             IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.NavigateToCommand}"
             ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
             SelectionMode="None"
             StretchContentForSingleRow="False"
-            PointerPressed="UIElement_OnPointerPressed">
-            <controls:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="sources:GalgameSourceBase">
-                    <prefab:SourcePrefab Source="{x:Bind}"
-                                         Flyout="{StaticResource Flyout}" />
-                </DataTemplate>
-            </controls:AdaptiveGridView.ItemTemplate>
-        </controls:AdaptiveGridView>
+            PointerPressed="UIElement_OnPointerPressed"
+            ItemTemplateSelector="{StaticResource ObjectSelector}" />
     </Grid>
 </Page>

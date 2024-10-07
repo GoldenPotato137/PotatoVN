@@ -1,11 +1,12 @@
 ﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI.UI;
+using GalgameManager.Contracts;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
 using GalgameManager.Helpers;
+using GalgameManager.Models;
 using GalgameManager.Models.Filters;
 using GalgameManager.Models.Sources;
 using GalgameManager.Services;
@@ -60,14 +61,13 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedTo(object parameter)
     {
-        Source = new AdvancedCollectionView(new ObservableCollection<GalgameSourceBase>(), true);
+        Source = new AdvancedCollectionView(new ObservableCollection<IDisplayableGameObject>(), true);
         Source.Filter = s =>
         {
             if (s is GalgameSourceBase source)
-            {
                 return SearchKey.IsNullOrEmpty() || source.ApplySearchKey(SearchKey);
-            }
-
+            if (s is Galgame game)
+                return SearchKey.IsNullOrEmpty() || game.ApplySearchKey(SearchKey);
             return false;
         };
         NavigateTo(null); //显示根库
@@ -91,7 +91,7 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
     /// 若这个库有子库，保持在LibraryViewModel界面，否则以库为Filter进入主界面
     /// </summary>
     [RelayCommand]
-    private void NavigateTo(GalgameSourceBase? clickedItem)
+    private void NavigateTo(IDisplayableGameObject? clickedItem)
     {
         Source.Clear();
         if (clickedItem == null)
@@ -100,20 +100,35 @@ public partial class LibraryViewModel : ObservableObject, INavigationAware
                          .Where(s => s.ParentSource is null))
                 Source.Add(src);
         }
-        else if (clickedItem.SubSources.Count > 0)
-        {
-            foreach (GalgameSourceBase src in _galSourceCollectionService.GetGalgameSources()
-                         .Where(s => s.ParentSource == clickedItem))
-                Source.Add(src);
-        }
-        else
-        {
-            _filterService.ClearFilters();
-            _filterService.AddFilter(new SourceFilter(clickedItem));
-            _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
-        }
 
-        CurrentSource = clickedItem;
+        if (clickedItem is Galgame galgame)
+        {
+            _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!,
+                new GalgamePageParameter { Galgame = galgame });
+        }
+        else if (clickedItem is GalgameSourceBase source)
+        {
+            if (source.SubSources.Count > 0)
+            {
+                foreach (GalgameSourceBase src in _galSourceCollectionService.GetGalgameSources()
+                             .Where(s => s.ParentSource == clickedItem))
+                    Source.Add(src);
+                foreach (GalgameAndPath game in source.Galgames)
+                    Source.Add(game.Galgame);
+            }
+            else
+            {
+                _filterService.ClearFilters();
+                _filterService.AddFilter(new SourceFilter(source));
+                _navigationService.NavigateTo(typeof(HomeViewModel).FullName!);
+                // foreach (GalgameAndPath game in source.Galgames)
+                //     Source.Add(game.Galgame);
+            }
+
+            CurrentSource = source;
+        }
+        else if (clickedItem is null)
+            CurrentSource = null;
     }
 
     [RelayCommand]

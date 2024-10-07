@@ -13,6 +13,7 @@
     </UserControl.Resources>
 
     <Grid
+        Height="160" Width="175"
         Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
         ContextFlyout="{x:Bind Flyout}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">

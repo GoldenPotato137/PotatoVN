@@ -171,7 +171,6 @@
             <controls:AdaptiveGridView
                 Grid.Row="1"
                 DesiredWidth="175"
-                ItemHeight="300"
                 IsItemClickEnabled="True"
                 ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
                 ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
