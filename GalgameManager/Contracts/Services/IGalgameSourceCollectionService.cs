@@ -13,6 +13,11 @@ public interface IGalgameSourceCollectionService
     public Action<GalgameSourceBase>? OnSourceDeleted { get; set; }
     
     /// <summary>
+    /// 当库列表被修改（添加、删除）时触发
+    /// </summary>
+    public Action? OnSourceChanged { get; set; }
+    
+    /// <summary>
     /// 初始化
     /// </summary>
     /// <returns></returns>

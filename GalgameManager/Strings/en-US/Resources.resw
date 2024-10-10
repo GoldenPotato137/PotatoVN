@@ -448,7 +448,7 @@ Failure reasons:</value>
   <data name="GalgameFolderCollectionService_DeleteGalgameFolderAsync_Content" xml:space="preserve">
     <value>Removing the library will unhost all games in the library</value>
   </data>
-  <data name="LibraryPage_DeleteFolder" xml:space="preserve">
+  <data name="LibraryPage_DeleteFolder.Text" xml:space="preserve">
     <value>Delete library</value>
   </data>
   <data name="GalgameFolderPage_DownloadInfo" xml:space="preserve">

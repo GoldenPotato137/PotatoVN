@@ -13,7 +13,8 @@ namespace GalgameManager.Services;
 public class GalgameSourceCollectionService : IGalgameSourceCollectionService
 {
     public Action<GalgameSourceBase>? OnSourceDeleted { get; set; }
-    
+    public Action? OnSourceChanged { get; set; }
+
     private ObservableCollection<GalgameSourceBase> _galgameSources = new();
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgTaskService _bgTaskService;
@@ -35,10 +36,13 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
                               converters: new() { new GalgameAndUidConverter() })
                           ?? new ObservableCollection<GalgameSourceBase>();
         await SourceUpgradeAsync();
+        await NameAndSubSourceUpgradeAsync();
         // 给Galgame注入Source列表
         foreach (GalgameSourceBase s in _galgameSources)
             foreach (Galgame g in s.GetGalgameList().Where(g => !g.Sources.Contains(s)))
                 g.Sources.Add(s);
+        // 计算子库
+        CalcSubSources();
     }
 
     public Task StartAsync()
@@ -115,6 +119,9 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
             await _bgTaskService.AddBgTask(new GetGalgameInSourceTask(galgameSource));
         }
         
+        CalcSubSources();
+        OnSourceChanged?.Invoke();
+        
         return galgameSource;
     }
     
@@ -135,8 +142,10 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         if (!delete || !_galgameSources.Contains(source)) return;
         
         _galgameSources.Remove(source);
+        CalcSubSources();
         await Save();
         OnSourceDeleted?.Invoke(source);
+        OnSourceChanged?.Invoke();
     }
 
     public void MoveInNoOperate(GalgameSourceBase target, Galgame game, string path)
@@ -195,6 +204,31 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
     }
 
     /// <summary>
+    /// 重新计算所有库的归属关系
+    /// </summary>
+    private void CalcSubSources()
+    {
+        // 确实有O(nlogn)的写法，但不是特别有必要，先O(n^2)吧
+        foreach (GalgameSourceBase src in _galgameSources)
+        {
+            src.ParentSource = null;
+            src.SubSources.Clear();
+        }
+
+        foreach (GalgameSourceBase src in _galgameSources)
+        {
+            GalgameSourceBase? target = null;
+            foreach (GalgameSourceBase current in _galgameSources)
+                if (src != current && Utils.IsPathContained(current.Path, src.Path) &&
+                    (target is null || current.Path.Length > target.Path.Length))
+                    target = current;
+            src.ParentSource = target;
+            target?.SubSources.Add(src);
+        }
+    }
+
+    #region UPGRADES
+    /// <summary>
     /// 将galgame源归属记录从galgame移入source管理
     /// </summary>
     private async Task SourceUpgradeAsync()
@@ -230,5 +264,18 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         await Save();
         await _localSettingsService.SaveSettingAsync(KeyValues.SourceUpgrade, true);
     }
+
+    private async Task NameAndSubSourceUpgradeAsync()
+    {
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SourceNameAndSubUpgrade))
+            return;
+        foreach (GalgameSourceBase src in _galgameSources)
+            src.SetNameFromPath();
+        CalcSubSources();
+        await _localSettingsService.SaveSettingAsync(KeyValues.SourceNameAndSubUpgrade, true);  
+        await Save();
+    }
+
+    #endregion
 }
 

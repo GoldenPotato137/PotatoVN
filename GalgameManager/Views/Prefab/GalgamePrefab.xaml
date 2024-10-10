@@ -1,0 +1,78 @@
+﻿<UserControl
+    mc:Ignorable="d"
+    x:Class="GalgameManager.Views.Prefab.GalgamePrefab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <converter:ImagePathConverter x:Key="ImagePathConverter" />
+        <converter:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
+        <converter:GameToOpacityConverter x:Key="GameToOpacityConverter" />
+        <converter:SourcesToStringConverter x:Key="SourcesToStringConverter" />
+    </UserControl.Resources>
+
+    <Grid MinWidth="175" MinHeight="300" 
+          ContextFlyout="{x:Bind Flyout}" Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+        <StackPanel HorizontalAlignment="Center">
+            <Grid
+                Opacity="{x:Bind Galgame, 
+                            Converter={StaticResource GameToOpacityConverter}}"
+                x:Name="ConnectedElement">
+                <Rectangle
+                    Height="209"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="150">
+                    <Rectangle.Fill>
+                        <ImageBrush
+                            ImageSource="{x:Bind Galgame.ImagePath.Value, Mode=OneWay, 
+                            Converter={StaticResource ImagePathConverter}, FallbackValue={x:Null}}"
+                            Stretch="{x:Bind ImageStretch, Mode=OneWay}" />
+                    </Rectangle.Fill>
+                </Rectangle>
+                <!--  游玩状态标记(右上角)  -->
+                <Polygon
+                    Fill="{x:Bind Galgame.PlayType, Mode=OneWay, FallbackValue={x:Null}, 
+                        Converter={StaticResource PlayTypeConverter}}"
+                    HorizontalAlignment="Right"
+                    Points="0,0 0,20 -20,0"
+                    Stroke="{x:Bind Galgame.PlayType, Mode=OneWay, FallbackValue={x:Null}, 
+                        Converter={StaticResource PlayTypeConverter}}"
+                    StrokeThickness="2"
+                    VerticalAlignment="Top"
+                    Visibility="{x:Bind PlayTypeVisibility, Mode=OneWay}" />
+                <!--  来源标记(右下角)  -->
+                <Border
+                    Background="{ThemeResource AccentTextFillColorTertiaryBrush}"
+                    CornerRadius="4"
+                    HorizontalAlignment="Right"
+                    Padding="5,2,5,2"
+                    VerticalAlignment="Bottom">
+                    <Border.Shadow>
+                        <ThemeShadow />
+                    </Border.Shadow>
+                    <TextBlock
+                        FontFamily="Segoe Fluent Icons"
+                        FontSize="16"
+                        HorizontalAlignment="Center"
+                        Text="{x:Bind Galgame.Sources, FallbackValue={x:Null}, Mode=OneWay,
+                            Converter={StaticResource SourcesToStringConverter}}"
+                        VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+
+            <TextBlock
+                HorizontalAlignment="Center"
+                Margin="{StaticResource XXSmallTopMargin}"
+                MaxHeight="85"
+                Style="{ThemeResource BodyTextStyle}"
+                Text="{x:Bind Galgame.Name, Mode=OneWay, FallbackValue={x:Null}}" />
+        </StackPanel>
+        
+        <!-- 透明控件，确保右键时射线检测能够打到Item上 -->
+        <Rectangle Fill="Transparent" />
+    </Grid>
+</UserControl>

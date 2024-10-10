@@ -1,19 +1,26 @@
-﻿using GalgameManager.Helpers;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Contracts;
+using GalgameManager.Helpers;
 using Newtonsoft.Json;
 using StdPath = System.IO.Path;
 
 namespace GalgameManager.Models.Sources;
 
-public class GalgameSourceBase
+public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObject
 {
     [JsonIgnore] public bool IsRunning;
     /// 所有游戏和路径，只用于序列化，任何时候都不应该直接操作这个列表
     public List<GalgameAndPath> Galgames { get; } = new();
+    /// 子库列表；由Service初始化时计算，不在json中存储
+    [JsonIgnore] public List<GalgameSourceBase> SubSources { get; } = new();
+    /// 父库，若为null则表示这是根库；由Service初始化时计算，不在json中存储
+    [JsonIgnore] public GalgameSourceBase? ParentSource { get; set; }
 
     public string Url => CalcUrl(SourceType, Path);
     public string Path { get; set; } = "";
     public virtual GalgameSourceType SourceType => throw new NotImplementedException();
     public bool ScanOnStart { get; set; }
+    [ObservableProperty] private string _name = string.Empty;
     
     public static string CalcUrl(GalgameSourceType type, string path) => $"{type.SourceTypeToString()}://{path}";
 
@@ -27,6 +34,7 @@ public class GalgameSourceBase
     public GalgameSourceBase(string path)
     {
         Path = path;
+        SetNameFromPath();
     }
 
     public GalgameSourceBase()
@@ -105,6 +113,21 @@ public class GalgameSourceBase
     public virtual bool ApplySearchKey(string searchKey)
     {
         return Path.ContainX(searchKey);
+    }
+
+    public override string ToString() => Name;
+
+    public void SetNameFromPath()
+    {
+        try
+        {
+            DirectoryInfo info = new(Path);
+            Name = info.Name;
+        }
+        catch (Exception) //Path too long
+        {
+            //ignore
+        }
     }
 
 }

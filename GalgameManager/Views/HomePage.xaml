@@ -13,6 +13,7 @@
     xmlns:filters="using:GalgameManager.Models.Filters"
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:prefab="using:GalgameManager.Views.Prefab"
     mc:Ignorable="d"
     x:Name="Page"
     NavigationCacheMode="Required">
@@ -170,7 +171,6 @@
             <controls:AdaptiveGridView
                 Grid.Row="1"
                 DesiredWidth="175"
-                ItemHeight="300"
                 IsItemClickEnabled="True"
                 ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
                 ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
@@ -180,54 +180,11 @@
                 animations:Connected.ListItemElementName="ConnectedElement">
                 <controls:AdaptiveGridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
-                        <Grid
-                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}" ContextFlyout="{StaticResource GalFlyout}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Grid x:Name="ConnectedElement"
-                                      Opacity="{x:Bind Converter={StaticResource GameToOpacityConverter}}">
-                                    <Rectangle Height="209" Width="150"
-                                               HorizontalAlignment="Center" 
-                                               VerticalAlignment="Center"
-                                               >
-                                        <Rectangle.Fill>
-                                            <ImageBrush 
-                                                ImageSource="{x:Bind ImagePath.Value, 
-                                                Mode=OneWay, 
-                                                Converter={StaticResource ImagePathConverter}}"
-                                                Stretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
-                                                />
-                                        </Rectangle.Fill>
-                                    </Rectangle>
-                                    <!-- 游玩状态标记(右上角) -->
-                                    <Polygon x:Name="PlayTypePolygon" HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                             StrokeThickness="2" Points="0,0 0,20 -20,0"
-                                             Visibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
-                                             Stroke="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
-                                             Fill="{x:Bind PlayType, Mode=OneWay, Converter={StaticResource PlayTypeConverter}}"
-                                             />
-                                    <!-- 来源标记(右下角) -->
-                                    <Border 
-                                        Background="{ThemeResource AccentTextFillColorTertiaryBrush}"
-                                        HorizontalAlignment="Right" VerticalAlignment="Bottom" 
-                                        Padding="5 2 5 2" CornerRadius="4">
-                                        <Border.Shadow>
-                                            <ThemeShadow />
-                                        </Border.Shadow>
-                                        <TextBlock
-                                            Text="{x:Bind Sources, Converter={StaticResource SourcesToStringConverter}}"
-                                            FontFamily="Segoe Fluent Icons" FontSize="16"
-                                            VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
-            
-                                <TextBlock
-                                    MaxHeight="85"
-                                    Margin="{StaticResource XXSmallTopMargin}"
-                                    HorizontalAlignment="Center"
-                                    Style="{ThemeResource BodyTextStyle}"
-                                    Text="{x:Bind Name.Value, Mode=OneWay}" />
-                            </StackPanel>
-                        </Grid>
+                        <prefab:GalgamePrefab
+                            Galgame="{x:Bind}"
+                            ImageStretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
+                            PlayTypeVisibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
+                            Flyout="{StaticResource GalFlyout}"/>
                     </DataTemplate>
                 </controls:AdaptiveGridView.ItemTemplate>
             </controls:AdaptiveGridView>
