@@ -89,6 +89,23 @@
                     </Grid>
                     
                     <Grid>
+                        <!--游戏启动参数-->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <!--游戏是否转日区-->
+                            <TextBlock x:Uid="GalgameSettingPage_IsJapaneseRegion" Margin="0 0 15 0" VerticalAlignment="Center"
+                                        HorizontalAlignment="Stretch"/>
+                            <CheckBox Grid.Column="1" 
+                                      IsChecked="{x:Bind ViewModel.IsJapaneseRegion, Mode=TwoWay}"
+                                      VerticalAlignment="Center" 
+                                      HorizontalAlignment="Stretch"/>
+                        </Grid>
+                    </Grid>
+                    
+                        <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
