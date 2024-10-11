@@ -20,10 +20,6 @@
 
     <Page.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-        <converters:ImagePathConverter x:Key="ImagePathConverter"/>
-        <converters:PlayTypeToSolidColorBrushConverter x:Key="PlayTypeConverter" />
-        <converters:GameToOpacityConverter x:Key="GameToOpacityConverter"/>
-        <converters:SourcesToStringConverter x:Key="SourcesToStringConverter"/>
         <MenuFlyout x:Name="GalFlyout">
             <MenuFlyoutItem Icon="Edit" Text="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <MenuFlyoutItem Icon="Download" Text="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
@@ -167,27 +163,28 @@
                     </AppBarToggleButton>
                 </CommandBar.SecondaryCommands>
             </CommandBar>
-
-            <controls:AdaptiveGridView
-                Grid.Row="1"
-                DesiredWidth="175"
-                IsItemClickEnabled="True"
-                ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
-                ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
-                SelectionMode="None"
-                StretchContentForSingleRow="False"
-                animations:Connected.ListItemKey="galgameItem"
-                animations:Connected.ListItemElementName="ConnectedElement">
-                <controls:AdaptiveGridView.ItemTemplate>
+            
+            <GridView Grid.Row="1" 
+                      ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}"
+                      IsItemClickEnabled="True" SelectionMode="None"
+                      animations:Connected.ListItemKey="galgameItem"
+                      animations:Connected.ListItemElementName="ConnectedElement">
+                <GridView.ItemTemplate>
                     <DataTemplate x:DataType="models:Galgame">
                         <prefab:GalgamePrefab
                             Galgame="{x:Bind}"
                             ImageStretch="{Binding ElementName=Page, Path=ViewModel.Stretch, Mode=OneWay}"
-                            PlayTypeVisibility="{Binding ElementName=Page, Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
-                            Flyout="{StaticResource GalFlyout}"/>
+                            PlayTypeVisibility="{Binding ElementName=Page,
+                                    Path=ViewModel.DisplayPlayTypePolygon, Mode=OneWay}"
+                            Flyout="{StaticResource GalFlyout}" />
                     </DataTemplate>
-                </controls:AdaptiveGridView.ItemTemplate>
-            </controls:AdaptiveGridView>
+                </GridView.ItemTemplate>
+                <interactivity:Interaction.Behaviors>
+                    <core:EventTriggerBehavior EventName="ItemClick">
+                        <core:InvokeCommandAction Command="{x:Bind ViewModel.ItemClickCommand}" />
+                    </core:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
+            </GridView>
             
             <!-- Drag&Drop(用于提示的区域) -->
             <Border Grid.Row="1" CornerRadius="5" 

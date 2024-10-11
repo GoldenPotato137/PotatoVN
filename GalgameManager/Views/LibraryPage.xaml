@@ -4,12 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:sources="using:GalgameManager.Models.Sources"
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:prefab="using:GalgameManager.Views.Prefab"
     xmlns:models="using:GalgameManager.Models"
     xmlns:dataTemplateSelector="using:GalgameManager.Helpers.DataTemplateSelector"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d">
     
     <Page.Resources>
@@ -83,16 +84,17 @@
                 </AppBarButton>
             </CommandBar.SecondaryCommands>
         </CommandBar>
-
-        <controls:AdaptiveGridView
-            Grid.Row="1"
-            DesiredWidth="175"
-            IsItemClickEnabled="True"
-            ItemClickCommand="{x:Bind ViewModel.NavigateToCommand}"
-            ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
-            SelectionMode="None"
-            StretchContentForSingleRow="False"
-            PointerPressed="UIElement_OnPointerPressed"
-            ItemTemplateSelector="{StaticResource ObjectSelector}" />
+        
+        <GridView Grid.Row="1"
+                  ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}"
+                  IsItemClickEnabled="True" SelectionMode="None"
+                  ItemTemplateSelector="{StaticResource ObjectSelector}"
+                  PointerPressed="UIElement_OnPointerPressed">
+            <interactivity:Interaction.Behaviors>
+                <core:EventTriggerBehavior EventName="ItemClick">
+                    <core:InvokeCommandAction Command="{x:Bind ViewModel.ItemClickCommand}" />
+                </core:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+        </GridView>
     </Grid>
 </Page>
