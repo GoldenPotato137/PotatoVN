@@ -4,8 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
+    xmlns:viewModels="using:GalgameManager.ViewModels"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:converter="using:GalgameManager.Helpers.Converter"
     mc:Ignorable="d">
+    
+    <Page.Resources>
+        <StackLayout x:Name="VerticalStackLayout" Orientation="Vertical" Spacing="8"/>
+        <converter:TimeToDisplayTimeConverter x:Key="TimeToDisplayTimeConverter" />
+    </Page.Resources>
     
     <Grid Margin="{ThemeResource PageButtonMargin}">
         <Grid.RowDefinitions>
@@ -13,6 +21,12 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        
+        <interactivity:Interaction.Behaviors>
+            <core:EventTriggerBehavior EventName="SizeChanged">
+                <core:InvokeCommandAction Command="{x:Bind ViewModel.PageSizeChangedCommand}"/>
+            </core:EventTriggerBehavior>
+        </interactivity:Interaction.Behaviors>
         
         <TextBlock Grid.Row="0" Text="{x:Bind ViewModel.Game.Name.Value}" Style="{ThemeResource TitleTextBlockStyle}"/>
         
@@ -28,8 +42,26 @@
                 </AppBarButton.Icon>
             </AppBarButton>
         </CommandBar>
-        
-        <lvc:CartesianChart Grid.Row="2" Series="{x:Bind ViewModel.Series}" XAxes="{x:Bind ViewModel.XAxes}"/>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollMode="Auto" HorizontalScrollMode="Disabled"
+                      Margin="{ThemeResource MediumTopMargin}">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items}"
+                           Layout="{StaticResource VerticalStackLayout}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:PlayTimeViewModelItem">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="{x:Bind Date}" MinWidth="100" />
+                            <Rectangle Fill="{ThemeResource SystemAccentColor}"
+                                       Width="{x:Bind Width, Mode=OneWay}"
+                                       Height="24" HorizontalAlignment="Left" />
+                            <TextBlock
+                                Text="{x:Bind PlayTime, Mode=OneWay, 
+                                Converter={StaticResource TimeToDisplayTimeConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
     </Grid>
     
 </Page>
