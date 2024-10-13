@@ -1742,4 +1742,13 @@
   <data name="LibraryPage_Back.Label" xml:space="preserve">
     <value>回到上个库</value>
   </data>
+  <data name="GalgameCollectionService_LoadMetaFailed" xml:space="preserve">
+    <value>加载本地Meta失败</value>
+  </data>
+  <data name="GalgameCollectionService_LoadMetaFailed_Msg" xml:space="preserve">
+    <value>加载{0}的本地Meta失败了，已忽略其Meta文件</value>
+  </data>
+  <data name="GalgameCollectionService_GetNameFromPathFailed" xml:space="preserve">
+    <value>无法从路径获取游戏名</value>
+  </data>
 </root>

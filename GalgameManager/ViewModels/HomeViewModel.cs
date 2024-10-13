@@ -419,20 +419,24 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         //TODO
         IsPhrasing = true;
-        AddGalgameResult result = AddGalgameResult.Other;
+        InfoBarSeverity infoBarSeverity;
         string msg;
         try
         {
-            result = await _galgameService.TryAddGalgameAsync(
-                new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(path), path), true);
-            msg = result.ToMsg();
+            Galgame tmp = await _galgameService.AddGameAsync(GalgameSourceType.LocalFolder, path, true);
+            infoBarSeverity = tmp.IsIdsEmpty() ? InfoBarSeverity.Warning : InfoBarSeverity.Success;
+            msg = tmp.IsIdsEmpty()
+                ? "AddGalgameResult_NotFoundInRss".GetLocalized()
+                : "AddGalgameResult_Success".GetLocalized();
         }
         catch (Exception e)
         {
+            infoBarSeverity = InfoBarSeverity.Error;
             msg = e.Message;
         }
+
         IsPhrasing = false;
-        _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
+        _infoService.Info(infoBarSeverity, msg);
     }
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;

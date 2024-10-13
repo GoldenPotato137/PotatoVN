@@ -37,6 +37,13 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
                           ?? new ObservableCollection<GalgameSourceBase>();
         await SourceUpgradeAsync();
         await NameAndSubSourceUpgradeAsync();
+        foreach (GalgameSourceBase source in _galgameSources) // 部分崩溃的情况可能导致source里面部分galgame为null
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            List<GalgameAndPath> tmp = source.Galgames.Where(g => g.Galgame is null).ToList();
+            foreach (GalgameAndPath g in tmp)
+                source.Galgames.Remove(g);
+        }
         // 给Galgame注入Source列表
         foreach (GalgameSourceBase s in _galgameSources)
             foreach (Galgame g in s.GetGalgameList().Where(g => !g.Sources.Contains(s)))
@@ -77,9 +84,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         switch (type)
         {
             case GalgameSourceType.LocalFolder:
-                var includeSubfolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
-                return tmp.FirstOrDefault(s =>
-                    includeSubfolder ? Utils.IsPathContained(s.Path, path) : Utils.ArePathsEqual(s.Path, path));
+                return tmp.FirstOrDefault(s => Utils.ArePathsEqual(s.Path, path));
             case GalgameSourceType.Virtual:
                 return tmp.FirstOrDefault() ?? AddGalgameSourceAsync(GalgameSourceType.Virtual, string.Empty).Result;
             case GalgameSourceType.UnKnown:
@@ -186,6 +191,17 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         SourceMoveTask task = new(game, moveInSrc, moveInPath, moveOutSrc);
         _bgTaskService.AddBgTask(task);
         return task;
+    }
+
+    public string GetSourcePath(GalgameSourceType type, string gamePath)
+    {
+        switch (type)
+        {
+            case GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip:
+                return Directory.GetParent(gamePath)!.FullName;
+            default:
+                throw new NotImplementedException();
+        }
     }
 
     /// <summary>
