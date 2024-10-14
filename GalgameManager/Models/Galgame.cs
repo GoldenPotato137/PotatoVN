@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
+using Windows.Foundation.Metadata;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Contracts;
 using GalgameManager.Core.Contracts.Services;
@@ -61,7 +62,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     [ObservableProperty] private string _cnName = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
-    [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
+    [ObservableProperty] private DateTime _lastPlayTime = DateTime.MinValue; //上次游玩时间（新）
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private LockableProperty<DateTime> _releaseDate = DateTime.MinValue;
@@ -87,6 +88,14 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     public string? TextPath; //记录的要打开的文本的路径
     public bool PvnUpdate; //是否需要更新
     public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
+    
+    // 已被废弃的属性，为了兼容旧版本保留（用于反序列化迁移数据）
+    [Deprecated($"use {nameof(LastPlayTime)} instead", DeprecationType.Deprecate, 0)]
+    [JsonProperty]
+    public LockableProperty<string> LastPlay
+    {
+        set => LastPlayTime = Utils.TryParseDateGuessCulture(value.Value ?? string.Empty);
+    }
 
     [JsonIgnore] public string? Id
     {
@@ -276,7 +285,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
             CnName = CnName,
             Description = Description.Value ?? string.Empty,
             Developer = Developer.Value ?? DefaultString,
-            LastPlay = LastPlay.Value ?? DefaultString,
+            LastPlayTime = LastPlayTime,
             ExpectedPlayTime = ExpectedPlayTime.Value ?? DefaultString,
             Rating = Rating.Value,
             ReleaseDate = ReleaseDate.Value,

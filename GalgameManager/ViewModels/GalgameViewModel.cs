@@ -221,7 +221,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             await _galgameService.GetGalgameExeAsync(Item);
         if (Item.ExePath == null) return;
 
-        Item.LastPlay = DateTime.Now.ToShortDateString();
+        Item.LastPlayTime = DateTime.Now;
         Process process = new()
         {
             StartInfo = new ProcessStartInfo

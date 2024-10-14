@@ -1,9 +1,9 @@
 ﻿using System.Drawing.Text;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Text;
 using Windows.Foundation;
-using Newtonsoft.Json;
 using TinyPinyin;
 
 namespace GalgameManager.Helpers;
@@ -163,5 +163,25 @@ public static class Utils
         var tmp = Path.GetDirectoryName(childPath);
         if (tmp is null) return false;
         return Path.GetFullPath(parentPath) == Path.GetFullPath(tmp);
+    }
+    
+    /// <summary>
+    /// 尝试解析日期，若失败则返回DateTime.MinValue
+    /// </summary>
+    public static DateTime TryParseDateGuessCulture(string dateString)
+    {
+        CultureInfo[] cultures =
+        {
+            CultureInfo.InvariantCulture,
+            new("en-US"), // MM/dd/yyyy
+            new("en-GB"), // dd/MM/yyyy
+            new("ja-JP"), // yyyy/MM/dd
+            new("zh-CN"), // yyyy/M/d
+            // 添加其他可能的文化设置
+        };
+        foreach (CultureInfo culture in cultures)
+            if (DateTime.TryParse(dateString, culture, DateTimeStyles.None, out DateTime parsedDate))
+                return parsedDate;
+        return DateTime.MinValue;
     }
 }

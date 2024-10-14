@@ -300,7 +300,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                     ));
                     break;
                 case SortKeys.LastPlay:
-                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlay), 
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlayTime), 
                         SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
                     ));
                     break;
