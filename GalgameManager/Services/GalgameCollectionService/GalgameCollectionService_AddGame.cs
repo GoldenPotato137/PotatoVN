@@ -30,7 +30,12 @@ public partial class GalgameCollectionService
         meta ??= await PhraseGalInfoAsync(new Galgame(GetNameFromPath(sourceType, path)));
         // 检查该游戏是否已经存在
         if (GetGalgameFromUid(meta.Uid) is { } existGame)
-            return await DealWithExistGameAsync(sourceType, path, existGame);
+        {
+            Galgame tmp = await DealWithExistGameAsync(sourceType, path, existGame);
+            GalgameChangedEvent?.Invoke(tmp);
+            return tmp;
+        }
+        
         // 如果不是强制添加，且没有找到游戏信息，则抛出异常
         if (!force && meta.IsIdsEmpty())
             throw new PvnException("AddGalgameResult_NotFoundInRss".GetLocalized());
@@ -39,6 +44,7 @@ public partial class GalgameCollectionService
         _galgames.Add(meta);
         _galgameMap[meta.Uid] = meta;
         GalgameAddedEvent?.Invoke(meta);
+        GalgameChangedEvent?.Invoke(meta);
         meta.ErrorOccurred += e =>
             _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
         GalgameSourceBase source = await GetOrAddSourceAsync(sourceType, path);
@@ -46,6 +52,14 @@ public partial class GalgameCollectionService
         
         await SaveGalgamesAsync(meta);
         return meta;
+    }
+
+    public async Task<Galgame> SetLocalPathAsync(Galgame galgame, string path)
+    {
+        Galgame result = await DealWithExistGameAsync(GalgameSourceType.LocalFolder, path, galgame);
+        GalgameChangedEvent?.Invoke(result);
+        await SaveGalgamesAsync(result);
+        return result;
     }
 
     private string GetNameFromPath(GalgameSourceType sourceType, string path)
@@ -81,10 +95,11 @@ public partial class GalgameCollectionService
                 // 把游戏移入对应的本地压缩库
                 _galSrcService.MoveInNoOperate(targetSource, existGame, path);
                 break;
+            default:
+                Debug.Fail("应该在GalgameCollectionService_AddGame里面实现该类型源的DealWithExistGameAsync");
+                throw new PvnException(string.Empty);
         }
-
-        Debug.Fail("应该在GalgameCollectionService_AddGame里面实现该类型源的DealWithExistGameAsync");
-        throw new PvnException(string.Empty);
+        return existGame;
     }
 
     /// 获取某个游戏的源，若不存在则添加

@@ -33,6 +33,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public event Action? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event Action? PhrasedEvent; //当有galgame信息下载完成时触发
     public event Action<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
+    public event Action<Galgame>? GalgameChangedEvent;
     public bool IsPhrasing;
 
     public IGalInfoPhraser[] PhraserList
@@ -52,7 +53,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _infoService = infoService;
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
-        _galSrcService.OnSourceDeleted += HandleSourceDelete;
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new(GetVndbData().Result);
@@ -95,15 +95,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// </summary>
     private async Task LoadGalgames()
     {
-        List<Galgame> galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
+        List<Galgame> galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ??
+                                 new List<Galgame>();
         _galgames = new ObservableCollection<Galgame>(galgames);
         foreach (Galgame g in _galgames)
         {
-            // if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
-            // {
-            //     // g.Path = string.Empty;
-            //     g.SourceType = GalgameSourceType.Virtual;
-            // }
             _galgameMap[g.Uid] = g;
             g.ErrorOccurred += e =>
                 _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
@@ -678,24 +674,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         GalgameSourceBase? source = dialog.Source;
         if (file == null || source is not GalgameFolderSource folderSource) return;
         _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
-    }
-
-    private async void HandleSourceDelete(GalgameSourceBase source)
-    {
-        try
-        {
-            List<Galgame> srcGames = source.GetGalgameList().ToList();
-            foreach (Galgame galgame in srcGames)
-            {
-                _galSrcService.MoveOutOperate(source, galgame);
-                if(galgame.Sources.Count == 0)
-                    await RemoveGalgame(galgame);
-            }
-        }
-        catch (Exception e)
-        {
-            _infoService.DeveloperEvent(InfoBarSeverity.Error, e: e);
-        }
     }
 
     private async Task MixedPhraserOrderUpdate()

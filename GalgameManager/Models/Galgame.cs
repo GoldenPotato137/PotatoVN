@@ -31,18 +31,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     
     public GalgameSourceType SourceType { get; set; }=GalgameSourceType.UnKnown;
     
-    public string Url
-    {
-        get
-        {
-            if (SourceType == GalgameSourceType.Virtual)
-            {
-                return $"{SourceType.SourceTypeToString()}://{Name}";
-            }
-
-            return $"{SourceType.SourceTypeToString()}://{Path}";
-        }
-    }
+    public string Url => $"{SourceType.SourceTypeToString()}://{Path}";
 
     [JsonIgnore] public GalgameUid Uid => new()
     {
@@ -177,6 +166,11 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     {
         return SourceType == GalgameSourceType.LocalZip;
     }
+
+    /// <summary>
+    /// 该游戏是否是本地游戏（存在于某个本地文件夹库中）
+    /// </summary>
+    public bool IsLocalGame => Sources.Any(s => s.SourceType == GalgameSourceType.LocalFolder);
 
     /// <summary>
     /// 删除游戏文件夹

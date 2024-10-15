@@ -137,7 +137,6 @@ public enum GalgameSourceType
     UnKnown,
     LocalFolder,
     LocalZip,
-    Virtual
 }
 
 public static class SourceTypeHelper

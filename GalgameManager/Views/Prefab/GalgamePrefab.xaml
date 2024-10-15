@@ -18,7 +18,7 @@
           ContextFlyout="{x:Bind Flyout}" Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
         <StackPanel HorizontalAlignment="Center">
             <Grid
-                Opacity="{x:Bind Galgame, 
+                Opacity="{x:Bind Galgame, Mode=OneWay,
                             Converter={StaticResource GameToOpacityConverter}}"
                 x:Name="ConnectedElement">
                 <Rectangle

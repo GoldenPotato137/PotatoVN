@@ -150,13 +150,13 @@ public class ActivationService : IActivationService
     private async Task StartupAsync()
     {
         await _galgameCollectionService.StartAsync();
+        await _galgameFolderCollectionService.StartAsync();
         if (IsRestart() == false) App.SetWindowMode(WindowMode.Normal);
         if (IsRestart() == false) _pvnService.Startup();
         if (IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();
         if(IsRestart() == false) await _bgmOAuthService.Init();
         await CheckFont();
-        await _galgameFolderCollectionService.StartAsync();
     }
 
     /// <summary>

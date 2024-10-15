@@ -98,6 +98,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         //Add Event
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
+        _galgameService.GalgameChangedEvent += UpdateGalgame;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
         _filterService.OnFilterChanged += () => Source.RefreshFilter();
@@ -131,6 +132,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
             _filterService.ClearFilters();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
+        _galgameService.GalgameChangedEvent -= UpdateGalgame;
         _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
         Filters.CollectionChanged -= UpdateFilterPanelDisplay;
         _localSettingsService.OnSettingChanged -= OnSettingChanged;
@@ -442,6 +444,13 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
     private void OnGalgameLoadedEvent() => Source.Source = _galgameService.Galgames;
+
+    private void UpdateGalgame(Galgame game)
+    {
+        //通过Remove和Add来刷新某个具体的Item
+        Source.Remove(game);
+        Source.Add(game);
+    }
 
     [RelayCommand]
     private async Task AddGalgame()

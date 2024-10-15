@@ -42,7 +42,6 @@ public interface IGalgameSourceCollectionService
     /// 对于不同的库的类型，匹配规则如下：<br/>
     /// <list type="bullet">
     /// <item>本地文件夹：直接匹配path</item>
-    /// <item>虚拟游戏库：path填什么都行，返回唯一的虚拟库</item>
     /// <item>对于剩余的库，直接匹配path</item>
     /// </list>
     /// </p>
