@@ -1,4 +1,6 @@
-﻿namespace GalgameManager.Enums;
+﻿using Microsoft.UI.Content;
+
+namespace GalgameManager.Enums;
 
 public static class KeyValues
 {

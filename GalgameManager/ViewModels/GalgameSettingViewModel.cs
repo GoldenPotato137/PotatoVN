@@ -16,9 +16,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
 {
     [ObservableProperty]
     private Galgame _gal = null!;
-    //用于判断是否转区运行
-    [ObservableProperty]
-    private bool _isJapaneseRegion = false;
+
     public List<RssType> RssTypes { get; }= new() { RssType.Bangumi, RssType.Vndb, RssType.Mixed, RssType.Ymgal };
 
     private readonly GalgameCollectionService _galService;

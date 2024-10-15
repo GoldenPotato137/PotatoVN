@@ -700,6 +700,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         }
     }
     
+
+
     public async Task ToLocalGalgame(Galgame galgame)
     {
         if (galgame.SourceType != GalgameSourceType.LocalZip) return;

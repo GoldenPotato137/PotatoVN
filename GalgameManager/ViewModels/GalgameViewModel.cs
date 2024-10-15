@@ -222,16 +222,35 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         if (Item.ExePath == null) return;
 
         Item.LastPlay = DateTime.Now.ToShortDateString();
-        Process process = new()
+        Process process;
+        if (Item.Startup_parameters == "")
         {
-            StartInfo = new ProcessStartInfo
+            process = new()
             {
-                FileName = Item.ExePath,
-                WorkingDirectory = Item.Path,
-                UseShellExecute = Item.RunAsAdmin | Item.ExePath.ToLower().EndsWith("lnk"),
-                Verb = Item.RunAsAdmin ? "runas" : null,
-            }
-        };
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Item.ExePath,
+                    WorkingDirectory = Item.Path,
+                    UseShellExecute = Item.RunAsAdmin | Item.ExePath.ToLower().EndsWith("lnk"),
+                    Verb = Item.RunAsAdmin ? "runas" : null,
+                }
+            };
+        }
+        else { 
+            process = new()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/C {string.Join(" ", Item.Startup_parameters)}",
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+        }
         try
         {
             process.Start();

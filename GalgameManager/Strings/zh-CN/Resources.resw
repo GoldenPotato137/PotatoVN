@@ -1733,7 +1733,4 @@
   <data name="HomePage_NoDeveloperCategory" xml:space="preserve">
     <value>无任何开发商分类包含本游戏</value>
   </data>
-  <data name="GalgameSettingPage_IsJapaneseRegion.Text" xml:space="preserve">
-    <value>是否转日区运行</value>
-  </data>
 </root>

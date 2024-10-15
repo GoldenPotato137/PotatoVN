@@ -94,15 +94,13 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Grid>
-                            <!--游戏是否转日区-->
-                            <TextBlock x:Uid="GalgameSettingPage_IsJapaneseRegion" Margin="0 0 15 0" VerticalAlignment="Center"
-                                        HorizontalAlignment="Stretch"/>
-                            <CheckBox Grid.Column="1" 
-                                      IsChecked="{x:Bind ViewModel.IsJapaneseRegion, Mode=TwoWay}"
-                                      VerticalAlignment="Center" 
-                                      HorizontalAlignment="Stretch"/>
-                        </Grid>
+                        <TextBlock Text="启动参数设置"
+                                    Margin="0 0 15 0" VerticalAlignment="Center"
+                                    HorizontalAlignment="Stretch"/>
+                        <TextBox Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.Gal.Startup_parameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                     AcceptsReturn="False"/>
                     </Grid>
                     
                         <Grid>

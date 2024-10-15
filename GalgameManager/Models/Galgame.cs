@@ -86,6 +86,8 @@ public partial class Galgame : ObservableObject
     public string? TextPath; //记录的要打开的文本的路径
     public bool PvnUpdate; //是否需要更新
     public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
+    [ObservableProperty] private string _startup_parameters = string.Empty;//启动参数
+
 
     [JsonIgnore] public string? Id
     {
