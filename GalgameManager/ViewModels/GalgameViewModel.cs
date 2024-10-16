@@ -239,11 +239,11 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         }
         else
         {
-            string pattern = "\".+?\"";
-            Regex regex = new Regex(pattern);
+            var pattern = "\".+?\"";
+            var regex = new Regex(pattern,RegexOptions.None, TimeSpan.FromSeconds(1));
             MatchCollection matches = regex.Matches(Item.Startup_parameters);
-            string filename = matches[0].Value;
-            string arguments = Item.Startup_parameters.Replace(filename, "");
+            var filename = matches[0].Value;
+            var arguments = Item.Startup_parameters.Replace(filename, "");
             process = new()
             {
                 StartInfo = new ProcessStartInfo()
@@ -251,9 +251,6 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                     FileName = filename,
                     Arguments = arguments,
                     UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
                     CreateNoWindow = true
                 }
             };
