@@ -240,7 +240,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         else
         {
             string pattern = "\".+?\"";
-            Regex regex = new(pattern);
+            Regex regex = new Regex(pattern);
             MatchCollection matches = regex.Matches(Item.Startup_parameters);
             string filename = matches[0].Value;
             string arguments = Item.Startup_parameters.Replace(filename, "");
