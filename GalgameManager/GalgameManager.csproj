@@ -6,6 +6,7 @@
     <RootNamespace>GalgameManager</RootNamespace>
     <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
@@ -88,8 +89,11 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+    <PackageReference Include="DependencyPropertyGenerator" Version="1.4.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.118" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WinUI" Version="2.0.0-beta.710" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.2" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />

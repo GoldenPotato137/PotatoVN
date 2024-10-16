@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using GalgameManager.Enums;
 using GalgameManager.Models;
+using GalgameManager.Models.Sources;
 
 namespace GalgameManager.Contracts.Services;
 
@@ -10,7 +11,27 @@ public interface IGalgameCollectionService
 
     public Task StartAsync();
 
-    public Task<AddGalgameResult> AddLocalGameAsync(string path, bool force);
+    /// <summary>
+    /// 当某款游戏被修改（被添加/设置本地路径）时触发
+    /// </summary>
+    public event Action<Galgame>? GalgameChangedEvent;
+
+    /// <summary>
+    /// 添加一个游戏，注意捕获异常
+    /// </summary>
+    /// <param name="sourceType">游戏所属库</param>
+    /// <param name="path">游戏文件夹路径</param>
+    /// <param name="force">没有在信息源中搜到该游戏时是否强制添加游戏</param>
+    /// <returns></returns>
+    public Task<Galgame> AddGameAsync(GalgameSourceType sourceType, string path, bool force);
+    
+    /// <summary>
+    /// 指定某个游戏的本地路径，注意捕获异常
+    /// </summary>
+    /// <param name="galgame">游戏</param>
+    /// <param name="path">游戏文件夹路径</param>
+    /// <returns></returns>
+    public Task<Galgame> SetLocalPathAsync(Galgame galgame, string path);
 
     /// <summary>
     /// 移除一个galgame
@@ -28,7 +49,7 @@ public interface IGalgameCollectionService
     /// 获取UID相似度最高的游戏，若全为0则返回null<br/>
     /// Uid比较规则见：<see cref="GalgameUid"/>
     /// </summary>
-    public Galgame? GetGalgameFromUid(GalgameUid uid);
+    public Galgame? GetGalgameFromUid(GalgameUid? uid);
 
     /// <summary>
     /// 从id获取galgame

@@ -18,25 +18,15 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <RelativePanel Grid.Row="0">
-                <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}"
+                <TextBlock Text="{x:Bind ViewModel.Item.Name, FallbackValue={}}"
                            Style="{ThemeResource TitleTextBlockStyle}" 
-                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
-                           x:Name="PathTextBlock"/>
-                <Border RelativePanel.RightOf="PathTextBlock"
-                        RelativePanel.AlignVerticalCenterWith="PathTextBlock"
-                        Background="SteelBlue"
-                        BorderThickness="0"
-                        CornerRadius="6">
-                    <TextBlock Text="{x:Bind ViewModel.Item.SourceType, FallbackValue={}, Converter={StaticResource EnumStringConverter}}"
-                               Style="{ThemeResource SmallTextStyle}" 
-                               MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
-                               Padding="4, 0"/>
-                </Border>
+                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}" />
                 <CommandBar RelativePanel.AlignRightWithPanel="True" Background="Transparent" IsOpen="False"
                             DefaultLabelPosition="Right">
                     <!-- 手动添加游戏 -->
@@ -92,9 +82,25 @@
                     </core:EventTriggerBehavior>
                 </interactivity:Interaction.Behaviors>
             </RelativePanel>
+            
+            <!-- 库路径 -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="15">
+                <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}"
+                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}" 
+                           VerticalAlignment="Center"/>
+                <Border Background="{ThemeResource  ControlAltFillColorSecondaryBrush}"
+                        BorderThickness="0"
+                        CornerRadius="6"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind ViewModel.Item.SourceType, FallbackValue={}, Converter={StaticResource EnumStringConverter}}"
+                               Style="{ThemeResource SmallTextStyle}" 
+                               MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"
+                               Padding="10, 2"/>
+                </Border>
+            </StackPanel>
 
             <controls:DataGrid
-                Grid.Row="1"
+                Grid.Row="2"
                 Margin="0 20 0 0"
                 AutoGenerateColumns="False"
                 GridLinesVisibility="Horizontal"
@@ -112,13 +118,6 @@
                     </core:EventTriggerBehavior>
                 </interactivity:Interaction.Behaviors>
             </controls:DataGrid>
-
-            <InfoBar
-                Grid.Row="2"
-                IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-                Margin="0 0 0 20"
-                Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-                Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
         </Grid>
         
         <Grid

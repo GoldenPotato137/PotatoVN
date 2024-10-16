@@ -23,6 +23,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     private readonly IGalgameSourceCollectionService _dataCollectionService;
     private readonly GalgameCollectionService _galgameService;
     private readonly IBgTaskService _bgTaskService;
+    private readonly IInfoService _infoService;
     
     private GalgameSourceBase? _item;
     [ObservableProperty] public ObservableCollection<Galgame> _galgames = new();
@@ -70,12 +71,13 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     }
 
     public GalgameSourceViewModel(IGalgameSourceCollectionService dataCollectionService, 
-        IGalgameCollectionService galgameService, IBgTaskService bgTaskService)
+        IGalgameCollectionService galgameService, IBgTaskService bgTaskService, IInfoService infoService)
     {
         _dataCollectionService = dataCollectionService;
         _galgameService = (GalgameCollectionService)galgameService;
         _galgameService.GalgameAddedEvent += ReloadGalgameList;
         _bgTaskService = bgTaskService;
+        _infoService = infoService;
     }
 
     private void ReloadGalgameList(Galgame galgame)
@@ -146,7 +148,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     {
         if(Item == null) return;
         Update();
-        _ = DisplayMsgAsync(progress.ToSeverity(), progress.Message, progress.ToSeverity() switch
+        _infoService.Info(progress.ToSeverity(), msg: progress.Message, displayTimeMs: progress.ToSeverity() switch
         {
             InfoBarSeverity.Informational => 300000,
             _ => 3000
@@ -157,7 +159,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     {
         if(Item == null) return;
         Update();
-        _ = DisplayMsgAsync(progress.ToSeverity(), progress.Message, progress.ToSeverity() switch
+        _infoService.Info(progress.ToSeverity(), msg: progress.Message, displayTimeMs: progress.ToSeverity() switch
         {
             InfoBarSeverity.Informational => 300000,
             _ => 3000
@@ -179,7 +181,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
             var folder = file.Path.Substring(0, file.Path.LastIndexOf('\\'));
             if (!_item!.IsInSource(folder))
             {
-                await ShowGameExistedInfoBar(new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）"));
+                ShowGameExistedInfoBar(new Exception("该游戏不属于这个库（游戏必须在库文件夹里面）"));
                 return;
             }
             await TryAddGalgame(folder);
@@ -197,42 +199,21 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
             var result = await _galgameService.TryAddGalgameAsync(
                 new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder), folder), true);
             if (result == AddGalgameResult.Success)
-                await ShowSuccessInfoBar();
+                _infoService.Info(InfoBarSeverity.Success, msg: "已成功添加游戏到当前库");
             else if (result == AddGalgameResult.AlreadyExists)
                 throw new Exception("库里已经有这个游戏了");
             else //NotFoundInRss
-                await ShowNotFoundInfoBar();
+                _infoService.Info(InfoBarSeverity.Warning, msg: "没有从信息源中找到这个游戏的信息");
         }
         catch (Exception e)
-        {
-            await ShowGameExistedInfoBar(e);
+        { 
+            ShowGameExistedInfoBar(e);
         }
     }
     
-    private async Task ShowGameExistedInfoBar(Exception e)
+    private void ShowGameExistedInfoBar(Exception e)
     {
-
-        IsInfoBarOpen = true;
-        InfoBarMessage = e.Message;
-        InfoBarSeverity = InfoBarSeverity.Error;
-        await Task.Delay(3000);
-        IsInfoBarOpen = false;
-    }
-    private async Task ShowNotFoundInfoBar()
-    {
-        IsInfoBarOpen = true;
-        InfoBarMessage = "成功添加游戏，但没有从信息源中找到这个游戏的信息";
-        InfoBarSeverity = InfoBarSeverity.Warning;
-        await Task.Delay(3000);
-        IsInfoBarOpen = false;
-    }
-    private async Task ShowSuccessInfoBar()
-    {
-        IsInfoBarOpen = true;
-        InfoBarMessage = "已成功添加游戏到当前库";
-        InfoBarSeverity = InfoBarSeverity.Success;
-        await Task.Delay(3000);
-        IsInfoBarOpen = false;
+        _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
     }
 
     [RelayCommand(CanExecute = nameof(CanExecute))]
@@ -284,10 +265,10 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         return Item?.SourceType == GalgameSourceType.LocalFolder;
     }
 
-    private async void HandelUnpackError(Progress progress)
+    private void HandelUnpackError(Progress progress)
     {
         if(progress.ToSeverity() != InfoBarSeverity.Error) return;
-        await DisplayMsgAsync(InfoBarSeverity.Error, "GalgameFolder_UnpackGame_Error".GetLocalized());
+        _infoService.Info(InfoBarSeverity.Error, msg:"GalgameFolder_UnpackGame_Error".GetLocalized());
     }
 
     [RelayCommand]
@@ -331,30 +312,4 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
         if(FileHelper.Exists(path) == false) return; 
         await Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(FileHelper.GetFullPath(path)));
     }
-    
-    #region INFO_BAR_CTRL
-
-    private int _infoBarIndex;
-    [ObservableProperty] private bool _isInfoBarOpen;
-    [ObservableProperty] private string _infoBarMessage = string.Empty;
-    [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
-
-    /// <summary>
-    /// 使用InfoBar显示信息
-    /// </summary>
-    /// <param name="infoBarSeverity">信息严重程度</param>
-    /// <param name="msg">信息</param>
-    /// <param name="delayMs">显示时长(ms)</param>
-    private async Task DisplayMsgAsync(InfoBarSeverity infoBarSeverity, string msg, int delayMs = 3000)
-    {
-        var currentIndex = ++_infoBarIndex;
-        InfoBarSeverity = infoBarSeverity;
-        InfoBarMessage = msg;
-        IsInfoBarOpen = true;
-        await Task.Delay(delayMs);
-        if (currentIndex == _infoBarIndex)
-            IsInfoBarOpen = false;
-    }
-
-    #endregion
 }

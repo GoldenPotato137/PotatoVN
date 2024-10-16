@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
+using Windows.Foundation.Metadata;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GalgameManager.Contracts;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -11,7 +13,7 @@ using SystemPath = System.IO.Path;
 
 namespace GalgameManager.Models;
 
-public partial class Galgame : ObservableObject
+public partial class Galgame : ObservableObject, IDisplayableGameObject
 {
     public const string DefaultImagePath = "ms-appx:///Assets/WindowIcon.ico";
     public const string DefaultString = "——";
@@ -29,18 +31,7 @@ public partial class Galgame : ObservableObject
     
     public GalgameSourceType SourceType { get; set; }=GalgameSourceType.UnKnown;
     
-    public string Url
-    {
-        get
-        {
-            if (SourceType == GalgameSourceType.Virtual)
-            {
-                return $"{SourceType.SourceTypeToString()}://{Name}";
-            }
-
-            return $"{SourceType.SourceTypeToString()}://{Path}";
-        }
-    }
+    public string Url => $"{SourceType.SourceTypeToString()}://{Path}";
 
     [JsonIgnore] public GalgameUid Uid => new()
     {
@@ -60,7 +51,7 @@ public partial class Galgame : ObservableObject
     [ObservableProperty] private string _cnName = "";
     [ObservableProperty] private LockableProperty<string> _description = "";
     [ObservableProperty] private LockableProperty<string> _developer = DefaultString;
-    [ObservableProperty] private LockableProperty<string> _lastPlay = DefaultString;
+    [ObservableProperty] private DateTime _lastPlayTime = DateTime.MinValue; //上次游玩时间（新）
     [ObservableProperty] private LockableProperty<string> _expectedPlayTime = DefaultString;
     [ObservableProperty] private LockableProperty<float> _rating = 0;
     [ObservableProperty] private LockableProperty<DateTime> _releaseDate = DateTime.MinValue;
@@ -88,6 +79,14 @@ public partial class Galgame : ObservableObject
     public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
     [ObservableProperty] private string _startup_parameters = string.Empty;//启动参数
 
+    
+    // 已被废弃的属性，为了兼容旧版本保留（用于反序列化迁移数据）
+    [Deprecated($"use {nameof(LastPlayTime)} instead", DeprecationType.Deprecate, 0)]
+    [JsonProperty]
+    public LockableProperty<string> LastPlay
+    {
+        set => LastPlayTime = Utils.TryParseDateGuessCulture(value.Value ?? string.Empty);
+    }
 
     [JsonIgnore] public string? Id
     {
@@ -161,13 +160,19 @@ public partial class Galgame : ObservableObject
     /// </summary>
     public bool CheckExistLocal()
     {
-        return Directory.Exists(Path) && SourceType == GalgameSourceType.LocalFolder;
+        GalgameSourceBase? s = Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder);
+        return s != null && Directory.Exists(s.GetPath(this));
     }
     
     public bool CheckIsZip()
     {
         return SourceType == GalgameSourceType.LocalZip;
     }
+
+    /// <summary>
+    /// 该游戏是否是本地游戏（存在于某个本地文件夹库中）
+    /// </summary>
+    public bool IsLocalGame => Sources.Any(s => s.SourceType == GalgameSourceType.LocalFolder);
 
     /// <summary>
     /// 删除游戏文件夹
@@ -235,8 +240,10 @@ public partial class Galgame : ObservableObject
     /// <summary>
     /// 获取用来保存meta信息的galgame，用于序列化
     /// </summary>
+    /// <param name="metaPath">meta文件夹路径</param>
+    /// <param name="gamePath">游戏文件夹路径</param>
     /// <returns></returns>
-    public Galgame GetMetaCopy(string metaPath)
+    public Galgame GetMetaCopy(string metaPath, string gamePath)
     {
         Dictionary<string, int> playTime = new();
         foreach (var (key, value) in PlayedTime)
@@ -248,8 +255,9 @@ public partial class Galgame : ObservableObject
             {
                 Name = character.Name,
                 Relation = character.Relation,
-                PreviewImagePath = ".\\" + SystemPath.GetFileName(character.PreviewImagePath),
-                ImagePath = ".\\" + SystemPath.GetFileName(character.ImagePath),
+                PreviewImagePath = $".{SystemPath.DirectorySeparatorChar}" +
+                                   SystemPath.GetFileName(character.PreviewImagePath),
+                ImagePath = $".{SystemPath.DirectorySeparatorChar}" + SystemPath.GetFileName(character.ImagePath),
                 Summary = character.Summary,
                 Gender = character.Gender,
                 BirthYear = character.BirthYear,
@@ -265,20 +273,19 @@ public partial class Galgame : ObservableObject
         Galgame result = new()
         {
             SourceType = SourceType, 
-            Path = SystemPath.GetRelativePath(metaPath, Path),
             ImagePath = ImagePath.Value is null or DefaultImagePath ? DefaultImagePath :
-                ".\\" + SystemPath.GetFileName(ImagePath),
+                $".{SystemPath.DirectorySeparatorChar}" + SystemPath.GetFileName(ImagePath),
             PlayedTime = playTime,
             Name = Name.Value ?? string.Empty,
             Characters = characters, 
             CnName = CnName,
             Description = Description.Value ?? string.Empty,
             Developer = Developer.Value ?? DefaultString,
-            LastPlay = LastPlay.Value ?? DefaultString,
+            LastPlayTime = LastPlayTime,
             ExpectedPlayTime = ExpectedPlayTime.Value ?? DefaultString,
             Rating = Rating.Value,
             ReleaseDate = ReleaseDate.Value,
-            ExePath = SystemPath.GetRelativePath(metaPath, Path),
+            ExePath = ExePath is null ? null : SystemPath.GetRelativePath(metaPath, ExePath),
             Tags = new ObservableCollection<string>(Tags.Value!.ToList()),
             TotalPlayTime = TotalPlayTime,
             RunAsAdmin = RunAsAdmin,
@@ -391,6 +398,9 @@ public partial class Galgame : ObservableObject
             ErrorOccurred?.Invoke(e);
         }
     }
+    
+    /// 检查是否所有的id都为空
+    public bool IsIdsEmpty() => Ids.All(string.IsNullOrEmpty);
     
     public string GetLogName() => $"Galgame_{Url.ToBase64().Replace("/", "").Replace("=", "")}.txt";
     

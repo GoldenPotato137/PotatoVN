@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using Windows.Storage;
@@ -20,8 +19,8 @@ namespace GalgameManager.Services;
 public partial class GalgameCollectionService : IGalgameCollectionService
 {
     // _galgames 无序, _displayGalgames有序
-    private List<Galgame> _galgames = new();
-    private readonly Dictionary<string, Galgame> _galgameMap = new(); // Url->Galgame
+    private ObservableCollection<Galgame> _galgames = new();
+    private readonly Dictionary<GalgameUid, Galgame> _galgameMap = new(); // Uid->Galgame
     private static ILocalSettingsService LocalSettingsService { get; set; } = null!;
     private readonly IJumpListService _jumpListService;
     private readonly IFilterService _filterService;
@@ -34,6 +33,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public event Action? GalgameLoadedEvent; //当galgame列表加载完成时触发
     public event Action? PhrasedEvent; //当有galgame信息下载完成时触发
     public event Action<Galgame>? PhrasedEvent2; //当有galgame信息下载完成时触发 
+    public event Action<Galgame>? GalgameChangedEvent;
     public bool IsPhrasing;
 
     public IGalInfoPhraser[] PhraserList
@@ -53,7 +53,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _infoService = infoService;
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
-        _galSrcService.OnSourceDeleted += HandleSourceDelete;
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new(GetVndbData().Result);
@@ -96,17 +95,12 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// </summary>
     private async Task LoadGalgames()
     {
-        List<Galgame> galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ?? new List<Galgame>();
-        galgames = galgames.Where(g => g.SourceType is not GalgameSourceType.UnKnown).ToList();
-        _galgames = new List<Galgame>(galgames);
+        List<Galgame> galgames = await LocalSettingsService.ReadSettingAsync<List<Galgame>>(KeyValues.Galgames, true) ??
+                                 new List<Galgame>();
+        _galgames = new ObservableCollection<Galgame>(galgames);
         foreach (Galgame g in _galgames)
         {
-            // if (g.SourceType is GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip && !Path.Exists(g.Path))
-            // {
-            //     // g.Path = string.Empty;
-            //     g.SourceType = GalgameSourceType.Virtual;
-            // }
-            _galgameMap[g.Url] = g;
+            _galgameMap[g.Uid] = g;
             g.ErrorOccurred += e =>
                 _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
             // 数目增加
@@ -145,33 +139,13 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public async Task RemoveGalgame(Galgame galgame, bool removeFromDisk = false)
     {
         _galgames.Remove(galgame);
-        foreach (GalgameSourceBase s in galgame.Sources)
+        List<GalgameSourceBase> tmpList = new(galgame.Sources);
+        foreach (GalgameSourceBase s in tmpList)
             _galSrcService.MoveOutOperate(s, galgame);
-        if(galgame.CheckExistLocal())
-            _galgameMap.Remove(galgame.Url);
         if (removeFromDisk)
             galgame.Delete();
         GalgameDeletedEvent?.Invoke(galgame);
         await SaveGalgamesAsync();
-    }
-
-    public (Galgame, bool) TryRecoverGalgameFromLocal(Galgame galgame)
-    {
-        if (galgame.SourceType is not (GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip)) return (galgame, false);
-        var metaFolder = galgame.GetMetaPath();
-        if (Path.Exists(Path.Combine(metaFolder, "meta.json")))
-        {
-            try
-            {
-                galgame = Galgame.ResolveMetaFromLocalFolder(galgame, metaFolder);
-            }
-            catch (Exception) // 文件不合法
-            {
-                throw new Exception("GalgameCollectionService_PhraseFileFailed".GetLocalized());
-            }
-            PhrasedEvent?.Invoke();
-        }
-        return (galgame, true);
     }
     
     public Galgame? GetVirtualGame(Galgame galgame)=>_galgames.FirstOrDefault(g =>
@@ -202,8 +176,8 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         {
             // 覆盖sourceType
             GalgameSourceType sourceType = galgame.SourceType;
-            bool recoverSuccess;
-            (galgame, recoverSuccess) = TryRecoverGalgameFromLocal(galgame);
+            bool recoverSuccess = false;
+            // (galgame, recoverSuccess) = TryRecoverGalgameFromLocal(galgame);
             galgame.SourceType = sourceType;
             if (!recoverSuccess)
             {
@@ -221,7 +195,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         galgame.FindSaveInPath();
         if(virtualGame is null)
             _galgames.Add(galgame);
-        _galgameMap[galgame.Url] = galgame;
+        _galgameMap[galgame.Uid] = galgame;
         GalgameAddedEvent?.Invoke(galgame);
         await SaveGalgamesAsync(galgame);
         galgame.ErrorOccurred += e =>
@@ -388,7 +362,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// <summary>
     /// 获取所有galgame
     /// </summary>
-    public ObservableCollection<Galgame> Galgames => new(_galgames);
+    public ObservableCollection<Galgame> Galgames => _galgames;
 
     /// <summary>
     /// 获取搜索建议
@@ -417,19 +391,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         tmp.Sort((a,b)=> a.CompareX(b));
         return tmp.Where((t, i) => i == 0 || t.CompareX(tmp[i - 1]) !=0).ToList();
     }
-
-    /// <summary>
-    /// 从Url获取galgame
-    /// </summary>
-    /// <param name="url">url</param>
-    /// <returns>galgame,若找不到则返回null</returns>
-    public Galgame? GetGalgameFromUrl(string url)
-    {
-        return string.IsNullOrEmpty(url) ? null : _galgameMap.GetValueOrDefault(url);
-    }
     
-    public Galgame? GetGalgameFromUid(GalgameUid uid)
+    public Galgame? GetGalgameFromUid(GalgameUid? uid)
     {
+        if (uid is null) return null;
         var max = 0;
         Galgame? result = null;
         foreach(Galgame g in _galgames)
@@ -711,23 +676,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         GalgameSourceBase? source = dialog.Source;
         if (file == null || source is not GalgameFolderSource folderSource) return;
         _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
-    }
-
-    private async void HandleSourceDelete(GalgameSourceBase source)
-    {
-        try
-        {
-            foreach (Galgame galgame in source.GetGalgameList())
-            {
-                _galSrcService.MoveOutOperate(source, galgame);
-                if(galgame.Sources.Count == 0)
-                    await RemoveGalgame(galgame);
-            }
-        }
-        catch (Exception e)
-        {
-            _infoService.DeveloperEvent(InfoBarSeverity.Error, e: e);
-        }
     }
 
     private async Task MixedPhraserOrderUpdate()

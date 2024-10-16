@@ -4,32 +4,52 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:models="using:GalgameManager.Models"
-    xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:sources="using:GalgameManager.Models.Sources"
+    xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:prefab="using:GalgameManager.Views.Prefab"
+    xmlns:models="using:GalgameManager.Models"
+    xmlns:dataTemplateSelector="using:GalgameManager.Helpers.DataTemplateSelector"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:control="using:GalgameManager.Views.Control"
     mc:Ignorable="d">
     
     <Page.Resources>
         <MenuFlyout Placement="Right" x:Key="Flyout">
-            <MenuFlyoutItem Icon="Delete" Text="{x:Bind ViewModel.UiDeleteFolder}" 
-                          Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Edit" x:Uid="LibraryPage_EditFolder"
+                            Command="{x:Bind ViewModel.EditLibraryCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem Icon="Delete" x:Uid="LibraryPage_DeleteFolder"
+                            Command="{x:Bind ViewModel.DeleteFolderCommand}" CommandParameter="{Binding}"/>
         </MenuFlyout>
-        <converter:EnumToStringConverter x:Key="EnumStringConverter" />
-        <converter:SourceTypeToGlyphConverter x:Key="SourceTypeGlyphConverter"/>
+        <DataTemplate x:Key="GalgameTemplate" x:DataType="models:Galgame">
+            <prefab:GalgamePrefab Galgame="{x:Bind}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="SourceTemplate" x:DataType="sources:GalgameSourceBase">
+            <prefab:SourcePrefab Source="{x:Bind}"
+                                 Flyout="{StaticResource Flyout}"/>
+        </DataTemplate>
+        <dataTemplateSelector:DisplayableGameObjectTemplateSelector 
+            x:Key="ObjectSelector"
+            GalgameTemplate="{StaticResource GalgameTemplate}"
+            SourceTemplate="{StaticResource SourceTemplate}"/>
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="0 0 0 20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="0 -67 0 0">
+            <!-- 返回 -->
+            <AppBarButton Icon="Back" x:Uid="LibraryPage_Back"
+                          Command="{x:Bind ViewModel.BackCommand}"
+                          IsEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="Left"/>
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
             <!-- 新增游戏库 -->
             <AppBarButton Icon="Add" x:Uid="LibraryPage_AddGalgameFolder"
                           Command="{x:Bind ViewModel.AddLibraryCommand}">
@@ -65,49 +85,16 @@
             </CommandBar.SecondaryCommands>
         </CommandBar>
         
-        <controls:AdaptiveGridView
-            Grid.Row="1" 
-            DesiredWidth="180"
-            ItemHeight="160"
-            IsItemClickEnabled="True"
-            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
-            ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}"
-            SelectionMode="None"
-            StretchContentForSingleRow="False">
-            <controls:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="sources:GalgameSourceBase">
-                    <Grid
-                        x:Name="itemThumbnail"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-                        ContextFlyout="{StaticResource Flyout}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <FontIcon
-                                Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyphConverter}}"
-                                FontFamily="Segoe Fluent Icons"
-                                FontSize="50"/>
-                            <TextBlock
-                                MaxHeight="85"
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource BodyTextStyle}"
-                                Text="{x:Bind Path}" />
-                            <TextBlock
-                                MaxHeight="85"
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource DescriptionTextStyle}"
-                                Text="{x:Bind SourceType, Converter={StaticResource EnumStringConverter}}" />
-                        </StackPanel>
-                    </Grid>
-                </DataTemplate>
-            </controls:AdaptiveGridView.ItemTemplate>
-        </controls:AdaptiveGridView>
-        
-        <InfoBar
-            Grid.Row="2" 
-            IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=OneWay}"
-            Margin="0 0 0 20"
-            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}" />
+        <GridView Grid.Row="1"
+                  ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}"
+                  IsItemClickEnabled="True" SelectionMode="None"
+                  ItemTemplateSelector="{StaticResource ObjectSelector}"
+                  PointerPressed="UIElement_OnPointerPressed">
+            <interactivity:Interaction.Behaviors>
+                <core:EventTriggerBehavior EventName="ItemClick">
+                    <core:InvokeCommandAction Command="{x:Bind ViewModel.ItemClickCommand}" />
+                </core:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+        </GridView>
     </Grid>
 </Page>

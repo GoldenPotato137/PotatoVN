@@ -448,7 +448,7 @@
   <data name="GalgameFolderCollectionService_DeleteGalgameFolderAsync_Content" xml:space="preserve">
     <value>删除库会把库中的所有游戏都取消托管哦？</value>
   </data>
-  <data name="LibraryPage_DeleteFolder" xml:space="preserve">
+  <data name="LibraryPage_DeleteFolder.Text" xml:space="preserve">
     <value>删除游戏库</value>
   </data>
   <data name="GalgameFolderPage_DownloadInfo" xml:space="preserve">
@@ -1732,5 +1732,32 @@
   </data>
   <data name="HomePage_NoDeveloperCategory" xml:space="preserve">
     <value>无任何开发商分类包含本游戏</value>
+  </data>
+  <data name="LibraryPage_EditFolder.Text" xml:space="preserve">
+    <value>管理库</value>
+  </data>
+  <data name="LibraryPage_Back.Label" xml:space="preserve">
+    <value>回到上个库</value>
+  </data>
+  <data name="GalgameCollectionService_LoadMetaFailed" xml:space="preserve">
+    <value>加载本地Meta失败</value>
+  </data>
+  <data name="GalgameCollectionService_LoadMetaFailed_Msg" xml:space="preserve">
+    <value>加载{0}的本地Meta失败了，已忽略其Meta文件</value>
+  </data>
+  <data name="GalgameCollectionService_GetNameFromPathFailed" xml:space="preserve">
+    <value>无法从路径获取游戏名</value>
+  </data>
+  <data name="GalgameSourceCollectionService_InitAsync_GalgameIsNull" xml:space="preserve">
+    <value>游戏库管理：{0}的Galgame为null，已将该游戏移出源：{1}</value>
+  </data>
+  <data name="GalgameSourceCollectionService_CheckGamesInSourceFailed" xml:space="preserve">
+    <value>检测库 {0} 中游戏是否存在时遇到错误</value>
+  </data>
+  <data name="GalgameSourceCollectionService_CheckGamesInSource_Title" xml:space="preserve">
+    <value>已将部分游戏移出库 {0}</value>
+  </data>
+  <data name="GalgameSourceCollectionService_CheckGamesInSource_Msg" xml:space="preserve">
+    <value>由于无法在该库中检测到下列游戏，已将下列游戏移出了该库：{0}</value>
   </data>
 </root>

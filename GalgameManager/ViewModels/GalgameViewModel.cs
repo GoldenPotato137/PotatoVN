@@ -61,6 +61,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private string _infoBarMsg = string.Empty;
     [ObservableProperty] private InfoBarSeverity _infoBarSeverity = InfoBarSeverity.Informational;
     private int _msgIndex;
+    private bool IsNotLocalGame => !_isLocalGame;
     
     [RelayCommand]
     private void OnCharacterClick(GalgameCharacter? clickedItem)
@@ -108,7 +109,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         }
 
         Item = param.Galgame;
-        IsLocalGame = Item.CheckExistLocal();
+        IsLocalGame = Item.IsLocalGame;
         IsZipGame = Item.CheckIsZip();
         Item.SavePath = Item.SavePath; //更新存档位置显示
         Update(_item);
@@ -333,7 +334,13 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private async Task OpenInExplorer()
     {
         if(Item == null) return;
-        await Launcher.LaunchUriAsync(new Uri(Item.Path));
+        var path = Item.Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder)?.GetPath(Item);
+        if (path is null) //不应该发生
+        {
+            _infoService.DeveloperEvent(InfoBarSeverity.Error, "Can't find the path of the game");
+            return;
+        }
+        await Launcher.LaunchUriAsync(new Uri(path));
     }
 
     [RelayCommand]
@@ -408,7 +415,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         await DisplayMsg(result.Item1.ToInfoBarSeverity(), result.Item2);
     }
 
-    [RelayCommand(CanExecute = nameof(IsLocalGame))]
+    [RelayCommand(CanExecute = nameof(IsNotLocalGame))]
     private async Task SetLocalPath()
     {
         try
@@ -423,13 +430,9 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             if (file is not null)
             {
                 var folder = file.Path[..file.Path.LastIndexOf('\\')];
-                AddGalgameResult result =  await _galgameService.TryAddGalgameAsync(
-                    new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(folder)
-                        , folder), virtualGame: Item);
-                if (result == AddGalgameResult.AlreadyExists) 
-                    _ = DisplayMsg(InfoBarSeverity.Error, "GalgamePage_PathAlreadyExist".GetLocalized());
+                await _galgameService.SetLocalPathAsync(Item!, folder);
                 Item!.ExePath = file.Path;
-                IsLocalGame = Item!.CheckExistLocal();
+                IsLocalGame = Item!.IsLocalGame;
                 _ = DisplayMsg(InfoBarSeverity.Success, "GalgamePage_PathSet".GetLocalized());
                 _galgameService.RefreshDisplay(); //重新构造显示列表以刷新特殊显示非本地游戏（因为GameToOpacityConverter只会在构造列表的时候被调用）
             }

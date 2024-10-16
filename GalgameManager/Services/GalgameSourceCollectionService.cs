@@ -13,7 +13,8 @@ namespace GalgameManager.Services;
 public class GalgameSourceCollectionService : IGalgameSourceCollectionService
 {
     public Action<GalgameSourceBase>? OnSourceDeleted { get; set; }
-    
+    public Action? OnSourceChanged { get; set; }
+
     private ObservableCollection<GalgameSourceBase> _galgameSources = new();
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IBgTaskService _bgTaskService;
@@ -35,19 +36,53 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
                               converters: new() { new GalgameAndUidConverter() })
                           ?? new ObservableCollection<GalgameSourceBase>();
         await SourceUpgradeAsync();
+        await NameAndSubSourceUpgradeAsync();
+        foreach (GalgameSourceBase source in _galgameSources) // 部分崩溃的情况可能导致source里面部分galgame为null
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            List<GalgameAndPath> tmp = source.Galgames.Where(g => g.Galgame is null).ToList();
+            foreach (GalgameAndPath g in tmp)
+            {
+                source.Galgames.Remove(g);
+                _infoService.DeveloperEvent(InfoBarSeverity.Error,
+                    "GalgameSourceCollectionService_InitAsync_GalgameIsNull".GetLocalized(g.Path, source.Url));
+            }
+        }
         // 给Galgame注入Source列表
         foreach (GalgameSourceBase s in _galgameSources)
             foreach (Galgame g in s.GetGalgameList().Where(g => !g.Sources.Contains(s)))
                 g.Sources.Add(s);
+        // 计算子库
+        CalcSubSources();
     }
 
-    public Task StartAsync()
+    public async Task StartAsync()
     {
-        foreach (GalgameSourceBase source in _galgameSources.Where(f => f.ScanOnStart))
+        // 检查所有库中的游戏是否还在源中
+        List<(Task<List<Galgame>>, GalgameSourceBase)> sourceCheckTasks = new();
+        foreach (GalgameSourceBase source in _galgameSources)
+            sourceCheckTasks.Add((CheckGamesInSourceAsync(source), source));
+        foreach ((Task<List<Galgame>> task, GalgameSourceBase source) t in sourceCheckTasks)
         {
-            _bgTaskService.AddBgTask(new GetGalgameInSourceTask(source));
+            try
+            {
+                List<Galgame> removedGames = await t.task;
+                if (removedGames.Count > 0)
+                    _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning,
+                        "GalgameSourceCollectionService_CheckGamesInSource_Title".GetLocalized(t.source.Name),
+                        msg: "GalgameSourceCollectionService_CheckGamesInSource_Msg".GetLocalized(
+                            $"\n{string.Join('\n', removedGames.Select(g => g.Name.Value))}"));
+            }
+            catch (Exception e)
+            {
+                _infoService.Event(EventType.NotCriticalUnexpectedError, InfoBarSeverity.Error,
+                    title: "GalgameSourceCollectionService_CheckGamesInSourceFailed".GetLocalized(t.source.Name),
+                    exception: e);
+            }
         }
-        return Task.CompletedTask;
+        
+        foreach (GalgameSourceBase source in _galgameSources.Where(f => f.ScanOnStart)) 
+            _ = _bgTaskService.AddBgTask(new GetGalgameInSourceTask(source));
     }
     
     public ObservableCollection<GalgameSourceBase> GetGalgameSources() => _galgameSources;
@@ -73,11 +108,7 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         switch (type)
         {
             case GalgameSourceType.LocalFolder:
-                var includeSubfolder = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SearchChildFolder).Result;
-                return tmp.FirstOrDefault(s =>
-                    includeSubfolder ? Utils.IsPathContained(s.Path, path) : Utils.ArePathsEqual(s.Path, path));
-            case GalgameSourceType.Virtual:
-                return tmp.FirstOrDefault() ?? AddGalgameSourceAsync(GalgameSourceType.Virtual, string.Empty).Result;
+                return tmp.FirstOrDefault(s => Utils.ArePathsEqual(s.Path, path));
             case GalgameSourceType.UnKnown:
             case GalgameSourceType.LocalZip:
             default:
@@ -115,6 +146,9 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
             await _bgTaskService.AddBgTask(new GetGalgameInSourceTask(galgameSource));
         }
         
+        CalcSubSources();
+        OnSourceChanged?.Invoke();
+        
         return galgameSource;
     }
     
@@ -134,9 +168,22 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         await dialog.ShowAsync();
         if (!delete || !_galgameSources.Contains(source)) return;
         
+        try
+        {
+            List<Galgame> srcGames = source.GetGalgameList().ToList();
+            foreach (Galgame galgame in srcGames) 
+                MoveOutOperate(source, galgame);
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(InfoBarSeverity.Error,
+                msg: $"Failed to move game out of source {source.Url}\n{e.StackTrace}");
+        }
         _galgameSources.Remove(source);
+        CalcSubSources();
         await Save();
         OnSourceDeleted?.Invoke(source);
+        OnSourceChanged?.Invoke();
     }
 
     public void MoveInNoOperate(GalgameSourceBase target, Galgame game, string path)
@@ -179,6 +226,17 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
         return task;
     }
 
+    public string GetSourcePath(GalgameSourceType type, string gamePath)
+    {
+        switch (type)
+        {
+            case GalgameSourceType.LocalFolder or GalgameSourceType.LocalZip:
+                return Directory.GetParent(gamePath)!.FullName;
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
     /// <summary>
     /// 扫描所有库
     /// </summary>
@@ -194,6 +252,55 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
             converters: new() { new GalgameAndUidConverter() });
     }
 
+    /// <summary>
+    /// 重新计算所有库的归属关系
+    /// </summary>
+    private void CalcSubSources()
+    {
+        // 确实有O(nlogn)的写法，但不是特别有必要，先O(n^2)吧
+        foreach (GalgameSourceBase src in _galgameSources)
+        {
+            src.ParentSource = null;
+            src.SubSources.Clear();
+        }
+
+        foreach (GalgameSourceBase src in _galgameSources)
+        {
+            GalgameSourceBase? target = null;
+            foreach (GalgameSourceBase current in _galgameSources)
+                if (src != current && Utils.IsPathContained(current.Path, src.Path) &&
+                    (target is null || current.Path.Length > target.Path.Length))
+                    target = current;
+            src.ParentSource = target;
+            target?.SubSources.Add(src);
+        }
+    }
+
+    /// 检查某个源的游戏是否还在源中，如果不在则移出
+    private Task<List<Galgame>> CheckGamesInSourceAsync(GalgameSourceBase source)
+    {
+        switch (source.SourceType)
+        {
+            case GalgameSourceType.LocalFolder:
+                return Task.Run(() =>
+                {
+                    IEnumerable<Galgame> gamesToRemove =
+                        from gal in source.Galgames
+                        where !Directory.Exists(gal.Path)
+                        select gal.Galgame;
+                    List<Galgame> toRemove = gamesToRemove.ToList();
+                    foreach (Galgame g in toRemove)
+                        MoveOutOperate(source, g);
+                    return toRemove;
+                });
+            case GalgameSourceType.LocalZip:
+            case GalgameSourceType.UnKnown:
+            default:
+                throw new NotSupportedException();
+        }
+    }
+
+    #region UPGRADES
     /// <summary>
     /// 将galgame源归属记录从galgame移入source管理
     /// </summary>
@@ -220,15 +327,23 @@ public class GalgameSourceCollectionService : IGalgameSourceCollectionService
                 source ??= await AddGalgameSourceAsync(GalgameSourceType.LocalFolder, folderPath);
                 MoveInNoOperate(source, g, folderPath);
             }
-            else //非本机游戏
-            {
-                GalgameSourceBase source = GetGalgameSource(GalgameSourceType.Virtual, string.Empty)!;
-                MoveInNoOperate(source, g, string.Empty);
-            }
         }
 
         await Save();
         await _localSettingsService.SaveSettingAsync(KeyValues.SourceUpgrade, true);
     }
+
+    private async Task NameAndSubSourceUpgradeAsync()
+    {
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SourceNameAndSubUpgrade))
+            return;
+        foreach (GalgameSourceBase src in _galgameSources)
+            src.SetNameFromPath();
+        CalcSubSources();
+        await _localSettingsService.SaveSettingAsync(KeyValues.SourceNameAndSubUpgrade, true);  
+        await Save();
+    }
+
+    #endregion
 }
 
