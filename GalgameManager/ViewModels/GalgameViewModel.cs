@@ -18,6 +18,7 @@ using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Text.RegularExpressions;
 
 namespace GalgameManager.ViewModels;
 
@@ -217,9 +218,9 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private async Task Play()
     {
         if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
-        if (Item.ExePath == null)
+        if (Item.ExePath == null && Item.Startup_parameters=="")
             await _galgameService.GetGalgameExeAsync(Item);
-        if (Item.ExePath == null) return;
+        if (Item.ExePath == null && Item.Startup_parameters == "") return;
 
         Item.LastPlay = DateTime.Now.ToShortDateString();
         Process process;
@@ -236,13 +237,19 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 }
             };
         }
-        else { 
+        else
+        {
+            string pattern = "\".+?\"";
+            Regex regex = new(pattern);
+            MatchCollection matches = regex.Matches(Item.Startup_parameters);
+            string filename = matches[0].Value;
+            string arguments = Item.Startup_parameters.Replace(filename, "");
             process = new()
             {
-                StartInfo = new ProcessStartInfo
+                StartInfo = new ProcessStartInfo()
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/C {string.Join(" ", Item.Startup_parameters)}",
+                    FileName = filename,
+                    Arguments = arguments,
                     UseShellExecute = false,
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,

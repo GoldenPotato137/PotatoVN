@@ -100,7 +100,10 @@
                         <TextBox Grid.Column="1" 
                                      Text="{x:Bind ViewModel.Gal.Startup_parameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                      VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                     AcceptsReturn="False"/>
+                                     AcceptsReturn="False"
+                                 ToolTipService.ToolTip="第一个参数为启动galgame的软件的绝对地值，比如”D:\Program Files\Locale.Emulator.2.5.0.1\LEProc.exe\“,剩下的参数按软件内部的使用，其实和cmd的方式差不多"
+                                 />
+                        
                     </Grid>
                     
                         <Grid>
