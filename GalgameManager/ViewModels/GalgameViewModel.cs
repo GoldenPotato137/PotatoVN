@@ -251,6 +251,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                     Arguments = arguments,
                     CreateNoWindow = true,
                     Verb = Item.RunAsAdmin ? "runas" : null,
+                    UseShellExecute = true,
                 }
             };
         }
