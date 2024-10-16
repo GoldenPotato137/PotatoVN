@@ -218,14 +218,12 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task Play()
     {
-        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
-        if (Item.ExePath == null && Item.Startup_parameters=="")
+        if (!Item.IsLocalGame) return;
+        if (Item.ExePath == null && Item.Startup_parameters==string.Empty)
             await _galgameService.GetGalgameExeAsync(Item);
-        if (Item.ExePath == null && Item.Startup_parameters == "") return;
-
-        Item.LastPlay = DateTime.Now.ToShortDateString();
+        if (Item.ExePath == null && Item.Startup_parameters == string.Empty) return;
         Process process;
-        if (Item.Startup_parameters == "")
+        if (Item.Startup_parameters == string.Empty)
         {
             process = new()
             {
@@ -251,8 +249,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 {
                     FileName = filename,
                     Arguments = arguments,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    Verb = Item.RunAsAdmin ? "runas" : null,
                 }
             };
         }
@@ -264,6 +262,10 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             {
                 await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出
                 process = await WaitForProcessStartAsync(Item.ProcessName) ?? process;
+            }
+            if (Item.Startup_parameters != string.Empty && Item.ProcessName is null) { //启动的进程和游戏进程不是同一个进程，需要知道到底启动什么进程
+                await Task.Delay(100);
+                await SelectProcess();
             }
             _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
             await _jumpListService.AddToJumpListAsync(Item);
@@ -455,7 +457,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectProcess()
     {
-        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
+        if (!Item.IsLocalGame) return;
         SelectProcessDialog dialog = new();
         await dialog.ShowAsync();
         if (dialog.SelectedProcessName is not null)

@@ -1760,4 +1760,7 @@
   <data name="GalgameSourceCollectionService_CheckGamesInSource_Msg" xml:space="preserve">
     <value>由于无法在该库中检测到下列游戏，已将下列游戏移出了该库：{0}</value>
   </data>
+  <data name="GalgameSettingPage_Startup_parameters.Text" xml:space="preserve">
+    <value>启动参数设置</value>
+  </data>
 </root>

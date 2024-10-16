@@ -94,7 +94,7 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="启动参数设置"
+                        <TextBlock x:Uid="GalgameSettingPage_Startup_parameters"
                                     Margin="0 0 15 0" VerticalAlignment="Center"
                                     HorizontalAlignment="Stretch"/>
                         <TextBox Grid.Column="1" 
