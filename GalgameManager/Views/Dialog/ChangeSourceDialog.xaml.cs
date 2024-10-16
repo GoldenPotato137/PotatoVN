@@ -56,12 +56,10 @@ public sealed partial class ChangeSourceDialog
         _game = game;
         IGalgameSourceCollectionService sourceCollectionService = App.GetService<IGalgameSourceCollectionService>();
         Sources = sourceCollectionService.GetGalgameSources().ToList();
-        Sources.RemoveAll(s => s.SourceType == GalgameSourceType.Virtual);
         foreach (GalgameSourceBase s in _game.Sources)
             Sources.Remove(s);
 
         GalgameSources = _game.Sources.ToList();
-        GalgameSources.RemoveAll(s => s.SourceType is GalgameSourceType.Virtual);
     }
 
     async partial void OnSelectSourceIndexChanged(int value)

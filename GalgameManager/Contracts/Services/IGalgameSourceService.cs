@@ -32,6 +32,7 @@ public interface IGalgameSourceService
     /// 从游戏文件夹游戏Meta，若不存在则返回null
     /// </summary>
     /// <param name="path">文件夹路径</param>
+    /// <exception cref="PvnException">当.PotatoVN存在但meta.json不存在时抛出</exception>
     /// <returns></returns>
     public Task<Galgame?> LoadMetaAsync(string path);
 

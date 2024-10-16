@@ -40,7 +40,7 @@ public class LocalFolderSourceService : IGalgameSourceService
             var folderPath = source.GetPath(game)!;
             var metaPath = Path.Combine(folderPath, ".PotatoVN");
             if (!Directory.Exists(metaPath)) Directory.CreateDirectory(metaPath);
-            Galgame meta = game.GetMetaCopy(folderPath);
+            Galgame meta = game.GetMetaCopy(folderPath, source.GetPath(game)!);
             var destImagePath = Path.Combine(metaPath, meta.ImagePath.Value!);
             _fileService.Save(metaPath, "meta.json", meta);
             // 备份图片
@@ -60,8 +60,10 @@ public class LocalFolderSourceService : IGalgameSourceService
     public async Task<Galgame?> LoadMetaAsync(string path)
     {
         await Task.CompletedTask;
-        var metaFolderPath = Path.Combine(path, "PotatoVN");
+        var metaFolderPath = Path.Combine(path, ".PotatoVN");
+        if (!Directory.Exists(metaFolderPath)) return null; // 不存在备份文件夹
         Galgame meta = _fileService.Read<Galgame>(metaFolderPath, "meta.json")!;
+        if (meta is null) throw new PvnException("meta.json not exist");
         if (meta.Path.EndsWith('\\')) meta.Path = meta.Path[..^1];
         meta.ImagePath.ForceSet(LoadImg(meta.ImagePath.Value, metaFolderPath));
         foreach (GalgameCharacter character in meta.Characters)
@@ -156,7 +158,7 @@ public class LocalFolderSourceService : IGalgameSourceService
     {
         if (string.IsNullOrEmpty(target) || target == defaultTarget) return defaultReturn;
         var targetPath = Path.GetFullPath(Path.Combine(path, target));
-        return File.Exists(target) ? targetPath : defaultReturn;
+        return File.Exists(targetPath) ? targetPath : defaultReturn;
     }
     
     private static DriveInfo? GetDriveInfo(string path)

@@ -1,6 +1,7 @@
 ﻿using Windows.UI.StartScreen;
 
 using GalgameManager.Contracts.Services;
+using GalgameManager.Core.Helpers;
 using GalgameManager.Models;
 
 namespace GalgameManager.Services;
@@ -23,7 +24,7 @@ public class JumpListService : IJumpListService
     public async Task CheckJumpListAsync(IList<Galgame> galgames)
     {
         if (_jumpList == null) await Init();
-        List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"/j \"{gal.Url}\"" != item.Arguments)).ToList();
+        List<JumpListItem> toRemove = _jumpList!.Items.Where(item => galgames.All(gal => $"/j \"{gal.Uid.ToJson()}\"" != item.Arguments)).ToList();
         foreach (JumpListItem item in toRemove)
         {
             _jumpList.Items.Remove(item);
@@ -35,10 +36,10 @@ public class JumpListService : IJumpListService
     {
         if (_jumpList == null) await Init();
         IList<JumpListItem>? items = _jumpList!.Items;
-        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Url}\"");
+        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Uid.ToJson()}\"");
         if (item == null)
         {
-            item = JumpListItem.CreateWithArguments($"/j \"{galgame.Url}\"", galgame.Name);
+            item = JumpListItem.CreateWithArguments($"/j \"{galgame.Uid.ToJson()}\"", galgame.Name);
             item.Logo = new Uri("ms-appx:///Assets/heart.png");
         }
         else
@@ -53,7 +54,7 @@ public class JumpListService : IJumpListService
     {
         if (_jumpList == null) await Init();
         IList<JumpListItem>? items = _jumpList!.Items;
-        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Url}\"");
+        JumpListItem? item = items.FirstOrDefault(i => i.Arguments == $"/j \"{galgame.Uid.ToJson()}\"");
         if (item != null)
         {
             items.Remove(item);

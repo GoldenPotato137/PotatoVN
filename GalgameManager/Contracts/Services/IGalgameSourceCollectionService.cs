@@ -41,8 +41,7 @@ public interface IGalgameSourceCollectionService
     /// <p>
     /// 对于不同的库的类型，匹配规则如下：<br/>
     /// <list type="bullet">
-    /// <item>本地文件夹：若设置中开启了递归搜索子文件节，则匹配path的父文件节；否则直接匹配path</item>
-    /// <item>虚拟游戏库：path填什么都行，返回唯一的虚拟库</item>
+    /// <item>本地文件夹：直接匹配path</item>
     /// <item>对于剩余的库，直接匹配path</item>
     /// </list>
     /// </p>
@@ -92,4 +91,12 @@ public interface IGalgameSourceCollectionService
     /// <returns>一个已经启动的BgTask</returns>
     public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc,
         Galgame game);
+
+    /// <summary>
+    /// 从游戏路径获取其源应该在的路径
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="gamePath"></param>
+    /// <returns></returns>
+    public string GetSourcePath(GalgameSourceType type, string gamePath);
 }

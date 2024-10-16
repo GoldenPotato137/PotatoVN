@@ -121,7 +121,7 @@ public class PvnSyncTask : BgTaskBase
                         game.PlayedTime[time.dateTimeStamp.ToDateTime().ToLocalTime().ToStringDefault()] = time.minute;
                     game.TotalPlayTime = game.PlayedTime.Values.Sum();
                     if(dto.playTime.Count > 0)
-                        game.LastPlay = dto.playTime[^1].dateTimeStamp.ToDateTime().ToLocalTime().ToStringDefault();
+                        game.LastPlayTime = dto.playTime[^1].dateTimeStamp.ToDateTime().ToLocalTime();
                 }
 
                 game.PlayType = dto.playType;

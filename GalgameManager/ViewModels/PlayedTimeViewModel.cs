@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Contracts.ViewModels;
@@ -6,20 +8,18 @@ using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
-using LiveChartsCore;
-using LiveChartsCore.Kernel.Sketches;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using SkiaSharp;
+using Microsoft.UI.Xaml;
 
 namespace GalgameManager.ViewModels;
 
 public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
 {
     public Galgame Game = new();
+    public ObservableCollection<PlayTimeViewModelItem> Items { get; } = new();
     private readonly INavigationService _navigationService;
     private readonly IPvnService _pvnService;
     private readonly GalgameCollectionService _galgameCollectionService;
+    private double _totalWidth; // 柱状图绘制区域总宽度
     
     public PlayedTimeViewModel(INavigationService navigationService, IGalgameCollectionService gameCollectionService,
         IPvnService pvnService)
@@ -31,16 +31,37 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedTo(object parameter)
     {
-        if (parameter is Galgame galgame)
-        {
-            Game = galgame;
-            XAxes[0].Labels = galgame.PlayedTime.Keys.ToArray();
-            Series[0].Values = galgame.PlayedTime.Values.ToArray();
-        }
+        Debug.Assert(parameter is Galgame);
+        if (parameter is not Galgame galgame) return;
+        Game = galgame;
+        Update();
     }
 
     public void OnNavigatedFrom()
     {
+    }
+    
+    [RelayCommand]
+    private void OnPageSizeChanged(SizeChangedEventArgs e)
+    {
+        _totalWidth = e.NewSize.Width;
+        UpdateWidth();
+    }
+
+    /// 更新柱状图
+    private void Update()
+    {
+        Items.Clear();
+        foreach (var (date, playTime) in Game.PlayedTime)
+            Items.Add(new(date, playTime));
+        UpdateWidth();
+    }
+    
+    private void UpdateWidth()
+    {
+        double maxPlayTime = Game.PlayedTime.Count > 0 ? Game.PlayedTime.Values.Max() : 1;
+        foreach (PlayTimeViewModelItem item in Items)
+            item.UpdateWidth(_totalWidth, maxPlayTime);
     }
 
     [RelayCommand]
@@ -53,31 +74,27 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
     private async Task Edit()
     {
         await new EditPlayTimeDialog(Game).ShowAsync();
-        OnNavigatedTo(Game);
         await _galgameCollectionService.SaveGalgamesAsync(Game);
+        Update();
         _pvnService.Upload(Game, PvnUploadProperties.PlayTime);
     }
+}
 
-    public ISeries[] Series { get; } =
-    {
-        new ColumnSeries<int>
-        {
-            Name = "PlayedTime",
-            Values = Array.Empty<int>()
-        },
-    };
+public partial class PlayTimeViewModelItem : ObservableObject
+{
+    [ObservableProperty] private double _width;
+    [ObservableProperty] private int _playTime;
+    [ObservableProperty] private string _date;
 
-    // ReSharper disable once MemberCanBePrivate.Global
-    public ICartesianAxis[] XAxes { get; } =
+    public PlayTimeViewModelItem(string date, int playTime)
     {
-        new Axis()
-        {
-            Labels = Array.Empty<string>(),
-            LabelsRotation = 0,
-            SeparatorsPaint = new SolidColorPaint(new SKColor(200, 200, 200)),
-            SeparatorsAtCenter = false,
-            TicksPaint = new SolidColorPaint(new SKColor(35, 35, 35)),
-            TicksAtCenter = true
-        }
-    };
+        _date = date;
+        _playTime = playTime;
+    }
+
+    public void UpdateWidth(double totalWidth, double maxPlayTime)
+    {
+        Width = Math.Max(totalWidth - 200, 0); //预留日期、时间显示区域
+        Width = Width * _playTime / maxPlayTime;
+    }
 }

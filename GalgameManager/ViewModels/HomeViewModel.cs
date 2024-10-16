@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -97,6 +98,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         //Add Event
         Filters.CollectionChanged += UpdateFilterPanelDisplay;
         _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
+        _galgameService.GalgameChangedEvent += UpdateGalgame;
         _galgameService.PhrasedEvent += OnGalgameServicePhrased;
         _localSettingsService.OnSettingChanged += OnSettingChanged;
         _filterService.OnFilterChanged += () => Source.RefreshFilter();
@@ -130,15 +132,17 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         if(await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
             _filterService.ClearFilters();
         _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
+        _galgameService.GalgameChangedEvent -= UpdateGalgame;
         _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
         Filters.CollectionChanged -= UpdateFilterPanelDisplay;
         _localSettingsService.OnSettingChanged -= OnSettingChanged;
     }
 
     [RelayCommand]
-    private void ItemClick(Galgame? clickedItem)
+    private void ItemClick(ItemClickEventArgs e)
     {
-        if (clickedItem != null)
+        Debug.Assert(e.ClickedItem is Galgame);
+        if (e.ClickedItem is Galgame clickedItem)
         {
             _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
             _navigationService.NavigateTo(typeof(GalgameViewModel).FullName!, new GalgamePageParameter {Galgame = clickedItem});
@@ -298,7 +302,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                     ));
                     break;
                 case SortKeys.LastPlay:
-                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlay), 
+                    Source.SortDescriptions.Add(new SortDescription(nameof(Galgame.LastPlayTime), 
                         SortKeysAscending[i]?SortDirection.Ascending:SortDirection.Descending
                     ));
                     break;
@@ -417,25 +421,36 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         //TODO
         IsPhrasing = true;
-        AddGalgameResult result = AddGalgameResult.Other;
+        InfoBarSeverity infoBarSeverity;
         string msg;
         try
         {
-            result = await _galgameService.TryAddGalgameAsync(
-                new Galgame(GalgameSourceType.LocalFolder, GalgameFolderSource.GetGalgameName(path), path), true);
-            msg = result.ToMsg();
+            Galgame tmp = await _galgameService.AddGameAsync(GalgameSourceType.LocalFolder, path, true);
+            infoBarSeverity = tmp.IsIdsEmpty() ? InfoBarSeverity.Warning : InfoBarSeverity.Success;
+            msg = tmp.IsIdsEmpty()
+                ? "AddGalgameResult_NotFoundInRss".GetLocalized()
+                : "AddGalgameResult_Success".GetLocalized();
         }
         catch (Exception e)
         {
+            infoBarSeverity = InfoBarSeverity.Error;
             msg = e.Message;
         }
+
         IsPhrasing = false;
-        _infoService.Info(result.ToInfoBarSeverity(), msg: msg);
+        _infoService.Info(infoBarSeverity, msg);
     }
 
     private void OnGalgameServicePhrased() => IsPhrasing = false;
     
     private void OnGalgameLoadedEvent() => Source.Source = _galgameService.Galgames;
+
+    private void UpdateGalgame(Galgame game)
+    {
+        //通过Remove和Add来刷新某个具体的Item
+        Source.Remove(game);
+        Source.Add(game);
+    }
 
     [RelayCommand]
     private async Task AddGalgame()

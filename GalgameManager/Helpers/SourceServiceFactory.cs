@@ -14,7 +14,6 @@ public static class SourceServiceFactory
         value = type switch
         {
             GalgameSourceType.LocalFolder => App.GetService<LocalFolderSourceService>(),
-            GalgameSourceType.Virtual => App.GetService<VirtualSourceService>(),
             GalgameSourceType.UnKnown => throw new ArgumentException("UnKnow source"),
             GalgameSourceType.LocalZip => throw new NotImplementedException(),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)

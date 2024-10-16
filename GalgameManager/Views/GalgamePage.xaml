@@ -240,12 +240,13 @@
                                     Padding="0 0 0 0" 
                                     Command="{x:Bind ViewModel.JumpToHomePageWithDeveloperFilterCommand}"/>
                             </StackPanel>
-
+                            <!-- 上次游玩时间 -->
                             <StackPanel Margin="{StaticResource SmallTopMargin}">
                                 <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}"
                                            x:Uid="GalgamePage_LastPlayTime" />
                                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
-                                           Text="{x:Bind ViewModel.Item.LastPlay, Mode=OneWay, FallbackValue={}}" />
+                                           Text="{x:Bind ViewModel.Item.LastPlayTime, Mode=OneWay, FallbackValue={},
+                                           Converter={StaticResource DateTimeToStringConverter}}" />
                             </StackPanel>
                             <!-- 游戏总时长 -->
                             <StackPanel Margin="{StaticResource SmallTopMargin}">

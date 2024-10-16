@@ -4,6 +4,7 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using Microsoft.Windows.AppLifecycle;
+using Newtonsoft.Json;
 
 namespace GalgameManager.Activation;
 
@@ -22,10 +23,17 @@ public class JumpListActivationHandler : ActivationHandler<AppActivationArgument
         if (args.Kind != ExtendedActivationKind.Launch) return false;
         if (args.Data is not LaunchActivatedEventArgs arg) return false;
         if ((arg.Arguments.StartsWith("/j") && arg.Arguments.Length > 2) == false) return false;
-        var target = arg.Arguments[3..]; //去掉/j与空格
-        target = target[1..^1]; //去掉双引号
-        _game = _galgameCollectionService.GetGalgameFromUrl(target);
-        return _game is not null;
+        try
+        {
+            var target = arg.Arguments[3..]; //去掉/j与空格
+            target = target[1..^1]; //去掉双引号
+            _game = _galgameCollectionService.GetGalgameFromUid(JsonConvert.DeserializeObject<GalgameUid>(target));
+            return _game is not null;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     protected async override Task HandleInternalAsync(AppActivationArguments args)
