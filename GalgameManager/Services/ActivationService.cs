@@ -17,6 +17,8 @@ public class ActivationService : IActivationService
 {
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly IEnumerable<IActivationHandler> _activationHandlers;//
+    private readonly IThemeSelectorService _themeSelectorService; //
     private readonly IUpdateService _updateService;
     private readonly IGalgameSourceCollectionService _galgameFolderCollectionService;
     private readonly IGalgameCollectionService _galgameCollectionService;

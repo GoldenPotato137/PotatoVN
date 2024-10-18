@@ -77,6 +77,8 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     public string? TextPath; //记录的要打开的文本的路径
     public bool PvnUpdate; //是否需要更新
     public PvnUploadProperties PvnUploadProperties; // 要更新到Pvn的属性
+    [ObservableProperty] private string _startup_parameters = string.Empty;//启动参数
+
     
     // 已被废弃的属性，为了兼容旧版本保留（用于反序列化迁移数据）
     [Deprecated($"use {nameof(LastPlayTime)} instead", DeprecationType.Deprecate, 0)]
