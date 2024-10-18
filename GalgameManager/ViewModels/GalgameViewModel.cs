@@ -218,7 +218,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task Play()
     {
-        if (!Item.IsLocalGame) return;
+        if (!Item!.IsLocalGame) return;
         if (Item.ExePath == null && Item.Startup_parameters==string.Empty)
             await _galgameService.GetGalgameExeAsync(Item);
         if (Item.ExePath == null && Item.Startup_parameters == string.Empty) return;
@@ -231,18 +231,18 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 {
                     FileName = Item.ExePath,
                     WorkingDirectory = Item.Path,
-                    UseShellExecute = Item.RunAsAdmin | Item.ExePath.ToLower().EndsWith("lnk"),
+                    UseShellExecute = Item.RunAsAdmin | Item.ExePath!.ToLower().EndsWith("lnk"),
                     Verb = Item.RunAsAdmin ? "runas" : null,
                 }
             };
         }
         else
         {
-            var pattern = "\".+?\"";
-            var regex = new Regex(pattern,RegexOptions.None, TimeSpan.FromSeconds(1));
+            var pattern = "([A-Za-z0-9]+[  ]{1}|\".+?\")";    //这个正则表达式用于匹配""的文件的地址，或者是系统环境变量这种由数字字母组成的文件
+            var regex = new Regex(pattern,RegexOptions.None, TimeSpan.FromSeconds(0.1));
             MatchCollection matches = regex.Matches(Item.Startup_parameters);
             var filename = matches[0].Value;
-            var arguments = Item.Startup_parameters.Replace(filename, "");
+            var arguments = Item.Startup_parameters.Replace(filename, " ");
             process = new()
             {
                 StartInfo = new ProcessStartInfo()
@@ -458,7 +458,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectProcess()
     {
-        if (!Item.IsLocalGame) return;
+        if (!Item!.IsLocalGame) return;
         SelectProcessDialog dialog = new();
         await dialog.ShowAsync();
         if (dialog.SelectedProcessName is not null)
