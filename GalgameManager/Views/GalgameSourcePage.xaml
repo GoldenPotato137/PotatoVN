@@ -85,8 +85,7 @@
             
             <!-- 库路径 -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="15">
-                <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}"
-                           MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}" 
+                <TextBlock Text="{x:Bind ViewModel.Item.Path, FallbackValue={}}" 
                            VerticalAlignment="Center"/>
                 <Border Background="{ThemeResource  ControlAltFillColorSecondaryBrush}"
                         BorderThickness="0"
@@ -106,10 +105,10 @@
                 GridLinesVisibility="Horizontal"
                 ItemsSource="{x:Bind ViewModel.Galgames, Mode=OneWay}">
                 <controls:DataGrid.Columns>
-                    <controls:DataGridTextColumn Binding="{Binding Name.Value}" Header="游戏名" Width="250"/>
-                    <controls:DataGridComboBoxColumn Binding="{Binding RssType}" Header="数据源" 
+                    <controls:DataGridTextColumn Binding="{Binding Galgame.Name.Value}" Header="游戏名" Width="250"/>
+                    <controls:DataGridComboBoxColumn Binding="{Binding Galgame.RssType}" Header="数据源" 
                                                      ItemsSource="{x:Bind ViewModel.RssTypes}"/>
-                    <controls:DataGridTextColumn Binding="{Binding Id}" Header="id" />
+                    <controls:DataGridTextColumn Binding="{Binding Galgame.Id}" Header="id" />
                     <controls:DataGridTextColumn Binding="{Binding Path}" Header="游戏目录" IsReadOnly="True"/>
                 </controls:DataGrid.Columns>
                 <interactivity:Interaction.Behaviors>

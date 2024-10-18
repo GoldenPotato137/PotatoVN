@@ -42,23 +42,30 @@ public class GetGalgameInSourceTask : BgTaskBase
 
             _galgameFolderSource.IsRunning = true;
             var cnt = 0;
-            await foreach ((Galgame? galgame, var l) in _galgameFolderSource.ScanAllGalgames())
+            await foreach (var (path, l) in _galgameFolderSource.ScanAllGalgames())
             {
-                if (galgame == null)
+                if (path == null)
                 {
                     log += l;
                     continue;
                 }
-                ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Progress".GetLocalized(galgame.Url));
-                AddGalgameResult result = AddGalgameResult.Other;
+                ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Progress".GetLocalized(path));
+                var msg = $"{path}: ";
                 await UiThreadInvokeHelper.InvokeAsync(async Task() =>
                 {
-                    result = await galgameService.TryAddGalgameAsync(galgame, ignoreFetchResult);
-                    if (result == AddGalgameResult.Success ||
-                        (ignoreFetchResult && result == AddGalgameResult.NotFoundInRss))
+                    try
+                    {
+                        await galgameService.AddGameAsync(_galgameFolderSource.SourceType, path, ignoreFetchResult);
                         cnt++;
+                        msg += "AddGalgameResult_Success".GetLocalized();
+                    }
+                    catch (Exception e)
+                    {
+                        msg += e.Message;
+                    }
+                    msg += "\n";
                 });
-                log += result;
+                log += msg;
 
             }
             ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_Saving".GetLocalized(cnt));

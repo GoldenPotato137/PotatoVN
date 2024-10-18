@@ -24,10 +24,10 @@ public class GalgameFolderSource : GalgameSourceBase
 
     public override bool IsInSource(string path)
     {
-        return SystemPath.GetFullPath(path).StartsWith(SystemPath.GetFullPath(Path)) ;
+        return Utils.IsChildFolder(Path, path);
     }
 
-    public async override IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
+    public async override IAsyncEnumerable<(string?, string)> ScanAllGalgames()
     {
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         
@@ -53,8 +53,7 @@ public class GalgameFolderSource : GalgameSourceBase
             }
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
             {
-                yield return (new 
-                    Galgame(SourceType, GetGalgameName(currentPath), currentPath), "");
+                yield return (currentPath, "");
             }
         
             if (currentDepth == maxDepth) continue;

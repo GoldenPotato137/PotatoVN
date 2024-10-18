@@ -8,6 +8,8 @@ namespace GalgameManager.Models.Sources;
 
 public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObject
 {
+    /// 当游戏列表发生变化时触发，第二个bool为true时为删除，否则为添加
+    public event Action<Galgame, bool>? GalgamesChanged;
     [JsonIgnore] public bool IsRunning;
     /// 所有游戏和路径，只用于序列化，任何时候都不应该直接操作这个列表
     public List<GalgameAndPath> Galgames { get; } = new();
@@ -65,6 +67,7 @@ public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObjec
     {
         Galgames.Add(new GalgameAndPath(galgame, path));
         galgame.Sources.Add(this);
+        GalgamesChanged?.Invoke(galgame, false);
     }
 
     /// <summary>
@@ -75,6 +78,7 @@ public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObjec
     {
         Galgames.RemoveAll(g => g.Galgame == galgame);
         galgame.Sources.Remove(this);
+        GalgamesChanged?.Invoke(galgame, true);
     }
 
     /// <summary>
@@ -104,7 +108,7 @@ public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObjec
     
     public virtual string GetLogName() => $"Galgame_{Url.ToBase64().Replace("/", "").Replace("=", "")}.txt";
 
-    public async virtual IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
+    public async virtual IAsyncEnumerable<(string? path, string msg)> ScanAllGalgames()
     {
         await Task.CompletedTask;
         yield break;

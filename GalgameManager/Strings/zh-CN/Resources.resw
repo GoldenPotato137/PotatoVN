@@ -1763,4 +1763,7 @@
   <data name="GalgameSourceCollectionService_CheckGamesInSource_Msg" xml:space="preserve">
     <value>由于无法在该库中检测到下列游戏，已将下列游戏移出了该库：{0}</value>
   </data>
+  <data name="GalgameSourcePage_NotInSource" xml:space="preserve">
+    <value>该游戏不属于这个库（游戏必须在库文件夹里面）</value>
+  </data>
 </root>
