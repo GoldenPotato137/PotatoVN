@@ -26,7 +26,7 @@ public class GalgameZipSource : GalgameSourceBase
         return SystemPath.GetFullPath(path).StartsWith(SystemPath.GetFullPath(Path)) ;
     }
 
-    public async override IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
+    public async override IAsyncEnumerable<(string?, string)> ScanAllGalgames()
     {
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         
@@ -44,8 +44,7 @@ public class GalgameZipSource : GalgameSourceBase
                 Match m = Regex.Match(f, FxRegex);
                 if (m.Success)
                 {
-                    yield return (new 
-                        Galgame(SourceType, m.Groups["name"].Value, f), $"successfully add {f}\n");
+                    yield return (new (f), $"successfully add {f}\n");
                 }
 
                 yield return (null, $"{f} is not zip\n");
