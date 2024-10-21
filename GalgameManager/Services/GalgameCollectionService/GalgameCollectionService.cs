@@ -153,56 +153,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         && g.Ids[(int)RssType.Bangumi] == galgame.Ids[(int)RssType.Bangumi]
         && g.CheckExistLocal() == false);
 
-    /// <summary>
-    /// 试图添加一个galgame，若已存在则不添加
-    /// </summary>
-    /// <param name="galgame"></param>
-    /// <param name="isForce">是否强制添加（若RSS源中找不到相关游戏信息）</param>
-    /// <param name="virtualGame">如果是要给虚拟游戏设置本地路径，则填入对应的虚拟游戏</param>
-    public async Task<AddGalgameResult> TryAddGalgameAsync(Galgame galgame , bool isForce = false, Galgame? virtualGame = null)
-    {
-        if (_galgames.Any(gal => gal.Path == galgame.Path && gal.SourceType == galgame.SourceType))
-            return AddGalgameResult.AlreadyExists;
-
-        
-        // 已存在虚拟游戏则将虚拟游戏变为真实游戏（设置Path）
-        virtualGame ??= GetVirtualGame(galgame);
-        if (virtualGame is not null)
-        {
-            virtualGame.Path = galgame.Path;
-            virtualGame.SourceType = galgame.SourceType;
-            galgame = virtualGame;
-        } else if (virtualGame is null)
-        {
-            // 覆盖sourceType
-            GalgameSourceType sourceType = galgame.SourceType;
-            bool recoverSuccess = false;
-            // (galgame, recoverSuccess) = TryRecoverGalgameFromLocal(galgame);
-            galgame.SourceType = sourceType;
-            if (!recoverSuccess)
-            {
-                var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
-                var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
-                var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
-                galgame.Name.Value = NameRegex.GetName(galgame.Name!, pattern, removeBorder, regexIndex);
-                if (string.IsNullOrEmpty(galgame.Name)) return AddGalgameResult.NotFoundInRss;
-                galgame = await PhraseGalInfoAsync(galgame);
-                if (!isForce && galgame.RssType == RssType.None)
-                    return AddGalgameResult.NotFoundInRss;
-            }
-        }
-        
-        galgame.FindSaveInPath();
-        if(virtualGame is null)
-            _galgames.Add(galgame);
-        _galgameMap[galgame.Uid] = galgame;
-        GalgameAddedEvent?.Invoke(galgame);
-        await SaveGalgamesAsync(galgame);
-        galgame.ErrorOccurred += e =>
-            _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
-        return galgame.RssType == RssType.None ? AddGalgameResult.NotFoundInRss : AddGalgameResult.Success;
-    }
-
     public void AddVirtualGalgame(Galgame game)
     {
         _galgames.Add(game);
@@ -664,6 +614,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
                 break;
         }
     }
+
     
 
 
@@ -677,6 +628,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         if (file == null || source is not GalgameFolderSource folderSource) return;
         _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
     }
+
 
     private async Task MixedPhraserOrderUpdate()
     {

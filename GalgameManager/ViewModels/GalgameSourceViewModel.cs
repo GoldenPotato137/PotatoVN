@@ -129,7 +129,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     {
         if(Item is null) return;
         CanExecute = !Item.IsRunning;
-        IsUnpacking = Item is GalgameFolderSource { IsUnpacking: true };
+        IsUnpacking = _bgTaskService.GetBgTask<UnpackGameTask>(Item.Path)?.IsRunning ?? false;
         LogExists = FileHelper.Exists(Item.GetLogPath());
     }
 
@@ -236,14 +236,14 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalFolder))]
     private async Task AddGalFromZip(string? passWord = null)
     {
-        if (_item is not GalgameFolderSource f) return;
+        if (_item is not GalgameFolderSource) return;
         UnpackDialog dialog = new();
         await dialog.ShowAsync();
         StorageFile? file = dialog.StorageFile;
 
         if (file == null || _item == null) return;
 
-        _unpackGameTask = new UnpackGameTask(file, f, dialog.GameName, dialog.Password);
+        _unpackGameTask = new UnpackGameTask(file, Item!.Path, dialog.GameName, dialog.Password);
         _unpackGameTask.OnProgress += UpdateNotifyUnpack;
         _unpackGameTask.OnProgress += HandelUnpackError;
         _ = _bgTaskService.AddBgTask(_unpackGameTask);
