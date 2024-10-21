@@ -618,16 +618,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     
 
 
-    public async Task ToLocalGalgame(Galgame galgame)
-    {
-        if (galgame.SourceType != GalgameSourceType.LocalZip) return;
-        UnpackDialog dialog = new();
-        await dialog.ShowAsync(await StorageFile.GetFileFromPathAsync(galgame.Path), true);
-        StorageFile? file = dialog.StorageFile;
-        GalgameSourceBase? source = dialog.Source;
-        if (file == null || source is not GalgameFolderSource folderSource) return;
-    }
-
 
     private async Task MixedPhraserOrderUpdate()
     {
