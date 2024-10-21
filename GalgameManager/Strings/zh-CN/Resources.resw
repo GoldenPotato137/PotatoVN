@@ -1772,4 +1772,13 @@
   <data name="GalgameFolder_UnpackGame_PathNotEmpty" xml:space="preserve">
     <value>{0} 非空，请先删除该文件夹后再解压</value>
   </data>
+  <data name="PackGameTask_Title" xml:space="preserve">
+    <value>压缩游戏任务</value>
+  </data>
+  <data name="PackGameTask_ZipExist" xml:space="preserve">
+    <value>{0} 已存在，请删除该文件后再压缩</value>
+  </data>
+  <data name="PackGameTask_GamePathNotExist" xml:space="preserve">
+    <value>文件夹 {0} 不存在</value>
+  </data>
 </root>
