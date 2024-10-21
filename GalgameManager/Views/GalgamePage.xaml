@@ -79,9 +79,6 @@
                               Visibility="{x:Bind ViewModel.IsZipGame, 
                               Converter={StaticResource BoolToVisibilityConverter}, 
                               ConverterParameter = False, Mode=OneWay}">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF012;" />
-                    </AppBarButton.Icon>
                 </AppBarButton>
                 <!-- 设置本地路径 -->
                 <AppBarButton x:Uid="GalgamePage_SetLocalPath" Command="{x:Bind ViewModel.SetLocalPathCommand}"

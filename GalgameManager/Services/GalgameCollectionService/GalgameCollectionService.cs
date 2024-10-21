@@ -675,7 +675,6 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         StorageFile? file = dialog.StorageFile;
         GalgameSourceBase? source = dialog.Source;
         if (file == null || source is not GalgameFolderSource folderSource) return;
-        _ = _bgTaskService.AddBgTask(new UnpackGameTask(file, folderSource, dialog.GameName, dialog.Password));
     }
 
     private async Task MixedPhraserOrderUpdate()
