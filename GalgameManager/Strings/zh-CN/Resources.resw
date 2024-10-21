@@ -1556,9 +1556,6 @@
   <data name="VndbAuthService_Success" xml:space="preserve">
     <value>Vndb登录成功</value>
   </data>
-  <data name="VndbAuthService_Success" xml:space="preserve">
-    <value>Vndb登录成功</value>
-  </data>
   <data name="VndbApiPermission_ListRead" xml:space="preserve">
     <value>用户列表读取</value>
   </data>
@@ -1763,6 +1760,8 @@
   <data name="GalgameSourceCollectionService_CheckGamesInSource_Msg" xml:space="preserve">
     <value>由于无法在该库中检测到下列游戏，已将下列游戏移出了该库：{0}</value>
   </data>
+  <data name="GalgameSettingPage_Startup_parameters.Text" xml:space="preserve">
+    <value>启动参数设置</value>
   <data name="GalgameSourcePage_NotInSource" xml:space="preserve">
     <value>该游戏不属于这个库（游戏必须在库文件夹里面）</value>
   </data>

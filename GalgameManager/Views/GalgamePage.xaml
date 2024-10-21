@@ -73,6 +73,8 @@
                         </Flyout>
                     </AppBarButton.ContextFlyout>
                 </AppBarButton>
+
+
                 <!-- 设置本地路径 -->
                 <AppBarButton x:Uid="GalgamePage_SetLocalPath" Command="{x:Bind ViewModel.SetLocalPathCommand}"
                               Visibility="{x:Bind ViewModel.IsLocalGame, 

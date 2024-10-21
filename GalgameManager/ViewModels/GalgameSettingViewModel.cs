@@ -16,6 +16,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
 {
     [ObservableProperty]
     private Galgame _gal = null!;
+
     public List<RssType> RssTypes { get; }= new() { RssType.Bangumi, RssType.Vndb, RssType.Mixed, RssType.Ymgal };
 
     private readonly GalgameCollectionService _galService;

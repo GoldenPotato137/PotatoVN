@@ -89,6 +89,24 @@
                     </Grid>
                     
                     <Grid>
+                        <!--游戏启动参数-->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Uid="GalgameSettingPage_Startup_parameters"
+                                    Margin="0 0 15 0" VerticalAlignment="Center"
+                                    HorizontalAlignment="Stretch"/>
+                        <TextBox Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.Gal.Startup_parameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                     AcceptsReturn="False"
+                                 ToolTipService.ToolTip="第一个参数为启动galgame的软件的绝对地值，比如”D:\Program Files\Locale.Emulator.2.5.0.1\LEProc.exe\“,剩下的参数按软件内部的使用，其实和cmd的方式差不多"
+                                 />
+                        
+                    </Grid>
+                    
+                        <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
