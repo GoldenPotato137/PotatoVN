@@ -18,6 +18,7 @@ using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Text.RegularExpressions;
 
 namespace GalgameManager.ViewModels;
 
@@ -204,22 +205,43 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task Play()
     {
-        if (Item == null) return; //不应该发生
-        if (Item.ExePath == null)
+        if (!Item!.IsLocalGame) return;
+        if (Item.ExePath == null && Item.Startup_parameters==string.Empty)
             await _galgameService.GetGalgameExeAsync(Item);
-        if (Item.ExePath == null) return;
-
-        Item.LastPlayTime = DateTime.Now;
-        Process process = new()
+        if (Item.ExePath == null && Item.Startup_parameters == string.Empty) return;
+        Process process;
+        if (Item.Startup_parameters == string.Empty)
         {
-            StartInfo = new ProcessStartInfo
+            process = new()
             {
-                FileName = Item.ExePath,
-                WorkingDirectory = Item.Path,
-                UseShellExecute = Item.RunAsAdmin | Item.ExePath.ToLower().EndsWith("lnk"),
-                Verb = Item.RunAsAdmin ? "runas" : null,
-            }
-        };
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Item.ExePath,
+                    WorkingDirectory = Item.Path,
+                    UseShellExecute = Item.RunAsAdmin | Item.ExePath!.ToLower().EndsWith("lnk"),
+                    Verb = Item.RunAsAdmin ? "runas" : null,
+                }
+            };
+        }
+        else
+        {
+            var pattern = "([A-Za-z0-9]+[  ]{1}|\".+?\")";    //这个正则表达式用于匹配""的文件的地址，或者是系统环境变量这种由数字字母组成的文件
+            var regex = new Regex(pattern,RegexOptions.None, TimeSpan.FromSeconds(0.1));
+            MatchCollection matches = regex.Matches(Item.Startup_parameters);
+            var filename = matches[0].Value;
+            var arguments = Item.Startup_parameters.Replace(filename, " ");
+            process = new()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    FileName = filename,
+                    Arguments = arguments,
+                    CreateNoWindow = true,
+                    Verb = Item.RunAsAdmin ? "runas" : null,
+                    UseShellExecute = true,
+                }
+            };
+        }
         try
         {
             process.Start();
@@ -228,6 +250,10 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             {
                 await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出
                 process = await WaitForProcessStartAsync(Item.ProcessName) ?? process;
+            }
+            if (Item.Startup_parameters != string.Empty && Item.ProcessName is null) { //启动的进程和游戏进程不是同一个进程，需要知道到底启动什么进程
+                await Task.Delay(100);
+                await SelectProcess();
             }
             _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
             await _jumpListService.AddToJumpListAsync(Item);
@@ -419,7 +445,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task SelectProcess()
     {
-        if (Item is not {SourceType:GalgameSourceType.LocalFolder}) return;
+        if (!Item!.IsLocalGame) return;
         SelectProcessDialog dialog = new();
         await dialog.ShowAsync();
         if (dialog.SelectedProcessName is not null)
