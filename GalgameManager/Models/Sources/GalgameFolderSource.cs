@@ -1,7 +1,6 @@
 ﻿using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
-using Newtonsoft.Json;
 using SystemPath = System.IO.Path;
 
 
@@ -10,7 +9,6 @@ namespace GalgameManager.Models.Sources;
 
 public class GalgameFolderSource : GalgameSourceBase
 {
-    [JsonIgnore] public bool IsUnpacking;
     public override GalgameSourceType SourceType =>  GalgameSourceType.LocalFolder;
 
     public GalgameFolderSource(string path): base(path)
@@ -24,10 +22,10 @@ public class GalgameFolderSource : GalgameSourceBase
 
     public override bool IsInSource(string path)
     {
-        return SystemPath.GetFullPath(path).StartsWith(SystemPath.GetFullPath(Path)) ;
+        return Utils.IsChildFolder(Path, path);
     }
 
-    public async override IAsyncEnumerable<(Galgame?, string)> ScanAllGalgames()
+    public async override IAsyncEnumerable<(string?, string)> ScanAllGalgames()
     {
         ILocalSettingsService localSettings = App.GetService<ILocalSettingsService>();
         
@@ -53,8 +51,7 @@ public class GalgameFolderSource : GalgameSourceBase
             }
             if (IsGameFolder(currentPath, fileMustContain, fileShouldContain))
             {
-                yield return (new 
-                    Galgame(SourceType, GetGalgameName(currentPath), currentPath), "");
+                yield return (currentPath, "");
             }
         
             if (currentDepth == maxDepth) continue;

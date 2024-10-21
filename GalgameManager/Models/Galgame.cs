@@ -163,11 +163,6 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
         GalgameSourceBase? s = Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder);
         return s != null && Directory.Exists(s.GetPath(this));
     }
-    
-    public bool CheckIsZip()
-    {
-        return SourceType == GalgameSourceType.LocalZip;
-    }
 
     /// <summary>
     /// 该游戏是否是本地游戏（存在于某个本地文件夹库中）

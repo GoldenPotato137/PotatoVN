@@ -1762,6 +1762,16 @@
   </data>
   <data name="GalgameSettingPage_Startup_parameters.Text" xml:space="preserve">
     <value>启动参数设置</value>
+  <data name="GalgameSourcePage_NotInSource" xml:space="preserve">
+    <value>该游戏不属于这个库（游戏必须在库文件夹里面）</value>
+  </data>
+
+  <data name="GalgameFolder_UnpackGame_PathNotExist" xml:space="preserve">
+    <value>路径 {0} 不存在</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PathNotEmpty" xml:space="preserve">
+    <value>{0} 非空，请先删除该文件夹后再解压</value>
+
   </data>
   <data name="GalgameSourcePage_NotInSource" xml:space="preserve">
     <value>该游戏不属于这个库（游戏必须在库文件夹里面）</value>

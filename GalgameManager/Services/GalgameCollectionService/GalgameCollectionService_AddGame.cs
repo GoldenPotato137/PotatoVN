@@ -27,7 +27,7 @@ public partial class GalgameCollectionService
         }
 
         // 尝试从数据源获取游戏信息
-        meta ??= await PhraseGalInfoAsync(new Galgame(GetNameFromPath(sourceType, path)));
+        meta ??= await PhraseGalInfoAsync(new Galgame(await GetNameFromPath(sourceType, path)));
         // 检查该游戏是否已经存在
         if (GetGalgameFromUid(meta.Uid) is { } existGame)
         {
@@ -62,14 +62,18 @@ public partial class GalgameCollectionService
         return result;
     }
 
-    private string GetNameFromPath(GalgameSourceType sourceType, string path)
+    private async Task<string> GetNameFromPath(GalgameSourceType sourceType, string path)
     {
         switch (sourceType)
         {
             case GalgameSourceType.LocalFolder:
             case GalgameSourceType.LocalZip:
-                return Path.GetFileName(Path.GetDirectoryName(path + Path.DirectorySeparatorChar)) ??
-                       throw new Exception("GalgameCollectionService_GetNameFromPathFailed".GetLocalized());
+                var name = Path.GetFileName(Path.GetDirectoryName(path + Path.DirectorySeparatorChar)) ??
+                           throw new Exception("GalgameCollectionService_GetNameFromPathFailed".GetLocalized());
+                var pattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
+                var regexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
+                var removeBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder); 
+                return NameRegex.GetName(name, pattern, removeBorder, regexIndex);
         }
 
         Debug.Fail("应该在GalgameCollectionService_AddGame里面实现该类型源的GetNameFromPath");

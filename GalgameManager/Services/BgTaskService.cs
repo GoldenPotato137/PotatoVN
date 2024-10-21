@@ -68,26 +68,36 @@ public class BgTaskService : IBgTaskService
     private Task AddTaskInternal(BgTaskBase bgTask)
     {
         _bgTasks.Add(bgTask);
-        Task t = bgTask.Run().ContinueWith(async previousTask =>
+        try
         {
-            await Task.Delay(500);
-            if (previousTask is { IsFaulted: true, Exception: not null })
+            Task t = bgTask.Run().ContinueWith(async previousTask =>
             {
-                Exception e = previousTask.Exception;
-                if (previousTask.Exception.InnerExceptions.Count > 0)
-                    e = previousTask.Exception.InnerExceptions[0];
-                _infoService.Event(EventType.BgTaskFailEvent, InfoBarSeverity.Warning,
-                    "BgTaskService_TaskFailed".GetLocalized(bgTask.Title), e);
-            }
-            else if (bgTask.CurrentProgress.NotifyWhenSuccess) 
-                _infoService.Event(EventType.BgTaskSuccessEvent, InfoBarSeverity.Success,
-                    "BgTaskService_TaskSuccess".GetLocalized(bgTask.Title), msg: bgTask.CurrentProgress.Message);
-            if (!_bgTasks.Contains(bgTask)) return Task.CompletedTask;
+                await Task.Delay(500);
+                if (previousTask is { IsFaulted: true, Exception: not null })
+                {
+                    Exception e = previousTask.Exception;
+                    if (previousTask.Exception.InnerExceptions.Count > 0)
+                        e = previousTask.Exception.InnerExceptions[0];
+                    _infoService.Event(EventType.BgTaskFailEvent, InfoBarSeverity.Warning,
+                        "BgTaskService_TaskFailed".GetLocalized(bgTask.Title), e);
+                }
+                else if (bgTask.CurrentProgress.NotifyWhenSuccess && bgTask.CurrentProgress.Current > 0) 
+                    _infoService.Event(EventType.BgTaskSuccessEvent, InfoBarSeverity.Success,
+                        "BgTaskService_TaskSuccess".GetLocalized(bgTask.Title), msg: bgTask.CurrentProgress.Message);
+                if (!_bgTasks.Contains(bgTask)) return Task.CompletedTask;
+                _bgTasks.Remove(bgTask);
+                UiThreadInvokeHelper.Invoke(() => BgTaskRemoved?.Invoke(bgTask));
+                return Task.CompletedTask;
+            });
+            UiThreadInvokeHelper.Invoke(()=>BgTaskAdded?.Invoke(bgTask));
+            return t;
+        }
+        catch (Exception e)
+        {
+            _infoService.Event(EventType.BgTaskFailEvent, InfoBarSeverity.Warning,
+                "BgTaskService_TaskFailed".GetLocalized(bgTask.Title), e);
             _bgTasks.Remove(bgTask);
-            UiThreadInvokeHelper.Invoke(() => BgTaskRemoved?.Invoke(bgTask));
             return Task.CompletedTask;
-        });
-        UiThreadInvokeHelper.Invoke(()=>BgTaskAdded?.Invoke(bgTask));
-        return t;
+        }
     }
 }
