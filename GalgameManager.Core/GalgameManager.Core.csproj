@@ -9,12 +9,6 @@
   <ItemGroup>
     <None Remove="Contracts\App.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="Contracts\App.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <Generator>MSBuild:Compile</Generator>
-    </ApplicationDefinition>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
