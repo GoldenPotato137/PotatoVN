@@ -45,7 +45,6 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [NotifyCanExecuteChangedFor(nameof(SelectTextCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearTextCommand))]
     [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
-    [ObservableProperty] private bool _isZipGame;
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Visibility _isTagVisible = Visibility.Collapsed;
     [ObservableProperty] private Visibility _isDescriptionVisible = Visibility.Collapsed;
@@ -71,18 +70,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             _navigationService.NavigateTo(typeof(GalgameCharacterViewModel).FullName!, new GalgameCharacterParameter() {GalgameCharacter = clickedItem});
         }
     }
-
-    [RelayCommand]
-    private async Task UnzipGame()
-    {
-        if (Item?.CheckIsZip() ?? false)
-        {
-            await _galgameService.ToLocalGalgame(Item);
-        }
-    }
     
-    
-
     public GalgameViewModel(IGalgameCollectionService dataCollectionService, INavigationService navigationService, 
         IJumpListService jumpListService, ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
         IPvnService pvnService, IFilterService filterService, ICategoryService categoryService, IInfoService infoService)
@@ -109,7 +97,6 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
         Item = param.Galgame;
         IsLocalGame = Item.IsLocalGame;
-        IsZipGame = Item.CheckIsZip();
         Item.SavePath = Item.SavePath; //更新存档位置显示
         Update(_item);
         

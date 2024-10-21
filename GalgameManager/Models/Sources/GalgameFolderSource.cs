@@ -1,7 +1,6 @@
 ﻿using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
-using Newtonsoft.Json;
 using SystemPath = System.IO.Path;
 
 
@@ -10,7 +9,6 @@ namespace GalgameManager.Models.Sources;
 
 public class GalgameFolderSource : GalgameSourceBase
 {
-    [JsonIgnore] public bool IsUnpacking;
     public override GalgameSourceType SourceType =>  GalgameSourceType.LocalFolder;
 
     public GalgameFolderSource(string path): base(path)
