@@ -15,8 +15,7 @@ namespace GalgameManager.Services;
 
 public class ActivationService : IActivationService
 {
-    private readonly IEnumerable<IActivationHandler> _activationHandlers;
-    private readonly IThemeSelectorService _themeSelectorService;
+
     private readonly IEnumerable<IActivationHandler> _activationHandlers;//
     private readonly IThemeSelectorService _themeSelectorService; //
     private readonly IUpdateService _updateService;
