@@ -65,4 +65,23 @@ public interface IGalgameCollectionService
     /// <param name="name">名字</param>
     /// <returns>galgame，找不到返回null</returns>
     public Galgame? GetGalgameFromName(string? name);
+
+    /// <summary>
+    /// 从信息源中搜刮游戏信息，会直接修改传入的galgame <br/>
+    /// 会执行完整搜刮流程，包括从rss获取信息，用户确认，获取游玩状态等
+    /// </summary>
+    /// <param name="galgame">待搜刮游戏</param>
+    /// <param name="rssType">指定信息源，若为None则使用设置中的默认值</param>
+    /// <param name="requireConfirm">是否需要用户确认解析信息</param>
+    /// <returns>修改过后的galgame</returns>
+    /// <exception cref="PvnException">要求用户确认解析信息且用户取消了该确认对话框</exception>
+    public Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None, bool requireConfirm = false);
+    
+    /// <summary>
+    /// 从信息源中搜刮游戏信息，只解析基本信息，直接修改传入的galgame
+    /// </summary>
+    /// <param name="galgame">待搜刮游戏</param>
+    /// <param name="rssType">指定信息源，若为None则使用设置中的默认值</param>
+    /// <returns>修改过后的游戏</returns>
+    public Task<Galgame> PhraseGalInfoOnlyAsync(Galgame galgame, RssType rssType = RssType.None);
 }

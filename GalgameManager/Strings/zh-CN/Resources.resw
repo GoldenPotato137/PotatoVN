@@ -1781,4 +1781,22 @@
   <data name="PackGameTask_GamePathNotExist" xml:space="preserve">
     <value>文件夹 {0} 不存在</value>
   </data>
+  <data name="ConfirmGalInfoDialog_Title_Correct" xml:space="preserve">
+    <value>搜刮到的信息正确吗？</value>
+  </data>
+  <data name="ConfirmGalInfoDialog_Title_NotFound" xml:space="preserve">
+    <value>没有找到该游戏信息</value>
+  </data>
+  <data name="Canceled" xml:space="preserve">
+    <value>用户取消了操作</value>
+  </data>
+  <data name="ConfirmGalInfoDialog_NoID" xml:space="preserve">
+    <value>目前没有填入ID</value>
+  </data>
+  <data name="ConfirmGalInfoDialog_ID" xml:space="preserve">
+    <value>目前设置ID的源有：{0}</value>
+  </data>
+  <data name="ConfirmGalInfoDialog_Hint" xml:space="preserve">
+    <value>若填入ID，软件将直接使用ID在对应源上索引对应的游戏；否则按照游戏名搜索游戏。</value>
+  </data>
 </root>

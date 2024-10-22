@@ -27,7 +27,7 @@ public partial class GalgameCollectionService
         }
 
         // 尝试从数据源获取游戏信息
-        meta ??= await PhraseGalInfoAsync(new Galgame(await GetNameFromPath(sourceType, path)));
+        meta ??= await PhraseGalInfoAsync(new Galgame(await GetNameFromPath(sourceType, path)), requireConfirm: true);
         // 检查该游戏是否已经存在
         if (GetGalgameFromUid(meta.Uid) is { } existGame)
         {

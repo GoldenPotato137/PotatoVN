@@ -159,19 +159,22 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         GalgameAddedEvent?.Invoke(game);
     }
 
-    /// <summary>
-    /// 从下载源获取这个galgame的信息，并获取游玩状态（若设置里开启）
-    /// </summary>
-    /// <param name="galgame">galgame</param>
-    /// <param name="rssType">信息源，若设置为None则使用galgame指定的数据源，若不存在则使用设置中的默认数据源</param>
-    /// <returns>获取信息后的galgame，如果信息源不可达则galgame保持不变</returns>
-    public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None)
+    public async Task<Galgame> PhraseGalInfoAsync(Galgame galgame, RssType rssType = RssType.None,
+        bool requireConfirm = false)
     {
         IsPhrasing = true;
         RssType selectedRss = rssType;
         if(selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
         Galgame result = await PhraserAsync(galgame, PhraserList[(int)selectedRss]);
+        if (requireConfirm)
+        {
+            ConfirmGalInfoDialog dialog = new(galgame, result, this);
+            ContentDialogResult tmp = await dialog.ShowAsync();
+            if (tmp == ContentDialogResult.Secondary)
+                throw new PvnException("Canceled".GetLocalized());
+        }
+        
         if (await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing))
         {
             // 优先Bgm
@@ -185,6 +188,17 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _ = _bgTaskService.AddBgTask(new GetGalgameCharactersFromRssTask(galgame));
         return result;
     }
+
+    public Task<Galgame> PhraseGalInfoOnlyAsync(Galgame galgame, RssType rssType = RssType.None)
+    {
+        RssType selectedRss = rssType;
+        if (selectedRss == RssType.None)
+            selectedRss = galgame.RssType == RssType.None
+                ? LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result
+                : galgame.RssType;
+        return PhraserAsync(galgame, PhraserList[(int)selectedRss]);
+    }
+
     public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter, RssType rssType = RssType.None)
     {
         GalgameCharacter result = await PhraserCharacterAsync(galgameCharacter, PhraserList[(int)rssType]);
