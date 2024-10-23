@@ -133,8 +133,14 @@
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
+                    <!-- 以管理员权限运行游戏 -->
                     <AppBarToggleButton Icon="Admin" x:Uid="GalgamePage_RunAsAdmin" Command="{x:Bind ViewModel.SaveCommand}"
                                         IsChecked="{x:Bind ViewModel.Item.RunAsAdmin, Mode=TwoWay, FallbackValue=False}" 
+                                        IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
+                    <!-- 转区运行游戏 -->
+                    <AppBarToggleButton Icon="Character" x:Uid="GalgamePage_RunInLocaleEmulator" 
+                                        Command="{x:Bind ViewModel.ChangeRunInLocaleEmulatorCommand}"
+                                        IsChecked="{x:Bind ViewModel.Item.RunInLocaleEmulator, Mode=TwoWay, FallbackValue=False}" 
                                         IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}"/>
                     <AppBarSeparator/>
                     <!-- 下载游玩状态 -->

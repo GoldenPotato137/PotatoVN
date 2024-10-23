@@ -62,6 +62,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags;
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
+    [ObservableProperty] private bool _runInLocaleEmulator; //是否转区运行
     private RssType _rssType = RssType.None;
     [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global

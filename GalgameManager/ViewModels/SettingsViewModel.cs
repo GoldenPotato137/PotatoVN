@@ -28,6 +28,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     private readonly IUpdateService _updateService;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ICategoryService _categoryService;
+    private readonly IInfoService _infoService;
     private string _versionDescription;
 
     #region UI_STRINGS //历史遗留，不要继续使用这种方式获取字符串
@@ -37,14 +38,11 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     public readonly string UiThemeDescription = ResourceLoader.GetString("SettingsPage_ThemeDescription");
     public readonly string UiRssTitle = ResourceLoader.GetString("SettingsPage_RssTitle");
     public readonly string UiRssDescription = ResourceLoader.GetString("SettingsPage_RssDescription");
-    public readonly string UiRssBgmPlaceholder = ResourceLoader.GetString("SettingsPage_Rss_BgmPlaceholder");
     public readonly string UiDownloadTitle = ResourceLoader.GetString("SettingsPage_DownloadTitle");
     public readonly string UiDownloadDescription = ResourceLoader.GetString("SettingsPage_DownloadDescription");
     public readonly string UiCloudSyncTitle = ResourceLoader.GetString("SettingsPage_CloudSyncTitle");
     public readonly string UiCloudSyncDescription = ResourceLoader.GetString("SettingsPage_CloudSyncDescription");
     public readonly string UiCloudSyncRoot = ResourceLoader.GetString("SettingsPage_CloudSync_Root");
-    public readonly string UiSelect = ResourceLoader.GetString("Select");
-    public readonly string UiAbout = ResourceLoader.GetString("Settings_AboutDescription").Replace("\\n", "\n");
     public readonly string UiLibraryTitle = "SettingsPage_LibraryTitle".GetLocalized();
     public readonly string UiLibraryDescription = "SettingsPage_LibraryDescription".GetLocalized();
     public readonly string UiLibraryMetaBackup = "SettingsPage_Library_MetaBackup".GetLocalized();
@@ -88,7 +86,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService, 
         IGalgameCollectionService galgameService, IUpdateService updateService, INavigationService navigationService,
-        ICategoryService categoryService)
+        ICategoryService categoryService, IInfoService infoService)
     {
         _categoryService = categoryService;
         _themeSelectorService = themeSelectorService;
@@ -97,6 +95,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         updateService.SettingBadgeEvent += HandelSettingBadgeEvent;
         _versionDescription = GetVersionDescription();
         _localSettingsService = localSettingsService;
+        _infoService = infoService;
         
         //THEME
         _elementTheme = themeSelectorService.Theme;
@@ -105,6 +104,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         //GAME
         _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
         _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
+        LocalEmulatorPath = _localSettingsService.ReadSettingAsync<string>(KeyValues.LocaleEmulatorPath).Result;
         PlayingWindowModes = new[] {WindowMode.Minimize, WindowMode.SystemTray, WindowMode.None };
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
@@ -228,11 +228,34 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
     [ObservableProperty] private bool _recordOnlyForeground;
     [ObservableProperty] private WindowMode _playingWindowMode;
+    [ObservableProperty] private string? _localEmulatorPath;
     public WindowMode[] PlayingWindowModes;
     
     partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
     
     partial void OnPlayingWindowModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.PlayingWindowMode, value);
+    
+    partial void OnLocalEmulatorPathChanged(string? value) => _localSettingsService.SaveSettingAsync(KeyValues.LocaleEmulatorPath, value);
+    
+    [RelayCommand]
+    private async Task SelectLocalEmulatorPath()
+    {
+        FileOpenPicker openPicker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.Desktop,
+            FileTypeFilter = { ".exe" }
+        };
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
+        StorageFile? file = await openPicker.PickSingleFileAsync();
+        if (file?.Path != null)
+        {
+            LocalEmulatorPath = file.Path;
+            _infoService.Info(InfoBarSeverity.Informational); //清除之前的消息
+            if (file.Name != "LEProc.exe")
+                _infoService.Info(InfoBarSeverity.Warning,
+                    msg: "SettingsPage_Game_LocalEmulatorPathWarning".GetLocalized(), displayTimeMs: 5000);
+        }
+    }
 
     #endregion
     

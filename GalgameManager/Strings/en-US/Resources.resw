@@ -270,9 +270,6 @@
   <data name="SettingsPage_CloudSync_Root" xml:space="preserve">
     <value>Cloud Saves Root</value>
   </data>
-  <data name="Select" xml:space="preserve">
-    <value>Edit</value>
-  </data>
   <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>

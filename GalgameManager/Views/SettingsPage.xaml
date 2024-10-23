@@ -99,6 +99,26 @@
                                     </ComboBox>
                                 </control:Setting>
                             </control:Panel>
+                            <!-- LocaleEmulator -->
+                            <control:Panel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" x:Uid="SettingsPage_Game_LocaleEmulator" 
+                                               Margin="0 0 25 0" VerticalAlignment="Center" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{x:Bind ViewModel.LocalEmulatorPath, Mode=OneWay}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
+                                        Margin="0 0 25 0" />
+                                    <Button Grid.Column="2" x:Uid="Select" MinWidth="75"
+                                            Command="{x:Bind ViewModel.SelectLocalEmulatorPathCommand}" />
+                                </Grid>
+                            </control:Panel>
                         </StackPanel>
                     </control:SettingExpander.SettingContent>
                 </control:SettingExpander>
@@ -351,7 +371,7 @@
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center"
                                         Margin="0 0 25 0" />
-                                    <Button Grid.Column="2" Content="{x:Bind ViewModel.UiSelect}" MinWidth="75"
+                                    <Button Grid.Column="2" x:Uid="Select" MinWidth="75"
                                             Command="{x:Bind ViewModel.SelectRemoteFolderCommand}" />
                                 </Grid>
                             </control:Panel>

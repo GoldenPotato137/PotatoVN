@@ -270,9 +270,6 @@
   <data name="SettingsPage_CloudSync_Root" xml:space="preserve">
     <value>云存档根目录</value>
   </data>
-  <data name="Select" xml:space="preserve">
-    <value>更改</value>
-  </data>
   <data name="Error" xml:space="preserve">
     <value>错误</value>
   </data>
@@ -1798,5 +1795,21 @@
   </data>
   <data name="ConfirmGalInfoDialog_Hint" xml:space="preserve">
     <value>若填入ID，软件将直接使用ID在对应源上索引对应的游戏；否则按照游戏名搜索游戏。</value>
+  </data>
+  <data name="SettingsPage_Game_LocaleEmulator.Text" xml:space="preserve">
+    <value>LocaleEmulator 可执行文件路径</value>
+  </data>
+  <data name="Select.Content" xml:space="preserve">
+    <value>更改</value>
+  </data>
+  <data name="SettingsPage_Game_LocalEmulatorPathWarning" xml:space="preserve">
+    <value>默认情况下，LocaleEmulator的可执行文件名为LEProc.exe。
+您选择的文件名与其不一致，请检查是否选择了正确的可执行文件。</value>
+  </data>
+  <data name="GalgamePage_RunInLocaleEmulator.Label" xml:space="preserve">
+    <value>转区运行游戏</value>
+  </data>
+  <data name="GalgamePage_InvalidLocaleEmulatorPath" xml:space="preserve">
+    <value>LocaleEmulator 路径未设置或路径不存在，请在 设置-&gt;游戏 处设置LocaleEmulator路径</value>
   </data>
 </root>

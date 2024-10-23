@@ -206,8 +206,10 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private async Task Play()
     {
         if (!Item!.IsLocalGame) return;
+        if (Item.ExePath is not null && !File.Exists(Item.ExePath)) Item.ExePath = null;
         if (Item.ExePath == null && Item.Startup_parameters==string.Empty)
             await _galgameService.GetGalgameExeAsync(Item);
+        await CalcStartupPara();
         if (Item.ExePath == null && Item.Startup_parameters == string.Empty) return;
         Process process;
         if (Item.Startup_parameters == string.Empty)
@@ -252,9 +254,17 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出
                 process = await WaitForProcessStartAsync(Item.ProcessName) ?? process;
             }
-            if (Item.Startup_parameters != string.Empty && Item.ProcessName is null) { //启动的进程和游戏进程不是同一个进程，需要知道到底启动什么进程
-                await Task.Delay(100);
-                await SelectProcess();
+            if (Item.Startup_parameters != string.Empty && Item.ProcessName is null) 
+            { 
+                //启动的进程和游戏进程不是同一个进程，需要知道到底启动什么进程
+                await Task.Delay(1000 * 2);
+                if (TryGetProcessFromName() is { } p) // 尝试根据游戏可执行文件名获取进程
+                {
+                    process = p;
+                    Item.ProcessName = p.ProcessName;
+                }
+                else
+                    await SelectProcess();
             }
             _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
             await _jumpListService.AddToJumpListAsync(Item);
@@ -359,6 +369,24 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private async Task SaveAsync()
     {
         await _galgameService.SaveGalgamesAsync(Item);
+    }
+
+    [RelayCommand]
+    private async Task ChangeRunInLocaleEmulator()
+    {
+        if (Item is null) return;
+        if (Item.RunInLocaleEmulator && !await CheckLocaleEmulator())
+            Item.RunInLocaleEmulator = false;
+
+        if (!Item.RunInLocaleEmulator)
+        {
+            Item.Startup_parameters = string.Empty;
+            Item.ExePath = null;
+            await RemoveSelectedThread();
+        }
+        else
+            await CalcStartupPara();
+        await SaveAsync();
     }
 
     [RelayCommand]
@@ -494,6 +522,35 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         if (Item is null) return;
         ChangeSourceDialog dialog = new(Item);
         await dialog.ShowAsync();
+    }
+
+    private async Task<bool> CheckLocaleEmulator()
+    {
+        var path = await _localSettingsService.ReadSettingAsync<string>(KeyValues.LocaleEmulatorPath);
+        if (path is not null && File.Exists(path)) return true;
+        _infoService.Info(InfoBarSeverity.Error, msg: "GalgamePage_InvalidLocaleEmulatorPath".GetLocalized(),
+            displayTimeMs: 5000);
+        return false;
+    }
+
+    private async Task CalcStartupPara()
+    {
+        if (Item is null) return;
+        if (!Item.RunInLocaleEmulator) return;
+        if (!await CheckLocaleEmulator() || !File.Exists(Item.ExePath))
+        {
+            Item.Startup_parameters = string.Empty;
+            return;
+        }
+        Item.Startup_parameters =
+            $"\"{await _localSettingsService.ReadSettingAsync<string>(KeyValues.LocaleEmulatorPath)}\" \"{Item.ExePath}\"";
+    }
+
+    private Process? TryGetProcessFromName()
+    {
+        if (Item?.ExePath is null) return null;
+        var name = Path.GetFileNameWithoutExtension(Item.ExePath);
+        return Process.GetProcesses().FirstOrDefault(p => p.ProcessName == name);
     }
 }
 
