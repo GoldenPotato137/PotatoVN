@@ -452,7 +452,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     /// <returns>可执行文件地址，如果用户取消或找不到可执行文件则返回null</returns>
     public async Task<string?> GetGalgameExeAsync(Galgame galgame)
     {
-        if (!galgame.CheckExistLocal()) return null;
+        if (!galgame.CheckExistLocal() || galgame.LocalPath is null) return null;
         List<string> exes = galgame.GetExesAndBats();
         switch (exes.Count)
         {
@@ -473,7 +473,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
                 break;
             default:
             {
-                SelectFileDialog dialog = new(galgame.Path, new[] {".exe", ".bat", ".lnk"}, 
+                SelectFileDialog dialog = new(galgame.LocalPath, new[] {".exe", ".bat", ".lnk"}, 
                     "GalgameCollectionService_SelectExe".GetLocalized(), false);
                 await dialog.ShowAsync();
                 if (dialog.SelectedFilePath == null) return null;

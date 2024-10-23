@@ -217,7 +217,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = Item.ExePath,
-                    WorkingDirectory = Item.Path,
+                    WorkingDirectory = Item.LocalPath,
                     UseShellExecute = Item.RunAsAdmin | Item.ExePath!.ToLower().EndsWith("lnk"),
                     Verb = Item.RunAsAdmin ? "runas" : null,
                 }
@@ -245,6 +245,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         try
         {
             process.Start();
+            Item.LastPlayTime = DateTime.Now;
             // _galgameService.Sort();
             if (Item.ProcessName is not null)
             {
@@ -464,7 +465,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         var path = Item.TextPath;
         if (path is null || File.Exists(path) == false)
         {
-            SelectFileDialog dialog = new(Item!.Path, new[] {".txt", ".pdf"}, "GalgamePage_SelectText_Title".GetLocalized());
+            SelectFileDialog dialog = new(Item!.LocalPath!, new[] { ".txt", ".pdf" },
+                "GalgamePage_SelectText_Title".GetLocalized());
             await dialog.ShowAsync();
             path = dialog.SelectedFilePath;
             if (dialog.RememberMe)

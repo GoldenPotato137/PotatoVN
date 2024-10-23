@@ -60,7 +60,7 @@ public class RecordPlayTimeTask : BgTaskBase
                 };
                 App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, parma);
                 App.SetWindowMode(WindowMode.Normal);
-                ChangeProgress(0, 1,
+                ChangeProgress(1, 1,
                     "RecordPlayTimeTask_Done".GetLocalized(_galgame.Name.Value ?? string.Empty,
                         TimeToDisplayTimeConverter.Convert(CurrentPlayTime)));
             });

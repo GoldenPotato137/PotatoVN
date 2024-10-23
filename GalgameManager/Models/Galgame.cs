@@ -196,14 +196,22 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     }
 
     /// <summary>
+    /// 获取该游戏的本地文件夹路径，若其不是本地游戏则返回null
+    /// </summary>
+    public string? LocalPath =>
+        Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder)?.GetPath(this);
+
+    /// <summary>
     /// 获取游戏文件夹下的所有exe以及bat文件
     /// </summary>
     /// <returns>所有exe以及bat文件地址</returns>
     public List<string> GetExesAndBats()
     {
-        List<string> result = Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
-        result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".bat")));
-        result.AddRange(Directory.GetFiles(Path).Where(file => file.ToLower().EndsWith(".lnk")));
+        var path = LocalPath;
+        if (path is null) return new List<string>();
+        List<string> result = Directory.GetFiles(path).Where(file => file.ToLower().EndsWith(".exe")).ToList();
+        result.AddRange(Directory.GetFiles(path).Where(file => file.ToLower().EndsWith(".bat")));
+        result.AddRange(Directory.GetFiles(path).Where(file => file.ToLower().EndsWith(".lnk")));
         return result;
     }
     
