@@ -174,7 +174,10 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     [JsonIgnore][BsonIgnore]
     public string? LocalPath =>
         Sources.FirstOrDefault(s => s.SourceType == GalgameSourceType.LocalFolder)?.GetPath(this);
-
+    public string? GetExePath()
+    { 
+        return _exePath; 
+    }
     /// <summary>
     /// 获取游戏文件夹下的所有exe以及bat文件
     /// </summary>

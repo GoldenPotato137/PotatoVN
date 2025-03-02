@@ -218,4 +218,8 @@
   <ItemGroup>
     <Compile Remove="Helpers\GalgameSourceCustomConverter.cs" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Helpers\Steam\" />
+  </ItemGroup>
 </Project>
