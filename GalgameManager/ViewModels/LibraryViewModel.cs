@@ -10,6 +10,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
+using GalgameManager.Services;
 using GalgameManager.Views.Dialog;
 using Microsoft.UI.Xaml.Controls;
 
@@ -21,8 +22,8 @@ public partial class LibraryViewModel(
     IInfoService infoService,
     IBgTaskService bgTaskService,
     IGalgameCollectionService galgameService,
-    ILocalSettingsService settingsService
-    )
+    ILocalSettingsService settingsService,
+    ShortcutService shortcutService)
     : ObservableObject, INavigationAware
 {
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsBackEnabled))]
@@ -341,6 +342,23 @@ public partial class LibraryViewModel(
         IsPhrasing = true;
         await galgameService.PhraseGalInfoAsync(galgame);
         IsPhrasing = false;
+    }
+
+    [RelayCommand]
+    private async Task GaltoSteam(Galgame? galgame)
+    {
+        if (galgame == null) return;
+        await shortcutService.AddShortcutAsync(galgame);
+    }
+
+    [RelayCommand]
+    private async Task GalSourcetoSteam(GalgameSourceBase? source)
+    {
+        if (source is null) return;
+        foreach(Galgame galgame in source.GetGalgameList())
+        {
+            await shortcutService.AddShortcutAsync(galgame);
+        }
     }
 
     public void OnBreadcrumbBarItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)

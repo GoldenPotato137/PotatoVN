@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-namespace GalgameManager.Helpers.Steam;
+using GalgameManager.Helpers;
+namespace GalgameManager.Models;
 public class Shortcut
 {
     public Shortcut(int entryID, string appName, string exe, string startDir, string icon, string shortcutPath, string launchOptions, bool isHidden, bool allowDesktopConfig, bool allowOverlay, bool openVR, bool devkit, string devkitGameID, bool devkitOverrideAppID, string lastPlayTime, string flatpakAppID, List<string> tags)
@@ -59,6 +59,30 @@ public class Shortcut
         LastPlayTime = "";
     }
 
+    public Shortcut(int entryID, string appName, string exe, string startDir, string icon, string shortcutPath, string launchOptions, bool isHidden, bool allowDesktopConfig, bool allowOverlay, bool openVR, bool devkit, string devkitGameID, bool devkitOverrideAppID, string lastPlayTime, string flatpakAppID, List<string> tags, long base_appid, long base_LastPlayTime)
+    {
+        EntryID = entryID;
+        AppID = GenerateAppID(exe, appName);
+        AppName = appName;
+        Exe = exe;
+        StartDir = startDir;
+        Icon = icon;
+        ShortcutPath = shortcutPath;
+        LaunchOptions = launchOptions;
+        IsHidden = isHidden;
+        AllowDesktopConfig = allowDesktopConfig;
+        AllowOverlay = allowOverlay;
+        OpenVR = openVR;
+        Devkit = devkit;
+        DevkitGameID = devkitGameID;
+        DevkitOverrideAppID = devkitOverrideAppID;
+        LastPlayTime = lastPlayTime;
+        FlatpakAppID = flatpakAppID;
+        Tags = tags;
+        _base_appid = base_appid;
+        _base_LastPlayTime = base_LastPlayTime;
+    }
+
     public int EntryID { get; set; }
     public ulong AppID { get; set; }
     public string AppName { get; set; }
@@ -77,6 +101,8 @@ public class Shortcut
     public string LastPlayTime { get; set; }
     public string FlatpakAppID { get; set; }
     public List<string> Tags { get; set; } = new List<string>();
+    public long _base_appid { get; set; }
+    public long _base_LastPlayTime {  get; set; }
     private static ulong GenerateAppID(string exe, string appName)
     {
         string input = $"\"{exe}\" {appName}";
@@ -103,5 +129,19 @@ public class Shortcut
             byte[] hash = crc32.ComputeHash(bytes);
             return BitConverter.ToUInt32(hash, 0);
         }
+    }
+    public bool Check_Appid(BinaryReader reader)
+    {
+        reader.BaseStream.Position = _base_appid;
+        if (ShortcutHelper.ShortcutPhrase.HexToAppId(reader.ReadBytes(4)) == AppID)
+            return false;
+        return true;
+    }
+    public bool Check_LastPlayTime(BinaryReader reader)
+    {
+        reader.BaseStream.Position = _base_LastPlayTime;
+        if (ShortcutHelper.ShortcutPhrase.LastPlayTimeToHex(reader.ReadBytes(4)) == LastPlayTime)
+            return false;
+        return true;
     }
 }

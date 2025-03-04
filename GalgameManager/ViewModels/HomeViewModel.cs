@@ -31,6 +31,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IFilterService _filterService;
     private readonly IInfoService _infoService;
+    private readonly ShortcutService _shortcutService=App.GetService<ShortcutService>();
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private Stretch _stretch;
     [ObservableProperty] private bool _fixHorizontalPicture; // 是否修复横向图片（截断为标准的长方形）
@@ -55,6 +56,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     public readonly string UiDownLoad = "HomePage_Download".GetLocalized();
     public readonly string UiRemove = "HomePage_Remove".GetLocalized();
     private readonly string _uiSearch = "Search".GetLocalized();
+    public readonly string UiGaltoSteam = "UiGaltoSteam".GetLocalized();
     #endregion
 
     /// <summary>
@@ -518,6 +520,12 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         IsPhrasing = false;
     }
 
+    [RelayCommand]
+    private async Task GaltoSteam(Galgame? galgame)
+    {
+        if (galgame == null) return;
+        await _shortcutService.AddShortcutAsync(galgame);
+    }
     partial void OnFixHorizontalPictureChanged(bool value)
     {
         _localSettingsService.SaveSettingAsync(KeyValues.FixHorizontalPicture, value);

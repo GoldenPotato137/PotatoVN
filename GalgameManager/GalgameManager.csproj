@@ -29,8 +29,12 @@
     <NoWarn>MVVMTK0045</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Helpers\Steam\**" />
     <Content Remove="Assets\Pictures\icon-dev\*" />
     <Content Remove="Assets\Pictures\icon-sideload\*" />
+    <EmbeddedResource Remove="Helpers\Steam\**" />
+    <None Remove="Helpers\Steam\**" />
+    <Page Remove="Helpers\Steam\**" />
     <Content Remove="Assets\Potato.altform-lightunplated_targetsize-16.png" />
     <Content Remove="Assets\Potato.altform-lightunplated_targetsize-24.png" />
     <Content Remove="Assets\Potato.altform-lightunplated_targetsize-256.png" />
@@ -220,6 +224,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Helpers\Steam\" />
+    <PRIResource Remove="Helpers\Steam\**" />
   </ItemGroup>
 </Project>

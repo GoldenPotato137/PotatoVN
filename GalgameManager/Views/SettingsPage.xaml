@@ -483,7 +483,20 @@
                 <control:SettingExpander x:Uid="SettingsPage_Other" SettingIcon="&#xE713;">
                     <control:SettingExpander.SettingContent>
                         <StackPanel Style="{StaticResource SettingStackPanelStyle}">
-                            <!-- 上传匿名事件日志 -->
+                            <control:Panel>
+
+                                <StackPanel Orientation="Horizontal" Spacing="{StaticResource SettingsPageStackPanelSpacing}">
+                                    <TextBlock x:Uid="Path_to_shortcut"
+                                            Margin="0 0 15 0" VerticalAlignment="Center"
+                                            HorizontalAlignment="Stretch"/>
+                                    <TextBox Text="{x:Bind ViewModel.Path_to_shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                            VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                            AcceptsReturn="False"
+                                            PlaceholderText="C:\Program Files (x86)\Steam\userdata\你的用户id\config\shortcuts.vdf，大概是在这个路径下"
+                                            ToolTipService.ToolTip="这个是用来启动steam的，没有需求可以不用"/>
+                                </StackPanel>
+                            </control:Panel>
+                            <!-- 上传匿名事件日志 -->                         
                             <control:Panel>
                                 <local:SettingToggleSwitch x:Uid="SettingsPage_Other_AppCenter"
                                                            IsOn="{x:Bind ViewModel.UploadToAppCenter, Mode=TwoWay}"/>

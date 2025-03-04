@@ -102,7 +102,7 @@ public partial class App : Application
             services.AddSingleton<IBgTaskService, BgTaskService>();
             services.AddSingleton<IPvnService, PvnService>();
             services.AddSingleton<IVndbAuthService, VndbAuthService>();
-
+            services.AddSingleton<ShortcutService>();
             // Core Services
             services.AddSingleton<IFileService, FileService>();
 

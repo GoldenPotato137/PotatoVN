@@ -27,7 +27,8 @@ public static class KeyValues
     public const string FontInstalled = "fontInstalled"; //bool, 是否安装了Segoe Fluent Icons字体
     public const string SyncGames = "syncGames"; //bool, 是否同步游戏（游玩时长/状态/列表）
     public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
-    
+    public const string PathToShortcut = "path_to_shortcut";
+
     //账户相关
     public const string BangumiAccount= "bangumiAccount"; //BgmAccount?, Bangumi账户, 若为null则未登录
     public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";

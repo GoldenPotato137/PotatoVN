@@ -24,6 +24,7 @@
             <MenuFlyoutItem Icon="Edit" Text="{x:Bind ViewModel.UiEdit}" Command="{x:Bind ViewModel.GalFlyOutEditCommand}" CommandParameter="{Binding}"/>
             <MenuFlyoutItem Icon="Download" Text="{x:Bind ViewModel.UiDownLoad}" Command="{x:Bind ViewModel.GalFlyOutGetInfoFromRssCommand}" CommandParameter="{Binding}"/>
             <MenuFlyoutItem Icon="Delete" Text="{x:Bind ViewModel.UiRemove}" Command="{x:Bind ViewModel.GalFlyOutDeleteCommand}" CommandParameter="{Binding}"/>
+            <MenuFlyoutItem  Text="{x:Bind ViewModel.UiGaltoSteam}" Command="{x:Bind ViewModel.GaltoSteamCommand}"  CommandParameter="{Binding}"/>
         </MenuFlyout>
     </Page.Resources>
 

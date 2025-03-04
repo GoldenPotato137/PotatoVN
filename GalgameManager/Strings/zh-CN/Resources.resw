@@ -2376,4 +2376,13 @@
   <data name="GalgamePage_GamePlayStatusPanel_MyComment.Text" xml:space="preserve">
     <value>我的评价</value>
   </data>
+  <data name="Path_to_shortcut.Text" xml:space="preserve">
+    <value>shortcuts的路径</value>
+  </data>
+  <data name="UiGalSourcetoSteam" xml:space="preserve">
+    <value>将当前库中所有游戏加入steam</value>
+  </data>
+  <data name="UiGaltoSteam" xml:space="preserve">
+    <value>将当前游戏加入steam</value>
+  </data>
 </root>

@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GalgameManager.Helpers.Steam;
+namespace GalgameManager.Helpers;
 public class Crc32 : HashAlgorithm
 {
     public const uint DefaultPolynomial = 0xedb88320u;

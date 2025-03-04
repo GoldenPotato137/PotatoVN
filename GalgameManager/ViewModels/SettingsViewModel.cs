@@ -34,8 +34,9 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     private readonly ICategoryService _categoryService;
     private readonly IInfoService _infoService;
     private readonly IBgTaskService _bgTaskService;
+    private readonly ShortcutService _shortcutService;
     private string _versionDescription;
-
+   
     #region UI_STRINGS //历史遗留，不要继续使用这种方式获取字符串
     
     private static readonly ResourceLoader ResourceLoader = new();
@@ -151,7 +152,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         WindowModes = new[] { WindowMode.Normal, WindowMode.Close, WindowMode.SystemTray };
         CloseMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
         DevelopmentMode = _localSettingsService.ReadSettingAsync<bool>(KeyValues.DevelopmentMode).Result;
-        
+        _path_to_shortcut = _localSettingsService.ReadSettingAsync<string>(KeyValues.PathToShortcut).Result;
+
         //Check the availability of Windows Hello
         UserConsentVerifierAvailability verifierAvailability = UserConsentVerifier.CheckAvailabilityAsync().AsTask().Result;
         AuthenticationTypes = verifierAvailability != UserConsentVerifierAvailability.Available
@@ -515,6 +517,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _memoryImprove;
     [ObservableProperty] private WindowMode _closeMode;
     [ObservableProperty] private bool _developmentMode;
+    [ObservableProperty] private string _path_to_shortcut;
     public readonly WindowMode[] WindowModes;
     
     partial void OnUploadToAppCenterChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UploadData, value);
@@ -524,8 +527,12 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     partial void OnCloseModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.CloseMode, value);
     
     partial void OnDevelopmentModeChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.DevelopmentMode, value);
+    partial void OnPath_to_shortcutChanged(string value) => Task.Run(() => {  
+        _localSettingsService.SaveSettingAsync(KeyValues.PathToShortcut, value);
+        _shortcutService.path_to_shortcut=value;
+    });
 
-    [RelayCommand]
+   [RelayCommand]
     private async Task ExportData()
     {
         try
@@ -591,7 +598,6 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
                 $"{e.Message}\n{e.StackTrace}");
         }
     }
-
     #endregion
 
     #region Notification
