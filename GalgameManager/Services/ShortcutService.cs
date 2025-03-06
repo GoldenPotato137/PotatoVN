@@ -8,6 +8,8 @@ using GalgameManager.Models.BgTasks;
 using System.Diagnostics;
 using GalgameManager.Enums;
 using System.Collections.ObjectModel;
+using CSharpMarkup.WinUI;
+using Microsoft.UI.Xaml.Controls;
 namespace GalgameManager.Services;
 public  class ShortcutService : IShortcutService
 {
@@ -18,14 +20,10 @@ public  class ShortcutService : IShortcutService
     private readonly Dictionary<ulong,Shortcut> scs=new();
     private readonly ILocalSettingsService _localSettingsService=App.GetService<ILocalSettingsService>();
     private readonly IGalgameCollectionService _galgameCollectionService=App.GetService<IGalgameCollectionService>();
+    private readonly IInfoService infoService = App.GetService<IInfoService>();
     public ShortcutService()
     {
         path_to_shortcut = _localSettingsService.ReadSettingAsync<string>(KeyValues.PathToShortcut).Result;
-        if (path_to_shortcut==""||path_to_shortcut==null)
-        {
-            throw new NotImplementedException("请填写shortcuts.vdf");
-            return;
-        }
         list = _galgameCollectionService.Galgames;
         foreach(Galgame g in list)
         {
@@ -49,31 +47,40 @@ public  class ShortcutService : IShortcutService
                 scs[shortcut.AppID] = shortcut;
             }
         }
+        reMatch();
     }
 
     public async Task AddShortcutAsync(Galgame galgame)
     {
         if (string.IsNullOrEmpty(path_to_shortcut))
         {
-            throw new NotImplementedException("请填写shortcuts.vdf");
+            infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Error, "未设置shortcuts.vdf路径，请到设置-->其他设置里设置");
         }
         else
         {
             if(galgame.IsSteam)
-            {
-                
-                throw new NotImplementedException("已加入steam");
+            { 
+                infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Error, $"{galgame.Name.Value}已经加入到steam了");
             }
             else
             {
-                Shortcut sc = Galgame_to_shortcut(galgame);
-                galgame.AppID=ShortcutHelper.ShortcutWriter.Add_no_steam_game(sc, path_to_shortcut);
-                galgame.IsSteam = true;
-                gals[galgame.AppID] = galgame;
-                scs[galgame.AppID] = sc;
+                try
+                {
+                    Shortcut sc = Galgame_to_shortcut(galgame);
+                    galgame.AppID = ShortcutHelper.ShortcutWriter.Add_no_steam_game(sc, path_to_shortcut);
+                    galgame.IsSteam = true;
+                    gals[galgame.AppID] = galgame;
+                    scs[galgame.AppID] = sc;
+                    infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Success, $"{galgame.Name.Value}成功加入steam，重启steam就能够看到了");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Error, "请检查shortcuts.vdf路径");
+                }
             }
+
         }
-        await Task.CompletedTask;
+        await _galgameCollectionService.SaveGalgamesAsync();
     }
 
     public async Task GetShortcutsAsync()

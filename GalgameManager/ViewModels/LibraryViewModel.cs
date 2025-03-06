@@ -35,6 +35,8 @@ public partial class LibraryViewModel(
     private AdvancedCollectionView _source = null!;
     public AdvancedCollectionView Galgames = new(new ObservableCollection<Galgame>());
 
+    private readonly ShortcutService _shortcutService = App.GetService<ShortcutService>();
+
     #region UI
 
     public readonly string UiSearch = "Search".GetLocalized();
