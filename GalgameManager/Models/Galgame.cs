@@ -49,6 +49,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     [ObservableProperty] private ObservableCollection<GalgameCharacter> _characters = new();
     [JsonIgnore][BsonIgnore][ObservableProperty] private string _savePosition = string.Empty;
     [ObservableProperty] private string? _exePath;
+    [ObservableProperty] private string? _exeArguments;
     [ObservableProperty] private LockableProperty<ObservableCollection<string>> _tags;
     [ObservableProperty] private int _totalPlayTime; //单位：分钟
     [ObservableProperty] private bool _runAsAdmin; //是否以管理员权限运行
@@ -65,13 +66,10 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     [ObservableProperty] private int _myRate; //我的评分
     [ObservableProperty] private bool _privateComment; //是否私密评论
     private string? _savePath; //云端存档本地路径
-
     public string? ProcessName { get; set; } //手动指定的进程名，用于正确获取游戏进程
     public string? TextPath { get; set; } //记录的要打开的文本的路径
     public bool PvnUpdate { get; set; } //是否需要更新
     public PvnUploadProperties PvnUploadProperties { get; set; } // 要更新到Pvn的属性
-    [ObservableProperty] private string _startup_parameters = string.Empty;//启动文件
-    [ObservableProperty] private string _startup_parameters_arguments = string.Empty;//启动参数
     [ObservableProperty] private bool _isSteam = false; //是否是steam游戏
     [ObservableProperty] private ulong _appID; //Steam AppID    用于识别steam
 

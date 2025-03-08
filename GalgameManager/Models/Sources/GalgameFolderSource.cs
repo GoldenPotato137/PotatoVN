@@ -61,7 +61,10 @@ public class GalgameFolderSource : GalgameSourceBase
                 pathToCheck.Enqueue((subPath, currentDepth + 1));
         }
     }
-    
+
+    public override bool IsGameAddable => true;
+    public override bool IsSourceScanable => true;
+
     /// <summary>
     /// 检查是否具有读取文件夹的权限
     /// </summary>

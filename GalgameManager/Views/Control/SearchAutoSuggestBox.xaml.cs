@@ -10,6 +10,7 @@ namespace GalgameManager.Views.Control
     [DependencyProperty<ICommand>("SearchCommand")]
     [DependencyProperty<ICommand>("SearchSubmitCommand")]
     [DependencyProperty<ISearchSuggestionsProvider>("SearchSuggestionsProvider")]
+    [DependencyProperty<string>("PlaceholderText")]
     public sealed partial class SearchAutoSuggestBox: UserControl
     {
         public SearchAutoSuggestBox()

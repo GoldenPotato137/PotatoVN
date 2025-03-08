@@ -3,9 +3,9 @@
 
 public class OauthRequest
 {
-    public required string AccessToken { get; set; }
-    public required string TokenType { get; set; }
-    public required int ExpiresIn { get; set; }
+    public required string Access_token { get; set; }
+    public required string Token_type { get; set; }
+    public required int Expires_in { get; set; }
     public required string Scope { get; set; }
 }
 
@@ -72,7 +72,7 @@ public class Website
 public class Characters
 {
     public int Cid { get; set; }
-    public int CvId { get; set; }
+    public int? CvId { get; set; }
     public int CharacterPosition { get; set; }
 }
 
@@ -90,9 +90,9 @@ public class Releases
 public class Staff
 {
     public int Sid { get; set; }
-    public int Pid { get; set; }
+    public int? Pid { get; set; }
     public required string EmpName { get; set; }
-    public required string EmpDesc { get; set; }
+    public required string Desc { get; set; }
     public required string JobName { get; set; }
 }
 
@@ -146,6 +146,59 @@ public class Organization
     public required string Type { get; set; }
     public bool Freeze { get; set; }
 }
+
+public class CharacterResponse
+{
+    public required Character character { get; set; }
+}
+
+public class Character
+{
+    public int PublishVersion { get; set; }
+    public required string PublishTime { get; set; }
+    public int Publisher { get; set; }
+    public required string Name { get; set; }
+    public string? ChineseName { get; set; }
+    public required ExtensionName[] ExtensionName { get; set; }
+    public required string Introduction { get; set; }
+    public required string State { get; set; }
+    public int Weights { get; set; }
+    public required string MainImg { get; set; }
+    public required object[] MoreEntry { get; set; }
+    public int Cid { get; set; }
+    public int Gender { get; set; }
+    public required string Birthday { get; set; }
+    public required string Type { get; set; }
+    public bool Freeze { get; set; }
+}
+
+public class StaffResponse
+{
+    public required Person person { get; set; }
+}
+    
+public class Person
+{
+    public int PublishVersion { get; set; }
+    public required string PublishTime { get; set; }
+    public int Publisher { get; set; }
+    public required string Name { get; set; }
+    public string? ChineseName { get; set; }
+    public required ExtensionName[] ExtensionName { get; set; }
+    public required string Introduction { get; set; }
+    public required string State { get; set; }
+    public int Weights { get; set; }
+    public required string MainImg { get; set; }
+    public required object[] MoreEntry { get; set; }
+    public int Pid { get; set; }
+    public required string Country { get; set; }
+    public required string Birthday { get; set; }
+    public int Gender { get; set; }
+    public required Website[] Website { get; set; }
+    public required string Type { get; set; }
+    public bool Freeze { get; set; }
+}
+
 
 public class Page<T>
 {

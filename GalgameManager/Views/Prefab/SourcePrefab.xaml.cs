@@ -9,6 +9,8 @@ namespace GalgameManager.Views.Prefab;
 
 [DependencyProperty<FlyoutBase>("Flyout")]
 [DependencyProperty<GalgameSourceBase>("Source")]
+[DependencyProperty<double>("ItemScale", DefaultValue = 1.0f)]
+[DependencyProperty<double>("TextHeight", DefaultValue = 80f)]
 public sealed partial class SourcePrefab
 {
     public SourcePrefab()
@@ -21,6 +23,8 @@ public sealed partial class SourcePrefab
     {
         Debug.Assert(Source != null, "Source property should not be null.");
     }
+
+    public double CalcValue(double value) => value * ItemScale;
 }
 
 public class SourcePrefabTemplateSelector : DataTemplateSelector

@@ -34,6 +34,9 @@ public class GalgameSourceCustomConverter:CustomCreationConverter<GalgameSourceB
                 case GalgameSourceType.LocalZip:
                     target = new GalgameZipSource();
                     break;
+                case GalgameSourceType.Virtual:
+                    target = new VirtualSource();
+                    break;
                 default:
                     throw new NotSupportedException();
             }

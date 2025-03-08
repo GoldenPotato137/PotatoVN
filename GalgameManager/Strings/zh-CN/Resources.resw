@@ -160,7 +160,7 @@
     <value>游戏库</value>
   </data>
   <data name="Shell_GalgameSetting.Content" xml:space="preserve">
-    <value>GalgameSetting</value>
+    <value>编辑游戏</value>
   </data>
   <data name="HomePage_Edit" xml:space="preserve">
     <value>修改游戏信息</value>
@@ -298,6 +298,9 @@
   </data>
   <data name="GalgamePage_Edit.Label" xml:space="preserve">
     <value>编辑</value>
+  </data>
+  <data name="GalgamePage_Save.Label" xml:space="preserve">
+    <value>保存</value>
   </data>
   <data name="GalgamePage_ChangeSavePosition.Label" xml:space="preserve">
     <value>转换存档位置</value>
@@ -845,7 +848,7 @@
   <data name="GalgameSettingPage_GalgameRssType.Text" xml:space="preserve">
     <value>数据源</value>
   </data>
-  <data name="GalgameSettingPage_GalgameSavePosition.Text" xml:space="preserve">
+  <data name="GalgameSettingPage_GameSetting_SavePosition.Title" xml:space="preserve">
     <value>存档位置</value>
   </data>
   <data name="GalgameSettingPage_GalgameRating.Title" xml:space="preserve">
@@ -1122,10 +1125,13 @@
     <value>新增库</value>
   </data>
   <data name="LibraryPage_ScanAll.Label" xml:space="preserve">
-    <value>扫描所有库</value>
+    <value>扫描当前库</value>
   </data>
   <data name="LibraryPage_ScanAll_Success" xml:space="preserve">
     <value>已启动{0}个库的扫描任务</value>
+  </data>
+  <data name="LibraryPage_Scan_Success" xml:space="preserve">
+    <value>开始扫描{0}库</value>
   </data>
   <data name="GalgameFolderPage_Log.Label" xml:space="preserve">
     <value>打开扫描记录</value>
@@ -1628,6 +1634,18 @@
   <data name="SettingsPage_Theme_TimeAsHour.Description" xml:space="preserve">
     <value>将软件中所有时间显示改为"..h..m"而非"..分钟"</value>
   </data>
+  <data name="SettingsPage_Theme_GalgamePageNewLayout.Title" xml:space="preserve">
+    <value>游戏详情页使用新界面</value>
+  </data>
+  <data name="SettingsPage_Theme_GalgamePageNewLayout.Description" xml:space="preserve">
+    <value>游戏详情页将使用新的布局方式</value>
+  </data>
+  <data name="SettingsPage_Theme_ManageGalgamePageLayout.Title" xml:space="preserve">
+    <value>管理新界面显示的布局</value>
+  </data>
+  <data name="SettingsPage_Theme_ManageGalgamePageLayout.Description" xml:space="preserve">
+    <value>可以选择是否显示游戏详情页的各个部分</value>
+  </data>
   <data name="BgTaskService_TaskFailed" xml:space="preserve">
     <value>{0}失败</value>
   </data>
@@ -1752,7 +1770,7 @@
     <value>回到上个库</value>
   </data>
   <data name="LibraryPage_DownloadAllData.Label" xml:space="preserve">
-    <value>下载所有游戏数据</value>
+    <value>下载当前库的游戏数据</value>
   </data>
   <data name="LibraryPage_EditCurrentFolder.Text" xml:space="preserve">
     <value>管理当前库</value>
@@ -1793,13 +1811,10 @@
   <data name="GalgameSourceCollectionService_CheckGamesInSource_Msg" xml:space="preserve">
     <value>由于无法在该库中检测到下列游戏，已将下列游戏移出了该库：{0}</value>
   </data>
-  <data name="GalgameSettingPage_Startup_parameters.Text" xml:space="preserve">
-    <value>启动参数设置</value>
+  <data name="GalgameSettingPage_GameSetting_Parameter.Text" xml:space="preserve">
+    <value>游戏启动参数</value>
   </data>
-  <data name="GalgameSettingPage_GalgamePath.Text" xml:space="preserve">
-    <value>游戏路径</value>
-  </data>
-  <data name="GalgameSettingPage_GalgameExePath.Text" xml:space="preserve">
+  <data name="GalgameSettingPage_GameSetting_ExePath.Title" xml:space="preserve">
     <value>游戏启动文件</value>
   </data>
   <data name="GalgameSettingPage_EditPath.Text" xml:space="preserve">
@@ -1811,11 +1826,11 @@
   <data name="GalgameSettingPage_Search.Text" xml:space="preserve">
     <value>在线搜索游戏</value>
   </data>
-  <data name="GalgameSettingPage_GalgameReleaseDate.Title" xml:space="preserve">
+  <data name="GalgameSettingPage_GameInfo_ReleaseDate.Text" xml:space="preserve">
     <value>发行日期</value>
   </data>
   <data name="GalgameSettingPage_NotLocalGame" xml:space="preserve">
-    <value>游戏不是本地游戏，无法修改启动文件，请先设置游戏路径</value>
+    <value>本游戏不是本地游戏，请设置该游戏文件夹路径~</value>
   </data>
   <data name="GalgameSettingPage_ExePathSetSuccess" xml:space="preserve">
     <value>成功设置游戏启动文件</value>
@@ -2331,13 +2346,16 @@
   <data name="Shell_Staff.Content" xml:space="preserve">
     <value>制作人员</value>
   </data>
+  <data name="Shell_GalgameCharacter.Content" xml:space="preserve">
+    <value>角色介绍</value>
+  </data>
   <data name="StaffPage_Gender.Text" xml:space="preserve">
     <value>性别</value>
   </data>
   <data name="Career_Writer" xml:space="preserve">
     <value>作家</value>
   </data>
-  <data name="Career_Unknow" xml:space="preserve">
+  <data name="Career_Unknown" xml:space="preserve">
     <value>未知</value>
   </data>
   <data name="Career_Painter" xml:space="preserve">
@@ -2367,6 +2385,12 @@
   <data name="StaffPage_Games.Content" xml:space="preserve">
     <value>参与作品</value>
   </data>
+  <data name="StaffPage_DeleteGame.Text" xml:space="preserve">
+    <value>移除作品</value>
+  </data>
+  <data name="StaffPage_AddGame.Label" xml:space="preserve">
+    <value>增加作品</value>
+  </data>
   <data name="GalgamePage_HeaderPanel_ExpectedPlayTime.Text" xml:space="preserve">
     <value>预计时长</value>
   </data>
@@ -2384,5 +2408,77 @@
   </data>
   <data name="UiGaltoSteam" xml:space="preserve">
     <value>将当前游戏加入steam</value>
+  </data>
+  <data name="SelectGameDialog_Title" xml:space="preserve">
+    <value>选择游戏</value>
+  </data>
+    <data name="SelectGameDialog_Search.PlaceholderText" xml:space="preserve">
+      <value>搜索游戏...</value>
+  </data>
+    <data name="SelectGameDialog_Confirm" xml:space="preserve">
+      <value>确定</value>
+  </data>
+    <data name="SelectGameDialog_Cancel" xml:space="preserve">
+      <value>取消</value>
+  </data>
+  <data name="ManageGalgamePageLayoutDialog_Title" xml:space="preserve">
+    <value>管理游戏页面布局</value>
+  </data>
+  <data name="ManageGalgamePageLayoutDialog_Description" xml:space="preserve">
+    <value>选择是否显示游戏页面中的各个部分</value>
+  </data>
+  <data name="ManageGalgamePageLayoutDialog_ShowPainter.Text" xml:space="preserve">
+    <value>显示原画</value>
+  </data>
+  <data name="ManageGalgamePageLayoutDialog_ShowSeiyu.Text" xml:space="preserve">
+    <value>显示声优</value>
+  </data>
+  <data name="ManageGalgamePageLayoutDialog_ShowWriter.Text" xml:space="preserve">
+    <value>显示剧本</value>
+  </data>
+  <data name="ManageGalgamePageLayoutDialog_ShowMusician.Text" xml:space="preserve">
+    <value>显示音乐</value>
+  </data>
+  <data name="GalgameSettingPage_GameInfo.SettingTitle" xml:space="preserve">
+    <value>游戏信息</value>
+  </data>
+  <data name="GalgameSettingPage_GameInfo_SettingDescription" xml:space="preserve">
+    <value>修改游戏的信息，如游戏名/id/简介/封面图等</value>
+  </data>
+  <data name="GalgameSettingPage_GameSetting.SettingTitle" xml:space="preserve">
+    <value>游戏设置</value>
+  </data>
+  <data name="GalgameSettingPage_GameSetting.SettingDescription" xml:space="preserve">
+    <value>修改游戏的路径/可执行文件/运行参数等设置</value>
+  </data>
+  <data name="GalgameSettingPage_GameSetting_Path.Title" xml:space="preserve">
+    <value>游戏路径</value>
+  </data>
+  <data name="GalgameSettingPage_GameSetting_Parameter_Input.PlaceholderText" xml:space="preserve">
+    <value>无特殊需求建议置空</value>
+  </data>
+  <data name="GalgameSettingPage_GameInfo_GalgameId_Input.PlaceholderText" xml:space="preserve">
+    <value>填入ID前请先选择信息源</value>
+  </data>
+  <data name="GalgameSettingPage_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>已锁定</value>
+  </data>
+  <data name="GalgameSettingPage_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>未锁定</value>
+  </data>
+  <data name="GalgameSettingPage_NoExe" xml:space="preserve">
+    <value>还没设置启动文件呢</value>
+  </data>
+  <data name="GalgameSettingPage_GameInfo_Tag_Description.Text" xml:space="preserve">
+    <value>为了防止较低配电脑打开本界面卡顿，Tag设置默认折起来了</value>
+  </data>
+  <data name="VirtualSource" xml:space="preserve">
+    <value>非本地游戏</value>
+  </data>
+  <data name="GalgameSourceType_Virtual" xml:space="preserve">
+    <value>虚拟游戏库</value>
+  </data>
+  <data name="LibraryPage_CannotDelete" xml:space="preserve">
+    <value>这个库不能被删除</value>
   </data>
 </root>

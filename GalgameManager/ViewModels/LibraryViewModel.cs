@@ -220,15 +220,8 @@ public partial class LibraryViewModel(
             // 获取当前库及其所有子库
             sources.Add(CurrentSource);
             var allSources = galSourceService.GetGalgameSources();
-            void AddSubSources(GalgameSourceBase parent)
-            {
-                foreach (var source in allSources.Where(s => s.ParentSource == parent))
-                {
-                    sources.Add(source);
-                    AddSubSources(source);
-                }
-            }
-            AddSubSources(CurrentSource);
+            
+            AddSubSources(CurrentSource, allSources);
         }
 
         // 对于这个列表，每个库都创建一个GetGalgameInfoFromRssTask，并加入到BgTaskService中
@@ -245,6 +238,17 @@ public partial class LibraryViewModel(
                     });
             };
             _ = bgTaskService.AddBgTask(getGalgameInfoFromRss);
+        }
+        
+        return;
+        
+        void AddSubSources(GalgameSourceBase parent, IEnumerable<GalgameSourceBase> allSources)
+        {
+            foreach (var source in allSources.Where(s => s.ParentSource == parent))
+            {
+                sources.Add(source);
+                AddSubSources(source, allSources);
+            }
         }
     }
 
@@ -280,6 +284,7 @@ public partial class LibraryViewModel(
     private void EditLibrary(GalgameSourceBase? source)
     {
         if (source is null) return;
+        if (source is VirtualSource virtualSource) virtualSource.UpdateGames(galgameService.Galgames);
         _beforeNavigateFromSource = CurrentSource;
         navigationService.NavigateTo(typeof(GalgameSourceViewModel).FullName!, source.Url);
     }
@@ -288,14 +293,48 @@ public partial class LibraryViewModel(
     private async Task DeleteFolder(GalgameSourceBase? galgameFolder)
     {
         if (galgameFolder is null) return;
+        if (!galgameFolder.IsDelectable)
+        {
+            infoService.Info(InfoBarSeverity.Error, msg: "LibraryPage_CannotDelete".GetLocalized());
+            return;
+        }
         await galSourceService.DeleteGalgameFolderAsync(galgameFolder);
     }
 
     [RelayCommand]
     private void ScanAll()
     {
-        galSourceService.ScanAll();
-        infoService.Info(InfoBarSeverity.Success, msg: "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
+        if (CurrentSource is null)
+        {
+            galSourceService.ScanAll();
+            infoService.Info(InfoBarSeverity.Success, msg: "LibraryPage_ScanAll_Success".GetLocalized(Source.Count));
+        }
+        else
+        {
+            // 获取当前目录下所有库
+            List<GalgameSourceBase> sources = new();
+            sources.Add(CurrentSource);
+            var allSources = galSourceService.GetGalgameSources();
+            
+            AddSubSources(CurrentSource, allSources);
+            
+            foreach (var source in sources)
+            {
+                galSourceService.Scan(source);
+                infoService.Info(InfoBarSeverity.Success, msg: "LibraryPage_Scan_Success".GetLocalized(source.Name));
+            }
+            
+            return;
+            
+            void AddSubSources(GalgameSourceBase parent, IEnumerable<GalgameSourceBase> allSources)
+            {
+                foreach (var source in allSources.Where(s => s.ParentSource == parent))
+                {
+                    sources.Add(source);
+                    AddSubSources(source, allSources);
+                }
+            }
+        }
     }
 
     [RelayCommand]
@@ -325,8 +364,6 @@ public partial class LibraryViewModel(
         
         await dialog.ShowAsync();
 
-        // 删除游戏后，刷新当前库
-        NavigateTo(CurrentSource);
     }
 
     [RelayCommand]
@@ -370,4 +407,33 @@ public partial class LibraryViewModel(
             NavigateTo(source);
         }
     }
+
+    partial void OnCurrentSourceChanged(GalgameSourceBase? oldValue, GalgameSourceBase? newValue)
+    {
+        if (oldValue is not null)
+        {
+            oldValue.GalgamesChanged -= HandleGalgamesChanged;
+        }
+        
+        if (newValue is not null)
+        {
+            newValue.GalgamesChanged += HandleGalgamesChanged;
+            if (newValue is VirtualSource virtualSource) virtualSource.UpdateGames(galgameService.Galgames); 
+        }
+    }
+
+    private void HandleGalgamesChanged(Galgame galgame, bool isRemoved)
+    {
+        // 只刷新游戏列表，不刷新整个页面
+        if (isRemoved)
+        {
+            Galgames.Remove(galgame);
+        }
+        else if (!Galgames.Contains(galgame))
+        {
+            Galgames.Add(galgame);
+        }
+        UpdateStatistics();
+    }
+
 }

@@ -81,14 +81,14 @@ public class StaffService : IStaffService
         {
             Staff? result = await phraser.GetStaffAsync(staff);
             if (result is null) return staff;
-            var imagePath = await DownloadHelper.DownloadAndSaveImageAsync(staff.ImageUrl);
+            var imagePath = await DownloadHelper.DownloadAndSaveImageAsync(result.ImageUrl);
             await UiThreadInvokeHelper.InvokeAsync(() =>
             {
                 staff.Ids = result.Ids;
                 staff.JapaneseName = result.JapaneseName;
                 staff.EnglishName = result.EnglishName;
                 staff.ChineseName = result.ChineseName;
-                staff.Gender = result.Gender;
+                staff.Gender    = result.Gender;
                 staff.Career.SyncCollection(result.Career);
                 staff.ImagePath = imagePath;
                 staff.ImageUrl = result.ImageUrl;

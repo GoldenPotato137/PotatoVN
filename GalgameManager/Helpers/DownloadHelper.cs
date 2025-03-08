@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace GalgameManager.Helpers;
 
@@ -96,5 +97,28 @@ public static class DownloadHelper
             default:
                 return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// 从本地文件读取图片
+    /// </summary>
+    /// <returns>图片路径</returns>
+    public static async Task<string?> PickImageAsync()
+    {
+        FileOpenPicker openPicker = new()
+        {
+            ViewMode = PickerViewMode.Thumbnail,
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary
+        };
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
+        openPicker.FileTypeFilter.Add(".jpg");
+        openPicker.FileTypeFilter.Add(".jpeg");
+        openPicker.FileTypeFilter.Add(".png");
+        openPicker.FileTypeFilter.Add(".bmp");
+        StorageFile? file = await openPicker.PickSingleFileAsync();
+        if (file == null) return null;
+        StorageFile newFile = await file.CopyAsync(await FileHelper.GetFolderAsync(FileHelper.FolderType.Images),
+            $"{file.Name}", NameCollisionOption.ReplaceExisting);
+        return newFile.Path;
     }
 }

@@ -37,7 +37,7 @@ public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObjec
     [ObservableProperty] private bool _detectFolderRemove = true;
     
     # region LITEDB_MAPPING
-    public List<GalgameAndPathDbDto> GalgamesDto
+    [JsonIgnore] public List<GalgameAndPathDbDto> GalgamesDto
     {
         get => Galgames.Select(t => new GalgameAndPathDbDto(t.Galgame.Uuid, t.Path)).ToList();
         set => _galgamesDto = value;
@@ -133,6 +133,15 @@ public partial class GalgameSourceBase : ObservableObject, IDisplayableGameObjec
 
     public override string ToString() => Name;
 
+    /// 是否可以手动往这个库里添加游戏
+    public virtual bool IsGameAddable => false;
+    
+    /// 是否可以扫描这个库
+    public virtual bool IsSourceScanable => false;
+    
+    /// 是否可以删除这个库
+    public virtual bool IsDelectable => true;
+
     public void SetNameFromPath()
     {
         try
@@ -163,6 +172,7 @@ public enum GalgameSourceType
     UnKnown,
     LocalFolder,
     LocalZip,
+    Virtual,
 }
 
 public static class SourceTypeHelper
@@ -173,6 +183,7 @@ public static class SourceTypeHelper
         {
             GalgameSourceType.LocalFolder => "local_folder",
             GalgameSourceType.LocalZip => "local_zip",
+            GalgameSourceType.Virtual => "virtual",
             GalgameSourceType.UnKnown => null,
             _ => null
         };
@@ -184,6 +195,7 @@ public static class SourceTypeHelper
         {
             "local_folder" => GalgameSourceType.LocalFolder,
             "local_zip" => GalgameSourceType.LocalZip,
+            "virtual" => GalgameSourceType.Virtual,
             _ => GalgameSourceType.UnKnown
         };
     }

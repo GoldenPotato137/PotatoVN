@@ -41,7 +41,8 @@
                             DefaultLabelPosition="Right">
                     <!-- 手动添加游戏 -->
                     <AppBarButton Icon="Add" x:Uid="GalgameFolderPage_AddManually" 
-                                  Command="{x:Bind ViewModel.AddGalgameCommand}">
+                                  Command="{x:Bind ViewModel.AddGalgameCommand}"
+                                  IsEnabled="{x:Bind ViewModel.Item.IsGameAddable, FallbackValue=False, Mode=OneWay}">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="N" />
                         </AppBarButton.KeyboardAccelerators>
@@ -58,7 +59,8 @@
                     </AppBarButton>
                     <!-- 扫描游戏 -->
                     <AppBarButton Icon="Refresh" x:Uid="GalgameFolderPage_Refresh"
-                                  Command="{x:Bind ViewModel.GetGalInFolderCommand}">
+                                  Command="{x:Bind ViewModel.GetGalInFolderCommand}"
+                                  IsEnabled="{x:Bind ViewModel.Item.IsSourceScanable, FallbackValue=False, Mode=OneWay}">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="R"/>
                         </AppBarButton.KeyboardAccelerators>

@@ -799,7 +799,7 @@ Failure reasons:</value>
   <data name="GalgameSettingPage_GalgameRssType.Text" xml:space="preserve">
     <value>Feeds</value>
   </data>
-  <data name="GalgameSettingPage_GalgameSavePosition.Text" xml:space="preserve">
+  <data name="GalgameSettingPage_GameSetting_SavePosition.Title" xml:space="preserve">
     <value>Save location</value>
   </data>
   <data name="GalgameSettingPage_GalgameRating.Title" xml:space="preserve">

@@ -26,16 +26,18 @@ public static class DateTimeExtensions
     }
 
     /// <summary>
-    /// 试图将字符串转换为日期，支持yyyy/M/d和yyyy/MM/dd两种格式，失败返回DateTime.MinValue
+    /// 试图将字符串转换为日期，支持yyyy/M/d、yyyy/MM/dd、yyyy-M-d和yyyy-MM-dd格式，失败返回1900年1月1日
     /// </summary>
-    /// <param name="dateTime"></param>
-    /// <returns></returns>
+    /// <param name="dateTime">要转换的日期字符串</param>
+    /// <returns>转换后的日期，如果转换失败则返回1900年1月1日</returns>
     public static DateTime ToDateTime(string dateTime)
     {
-        string[] formats = { "yyyy/M/d", "yyyy/MM/dd" };
+        string[] formats = { "yyyy/M/d", "yyyy/MM/dd", "yyyy-M-d", "yyyy-MM-dd" };
         if (DateTime.TryParseExact(dateTime, formats, CultureInfo.InvariantCulture, DateTimeStyles.None,
                 out DateTime parsedDate))
             return parsedDate;
-        return DateTime.MinValue;
+        
+        // 返回一个安全的默认值，默认的DateTime.MinValue会导致navigation出错
+        return new DateTime(1900, 1, 1);
     }
 }

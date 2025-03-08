@@ -7,276 +7,248 @@
     xmlns:control="using:GalgameManager.Views.Control"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
     xmlns:cmtkControls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d">
-    
+
     <Page.Resources>
         <converter:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-        <converter:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
+        <Style x:Key="SettingStackPanelStyle" TargetType="StackPanel">
+            <Setter Property="Spacing" Value="13" />
+            <Setter Property="Orientation" Value="Vertical" />
+        </Style>
     </Page.Resources>
-    
-    <Grid Margin="0 0 0 40">
-        <ScrollViewer VerticalScrollBarVisibility="Hidden">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
 
-                <CommandBar  Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right">
-                    <CommandBar.Content>
-                        <!-- 上次拉取信息时间 -->
-                        <TextBlock Text="{x:Bind ViewModel.LastFetchInfoStr, Mode=OneWay}" Padding="0"
-                                   Margin="-4 15 0 0"/>
-                    </CommandBar.Content>
-                    <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <AppBarButton x:Uid="GalgameSettingPage_GetInfoFromRss" Command="{x:Bind ViewModel.GetInfoFromRssCommand}">
-                        <AppBarButton.Icon>
-                            <control:ConditionalFontIcon Symbol="Download" FluentGlyph="&#xE896;"/>
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <AppBarButton x:Uid="GalgameSettingPage_GetInfoFromRssWithName" 
-                        Command="{x:Bind ViewModel.GetInfoFromRssCommand}"
-                        CommandParameter="True">
-                        <AppBarButton.Icon>
-                            <control:ConditionalFontIcon Symbol="Download" FluentGlyph="&#xE896;"/>
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                </CommandBar>
+    <Grid RowDefinitions="Auto,*">
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="{StaticResource CommandBarMargin}">
+            <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton x:Uid="GalgameSettingPage_GetInfoFromRss" 
+                Command="{x:Bind ViewModel.GetInfoFromRssCommand}"
+                AllowFocusOnInteraction="True">
+                <AppBarButton.Icon>
+                    <control:ConditionalFontIcon Symbol="Download" FluentGlyph="&#xE896;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton x:Uid="GalgameSettingPage_GetInfoFromRssWithName"
+                          Command="{x:Bind ViewModel.GetInfoFromRssCommand}"
+                          CommandParameter="True"
+                          AllowFocusOnInteraction="True">
+                <AppBarButton.Icon>
+                    <control:ConditionalFontIcon Symbol="Download" FluentGlyph="&#xE896;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+        </CommandBar>
 
-                <StackPanel Grid.Row="1" Spacing="25" Margin="{StaticResource MediumTopMargin}">
-                    <control:LockableTextBox
-                        x:Uid="GalgameSettingPage_GalgameName"
-                        Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}" 
-                        AcceptsReturn="False"/>
-                    <!-- 游戏路径 -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="GalgameSettingPage_GalgamePath"
-                                    Margin="0 0 15 0" VerticalAlignment="Center"
-                                    HorizontalAlignment="Stretch"/>
-                        <TextBox Grid.Column="1" 
-                                     Text="{x:Bind ViewModel.Gal.LocalPath, Mode=OneWay}" 
-                                     VerticalAlignment="Center" 
-                                     HorizontalAlignment="Stretch"
-                                     AcceptsReturn="False"
-                                     IsReadOnly="True"/>
-                        <HyperlinkButton Grid.Column="2" Command="{x:Bind ViewModel.SetGalgamePathCommand}" 
-                                        VerticalAlignment="Center"
-                                        Margin="10 0 0 0">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <SymbolIcon Symbol="Edit" />
-                                <TextBlock x:Uid="GalgameSettingPage_EditPath"/>
-                            </StackPanel>
-                        </HyperlinkButton>
-                    </Grid>
-
-                    <!-- 游戏Exe路径 -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="GalgameSettingPage_GalgameExePath"
-                                    Margin="0 0 15 0" VerticalAlignment="Center"
-                                    HorizontalAlignment="Stretch"/>
-                        <TextBox Grid.Column="1" 
-                                     Text="{x:Bind ViewModel.Gal.ExePath, Mode=OneWay}" 
-                                     VerticalAlignment="Center" 
-                                     HorizontalAlignment="Stretch"
-                                     AcceptsReturn="False"
-                                     IsReadOnly="True"/>
-                        <HyperlinkButton Grid.Column="2" Command="{x:Bind ViewModel.SetGalgameExePathCommand}" 
-                                        VerticalAlignment="Center"
-                                        Margin="10 0 0 0">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <SymbolIcon Symbol="Edit" />
-                                <TextBlock x:Uid="GalgameSettingPage_EditExePath"/>
-                            </StackPanel>
-                        </HyperlinkButton>
-                    </Grid>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <Grid Grid.Column="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" x:Uid = "GalgameSettingPage_GalgameId" 
-                                       Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1" 
-                                     Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                     VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                     AcceptsReturn="False"/>
-                        </Grid>
-
-                        <Grid Grid.Column="1" Margin="50 0 0 0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock x:Uid="GalgameSettingPage_GalgameRssType" VerticalAlignment="Center" 
-                                       Margin="0 0 15 0" HorizontalAlignment="Stretch"/>
-                            <control:ComboBoxWithoutNull 
-                                Grid.Column="1" 
-                                ItemsSource="{x:Bind ViewModel.RssTypes}"
-                                SelectedItem="{x:Bind ViewModel.SelectedRss, Mode=TwoWay}" 
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"/>
-                            <HyperlinkButton Grid.Column="2" VerticalAlignment="Center" 
-                                             NavigateUri="{x:Bind ViewModel.SearchUri, Mode=OneWay}"
-                                             Margin="20 0 0 0">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <SymbolIcon Symbol="Find"/>
-                                    <TextBlock x:Uid="GalgameSettingPage_Search"/>
-                                </StackPanel>
-                            </HyperlinkButton>
-                        </Grid>
-                    </Grid>
-                    
-                    <Grid>
-                        <!--游戏启动参数-->
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="GalgameSettingPage_Startup_parameters"
-                                    Margin="0 0 15 0" VerticalAlignment="Center"
-                                    HorizontalAlignment="Stretch"/>
-                        <TextBox Grid.Column="1" 
-                                     Text="{x:Bind ViewModel.Gal.Startup_parameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                     VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                     AcceptsReturn="False"
-                                 PlaceholderText="请输入启动项"
-                                 ToolTipService.ToolTip="就是你想用什么东西来启动galgame，支持系统环境变量，当然最好是文件的绝对地址"
-                                 />
-                        <TextBox Grid.Column="2" 
-                                    Text="{x:Bind ViewModel.Gal.Startup_parameters_arguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                    VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                    AcceptsReturn="False"
-                                    PlaceholderText="请输入启动项参数"
-                                    ToolTipService.ToolTip="就把他当成cmd来用就行了"
-                                  />
-                        
-                    </Grid>
-                    
-                        <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock x:Uid="GalgameSettingPage_GalgameSavePosition" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBox Text="{x:Bind ViewModel.Gal.SavePosition}" IsEnabled="False" VerticalAlignment="Center" AcceptsReturn="False"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0 0 0 40">
+            <StackPanel Margin="{StaticResource MediumRightMargin}">
+                <!-- 游戏配置 -->
+                <control:SettingExpander x:Uid="GalgameSettingPage_GameSetting"
+                                         SettingIcon="&#xE7FC;" SettingSymbol="ViewAll">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 游戏路径 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="GalgameSettingPage_GameSetting_Path"
+                                                 Description="{x:Bind ViewModel.LocalPathMsg, Mode=OneWay}">
+                                    <HyperlinkButton Command="{x:Bind ViewModel.SetGalgamePathCommand}"
+                                                     VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <SymbolIcon Symbol="Edit" />
+                                            <TextBlock x:Uid="GalgameSettingPage_EditPath" />
+                                        </StackPanel>
+                                    </HyperlinkButton>
+                                </control:Setting>
+                            </control:Panel>
+                            <!-- 游戏启动文件 -->
+                            <control:Panel Visibility="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
+                                <control:Setting x:Uid="GalgameSettingPage_GameSetting_ExePath"
+                                                 Description="{x:Bind ViewModel.ExePathMsg, Mode=OneWay}">
+                                    <HyperlinkButton Command="{x:Bind ViewModel.SetGalgameExePathCommand}"
+                                                     VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <SymbolIcon Symbol="Edit" />
+                                            <TextBlock x:Uid="GalgameSettingPage_EditExePath" />
+                                        </StackPanel>
+                                    </HyperlinkButton>
+                                </control:Setting>
+                            </control:Panel>
+                            <!-- 游戏启动参数 -->
+                            <control:Panel Visibility="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <TextBlock x:Uid="GalgameSettingPage_GameSetting_Parameter"
+                                               Margin="0 0 15 0" VerticalAlignment="Center" />
+                                    <Grid Grid.Column="1" />
+                                    <TextBox x:Uid="GalgameSettingPage_GameSetting_Parameter_Input" Grid.Column="2"
+                                             Text="{x:Bind ViewModel.Gal.ExeArguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalAlignment="Center" TextAlignment="Center"
+                                             MinWidth="200"
+                                             ToolTipService.ToolTip="就把他当成cmd来用就行了" />
+                                </Grid>
+                            </control:Panel>
+                            <!-- 存档位置（尚未做完，隐藏） -->
+                            <control:Panel Visibility="Collapsed">
+                                <control:Setting x:Uid="GalgameSettingPage_GameSetting_SavePosition"
+                                                 Description="{x:Bind ViewModel.Gal.SavePosition}">
+                                    <Button IsEnabled="False"/>
+                                </control:Setting>
+                            </control:Panel>
                         </StackPanel>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
 
-                        <control:LockableTextBox 
-                            Grid.Column="1"
-                            x:Uid="GalgameSettingPage_GalgameReleaseDate"
-                            Value="{x:Bind ViewModel.Gal.ReleaseDate.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource DateTimeToStringConverter}}"
-                            IsLock="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, Mode=TwoWay}" 
-                            AcceptsReturn="False"/>
-
-                        <control:LockableNumberBox 
-                            Grid.Column="2" 
-                            x:Uid="GalgameSettingPage_GalgameRating"
-                            Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
-                            IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"
-                            HorizontalAlignment="Right"/>
-                    </Grid>
-
-                    <control:LockableTextBox 
-                        x:Uid="GalgameSettingPage_GalgameDeveloper"
-                        Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" 
-                        AcceptsReturn="False"/>
-
-                    <control:LockableTextBox 
-                        x:Uid="GalgameSettingPage_GalgameExpectedPlayTime"
-                        Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" 
-                        AcceptsReturn="False"/>
-
-                    <control:LockableTextBox
-                        x:Uid="GalgameSettingPage_GalgameDescription"
-                        Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}" 
-                        AcceptsReturn="True"/>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <control:LockableTextBox 
-                            Grid.Column="0"
-                            x:Uid="GalgameSettingPage_GalgameImagePath"
-                            Value="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=TwoWay}"
-                            IsLock="{x:Bind ViewModel.Gal.ImagePath.IsLock, Mode=TwoWay}"
-                            Readonly="True" 
-                            AcceptsReturn="False"></control:LockableTextBox>
-                        <Button Grid.Column="1" x:Uid="GalgameSettingPage_PickImage" Command="{x:Bind ViewModel.PickImageCommand}" Margin="10 0 0 0"/>
-                    </Grid>
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock x:Uid="GalgameSettingPage_TagsTitle" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.Gal.Tags.IsLock, Mode=TwoWay}"
-                                          OnContent="已锁定"
-                                          OffContent="已解锁" HorizontalAlignment="Left"/>
+                <!-- 游戏信息 -->
+                <control:SettingExpander x:Uid="GalgameSettingPage_GameInfo"
+                                         SettingDescription="{x:Bind ViewModel.GalgameInfoDescription, Mode=OneWay}"
+                                         SettingIcon="&#xE713;" SettingSymbol="Setting"
+                                         IsExpanded="True">
+                    <control:SettingExpander.SettingContent>
+                        <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                            <!-- 游戏名 -->
+                            <control:Panel>
+                                <control:LockableTextBox
+                                    x:Uid="GalgameSettingPage_GalgameName"
+                                    Value="{x:Bind ViewModel.Gal.Name.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsLock="{x:Bind ViewModel.Gal.Name.IsLock, Mode=TwoWay}"
+                                    AcceptsReturn="False" />
+                            </control:Panel>
+                            <!-- 游戏ID -->
+                            <control:Panel>
+                                <Grid ColumnDefinitions="Auto,5*,Auto,2*,Auto" ColumnSpacing="20">
+                                    <TextBlock Grid.Column="0" x:Uid="GalgameSettingPage_GalgameId" VerticalAlignment="Center" />
+                                    <TextBox Grid.Column="1" x:Uid="GalgameSettingPage_GameInfo_GalgameId_Input"
+                                             Text="{x:Bind ViewModel.Gal.Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" x:Uid="GalgameSettingPage_GalgameRssType" 
+                                               VerticalAlignment="Center" Margin="20 0 0 0"/>
+                                    <control:ComboBoxWithoutNull 
+                                        Grid.Column="3" VerticalAlignment="Center" 
+                                        ItemsSource="{x:Bind ViewModel.RssTypes}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedRss, Mode=TwoWay}"/>
+                                    <HyperlinkButton Grid.Column="4" VerticalAlignment="Center"
+                                                     NavigateUri="{x:Bind ViewModel.SearchUri, Mode=OneWay}"
+                                                     Margin="20 0 0 0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <SymbolIcon Symbol="Find" />
+                                            <TextBlock x:Uid="GalgameSettingPage_Search" />
+                                        </StackPanel>
+                                    </HyperlinkButton>
+                                </Grid>
+                            </control:Panel>
+                            <!-- 发布日期 -->
+                            <control:Panel>
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                                    <TextBlock Grid.Column="0" x:Uid="GalgameSettingPage_GameInfo_ReleaseDate"
+                                               VerticalAlignment="Center" Margin="{StaticResource MediumRightMargin}"/>
+                                    <CalendarDatePicker Grid.Column="1" 
+                                                        IsEnabled="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, 
+                                                                Mode=TwoWay, Converter={StaticResource InverseBooleanConverter}}"
+                                                        Date="{x:Bind ViewModel.ReleasedDate, Mode=TwoWay}"
+                                                        Margin="{StaticResource MediumRightMargin}"/>
+                                    <Grid Grid.Column="2"/>
+                                    <ToggleSwitch Grid.Column="3" x:Uid="GalgameSettingPage_ToggleSwitch" 
+                                                  IsOn="{x:Bind ViewModel.Gal.ReleaseDate.IsLock, Mode=TwoWay}"
+                                                  Margin="0 0 -50 0"/>
+                                </Grid>
+                            </control:Panel>
+                            <!-- 评分 -->
+                            <control:Panel>
+                                <control:LockableNumberBox
+                                    x:Uid="GalgameSettingPage_GalgameRating"
+                                    Value="{x:Bind ViewModel.Gal.Rating.Value, Mode=TwoWay}"
+                                    IsLock="{x:Bind ViewModel.Gal.Rating.IsLock, Mode=TwoWay}"/>
+                            </control:Panel>
+                            <!-- 开发商 -->
+                            <control:Panel>
+                                <control:LockableTextBox
+                                    x:Uid="GalgameSettingPage_GalgameDeveloper"
+                                    Value="{x:Bind ViewModel.Gal.Developer.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsLock="{x:Bind ViewModel.Gal.Developer.IsLock, Mode=TwoWay}" />
+                            </control:Panel>
+                            <!-- 预计游玩时长 -->
+                            <control:Panel>
+                                <control:LockableTextBox
+                                    x:Uid="GalgameSettingPage_GalgameExpectedPlayTime"
+                                    Value="{x:Bind ViewModel.Gal.ExpectedPlayTime.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsLock="{x:Bind ViewModel.Gal.ExpectedPlayTime.IsLock, Mode=TwoWay}" />
+                            </control:Panel>
+                            <!-- 游戏简介 -->
+                            <control:Panel>
+                                <control:LockableTextBox
+                                    x:Uid="GalgameSettingPage_GalgameDescription"
+                                    Value="{x:Bind ViewModel.Gal.Description.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsLock="{x:Bind ViewModel.Gal.Description.IsLock, Mode=TwoWay}"
+                                    AcceptsReturn="True" />
+                            </control:Panel>
+                            <!-- 封面图 -->
+                            <control:Panel>
+                                <control:Setting x:Uid="GalgameSettingPage_GalgameImagePath"
+                                                 Description="{x:Bind ViewModel.Gal.ImagePath.Value, Mode=OneWay}">
+                                    <Button x:Uid="GalgameSettingPage_PickImage"
+                                            Command="{x:Bind ViewModel.PickImageCommand}"
+                                            Margin="0 10 0 0"/>
+                                </control:Setting>
+                            </control:Panel>
+                            <!-- Tags -->
+                            <control:Panel>
+                                <interactivity:Interaction.Behaviors>
+                                    <core:EventTriggerBehavior EventName="SizeChanged">
+                                        <core:InvokeCommandAction Command="{x:Bind ViewModel.PageSizeChangedCommand}"/>
+                                    </core:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                                <Expander IsExpanded="False" HorizontalContentAlignment="Stretch"
+                                          Width="{x:Bind ViewModel.TagWidth, Mode=OneWay}">
+                                    <Expander.Header>
+                                        <Grid RowDefinitions="Auto,Auto">
+                                            <TextBlock Grid.Row="0" x:Uid="GalgameSettingPage_TagsTitle"/>
+                                            <TextBlock Grid.Row="1" x:Uid="GalgameSettingPage_GameInfo_Tag_Description" 
+                                                       Style="{StaticResource DescriptionTextStyle}"/>
+                                        </Grid>
+                                    </Expander.Header>
+                                    <StackPanel Orientation="Vertical">
+                                        <StackPanel Orientation="Vertical">
+                                            <ToggleSwitch IsOn="{x:Bind ViewModel.Gal.Tags.IsLock, Mode=TwoWay}"
+                                                          x:Uid="GalgameSettingPage_ToggleSwitch"/>
+                                        </StackPanel>
+                                        <cmtkControls:TokenizingTextBox
+                                            IsEnabled="{x:Bind ViewModel.Gal.Tags.IsLock, 
+                                            Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ViewModel.Gal.Tags.Value, Mode=TwoWay}"
+                                            PlaceholderText="Add Tags"
+                                            x:Name="TagsBox">
+                                            <cmtkControls:TokenizingTextBox.SuggestedItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding }" />
+                                                </DataTemplate>
+                                            </cmtkControls:TokenizingTextBox.SuggestedItemTemplate>
+                                            <cmtkControls:TokenizingTextBox.TokenItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding }" />
+                                                </DataTemplate>
+                                            </cmtkControls:TokenizingTextBox.TokenItemTemplate>
+                                        </cmtkControls:TokenizingTextBox>
+                                    </StackPanel>
+                                </Expander>
+                            </control:Panel>
                         </StackPanel>
-                        <cmtkControls:TokenizingTextBox
-                            IsEnabled="{x:Bind ViewModel.Gal.Tags.IsLock,
-                                Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}"
-                            ItemsSource="{x:Bind ViewModel.Gal.Tags.Value, Mode=TwoWay}"
-                            PlaceholderText="Add Tags"
-                            x:Name="TagsBox"
-                            >
-                            <cmtkControls:TokenizingTextBox.SuggestedItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding }" />
-                                </DataTemplate>
-                            </cmtkControls:TokenizingTextBox.SuggestedItemTemplate>
-                            <cmtkControls:TokenizingTextBox.TokenItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding }" />
-                                </DataTemplate>
-                            </cmtkControls:TokenizingTextBox.TokenItemTemplate>
-                        </cmtkControls:TokenizingTextBox>
-                        
-                    </StackPanel>
-                    
-                </StackPanel>
-            </Grid>
+                    </control:SettingExpander.SettingContent>
+                </control:SettingExpander>
+            </StackPanel>
         </ScrollViewer>
-    
-        <Grid 
-            Grid.Row="0" 
-            Background="#00000000" 
+
+        <Grid
+            Grid.Row="1"
+            Background="#00000000"
             Visibility="{x:Bind ViewModel.IsPhrasing, Mode=OneWay}">
-            <ProgressRing 
-                IsActive="True" 
-                Width="100" 
-                Height="100" 
-                HorizontalAlignment="Center" 
+            <ProgressRing
+                IsActive="True"
+                Width="100"
+                Height="100"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center" />
         </Grid>
     </Grid>

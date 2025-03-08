@@ -11,6 +11,7 @@
                     ItemsSource="{x:Bind SearchSuggestions, Mode=OneWay}" 
                     MaxSuggestionListHeight="500"
                     AutoMaximizeSuggestionArea="True"
+                    PlaceholderText="{x:Bind PlaceholderText}"
                     TextChanged="AutoSuggestBox_OnTextChanged" 
                     QuerySubmitted="AutoSuggestBox_OnQuerySubmitted">
         

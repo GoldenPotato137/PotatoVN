@@ -15,6 +15,9 @@ public class LocalSettingStatus
     /// <seealso cref="GalgameSourceCollectionService.SourceUpgradeAsync"/>
     public bool GalgameSourceFormatUpgrade = false;
     
+    /// GalgameSourceCollectionService, v1.8.6, 添加虚拟游戏库
+    public bool GalgameSourceAddVirtualSource = false;
+    
     /// CategoryService, v1.8.0, 改变分类中游戏索引格式
     public bool CategoryGameIndexUpgrade = false;   
     

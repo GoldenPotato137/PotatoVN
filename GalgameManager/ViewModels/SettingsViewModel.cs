@@ -108,6 +108,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         _elementTheme = themeSelectorService.Theme;
         _fixHorizontalPicture = _localSettingsService.ReadSettingAsync<bool>(KeyValues.FixHorizontalPicture).Result;
         TimeAsHour = _localSettingsService.ReadSettingAsync<bool>(KeyValues.TimeAsHour).Result;
+        GalgamePageNewLayout = _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout).Result;
         //GAME
         _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
         _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
@@ -233,6 +234,17 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _timeAsHour;
     partial void OnTimeAsHourChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.TimeAsHour, value);
 
+    // 使用新界面
+    [ObservableProperty] private bool _galgamePageNewLayout;
+    partial void OnGalgamePageNewLayoutChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout, value);
+    
+    // 管理游戏详情页布局
+    [RelayCommand]
+    private void ManageGalgamePageLayout()
+    {
+        ManageGalgamePageLayoutDialog dialog = new();
+        _ = dialog.ShowAsync();
+    }
     #endregion
 
     #region GAME

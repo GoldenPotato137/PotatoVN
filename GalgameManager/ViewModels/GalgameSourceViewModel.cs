@@ -99,6 +99,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
                         }),
                         OpenInExplorerCommand = new RelayCommand(async () =>
                         {
+                            if (string.IsNullOrEmpty(g.Galgame.LocalPath)) return;
                             var folder = await StorageFolder.GetFolderFromPathAsync(g.Galgame.LocalPath);
                             await Launcher.LaunchFolderAsync(folder);
                         })

@@ -55,6 +55,7 @@
                 Grid.Row="1" 
                 MaxHeight="85"
                 Margin="{StaticResource XXSmallTopMargin}"
+                MaxWidth="{x:Bind CalcValue(150)}"
                 HorizontalAlignment="Center" VerticalAlignment="Bottom"
                 Style="{ThemeResource BodyTextStyle}"
                 Text="{x:Bind Source.Name, Mode=OneWay, FallbackValue={x:Null}}" />

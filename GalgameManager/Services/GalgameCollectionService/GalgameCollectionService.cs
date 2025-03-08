@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using GalgameManager.Contracts.Phrase;
@@ -316,10 +317,15 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             galgame.Rating.Value = tmp.Rating.Value;
             if (!galgame.Tags.IsLock && tmp.Tags.Value?.Count > 0) // Tags不能直接赋值，直接替换容器会抛出奇怪的绑定异常
             {
-                galgame.Tags.Value ??= new ObservableCollection<string>(); //不应该发生
-                galgame.Tags.Value.Clear();
-                foreach (var tag in tmp.Tags.Value)
-                    galgame.Tags.Value.Add(tag);
+                try
+                {
+                    galgame.Tags.Value ??= new ObservableCollection<string>(); //不应该发生
+                    galgame.Tags.Value.SyncCollection(tmp.Tags.Value);
+                }
+                catch (COMException)
+                {
+                    //可能会在某些界面触发ComException（怀疑是框架bug），但不影响正常赋值，暂时忽略
+                }
             }
             galgame.Characters = tmp.Characters;
             galgame.ImagePath.Value = await DownloadHelper.DownloadAndSaveImageAsync(galgame.ImageUrl) ?? Galgame.DefaultImagePath;

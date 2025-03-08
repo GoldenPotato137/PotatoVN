@@ -38,6 +38,7 @@ public class GalgameSourceCollectionService(
         await LiteDbUpgrade(settingStatus);
         LoadData();
         await SourceUpgradeAsync(settingStatus);
+        await VirtualSourceUpgrade(settingStatus);
         foreach (GalgameSourceBase source in _galgameSources) // 部分崩溃的情况可能导致source里面部分galgame为null
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
@@ -50,7 +51,8 @@ public class GalgameSourceCollectionService(
             }
         }
         // 去除找不到的库
-        List<GalgameSourceBase> toRemove = _galgameSources.Where(source => !Directory.Exists(source.Path)).ToList();
+        List<GalgameSourceBase> toRemove = _galgameSources.Where(source =>
+            source.SourceType == GalgameSourceType.LocalFolder && !Directory.Exists(source.Path)).ToList();
         if (toRemove.Count > 0)
         {
             foreach (GalgameSourceBase source in toRemove)
@@ -152,6 +154,8 @@ public class GalgameSourceCollectionService(
         {
             case GalgameSourceType.LocalFolder:
                 return tmp.FirstOrDefault(s => Utils.ArePathsEqual(s.Path, path));
+            case GalgameSourceType.Virtual:
+                return tmp.FirstOrDefault(s => s.SourceType == GalgameSourceType.Virtual);
             case GalgameSourceType.UnKnown:
             case GalgameSourceType.LocalZip:
             default:
@@ -308,6 +312,17 @@ public class GalgameSourceCollectionService(
     {
         foreach(GalgameSourceBase b in _galgameSources)
             bgTaskService.AddBgTask(new GetGalgameInSourceTask(b));
+
+    }
+
+    /// <summary>   
+    /// 扫描某个库
+    /// </summary>
+    /// <param name="source"></param>
+    public void Scan(GalgameSourceBase source)
+    {
+        bgTaskService.AddBgTask(new GetGalgameInSourceTask(source));
+
     }
     
     /// <summary>
@@ -358,6 +373,8 @@ public class GalgameSourceCollectionService(
                         MoveOutNoOperate(source, g);
                     return toRemove;
                 });
+            case GalgameSourceType.Virtual: 
+                return Task.FromResult(new List<Galgame>());
             case GalgameSourceType.LocalZip:
             case GalgameSourceType.UnKnown:
             default:
@@ -490,6 +507,21 @@ public class GalgameSourceCollectionService(
             infoService.Event(EventType.AppError, InfoBarSeverity.Error, "Source LiteDB upgrade failed", e);
         }
         status.SourceLiteDbUpgrade = true;
+        await localSettingsService.SaveSettingAsync(KeyValues.DataStatus, status, true);
+    }
+
+    /// 添加非本地游戏库
+    private async Task VirtualSourceUpgrade(LocalSettingStatus status)
+    {
+        if (status.GalgameSourceAddVirtualSource) return;
+        if (_galgameSources.Any(s => s.SourceType is GalgameSourceType.Virtual)) return;
+        VirtualSource source = new()
+        {
+            Name = "VirtualSource".GetLocalized(),
+        };
+        _galgameSources.Add(source);
+        Save(source);
+        status.GalgameSourceAddVirtualSource = true;
         await localSettingsService.SaveSettingAsync(KeyValues.DataStatus, status, true);
     }
     

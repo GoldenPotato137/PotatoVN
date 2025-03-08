@@ -1,4 +1,5 @@
-﻿using Windows.Storage;
+﻿using System.ComponentModel;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,8 +10,8 @@ using GalgameManager.Helpers;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models;
 using GalgameManager.Services;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Linq;
 
 namespace GalgameManager.ViewModels;
 
@@ -30,7 +31,12 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [ObservableProperty] private string _searchUri = "";
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private RssType _selectedRss = RssType.None;
-    [ObservableProperty] private string _lastFetchInfoStr = string.Empty;
+    [ObservableProperty] private string _galgameInfoDescription = string.Empty;
+    [ObservableProperty] private DateTimeOffset _releasedDate; //包一层的原因：CalendarDatePicker的Date为DateTimeOffset（而非datetime）
+    [ObservableProperty] private double _tagWidth = 20; //没法设置Expander为Stretch，故暂直接设置宽度
+    public string LocalPathMsg => Gal.LocalPath ?? "GalgameSettingPage_NotLocalGame".GetLocalized();
+    public string ExePathMsg => Gal.ExePath ?? "GalgameSettingPage_NoExe".GetLocalized();
+    public bool IsLocalGame => Gal.IsLocalGame;
 
     public GalgameSettingViewModel(IGalgameCollectionService galCollectionService, INavigationService navigationService,
         IPvnService pvnService, IInfoService infoService, IGalgameSourceCollectionService sourceService)
@@ -56,6 +62,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         await _galService.SaveGalgameAsync(Gal);
         _pvnService.Upload(Gal, PvnUploadProperties.Infos | PvnUploadProperties.ImageLoc);
         _galService.PhrasedEvent -= Update;
+        Gal.PropertyChanged -= HandleGalPropertyChanged;
     }
 
     public void OnNavigatedTo(object parameter)
@@ -66,7 +73,10 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         }
 
         Gal = galgame;
+        Gal.PropertyChanged += HandleGalPropertyChanged;
         SelectedRss = Gal.RssType;
+        if (Gal.ReleaseDate.Value > DateTime.MinValue)
+            ReleasedDate = Gal.ReleaseDate.Value;
         _galService.PhrasedEvent += Update;
         Update();
     }
@@ -119,28 +129,24 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     private void Update()
     {
         IsPhrasing = _galService.IsPhrasing;
-        LastFetchInfoStr = "GalgameSettingPage_LastFetchInfoTime".GetLocalized(
-            new DateTimeToStringConverter().Convert(Gal.LastFetchInfoTime, default!, default!, default!));
+        GalgameInfoDescription = $"{"GalgameSettingPage_GameInfo_SettingDescription".GetLocalized()}" +
+                                 $"   |    {"GalgameSettingPage_LastFetchInfoTime".GetLocalized(
+                                     new DateTimeToStringConverter().Convert(Gal.LastFetchInfoTime, null!, null!, null!))}";
     }
 
+    private void HandleGalPropertyChanged(object? sender, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        OnPropertyChanged(nameof(LocalPathMsg));
+        OnPropertyChanged(nameof(ExePathMsg));
+        OnPropertyChanged(nameof(IsLocalGame));
+    }
+    
     [RelayCommand]
     private async Task PickImageAsync()
     {
-        FileOpenPicker openPicker = new()
-        {
-            ViewMode = PickerViewMode.Thumbnail,
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary
-        };
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow!.GetWindowHandle());
-        openPicker.FileTypeFilter.Add(".jpg");
-        openPicker.FileTypeFilter.Add(".jpeg");
-        openPicker.FileTypeFilter.Add(".png");
-        openPicker.FileTypeFilter.Add(".bmp");
-        StorageFile? file = await openPicker.PickSingleFileAsync();
-        if (file == null) return;
-        StorageFile newFile = await file.CopyAsync(await FileHelper.GetFolderAsync(FileHelper.FolderType.Images), 
-            $"{Gal.Name.Value}{file.FileType}", NameCollisionOption.ReplaceExisting);
-        Gal.ImagePath.Value= newFile.Path;
+        var newFile = await DownloadHelper.PickImageAsync();
+        if (newFile is null) return;
+        Gal.ImagePath.Value= newFile;
     }
 
     [RelayCommand]
@@ -200,5 +206,18 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
             _infoService.Info(InfoBarSeverity.Error, "GalgameSettingPage_ExePathSetFailed".GetLocalized(), e.Message);
             _infoService.Log(InfoBarSeverity.Error, $"{e.Message}\n{e.StackTrace}");
         }
+    }
+
+    partial void OnReleasedDateChanged(DateTimeOffset value)
+    {
+        if (value.LocalDateTime == Gal.ReleaseDate.Value) return;
+        Gal.ReleaseDate.Value = value.LocalDateTime;
+    }
+    
+    [RelayCommand]
+    private void OnPageSizeChanged(SizeChangedEventArgs e)
+    {
+        if (e.NewSize.Width <= 65) return;
+        TagWidth = e.NewSize.Width - 65;
     }
 }

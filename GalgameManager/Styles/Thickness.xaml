@@ -8,6 +8,7 @@
     <Thickness x:Key="MediumTopMargin">0,24,0,0</Thickness>
     <Thickness x:Key="MediumTopBottomMargin">0,24,0,24</Thickness>
     <Thickness x:Key="MediumLeftRightMargin">24,0,24,0</Thickness>
+    <Thickness x:Key="MediumRightMargin">0,0,24,0</Thickness>
     <Thickness x:Key="MediumBottomMargin">0,0,0,24</Thickness>
 
     <Thickness x:Key="SmallLeftMargin">12,0,0,0</Thickness>
@@ -37,5 +38,7 @@
     <Thickness x:Key="SettingsPageHyperlinkButtonMargin">-12,0,0,0</Thickness>
     
     <Thickness x:Key="PageButtonMargin">0,0,0,40</Thickness>
+    
+    <Thickness x:Key="CommandBarMargin">0,-67,0,0</Thickness>
     
 </ResourceDictionary>
