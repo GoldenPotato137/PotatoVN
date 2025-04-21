@@ -39,7 +39,7 @@ public class SteamAccount
 
     // steamids
     [JsonPropertyName("steamid")]
-    public required string _steamids { get; set; }
+    public  string _steamids { get; set; }
 
     //玩家的角色名称（显示名称）
     [JsonPropertyName("personaname")]
