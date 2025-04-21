@@ -31,7 +31,7 @@ public class SteamService : ISteamService
         }
 
         var apiResponseTask = _steamApi.GetPlayerSummariesAsync(key, steamid);
-        apiResponseTask.Wait(); // 等待异步任务完成
+        apiResponseTask.Wait(); 
         var apiResponse = apiResponseTask.Result; 
 
         if (apiResponse.Code == 200 && apiResponse.Data != null)
@@ -49,7 +49,7 @@ public class SteamService : ISteamService
             return null;
         }
         var apiResponseTask = _steamApi.GetOwnedGamesAsync(key, steamid);
-        apiResponseTask.Wait(); // 等待异步任务完成
+        apiResponseTask.Wait(); 
         var apiResponse = apiResponseTask.Result;
         Dictionary<string,SteamGame> result = new Dictionary<string,SteamGame>();
         if (apiResponse.Code==200&&apiResponse.Data.GameCount>0)
@@ -63,9 +63,10 @@ public class SteamService : ISteamService
 
     }
 
-    public void UpdateSteamGameInfo() // 修复问题 8：更改返回类型为 void
+    public void UpdateSteamGameInfo() 
     {
-        // 示例实现
-        // 有待商榷
+
     }
+
+    
 }
