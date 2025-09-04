@@ -75,6 +75,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     [ObservableProperty] private bool _highDpi; //是否高DPI替代缩放
     [ObservableProperty] private bool _enableMagpie; //是否启用Magpie
     [ObservableProperty] private bool _muteInBackground; //是否在后台时静音游戏
+    [ObservableProperty] private bool _quickMinimize; //是否启用一键最小化（每游戏）
     private RssType _rssType = RssType.None;
     [ObservableProperty] private PlayType _playType;
     // ReSharper disable once MemberCanBePrivate.Global

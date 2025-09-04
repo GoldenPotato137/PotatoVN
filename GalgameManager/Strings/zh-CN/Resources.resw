@@ -3197,6 +3197,27 @@
   <data name="Settings_Game_AlwaysMuteInBackground.Description" xml:space="preserve">
     <value>覆盖单独的游戏设置。如果启用，所有游戏都将在后台时静音。</value>
   </data>
+  <data name="GamePage_QuickMinimize.Label" xml:space="preserve">
+    <value>一键最小化</value>
+  </data>
+  <data name="GamePage_QuickMinimize.ToolTipService.ToolTip" xml:space="preserve">
+    <value>使用快捷键最小化游戏窗口</value>
+  </data>
+  <data name="Settings_Game_AlwaysQuickMinimize.Title" xml:space="preserve">
+    <value>总是启用一键最小化游戏</value>
+  </data>
+  <data name="Settings_Game_AlwaysQuickMinimize.Description" xml:space="preserve">
+    <value>覆盖单独的游戏设置。如果启用，在使用快捷键时最小化游戏窗口。</value>
+  </data>
+  <data name="SettingsPage_Game_MinimizeHotkeys_Title.Text" xml:space="preserve">
+    <value>最小化游戏窗口快捷键</value>
+  </data>
+  <data name="SettingsPage_Game_MinimizeHotkeys_Description.Text" xml:space="preserve">
+    <value>请设置最小化游戏窗口的快捷键</value>
+  </data>
+  <data name="SettingsPage_Game_MinimizeHotkeys_HotkeyInputBox.PlaceholderText" xml:space="preserve">
+    <value>点击设置快捷键</value>
+  </data>
   <data name="GameMuteTask_Muted" xml:space="preserve">
     <value>已静音游戏：{0}</value>
   </data>

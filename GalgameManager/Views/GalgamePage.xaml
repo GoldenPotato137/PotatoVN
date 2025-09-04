@@ -117,9 +117,17 @@
                     <!-- 后台静音 -->
                     <AppBarToggleButton x:Uid="GamePage_MuteInBackground"
                                         IsChecked="{x:Bind ViewModel.Item.MuteInBackground, Mode=TwoWay, FallbackValue=False}"
-                                        IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
+                                        IsEnabled="{x:Bind ViewModel.IsMuteInBackgroundToggleEnabled, Mode=OneWay}">
                         <AppBarToggleButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEA8F;" /> <!-- Mute icon -->
+                        </AppBarToggleButton.Icon>
+                    </AppBarToggleButton>
+                    <!-- 一键最小化（每游戏开关） -->
+                    <AppBarToggleButton x:Uid="GamePage_QuickMinimize"
+                                        IsChecked="{x:Bind ViewModel.Item.QuickMinimize, Mode=TwoWay, FallbackValue=False}"
+                                        IsEnabled="{x:Bind ViewModel.IsQuickMinimizeToggleEnabled, Mode=OneWay}">
+                        <AppBarToggleButton.Icon>
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE73F;" />
                         </AppBarToggleButton.Icon>
                     </AppBarToggleButton>
                     <AppBarSeparator/>

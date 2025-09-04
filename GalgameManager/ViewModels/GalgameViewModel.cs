@@ -66,6 +66,14 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
     [ObservableProperty]
     private bool _useNewLayout;
+    
+    // 当系统设置 AlwaysMuteInBackground 为真时，游戏界面的“后台静音”选项应始终开启且不可编辑
+    [ObservableProperty]
+    private bool _isMuteInBackgroundToggleEnabled;
+
+    // 当系统设置 AlwaysQuickMinimize 为真时，游戏界面的“一键最小化”选项应始终开启且不可编辑
+    [ObservableProperty]
+    private bool _isQuickMinimizeToggleEnabled;
 
     public GalgameViewModel(IGalgameCollectionService dataCollectionService, IStaffService staffService,
         INavigationService navigationService, IJumpListService jumpListService,
@@ -133,6 +141,12 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             Item = param.Galgame;
             IsLocalGame = Item.IsLocalGame;
             Item.SavePath = Item.SavePath;
+            // 读取并应用全局“后台静音”设置
+            var _alwaysMuteInBackgroundEnabled = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysMuteInBackground);
+            IsMuteInBackgroundToggleEnabled = IsLocalGame && !_alwaysMuteInBackgroundEnabled;
+            // 读取并应用全局“一键最小化”设置
+            var _alwaysQuickMinimizeEnabled = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysQuickMinimize);
+            IsQuickMinimizeToggleEnabled = IsLocalGame && !_alwaysQuickMinimizeEnabled;
             _galgameService.PhrasedEvent2 += Update;
             _staffService.OnGameStaffChanged += Update;
             // 初始化面板
@@ -354,6 +368,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 _ = _bgTaskService.AddBgTask(new CallMagpieTask(Item, process));
             if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysMuteInBackground) || Item.MuteInBackground)
                 _ = _bgTaskService.AddBgTask(new GameMuteTask(Item, process));
+            if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysQuickMinimize) || Item.QuickMinimize)
+                _ = _bgTaskService.AddBgTask(new QuickMinimizeTask(Item, process));
             if(process.HasExited == false)
                 App.SetWindowMode(await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
             

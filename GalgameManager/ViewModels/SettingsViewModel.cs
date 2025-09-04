@@ -131,8 +131,11 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         _alwaysEnableMagpie = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysEnableMagpie).Result;
         _alwaysMuteInBackground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysMuteInBackground).Result;
         _magpieHotkeys = _localSettingsService.ReadSettingAsync<List<int>>(KeyValues.MagpieHotkeys).Result ?? [];
+        _quickMinimizeHotkeys = _localSettingsService.ReadSettingAsync<List<int>>(KeyValues.QuickMinimizeHotkeys).Result ?? [];
         UpdateMagpieHotkeysString();
         MagpieHotkeyKeys = new List<int>(_magpieHotkeys);
+        UpdateQuickMinimizeHotkeysString();
+        QuickMinimizeHotkeyKeys = new List<int>(_quickMinimizeHotkeys);
         PlayingWindowModes = new[] {WindowMode.Minimize, WindowMode.SystemTray, WindowMode.None };
         //RSS
         RssType = _localSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result;
@@ -390,9 +393,13 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     public bool MagpieSettingVisible => MagpieTotalSwitch && !IsNullOrEmpty(MagpiePath);
     [ObservableProperty] private bool _alwaysEnableMagpie;
     [ObservableProperty] private bool _alwaysMuteInBackground;
+    [ObservableProperty] private bool _alwaysQuickMinimize;
     [ObservableProperty] private string _magpieHotkeysString = Empty;
     [ObservableProperty] private List<int> _magpieHotkeyKeys = new();
+    [ObservableProperty] private string _quickMinimizeHotkeysString = Empty;
+    [ObservableProperty] private List<int> _quickMinimizeHotkeyKeys = new();
     private List<int> _magpieHotkeys;
+    private List<int> _quickMinimizeHotkeys;
     public WindowMode[] PlayingWindowModes;
     
     partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
@@ -419,6 +426,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     }
 
     partial void OnAlwaysMuteInBackgroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AlwaysMuteInBackground, value);
+    partial void OnAlwaysQuickMinimizeChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.AlwaysQuickMinimize, value);
 
     async partial void OnMagpieHotkeyKeysChanged(List<int> value)
     {
@@ -514,6 +522,99 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     private void UpdateMagpieHotkeysString()
     {
         MagpieHotkeysString = Join(" + ", _magpieHotkeys.Select(vk => ((VirtualKey)vk).ToString()));
+    }
+
+    async partial void OnQuickMinimizeHotkeyKeysChanged(List<int> value)
+    {
+        try
+        {
+            if (value == null || value.Count == 0)
+            {
+                _quickMinimizeHotkeys = [(int)VirtualKey.LeftWindows, (int)VirtualKey.Shift, (int)VirtualKey.M];
+                QuickMinimizeHotkeyKeys = new List<int>(_quickMinimizeHotkeys);
+            }
+            else
+            {
+                _quickMinimizeHotkeys = new List<int>(value);
+            }
+            await _localSettingsService.SaveSettingAsync(KeyValues.QuickMinimizeHotkeys, _quickMinimizeHotkeys);
+            UpdateQuickMinimizeHotkeysString();
+            _infoService.Info(InfoBarSeverity.Success, msg:"SettingSuccess".GetLocalized(), displayTimeMs: 2000);
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(e:e);
+            if (_quickMinimizeHotkeys != null)
+            {
+                QuickMinimizeHotkeyKeys = new List<int>(_quickMinimizeHotkeys);
+            }
+        }
+    }
+
+    async partial void OnQuickMinimizeHotkeysStringChanged(string value)
+    {
+        try
+        {
+            if (IsNullOrWhiteSpace(value))
+            {
+                _quickMinimizeHotkeys = [(int)VirtualKey.LeftWindows, (int)VirtualKey.Shift, (int)VirtualKey.M];
+                UpdateQuickMinimizeHotkeysString();
+                QuickMinimizeHotkeyKeys = new List<int>(_quickMinimizeHotkeys);
+            }
+            else
+            {
+                IEnumerable<string> keyStrings = value.Split('+').Select(s => s.Trim().ToLowerInvariant());
+                List<int> newHotkeys = [];
+                foreach (var keyString in keyStrings)
+                {
+                    if (IsNullOrEmpty(keyString)) continue;
+                    if (Enum.TryParse(typeof(VirtualKey), keyString, true, out var virtualKey))
+                    {
+                        newHotkeys.Add((int)virtualKey);
+                    }
+                    else
+                    {
+                        switch (keyString)
+                        {
+                            case "win":
+                            case "windows":
+                            case "leftwindows":
+                                newHotkeys.Add((int)VirtualKey.LeftWindows);
+                                break;
+                            case "shift":
+                                newHotkeys.Add((int)VirtualKey.Shift);
+                                break;
+                            case "ctrl":
+                            case "control":
+                                newHotkeys.Add((int)VirtualKey.Control);
+                                break;
+                            case "alt":
+                                newHotkeys.Add((int)VirtualKey.Menu);
+                                break;
+                            default:
+                                _infoService.Info(InfoBarSeverity.Error,
+                                    msg: "SettingsPage_Game_MagpieHotkeysError".GetLocalized(keyString),
+                                    displayTimeMs: 5000);
+                                return;
+                        }
+                    }
+                }
+                _quickMinimizeHotkeys = newHotkeys;
+                QuickMinimizeHotkeyKeys = new List<int>(_quickMinimizeHotkeys);
+            }
+            await _localSettingsService.SaveSettingAsync(KeyValues.QuickMinimizeHotkeys, _quickMinimizeHotkeys);
+            _infoService.Info(InfoBarSeverity.Success, msg:"SettingSuccess".GetLocalized(), displayTimeMs: 2000);
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(e:e);
+            UpdateQuickMinimizeHotkeysString();
+        }
+    }
+
+    private void UpdateQuickMinimizeHotkeysString()
+    {
+        QuickMinimizeHotkeysString = Join(" + ", _quickMinimizeHotkeys.Select(vk => ((VirtualKey)vk).ToString()));
     }
     
     [RelayCommand]
