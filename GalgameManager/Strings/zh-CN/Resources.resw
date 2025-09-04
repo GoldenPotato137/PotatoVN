@@ -3820,4 +3820,31 @@
   <data name="GalgameFolder_GetGalInFolder_SkippedByDontScanPaths" xml:space="preserve">
     <value>这是被忽略扫描的路径</value>
   </data>
+  <data name="GalgamePage_OpenInWeb.Label" xml:space="preserve">
+    <value>第三方网站联动</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb.ToolTipService.ToolTip" xml:space="preserve">
+    <value>在网页中打开与同步当前游戏游玩状态</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_OpenInBgm.Text" xml:space="preserve">
+    <value>在Bangumi中打开游戏</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_OpenInVndb.Text" xml:space="preserve">
+    <value>在Vndb中打开游戏</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_OpenInYmgal.Text" xml:space="preserve">
+    <value>在月幕Galgame中打开游戏</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_OpenInCngal.Text" xml:space="preserve">
+    <value>在CNGal中打开游戏</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_OpenInSteam" xml:space="preserve">
+    <value>在Steam中打开游戏</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_SyncFromVndb.Text" xml:space="preserve">
+    <value>下载Vndb游玩状态</value>
+  </data>
+  <data name="GalgamePage_OpenInWeb_SyncFromBgm.Text" xml:space="preserve">
+    <value>下载Bangumi游玩状态</value>
+  </data>
 </root>
