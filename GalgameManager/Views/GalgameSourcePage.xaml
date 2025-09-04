@@ -13,6 +13,7 @@
     xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
     xmlns:sources="using:GalgameManager.Models.Sources"
     xmlns:enums="using:GalgameManager.Enums"
+    xmlns:cmtk="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d"
     x:Name="Page"
     NavigationCacheMode="Enabled">
@@ -265,6 +266,41 @@
                                     <views:SettingToggleSwitch x:Uid="GalgameSourcePage_Setting_SaveMetaBackup"
                                         IsOn="{x:Bind ViewModel.SaveMetadata, Mode=TwoWay, FallbackValue=False}" />
                                 </control:Panel>
+                                 <!-- 不扫描路径列表 -->
+                                <control:Panel Visibility="{x:Bind ViewModel.Item.IsSourceScanable}">
+                                    <StackPanel>
+                                        <control:Setting x:Uid="GalgameSourcePage_Setting_DontScanPaths">
+                                            <Button x:Uid="GalgameSourcePage_Setting_DontScanPaths_Add"
+                                                    Command="{x:Bind ViewModel.AddDontScanPathCommand}"/>
+                                        </control:Setting>
+                                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.DontScanPaths}"
+                                                       Margin="0 10 0 0">
+                                            <ItemsRepeater.ItemTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <Grid Padding="8, 3" CornerRadius="5"
+                                                          Background="{ThemeResource SubtleFillColorTertiaryBrush}"
+                                                          ColumnDefinitions="Auto, Auto" ColumnSpacing="5">
+                                                        <TextBlock Text="{x:Bind Mode=TwoWay}"
+                                                                   Style="{StaticResource DescriptionTextStyle}"/>
+                                                        <Button Grid.Column="1" x:Uid="Delete"
+                                                                Background="Transparent"
+                                                                Padding="0" CornerRadius="10"
+                                                                Click="ButtonBase_OnClick" Tag="{x:Bind}"
+                                                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE894;"
+                                                                      FontSize="10"/>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsRepeater.ItemTemplate>
+                                            <ItemsRepeater.Layout>
+                                                <cmtk:WrapLayout Orientation="Horizontal" 
+                                                                 HorizontalSpacing="20" VerticalSpacing="5"/>
+                                            </ItemsRepeater.Layout>
+                                        </ItemsRepeater>
+                                    </StackPanel>
+                                </control:Panel>
+                                      
                                     </StackPanel>
                                 </control:SettingExpander.SettingContent>
                             </control:SettingExpander>

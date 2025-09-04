@@ -17,6 +17,8 @@ public abstract partial class GalgameSourceBase : ObservableObject, IDisplayable
     [BsonIgnore] [JsonIgnore] public bool IsRunning;
     /// 所有游戏和路径，只用于序列化，任何时候都不应该直接操作这个列表
     [BsonIgnore] public List<GalgameAndPath> Galgames { get; } = new();
+    /// 在手动选择要扫描的文件夹时被取消选中的文件夹的路径
+    public List<string> DontScanPath { get; set; } = [];
     /// 子库列表；由Service初始化时计算，不在json中存储
     [BsonIgnore] [JsonIgnore] public List<GalgameSourceBase> SubSources { get; } = new();
     /// 父库，若为null则表示这是根库；由Service初始化时计算，不在json中存储
@@ -24,6 +26,7 @@ public abstract partial class GalgameSourceBase : ObservableObject, IDisplayable
 
     [BsonIgnore] [JsonIgnore] public string Url => CalcUrl(SourceType, Path);
     public string Path { get; set; } = "";
+    [BsonIgnore] [JsonIgnore] public ExUri PathUri => new (Path);
     public abstract GalgameSourceType SourceType { get; }
     [ObservableProperty] private bool _scanOnStart;
     /// 是否能调整ScanOnStart属性
@@ -177,6 +180,22 @@ public abstract partial class GalgameSourceBase : ObservableObject, IDisplayable
         }
     }
 
+    /// <summary>
+    /// 获取这个库的所有子库，这个库本身，以及所有祖先库
+    /// </summary>
+    /// <returns></returns>
+    public List<GalgameSourceBase> GetSubAncestorsSources()
+    {
+        List<GalgameSourceBase> result = GetSubSourcesRecursive();
+        GalgameSourceBase? current = ParentSource;
+        while (current is not null)
+        {
+            result.Add(current);
+            current = current.ParentSource;
+        }
+        return result;
+    }
+
     public async virtual IAsyncEnumerable<(string? path, string msg)> ScanAllGalgames()
     {
         await Task.CompletedTask;
@@ -213,6 +232,32 @@ public abstract partial class GalgameSourceBase : ObservableObject, IDisplayable
 
     // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnDetectFolderRemoveChanged(bool value) => DetectChanged?.Invoke(this);
+
+    /// <summary>
+    /// 以此库当前的DontScanPath列表更新孩子的该属性与其父亲、祖先的该属性 <br/>
+    /// 孩子们的DontScanPath会被覆盖，祖先的会被合并（不动不属于这个库的路径）
+    /// </summary>
+    public void UpdateDontScanPath()
+    {
+        ExUri currentPath = PathUri;
+        foreach (GalgameSourceBase sub in SubSources)
+        {
+            sub.DontScanPath.Clear();
+            ExUri subPath = sub.PathUri;
+            foreach (var p in DontScanPath.Where(p => subPath.IsAncestorOf(new ExUri(p))))
+                sub.DontScanPath.Add(p);
+        }
+        GalgameSourceBase? current = ParentSource;
+        while (current is not null)
+        {
+            // 先移除所有属于当前库的路径再添加
+            List<string> toRemove = [];
+            toRemove.AddRange(current.DontScanPath.Where(p => currentPath.IsAncestorOf(new ExUri(p))));
+            foreach (var p in toRemove) current.DontScanPath.Remove(p);
+            current.DontScanPath.AddRange(DontScanPath);
+            current = current.ParentSource;
+        }
+    }
 }
 
 // 新增Source Type时，请务必实现：

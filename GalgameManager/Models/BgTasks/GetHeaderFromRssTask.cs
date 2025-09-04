@@ -60,4 +60,7 @@ public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
     protected override string ProgressMsg(Galgame item) => item.Name.Value ?? string.Empty;
 
     protected override string ProgressWaitingMsg() => "GetHeaderFromRssTask_Progress_Waiting";
+
+    public static bool ShouldProcess(string url) =>
+        url.Contains("cdn.akamai.steamstatic.com") || url.Contains("vndb.org");
 }

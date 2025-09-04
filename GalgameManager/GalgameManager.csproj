@@ -131,6 +131,7 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="TinyPinyin" Version="1.1.0" />
     <PackageReference Include="ValveKeyValue" Version="0.20.0.417" />
     <PackageReference Include="WanaKanaShaapu" Version="2.0.2" />

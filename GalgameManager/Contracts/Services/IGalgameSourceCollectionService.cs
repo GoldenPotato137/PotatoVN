@@ -61,9 +61,10 @@ public interface IGalgameSourceCollectionService
     /// <param name="sourceType"></param>
     /// <param name="path">库路径</param>
     /// <param name="tryGetGalgame">是否自动寻找库里游戏</param>
+    /// <param name="manualSelectFolder">是否弹出对话框，手动选择要扫描的路径（即要添加的游戏）</param>
     /// <exception cref="Exception">库已经添加过了</exception>
     public Task<GalgameSourceBase> AddGalgameSourceAsync(GalgameSourceType sourceType, string path,
-        bool tryGetGalgame = true);
+        bool tryGetGalgame = true, bool manualSelectFolder = false);
 
     /// <summary>
     /// 删除一个galgame库，其包含弹窗警告，若用户取消则什么都不做

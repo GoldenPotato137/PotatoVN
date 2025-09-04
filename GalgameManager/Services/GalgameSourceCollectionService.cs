@@ -6,6 +6,7 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
+using GalgameManager.Views.Dialog;
 using LiteDB;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json;
@@ -172,7 +173,7 @@ public class GalgameSourceCollectionService(
     }
 
     public async Task<GalgameSourceBase> AddGalgameSourceAsync(GalgameSourceType sourceType, string path,
-        bool tryGetGalgame = true)
+        bool tryGetGalgame = true, bool manualSelectFolder = false)
     {
         if (_galgameSources.Any(galFolder => galFolder.Path == path && galFolder.SourceType == sourceType))
         {
@@ -199,6 +200,7 @@ public class GalgameSourceCollectionService(
         }
         _galgameSources.Add(galgameSource);
         Save(galgameSource);
+        if (manualSelectFolder) await new SelectToScanFolderDialog(galgameSource).ShowAsync();
         if (tryGetGalgame)
         {
             await bgTaskService.AddBgTask(new GetGalgameInSourceTask(galgameSource));
@@ -379,7 +381,6 @@ public class GalgameSourceCollectionService(
     public void Scan(GalgameSourceBase source)
     {
         bgTaskService.AddBgTask(new GetGalgameInSourceTask(source));
-
     }
     
     /// <summary>

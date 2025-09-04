@@ -7,6 +7,9 @@ using System.Web;
 using Windows.Foundation;
 using GalgameManager.Models;
 using HtmlAgilityPack;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Web.WebView2.Core;
 using TinyPinyin;
 
@@ -136,13 +139,17 @@ public static partial class Utils
     }
     
     /// <summary>
-    /// 检查两个系统路径是否相同
+    /// 检查两个系统路径或符合Uri格式的路径（如ftp://123/a/b/c）是否相同
     /// </summary>
     /// <param name="path1"></param>
     /// <param name="path2"></param>
     /// <returns></returns>
     public static bool ArePathsEqual(string path1, string path2)
     {
+        if (Uri.TryCreate(path1, UriKind.Absolute, out Uri? tmp1) &&
+            Uri.TryCreate(path2, UriKind.Absolute, out Uri? tmp2))
+            return tmp1.Equals(tmp2);
+        
         Uri uri1 = new(Path.GetFullPath(path1), UriKind.Absolute);
         Uri uri2 = new(Path.GetFullPath(path2), UriKind.Absolute);
         return uri1.Equals(uri2);
@@ -334,4 +341,19 @@ public static partial class Utils
 
     [System.Text.RegularExpressions.GeneratedRegex(@"\s{2,}")]
     private static partial System.Text.RegularExpressions.Regex MultiSpaceRegex();
+    
+    
+    public static bool IsAnyContentDialogOpen()
+    {
+        WindowEx? window = App.MainWindow;
+        if (window == null) return false;
+        IReadOnlyList<Popup>? popups = VisualTreeHelper.GetOpenPopups(window);
+        return popups.Any(p => p.Child is ContentDialog);
+    }
+    
+    public static async Task WaitForDialogClosedAsync()
+    {
+        while (IsAnyContentDialogOpen())
+            await Task.Delay(200);
+    }
 }

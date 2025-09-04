@@ -42,7 +42,7 @@
             <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisplayResults, Mode=OneWay}">
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:Key="ScanResultItemTemplate" x:DataType="models:PathScanResultItem">
-                        <Border Margin="0 0 0 8"
+                        <Border Margin="0 0 10 8"
                                 CornerRadius="5"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"

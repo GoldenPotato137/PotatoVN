@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.SelectToScanFolderDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dialog="using:GalgameManager.Views.Dialog"
+    DefaultButton="Primary"
+    Style="{ThemeResource DefaultContentDialogStyle}"
+    mc:Ignorable="d"
+    x:Uid="SelectToScanFolderDialog">
+    
+    <ContentDialog.Resources>
+        <!-- DataTemplate for folders -->
+        <DataTemplate x:Key="FolderTemplate" x:DataType="dialog:ExplorerItem">
+            <TreeViewItem AutomationProperties.Name="{x:Bind Name}"
+                          ItemsSource="{x:Bind Children}" IsExpanded="True">
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}" Margin="0 0 -90 0"/>
+                    <FontIcon Glyph="&#xE8B7;" />
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+        <!-- DataTemplate for files -->
+        <DataTemplate x:Key="GameTemplate" x:DataType="dialog:ExplorerItem">
+            <TreeViewItem AutomationProperties.Name="{x:Bind Name}">
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}" Margin="0 0 -90 0"/>
+                    <FontIcon Glyph="&#xE7FC;" />
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+        <!-- Template selector for ExplorerItem types -->
+        <dialog:ExplorerItemTemplateSelector x:Key="ExplorerItemTemplateSelector"
+                                            FolderTemplate="{StaticResource FolderTemplate}"
+                                            GameTemplate="{StaticResource GameTemplate}" />
+    </ContentDialog.Resources>
+
+
+    <Grid MaxHeight="300" Width="400">
+        <TreeView x:Name="FolderTreeView" SelectionMode="None"
+                  ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
+                  ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+            
+        
+        <StackPanel x:Name="FetchingFoldersPanel" x:Uid="FetchingFoldersPanel" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing IsActive="True" Width="80" Height="80"/>
+            <TextBlock x:Uid="SelectToScanFolderDialog_GettingFolders"/>
+        </StackPanel>
+    </Grid>
+    
+</ContentDialog>

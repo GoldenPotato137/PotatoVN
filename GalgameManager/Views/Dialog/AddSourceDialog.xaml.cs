@@ -8,8 +8,9 @@ namespace GalgameManager.Views.Dialog;
 
 public sealed partial class AddSourceDialog : ContentDialog
 {
-    public bool Canceled;
+    public bool Canceled = true;
     public GalgameSourceType SelectedType { get; private set; }
+    public bool ManualSelectFolder { get; private set; }
 
     private static readonly GalgameSourceType[] SourceTypes =
     [
@@ -59,13 +60,9 @@ public sealed partial class AddSourceDialog : ContentDialog
     {
         Canceled = false;
         SelectedType = (GalgameSourceType)SourceTypeComboBox.SelectedItem!;
+        ManualSelectFolder = ManualSelectFolderCheckBox.IsChecked ?? false;
     }
-
-    private void OnSecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-    {
-        Canceled = true;
-    }
-
+    
     private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
         FolderPicker folderPicker = new();
@@ -94,7 +91,11 @@ public sealed partial class AddSourceDialog : ContentDialog
                 else
                     DisplayMsg(InfoBarSeverity.Informational, string.Empty);
                 break;
+            default:
+                DisplayMsg(InfoBarSeverity.Informational, string.Empty);
+                break;
         }
+        InfoBarLine.Visibility = InfoBar.Visibility;
     }
 
     /// <summary>

@@ -276,7 +276,8 @@ public partial class LibraryViewModel(
             };
             await dialog.ShowAsync();
             if (dialog.Canceled) return;
-            await galSourceService.AddGalgameSourceAsync(dialog.SelectedType, dialog.Path);
+            await galSourceService.AddGalgameSourceAsync(dialog.SelectedType, dialog.Path,
+                manualSelectFolder: dialog.ManualSelectFolder);
         }
         catch (Exception e)
         {
@@ -326,6 +327,10 @@ public partial class LibraryViewModel(
             Content = "LibraryPage_ScanAll_IncludeSubfolders".GetLocalized(),
             IsChecked = true
         };
+        CheckBox manualSelectCheckBox = new ()
+        {
+            Content = "LibraryPage_ScanAll_ManualSelect".GetLocalized(),
+        };
 
         StackPanel dialogContent = new ()
         {
@@ -333,6 +338,7 @@ public partial class LibraryViewModel(
         };
         dialogContent.Children.Add(new TextBlock { Text = "LibraryPage_ScanAll_Content".GetLocalized() });
         dialogContent.Children.Add(includeSubfoldersCheckBox);
+        dialogContent.Children.Add(manualSelectCheckBox);
 
         ContentDialog dialog = new ()
         {
@@ -351,6 +357,7 @@ public partial class LibraryViewModel(
         }
 
         var scanSubfolders = includeSubfoldersCheckBox.IsChecked ?? true;
+        var manualSelectFolder = manualSelectCheckBox.IsChecked ?? false;
         
         if (CurrentSource is null)
         {
@@ -368,9 +375,12 @@ public partial class LibraryViewModel(
                 AddSubSources(CurrentSource, allSources);
             }
             
+            if (manualSelectFolder)
+                await new SelectToScanFolderDialog(CurrentSource).ShowAsync();
+            
             foreach (GalgameSourceBase source in sources)
             {
-                galSourceService.Scan(source);
+                galSourceService.Scan(source); 
                 infoService.Info(InfoBarSeverity.Success, msg: "LibraryPage_Scan_Success".GetLocalized(source.Name));
             }
             

@@ -8,7 +8,6 @@
     xmlns:local="using:GalgameManager.Views.Control"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     PrimaryButtonClick="OnPrimaryButtonClick"
-    SecondaryButtonClick="OnSecondaryButtonClick"
     DefaultButton="Primary"
     Style="{ThemeResource DefaultContentDialogStyle}"
     mc:Ignorable="d"
@@ -27,6 +26,10 @@
             <Button Margin="20 0" Click="ButtonBase_OnClick">选择路径</Button>
         </StackPanel>
         
+        <CheckBox x:Name="ManualSelectFolderCheckBox" x:Uid="AddSourceDialog_ManualSelectFolder"/>
+        
+        <Rectangle x:Name="InfoBarLine" Height="1"
+                   Fill="{ThemeResource DividerStrokeColorDefaultBrush}"/>
         <InfoBar x:Name="InfoBar" Visibility="Collapsed" IsOpen="True" IsClosable="False"/>
     </StackPanel>
 </ContentDialog>

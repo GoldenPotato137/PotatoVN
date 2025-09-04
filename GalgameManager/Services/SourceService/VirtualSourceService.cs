@@ -30,4 +30,9 @@ public class VirtualSourceService : IGalgameSourceService
     public Task<string> GetSourcePathAsync(string gamePath) => Task.FromResult(string.Empty);
 
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame) => null;
+    public async Task<string?> SelectPathInSourceAsync(GalgameSourceBase source) 
+    {
+        await Task.CompletedTask;
+        return null;
+    }
 }

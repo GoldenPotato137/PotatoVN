@@ -5,6 +5,7 @@ using GalgameManager.Models.Sources;
 using GalgameManager.Services;
 using H.NotifyIcon.Core;
 using GalgameManager.ViewModels;
+using GalgameManager.Views.Dialog;
 
 namespace GalgameManager.Models.BgTasks;
 
@@ -50,13 +51,14 @@ public class GetGalgameInSourceTask : BgTaskBase
             _galgameFolderSource.IsRunning = true;
             var cnt = 0;
             ChangeProgress(0, 1, "GalgameFolder_GetGalInFolder_GettingPaths".GetLocalized());
-            await foreach (var (path, l) in _galgameFolderSource.ScanAllGalgames())
+            HashSet<ExUri> dontScanPath = new(_galgameFolderSource.DontScanPath.Select(p => new ExUri(p)));
+            await foreach (var (path, l) in  _galgameFolderSource.ScanAllGalgames()) 
             {
                 PathScanResultItem itemResult = new() { Path = path ?? "N/A" };
-                if (path == null)
+                if (path == null || dontScanPath.Contains(new ExUri(path)))
                 {
                     itemResult.ResultType = ScanResultType.Information;
-                    itemResult.Message = l;
+                    itemResult.Message = path is null ? l : "GalgameFolder_GetGalInFolder_SkippedByDontScanPaths".GetLocalized();
                     scanResult.Results.Add(itemResult);
                     continue;
                 }
@@ -78,7 +80,7 @@ public class GetGalgameInSourceTask : BgTaskBase
                 catch (Exception e)
                 {
                     itemResult.ResultType = ScanResultType.Failed;
-                    itemResult.Message = e.ToString();
+                    itemResult.Message = e is PvnException ? e.Message : e.ToString();
                 }
                 scanResult.Results.Add(itemResult);
             }

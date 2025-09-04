@@ -3790,4 +3790,34 @@
   <data name="GalgamePage_AddVirtualGame_PlaceHolder" xml:space="preserve">
     <value>游戏名（使用游戏原名识别准确度更高）</value>
   </data>
+  <data name="SelectToScanFolderDialog.Title" xml:space="preserve">
+    <value>选择要扫描的文件夹</value>
+  </data>
+  <data name="AddSourceDialog_ManualSelectFolder.Content" xml:space="preserve">
+    <value>手动选择要添加的游戏（否则添加所有游戏）</value>
+  </data>
+  <data name="SelectToScanFolderDialog_GettingFolders.Text" xml:space="preserve">
+    <value>正在获取文件夹列表中，请稍后</value>
+  </data>
+  <data name="LibraryPage_ScanAll_ManualSelect" xml:space="preserve">
+    <value>手动选择要添加的游戏（否则添加所有扫描到的游戏）</value>
+  </data>
+  <data name="GalgameSourcePage_Setting_DontScanPaths.Title" xml:space="preserve">
+    <value>扫描忽略路径</value>
+  </data>
+  <data name="GalgameSourcePage_Setting_DontScanPaths.Description" xml:space="preserve">
+    <value>扫描该库游戏时会忽略以下路径（以及其子文件夹）</value>
+  </data>
+  <data name="GalgameSourcePage_Setting_DontScanPaths_Add.Content" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="LocalFolderSourceService_PathNotInSource" xml:space="preserve">
+    <value>该路径不属于本游戏库</value>
+  </data>
+  <data name="GalgameSourcePage_DontScanPath_Exists" xml:space="preserve">
+    <value>这个路径已经被添加过了</value>
+  </data>
+  <data name="GalgameFolder_GetGalInFolder_SkippedByDontScanPaths" xml:space="preserve">
+    <value>这是被忽略扫描的路径</value>
+  </data>
 </root>

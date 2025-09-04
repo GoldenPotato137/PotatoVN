@@ -92,4 +92,7 @@ public class SteamSourceService(IInfoService infoService) : IGalgameSourceServic
 
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame) =>
         "This source does not support move operation";
+
+    public Task<string?> SelectPathInSourceAsync(GalgameSourceBase source) =>
+        LocalFolderSourceService.FolderBaseSelectPathInSource(source);
 }

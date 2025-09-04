@@ -28,7 +28,7 @@ public class ScanResultToBrush : IValueConverter
     {
         return value switch
         {
-            ScanResultType.Information => Application.Current.Resources["SystemFillColorAttentionBrush"],
+            ScanResultType.Information => Application.Current.Resources["SystemFillColorAttentionBackgroundBrush"],
             ScanResultType.AlreadyExists => Application.Current.Resources["SystemFillColorCautionBackgroundBrush"],
             ScanResultType.Success => Application.Current.Resources["SystemFillColorSuccessBackgroundBrush"],
             ScanResultType.Failed => Application.Current.Resources["SystemFillColorCriticalBackgroundBrush"],

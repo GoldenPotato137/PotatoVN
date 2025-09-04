@@ -95,4 +95,13 @@ public interface IGalgameSourceService
     /// <param name="moveOut">要移出的库</param>
     /// <param name="galgame">要移动的游戏</param>
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame);
+    
+    /// <summary>
+    /// 让玩家选择属于该库的路径，应该自行判断该路径是否合法，也自行实现选择方式（界面）<br/>
+    /// 如果取消选择则返回null，路径不合法应抛出异常
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    /// <exception cref="PvnException">路径不合法</exception>
+    public Task<string?> SelectPathInSourceAsync(GalgameSourceBase source);
 }
