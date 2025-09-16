@@ -40,11 +40,19 @@ public partial class GameHeaderPanel
             _localSettingsService.OnSettingChanged -= LocalSettingsServiceOnOnSettingChanged;
             if (Game is not null)
                 Game.HeaderImagePath.OnValueChanged -= HeaderImagePathOnOnValueChanged;
+            // 清理以避免缓存返回后旧的可视元素重用导致重叠
+            StaffList.ItemsSource = null;
+            _staffListSource.Clear();
         };
         Loaded += (_, _) =>
         {
             _staffService.OnGameStaffChanged += StaffServiceOnOnGameStaffChanged;
             _localSettingsService.OnSettingChanged += LocalSettingsServiceOnOnSettingChanged;
+            // 返回缓存页面时，确保重新绑定以强制重建视觉树，避免重叠
+            StaffList.ItemsSource = null;
+            StaffList.ItemsSource = _staffListSource;
+            StaffList.InvalidateMeasure();
+            StaffList.UpdateLayout();
         };
         return;
 
@@ -242,6 +250,8 @@ public partial class GameHeaderPanel
             (Career.Writer, KeyValues.GalgamePageNewLayout_ShowWriter),
             (Career.Musician, KeyValues.GalgamePageNewLayout_ShowMusician)
         ];
+        // 先解绑数据源，防止 ItemsRepeater/WrapLayout 回收状态造成的重叠
+        StaffList.ItemsSource = null;
         _staffListSource.Clear();
         foreach (var (career, settingKey) in careerSettings)
         {
@@ -252,6 +262,8 @@ public partial class GameHeaderPanel
             if (tmp.Count == 0) continue;
             _staffListSource.Add(new GameHeaderPanelStaffList(career, tmp));
         }
+        // 重新绑定数据源以强制重建可视元素
+        StaffList.ItemsSource = _staffListSource;
         // 强制重新计算布局以解决重叠和顺序问题
         StaffList.InvalidateMeasure();
         StaffList.UpdateLayout();

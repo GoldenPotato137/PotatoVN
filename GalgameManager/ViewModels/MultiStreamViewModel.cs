@@ -132,6 +132,13 @@ namespace GalgameManager.ViewModels
         public void OnNavigatedTo(object parameter)
         {
             if (parameter is bool b) _isRetry = b;
+            // 由于页面开启了缓存，再次进入时需要：
+            // 1) 重新订阅集合变更事件（OnNavigatedFrom 中已取消订阅）
+            // 2) 刷新现有列表的数据源与排序，确保内容最新
+            Lists.CollectionChanged -= ListsOnCollectionChanged;
+            Lists.CollectionChanged += ListsOnCollectionChanged;
+            foreach (IList list in Lists)
+                list.Refresh();
         }
 
         public void OnNavigatedFrom()
