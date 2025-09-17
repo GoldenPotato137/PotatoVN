@@ -48,6 +48,22 @@ public sealed partial class ManageGalgamePageLayoutDialog : ContentDialog
     public bool GalgamePageNewLayout_ShowTags { get; set; }
     public bool GalgamePageNewLayout_ShowCharacters { get; set; }
 
+    // 记录初始值，仅保存发生变化的键
+    private DisplayName _initialPrimaryTitleType;
+    private DisplayName _initialSecondaryTitleType;
+    private bool _initialNewLayout;
+    private bool _initialShowPainter;
+    private bool _initialShowSeiyu;
+    private bool _initialShowWriter;
+    private bool _initialShowMusician;
+    private bool _initialShowBackground;
+    private bool _initialShowCover;
+    private bool _initialShowCoverWhenNoBackground;
+    private bool _initialShowExpectedPlayTime;
+    private bool _initialShowRating;
+    private bool _initialShowTags;
+    private bool _initialShowCharacters;
+
     public ManageGalgamePageLayoutDialog()
     {
         InitializeComponent();
@@ -119,41 +135,69 @@ public sealed partial class ManageGalgamePageLayoutDialog : ContentDialog
     {
         // 直接读取DisplayName枚举值
         GalgamePagePrimaryTitleType = await _localSettingsService.ReadSettingAsync<DisplayName>(KeyValues.GalgamePagePrimaryTitleType);
+        _initialPrimaryTitleType = GalgamePagePrimaryTitleType;
         GalgamePageSecondaryTitleType = await _localSettingsService.ReadSettingAsync<DisplayName>(KeyValues.GalgamePageSecondaryTitleType);
+        _initialSecondaryTitleType = GalgamePageSecondaryTitleType;
         
         GalgamePageNewLayout = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout);
+        _initialNewLayout = GalgamePageNewLayout;
         GalgamePageNewLayout_ShowPainter = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowPainter);
+        _initialShowPainter = GalgamePageNewLayout_ShowPainter;
         GalgamePageNewLayout_ShowSeiyu = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowSeiyu);
+        _initialShowSeiyu = GalgamePageNewLayout_ShowSeiyu;
         GalgamePageNewLayout_ShowWriter = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowWriter);
+        _initialShowWriter = GalgamePageNewLayout_ShowWriter;
         GalgamePageNewLayout_ShowMusician = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowMusician);
+        _initialShowMusician = GalgamePageNewLayout_ShowMusician;
         GalgamePageNewLayout_ShowBackground = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowHeaderImage);
+        _initialShowBackground = GalgamePageNewLayout_ShowBackground;
         GalgamePageNewLayout_ShowCover = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_CoverImage);
+        _initialShowCover = GalgamePageNewLayout_ShowCover;
         GalgamePageNewLayout_ShowCoverWhenNoBackground = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowCoverWhenNoBackground);
+        _initialShowCoverWhenNoBackground = GalgamePageNewLayout_ShowCoverWhenNoBackground;
         GalgamePageNewLayout_ShowExpectedPlayTime = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowExpectedPlayTime);
+        _initialShowExpectedPlayTime = GalgamePageNewLayout_ShowExpectedPlayTime;
         GalgamePageNewLayout_ShowRating = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowRating);
+        _initialShowRating = GalgamePageNewLayout_ShowRating;
         GalgamePageNewLayout_ShowTags = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowTags);
+        _initialShowTags = GalgamePageNewLayout_ShowTags;
         GalgamePageNewLayout_ShowCharacters = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GalgamePageNewLayout_ShowCharacters);
+        _initialShowCharacters = GalgamePageNewLayout_ShowCharacters;
     }
 
     private async void ManageGalgamePageLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         var deferral = args.GetDeferral();
 
-        // 直接保存DisplayName枚举值
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePagePrimaryTitleType, GalgamePagePrimaryTitleType);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageSecondaryTitleType, GalgamePageSecondaryTitleType);     
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout, GalgamePageNewLayout);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowPainter, GalgamePageNewLayout_ShowPainter);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowSeiyu, GalgamePageNewLayout_ShowSeiyu);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowWriter, GalgamePageNewLayout_ShowWriter);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowMusician, GalgamePageNewLayout_ShowMusician);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowHeaderImage, GalgamePageNewLayout_ShowBackground);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_CoverImage, GalgamePageNewLayout_ShowCover);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowCoverWhenNoBackground, GalgamePageNewLayout_ShowCoverWhenNoBackground);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowExpectedPlayTime, GalgamePageNewLayout_ShowExpectedPlayTime);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowRating, GalgamePageNewLayout_ShowRating);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowTags, GalgamePageNewLayout_ShowTags);
-        await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowCharacters, GalgamePageNewLayout_ShowCharacters);
+        // 仅保存发生变化的设置项
+        if (_initialPrimaryTitleType != GalgamePagePrimaryTitleType)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePagePrimaryTitleType, GalgamePagePrimaryTitleType);
+        if (_initialSecondaryTitleType != GalgamePageSecondaryTitleType)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageSecondaryTitleType, GalgamePageSecondaryTitleType);
+        if (_initialNewLayout != GalgamePageNewLayout)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout, GalgamePageNewLayout);
+        if (_initialShowPainter != GalgamePageNewLayout_ShowPainter)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowPainter, GalgamePageNewLayout_ShowPainter);
+        if (_initialShowSeiyu != GalgamePageNewLayout_ShowSeiyu)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowSeiyu, GalgamePageNewLayout_ShowSeiyu);
+        if (_initialShowWriter != GalgamePageNewLayout_ShowWriter)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowWriter, GalgamePageNewLayout_ShowWriter);
+        if (_initialShowMusician != GalgamePageNewLayout_ShowMusician)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowMusician, GalgamePageNewLayout_ShowMusician);
+        if (_initialShowBackground != GalgamePageNewLayout_ShowBackground)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowHeaderImage, GalgamePageNewLayout_ShowBackground);
+        if (_initialShowCover != GalgamePageNewLayout_ShowCover)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_CoverImage, GalgamePageNewLayout_ShowCover);
+        if (_initialShowCoverWhenNoBackground != GalgamePageNewLayout_ShowCoverWhenNoBackground)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowCoverWhenNoBackground, GalgamePageNewLayout_ShowCoverWhenNoBackground);
+        if (_initialShowExpectedPlayTime != GalgamePageNewLayout_ShowExpectedPlayTime)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowExpectedPlayTime, GalgamePageNewLayout_ShowExpectedPlayTime);
+        if (_initialShowRating != GalgamePageNewLayout_ShowRating)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowRating, GalgamePageNewLayout_ShowRating);
+        if (_initialShowTags != GalgamePageNewLayout_ShowTags)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowTags, GalgamePageNewLayout_ShowTags);
+        if (_initialShowCharacters != GalgamePageNewLayout_ShowCharacters)
+            await _localSettingsService.SaveSettingAsync(KeyValues.GalgamePageNewLayout_ShowCharacters, GalgamePageNewLayout_ShowCharacters);
 
         // 触发事件通知
         LayoutChanged?.Invoke(this, GalgamePageNewLayout);

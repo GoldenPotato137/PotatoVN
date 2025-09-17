@@ -2607,6 +2607,9 @@
   <data name="Career_Relation_Programmer" xml:space="preserve">
     <value>程序</value>
   </data>
+  <data name="Shell_Staff.Content" xml:space="preserve">
+    <value>制作人员</value>
+  </data>
   <data name="Shell_GalgameCharacter.Content" xml:space="preserve">
     <value>角色介绍</value>
   </data>
