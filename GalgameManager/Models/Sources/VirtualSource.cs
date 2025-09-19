@@ -1,4 +1,6 @@
-﻿namespace GalgameManager.Models.Sources;
+﻿using GalgameManager.Helpers;
+
+namespace GalgameManager.Models.Sources;
 
 /// <summary>
 /// 虚拟游戏库，仅用于游戏库界面，游戏列表是<b>动态构造</b>的，不要依赖它
@@ -17,6 +19,7 @@ public partial class VirtualSource : GalgameSourceBase
     public override bool IsGameAddable => false;
     public override bool IsSourceScanable => false;
     public override bool IsDelectable => false;
+    public override bool ApplySearchKey(string searchKey) => Path.ContainX(searchKey);
 
     public VirtualSource()
     {

@@ -1,4 +1,7 @@
-﻿namespace GalgameManager.Helpers;
+﻿using System;
+using System.Linq;
+
+namespace GalgameManager.Helpers;
 
 public class ExUri : Uri, IEquatable<ExUri>
 {

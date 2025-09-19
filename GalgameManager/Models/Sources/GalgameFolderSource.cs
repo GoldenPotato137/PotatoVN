@@ -67,6 +67,8 @@ public partial class GalgameFolderSource : GalgameSourceBase
         }
     }
 
+    public override bool ApplySearchKey(string searchKey) => Path.ContainX(searchKey);
+
     public override bool CanChangeScanOnStart => true;
     public override bool CanChangeCheckOnStart => true;
     public override bool CanChangeDetect => true;

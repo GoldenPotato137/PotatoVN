@@ -37,6 +37,8 @@ public class SteamSource : GalgameSourceBase
         foreach (DirectoryInfo gameDir in steamappsDir.GetDirectories())
             yield return (gameDir.FullName, "");
     }
-    
+
+    public override bool ApplySearchKey(string searchKey) => Path.ContainX(searchKey);
+
     public string MetaPath => System.IO.Path.Combine(Path, ".PotatoVN");
 }

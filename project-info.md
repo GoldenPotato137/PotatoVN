@@ -34,7 +34,7 @@ This document provides a high-level overview of the GalgameManager project, also
 *   **`crowdin.yml`**: Configuration for Crowdin, a localization management platform.
 *   **`.gitmodules`**: Indicates the use of Git submodules.
 *   **`docs/`**: Contains project documentation (FAQs, update content).
-*   **`PotatoVN.Doc/`**: Potentially more documentation specific to PotatoVN branding or features.
+*   **`PotatoVN.Doc/`**: Documentation repository with structured upgrade logs and usage guides. Uses VitePress-style documentation format with includes and front matter configuration.
 
 ### Other Key Directories (Not part of the main .sln but present in the repository):
 *   **`AuthServer/`**: Contains an authentication server, likely built with Flask (Python) based on `flaskapp.wsgi` and `app/__init__.py`. This appears to be a separate component.

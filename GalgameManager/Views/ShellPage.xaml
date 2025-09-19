@@ -239,6 +239,25 @@
                         </Grid>
                     </NavigationViewItem.Content>
                 </NavigationViewItem>
+                
+                <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.PluginViewModel"
+                    Width="70">
+                    <NavigationViewItem.Content>
+                        <Grid Width="60" Height="65" Margin="-12,0,-20,0">
+                            <control:ConditionalFontIcon Symbol="Add" FluentGlyph="&#xE74C;"
+                                                         FontSize="16"
+                                                         VerticalAlignment="Top"
+                                                         HorizontalAlignment="Center"
+                                                         Margin="0,18,0,0"/>
+                            <TextBlock x:Uid="Shell_Plugin"
+                                       HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                       FontSize="12"
+                                       TextAlignment="Center" TextWrapping="NoWrap"
+                                       Margin="0,0,0,16"/>
+                        </Grid>
+                    </NavigationViewItem.Content>
+                </NavigationViewItem>
 
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="GalgameManager.ViewModels.SettingsViewModel"

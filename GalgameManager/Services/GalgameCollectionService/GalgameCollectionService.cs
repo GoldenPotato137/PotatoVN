@@ -15,6 +15,7 @@ using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using GalgameManager.Views.Dialog;
+using GalgameManager.WinApp.Base.Contracts;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using LiteDB;
@@ -42,10 +43,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public event Action<Galgame>? GalgameChangedEvent;
     public bool IsPhrasing;
 
-    public IGalInfoPhraser[] PhraserList
+    public Dictionary<int, IGalInfoPhraser> PhraserList
     {
         get;
-    } = new IGalInfoPhraser[Galgame.PhraserNumber];
+    } = [];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
         IGalgameSourceCollectionService galgameSourceService, IInfoService infoService, IBgTaskService bgTaskService,
@@ -59,6 +60,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
         _bus = bus;
+        _bus.Register<PluginLoadArgs>(this, OnPluginLoaded);
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new(GetVndbData().Result);
@@ -778,6 +780,23 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             case KeyValues.MixedPhraserEnabled:
                 PhraserList[(int)RssType.Mixed].UpdateData(GetMixData());
                 break;
+        }
+    }
+    
+    private void OnPluginLoaded(object recipient, PluginLoadArgs message)
+    {
+        try
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            if (message.Plugin is not IParserProvider provider) return;
+            IGalInfoPhraser parser = provider.GetPhraser();
+            RssType type = parser.GetPhraseType();
+            PhraserList[(int)type] = parser;
+            EnumExtension.Register(type.GetType(), (int)type, provider.ParserName);
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(e: e);
         }
     }
     

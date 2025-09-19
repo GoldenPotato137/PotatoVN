@@ -33,6 +33,7 @@ public class PageService : IPageService
         Configure<AnnualReportViewModel, AnnualReportPage>();
         Configure<StaffViewModel, StaffPage>();
         Configure<ScanResultViewModel, ScanResultPage>();
+        Configure<PluginViewModel, PluginPage>();
     }
     
     private readonly Dictionary<string, Type> _pages = new();

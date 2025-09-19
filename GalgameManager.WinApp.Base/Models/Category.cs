@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using GalgameManager.Helpers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LiteDB;
 
 namespace GalgameManager.Models;
@@ -74,11 +76,6 @@ public partial class Category : ObservableObject
     public override string ToString()
     {
         return Name;
-    }
-    
-    public bool ApplySearchKey(string searchKey)
-    {
-        return Name.ContainX(searchKey);
     }
     
     public void UpdateLastPlayed()

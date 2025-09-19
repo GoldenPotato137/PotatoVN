@@ -1,4 +1,5 @@
-﻿using GalgameManager.Helpers;
+﻿using System.Collections.Generic;
+using GalgameManager.Helpers;
 
 namespace GalgameManager.Models;
 

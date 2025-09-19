@@ -114,6 +114,7 @@ public partial class App : Application
             services.AddSingleton<IVndbAuthService, VndbAuthService>();
             services.AddSingleton<ISteamService, SteamService>();
             services.AddSingleton<ISourceScanResultService, SourceScanResultService>();
+            services.AddSingleton<IPluginService, PluginService>();
             // Main Bus
             services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
@@ -163,8 +164,10 @@ public partial class App : Application
             services.AddTransient<GalgameCharacterViewModel>();
             services.AddTransient<StaffViewModel>();
             services.AddTransient<StaffPage>();
-            services.AddTransient<ScanResultViewModel>(); // Added ScanResultViewModel
-            services.AddTransient<ScanResultPage>(); // Added ScanResultPage
+            services.AddTransient<ScanResultViewModel>();
+            services.AddTransient<ScanResultPage>();
+            services.AddTransient<PluginViewModel>();
+            services.AddTransient<PluginPage>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

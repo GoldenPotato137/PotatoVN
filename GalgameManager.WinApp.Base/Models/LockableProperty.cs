@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Helpers;
 
 namespace GalgameManager.Models;
 
 public partial class LockableProperty<T> : ObservableObject, IComparable
 {
-    public event GenericDelegate<T?>? OnValueChanged;
+    public event Action<T?>? OnValueChanged;
     
     private T? _value;
 

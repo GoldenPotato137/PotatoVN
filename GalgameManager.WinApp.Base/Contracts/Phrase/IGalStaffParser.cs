@@ -1,5 +1,7 @@
-﻿using GalgameManager.Models;
-using GalgameManager.Models.BgTasks;
+﻿using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Phrase;
 

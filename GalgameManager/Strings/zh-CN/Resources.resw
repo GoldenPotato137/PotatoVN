@@ -3823,6 +3823,28 @@
   <data name="GalgameFolder_GetGalInFolder_SkippedByDontScanPaths" xml:space="preserve">
     <value>这是被忽略扫描的路径</value>
   </data>
+  <data name="Shell_Plugin.Text" xml:space="preserve">
+    <value>插件</value>
+  </data>
+  <data name="LoadPluginTask_Title" xml:space="preserve">
+    <value>加载插件任务</value>
+  </data>
+  <data name="LoadPluginTask_Loading" xml:space="preserve">
+    <value>正在加载以下目录的插件：
+{0}</value>
+  </data>
+  <data name="PathNotExist_Brief" xml:space="preserve">
+    <value>路径不存在</value>
+  </data>
+  <data name="PathNotExist" xml:space="preserve">
+    <value>路径 {0} 不存在</value>
+  </data>
+  <data name="PluginPage_Add.Label" xml:space="preserve">
+    <value>添加插件</value>
+  </data>
+  <data name="PluginPage_Add_Failed" xml:space="preserve">
+    <value>添加插件失败</value>
+  </data>
   <data name="GalgamePage_OpenInWeb.Label" xml:space="preserve">
     <value>第三方网站联动</value>
   </data>

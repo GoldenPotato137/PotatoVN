@@ -103,7 +103,6 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.1.240916" />
     <PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.1.240916" />
-    <PackageReference Include="CommunityToolkit.WinUI.Collections" Version="8.1.240916" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.241112-preview1" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" Version="8.1.240916" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.241112-preview1" />
@@ -119,7 +118,6 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.6" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="PotatoVN.Client" Version="1.0.11" />
     <PackageReference Include="PotatoVnDBMapper" Version="1.0.4" />
@@ -140,6 +138,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GalgameManager.Core\GalgameManager.Core.csproj" />
+    <ProjectReference Include="..\GalgameManager.WinApp.Base\GalgameManager.WinApp.Base.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
