@@ -356,6 +356,23 @@
                                     x:Uid="Settings_Game_AlwaysMuteInBackground"
                                     IsOn="{x:Bind ViewModel.AlwaysMuteInBackground, Mode=TwoWay}"/>
                             </control:Panel>
+                            <!-- 一键最小化（全局开关与快捷键） -->
+                            <control:Panel>
+                                <StackPanel Style="{StaticResource SettingStackPanelStyle}">
+                                    <local:SettingToggleSwitch
+                                        x:Uid="Settings_Game_AlwaysQuickMinimize"
+                                        IsOn="{x:Bind ViewModel.AlwaysQuickMinimize, Mode=TwoWay}"/>
+                                    <StackPanel>
+                                        <TextBlock x:Uid="SettingsPage_Game_MinimizeHotkeys_Title"/>
+                                        <TextBlock x:Uid="SettingsPage_Game_MinimizeHotkeys_Description"
+                                                   Style="{ThemeResource DescriptionTextStyle}"/>
+                                        <control:HotkeyInputBox
+                                            x:Uid="SettingsPage_Game_MinimizeHotkeys_HotkeyInputBox"
+                                            HotkeyKeys="{x:Bind ViewModel.QuickMinimizeHotkeyKeys, Mode=TwoWay}"
+                                            Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </control:Panel>
                             <!-- 记录游玩次数的最小游玩时长 -->
                             <control:Panel>
                                 <control:Setting x:Uid="SettingsPage_Game_MinPlayTimeRecordThreshold">

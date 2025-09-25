@@ -1,0 +1,43 @@
+﻿<Page
+    x:Class="GalgameManager.Views.PluginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:GalgameManager.Models"
+    xmlns:control="using:GalgameManager.Views.Control"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
+                    Margin="{StaticResource CommandBarMargin}">
+            <AppBarButton x:Uid="PluginPage_Add" Command="{x:Bind ViewModel.AddPluginCommand}">
+                <AppBarButton.Icon>
+                    <control:ConditionalFontIcon Symbol="Add" FluentGlyph="&#xE710;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+        </CommandBar>
+        
+        <ScrollView Grid.Row="1">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Plugins}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:PluginX">
+                        <control:Panel>
+                            <StackPanel>
+                                <TextBlock Text="{x:Bind Plugin.Info.Name}"/>
+                                <TextBlock
+                                    Text="{x:Bind Plugin.Info.Description}"
+                                    Style="{StaticResource DescriptionTextStyle}"/>
+                            </StackPanel>
+                        </control:Panel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollView>
+    </Grid>
+</Page>

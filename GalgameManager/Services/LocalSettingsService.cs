@@ -251,6 +251,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)true;
             case KeyValues.MagpieHotkeys:
                 return (T?)(object)new List<int>([(int)VirtualKey.LeftWindows, (int)VirtualKey.Shift, (int)VirtualKey.A]);
+            case KeyValues.QuickMinimizeHotkeys:
+                return (T?)(object)new List<int>([(int)VirtualKey.LeftWindows, (int)VirtualKey.Shift, (int)VirtualKey.F]);
             case KeyValues.PlayingWindowMode:
                 return (T?)(object)WindowMode.Minimize;
             case KeyValues.NotifyWhenGetGalgameInFolder:

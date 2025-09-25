@@ -45,6 +45,8 @@ public static class KeyValues
     public const string MinPlayTimeRecordThreshold = "minPlayTimeRecordThreshold"; //int, 记录一次游玩的最小游玩时长 (分钟)
     public const string GameMuteEnabled = "gameMuteEnabled"; //bool, 是否启用游戏静音功能
     public const string AlwaysMuteInBackground = "AlwaysMuteInBackground"; //bool, 是否无视各个游戏设置总是在后台时静音游戏
+    public const string QuickMinimizeHotkeys = "quickMinimizeHotkeys"; //List<int>, 一键最小化快捷键 VirtualKey codes
+    public const string AlwaysQuickMinimize = "AlwaysQuickMinimize"; //bool, 是否无视各个游戏设置总是启用一键最小化
     
     //启动与跳转相关
     public const string QuitStart = "quitStart"; //bool, 是否在jump list跳转打开游戏时启动游戏
@@ -62,6 +64,7 @@ public static class KeyValues
     public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
     public const string CategoryGroups = "categoryGroups"; // List<CategoryGroup>,分类组
     public const string MultiStreamPageList = "multiStreamPageList"; //List<IGalgameManager.MultiStreamPage.Lists.IList>, 主页列表
+    public const string PluginPaths = "pluginPaths"; // List<string>,插件路径列表
     //数据同步
     public const string PvnSyncTimestamp = "pvnSyncTimestamp"; //long, 上一次同步时间戳
     public const string PvnSyncStaffTimestamp = "pvnSyncStaffTimestamp"; //long, 上次同步staff的时间戳

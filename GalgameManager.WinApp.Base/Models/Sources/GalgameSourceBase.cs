@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using GalgameManager.Contracts;
 using GalgameManager.Helpers;
 using LiteDB;
@@ -202,10 +207,7 @@ public abstract partial class GalgameSourceBase : ObservableObject, IDisplayable
         yield break;
     }
 
-    public virtual bool ApplySearchKey(string searchKey)
-    {
-        return Path.ContainX(searchKey);
-    }
+    public abstract bool ApplySearchKey(string searchKey);
 
     public override string ToString() => Name;
 

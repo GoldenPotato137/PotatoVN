@@ -1,4 +1,6 @@
-﻿namespace GalgameManager.Enums;
+﻿using System;
+
+namespace GalgameManager.Enums;
 
 [Flags]
 public enum PvnUploadProperties

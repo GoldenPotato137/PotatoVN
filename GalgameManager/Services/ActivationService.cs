@@ -31,6 +31,7 @@ public class ActivationService : IActivationService
     private readonly IPageService _pageService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IPvnService _pvnService;
+    private readonly IPluginService _pluginService;
     private readonly IInfoService _infoService;
     
     public ActivationService(
@@ -41,7 +42,7 @@ public class ActivationService : IActivationService
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
         IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService, IPvnService pvnService,
-        IInfoService infoService, IStaffService staffService)
+        IInfoService infoService, IStaffService staffService, IPluginService pluginService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -59,6 +60,7 @@ public class ActivationService : IActivationService
         _pvnService = pvnService;
         _infoService = infoService;
         _staffService = staffService;
+        _pluginService = pluginService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -189,6 +191,7 @@ public class ActivationService : IActivationService
         if (activationArgs is AppActivationArguments { Kind: ExtendedActivationKind.StartupTask })
             activateWindow = !await _localSettingsService.ReadSettingAsync<bool>(KeyValues.MinToTrayWhenAutoStart);
         if (activateWindow) App.SetWindowMode(WindowMode.Normal);
+        await _pluginService.InitAsync();
         if (IsRestart() == false) _pvnService.Startup();
         if (IsRestart() == false) await _updateService.UpdateSettingsBadgeAsync();
         await _appCenterService.StartAsync();

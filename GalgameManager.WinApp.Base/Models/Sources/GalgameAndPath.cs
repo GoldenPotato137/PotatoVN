@@ -1,4 +1,5 @@
-﻿using GalgameManager.Enums;
+﻿using System;
+using GalgameManager.Enums;
 using LiteDB;
 using Newtonsoft.Json;
 

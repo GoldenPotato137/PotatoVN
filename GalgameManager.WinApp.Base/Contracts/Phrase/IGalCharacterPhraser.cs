@@ -1,4 +1,5 @@
-﻿using GalgameManager.Enums;
+﻿using System.Threading.Tasks;
+using GalgameManager.Enums;
 using GalgameManager.Models;
 
 namespace GalgameManager.Contracts.Phrase;

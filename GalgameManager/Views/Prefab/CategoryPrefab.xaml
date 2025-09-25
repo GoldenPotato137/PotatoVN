@@ -37,7 +37,7 @@
                   CornerRadius="10" HorizontalAlignment="Right"
                   Visibility="{x:Bind GameCntVisible, Mode=OneWay}">
                 <TextBlock Padding="5" 
-                           Text="{x:Bind Category.DisplayCount(), Mode=OneWay, FallbackValue={x:Null}}" />
+                           Text="{x:Bind Category.DisplayCount, Mode=OneWay, FallbackValue={x:Null}}" />
             </Grid>
         </Grid>
         <!-- 透明控件，确保右键时射线检测能够打到Item上 -->

@@ -4,16 +4,6 @@ using Microsoft.UI;
 
 namespace GalgameManager.Enums;
 
-public enum PlayType
-{
-    None,
-    Playing,
-    Played,
-    Shelved,
-    Abandoned,
-    WantToPlay
-}
-
 public static class PlayTypeHelper
 {
     public static string GetLocalized(this PlayType playType)

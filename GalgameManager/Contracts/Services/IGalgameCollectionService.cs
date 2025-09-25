@@ -30,7 +30,7 @@ public interface IGalgameCollectionService
     /// </summary>
     public event Action<Galgame>? PhrasedEvent2;
 
-    public IGalInfoPhraser[] PhraserList { get; }
+    public Dictionary<int, IGalInfoPhraser> PhraserList { get; }
 
     /// <summary>
     /// 添加一个游戏，注意捕获异常

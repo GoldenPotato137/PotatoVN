@@ -3142,4 +3142,7 @@ If play time can record correctly, just cancel this popup.
   <data name="SettingsPage_Rss_Mixed_Enable.Description" xml:space="preserve">
     <value>Configure which scrapers are enabled for mixed scraping</value>
   </data>
+  <data name="Shell_Plugin.Text" xml:space="preserve">
+    <value>Plugin</value>
+  </data>
 </root>

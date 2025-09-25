@@ -15,6 +15,7 @@ using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using GalgameManager.Views.Dialog;
+using GalgameManager.WinApp.Base.Contracts;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using LiteDB;
@@ -42,10 +43,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public event Action<Galgame>? GalgameChangedEvent;
     public bool IsPhrasing;
 
-    public IGalInfoPhraser[] PhraserList
+    public Dictionary<int, IGalInfoPhraser> PhraserList
     {
         get;
-    } = new IGalInfoPhraser[Galgame.PhraserNumber];
+    } = [];
 
     public GalgameCollectionService(ILocalSettingsService localSettingsService, IJumpListService jumpListService, 
         IGalgameSourceCollectionService galgameSourceService, IInfoService infoService, IBgTaskService bgTaskService,
@@ -59,6 +60,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
         _bus = bus;
+        _bus.Register<PluginLoadArgs>(this, OnPluginLoaded);
         
         BgmPhraser bgmPhraser = new(GetBgmData().Result);
         VndbPhraser vndbPhraser = new(GetVndbData().Result);
@@ -181,6 +183,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             if(selectedRss == RssType.None)
                 selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
             Galgame result = galgame;
+            // 根据传入的type要求，获取需要游戏信息、角色、封面
             if (type.HasFlag(GameParseType.GameInfo) || type.HasFlag(GameParseType.Character) || type.HasFlag(GameParseType.Image))
                 result = await ParseAsync(galgame, PhraserList[(int)selectedRss], type);
             if (requireConfirm)
@@ -236,8 +239,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         RssType selectedRss = rssType;
         if (selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None
-                ? LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result
+                ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType)
                 : galgame.RssType;
+        
+        
         Galgame result = await ParseAsync(galgame, PhraserList[(int)selectedRss], GameParseType.All);
         if (requireConfirm)
         {
@@ -313,6 +318,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         Galgame? tmp = await phraser.GetGalgameInfo(galgame);
         if (tmp == null) return galgame;
 
+        // 更新galgame信息，调用UI线程，通过属性的Set方法更新
         await UiThreadInvokeHelper.InvokeAsync(async () =>
         {
             galgame.RssType = phraser.GetPhraseType();
@@ -778,6 +784,23 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             case KeyValues.MixedPhraserEnabled:
                 PhraserList[(int)RssType.Mixed].UpdateData(GetMixData());
                 break;
+        }
+    }
+    
+    private void OnPluginLoaded(object recipient, PluginLoadArgs message)
+    {
+        try
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            if (message.Plugin is not IParserProvider provider) return;
+            IGalInfoPhraser parser = provider.GetPhraser();
+            RssType type = parser.GetPhraseType();
+            PhraserList[(int)type] = parser;
+            EnumExtension.Register(type.GetType(), (int)type, provider.ParserName);
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(e: e);
         }
     }
     

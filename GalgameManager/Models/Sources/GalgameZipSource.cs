@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using SystemPath = System.IO.Path;
 
 
@@ -62,4 +63,6 @@ public class GalgameZipSource : GalgameSourceBase
                 pathToCheck.Enqueue((subPath, currentDepth + 1));
         }
     }
+
+    public override bool ApplySearchKey(string searchKey) => Path.ContainX(searchKey);
 }

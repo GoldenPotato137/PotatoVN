@@ -96,22 +96,18 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser, IGalStaffPars
 
         _bus?.Send(new GalgameParsingEventArgs(galgame, GetWaitingMsg()));
         {
-            Dictionary<RssType, Task<Galgame?>?> tmp = new();
+            List<(RssType rssType, Task<Galgame?> task)> running = new List<(RssType rssType, Task<Galgame?> task)>();
             lock (lockObj)
                 foreach (var (rssType, task) in phraserTasks)
-                    tmp[rssType] = task;
-            foreach (var (rssType, task) in tmp)
-            {
-                try
-                {
                     if (task != null)
-                        await task;
-                }
-                catch (Exception)
-                {
-                    lock (lockObj)
-                        phraserTasks[rssType] = null;
-                }
+                        running.Add((rssType, task));
+            try
+            {
+                await Task.WhenAll(running.Select(t => t.task));
+            }
+            catch (Exception)
+            {
+                // ignore aggregate exceptions; handle per-task status below
             }
         }
         

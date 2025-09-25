@@ -1,4 +1,5 @@
-﻿using GalgameManager.Enums;
+﻿using System.Collections.Generic;
+using GalgameManager.Enums;
 
 namespace GalgameManager.Helpers;
 
