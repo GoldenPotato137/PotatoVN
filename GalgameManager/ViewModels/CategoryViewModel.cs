@@ -121,6 +121,21 @@ public partial class CategoryViewModel : ObservableObject, INavigationAware, ISe
         {
             SelectedCategoryGroup = await GetCategoryGroup();
         }
+
+        // 页面缓存：再次进入页面时刷新当前集合与按钮状态，保持滚动位置
+        if (SelectedCategoryGroup is not null)
+        {
+            CategoryGroup? latest = CategoryGroups.FirstOrDefault(c => c.Id == SelectedCategoryGroup.Id) ?? SelectedCategoryGroup;
+            if (Source.Source is ObservableCollection<Category> collection)
+                collection.SyncCollection(latest.Categories);
+            
+            CanDeleteCategoryGroup = latest.Type == CategoryGroupType.Custom;
+            CanAddCategory = latest.Type != CategoryGroupType.Status;
+            CanCombineCategory = latest.Type != CategoryGroupType.Status;
+            CanDeleteCategory = latest.Type != CategoryGroupType.Status;
+            
+            Source.RefreshFilter();
+        }
     }
 
     /// <summary>

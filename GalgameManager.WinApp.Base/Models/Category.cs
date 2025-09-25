@@ -40,16 +40,14 @@ public partial class Category : ObservableObject
         Name = name;
     }
 
-    public string DisplayCount()
-    {
-        return "×" + GalgamesX.Count;
-    }
+    public string DisplayCount => "×" + GalgamesX.Count;
 
     public void Add(Galgame galgame)
     {
         if (GalgamesX.Contains(galgame)) return;
         GalgamesX.Add(galgame);
         if (!galgame.Categories.Contains(this)) galgame.Categories.Add(this);
+        OnPropertyChanged(nameof(DisplayCount));
         OnGalgamesChanged?.Invoke();
     }
 
@@ -57,6 +55,7 @@ public partial class Category : ObservableObject
     {
         if (category == this) return;
         category.GalgamesX.ForEach(Add);
+        OnPropertyChanged(nameof(DisplayCount));
         OnGalgamesChanged?.Invoke();
     }
     
@@ -65,6 +64,7 @@ public partial class Category : ObservableObject
         if (!GalgamesX.Contains(galgame)) return;
         GalgamesX.Remove(galgame);
         galgame.Categories.Remove(this);
+        OnPropertyChanged(nameof(DisplayCount));
         OnGalgamesChanged?.Invoke();
     }
 

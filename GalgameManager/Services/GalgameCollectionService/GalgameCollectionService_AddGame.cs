@@ -67,6 +67,8 @@ public partial class GalgameCollectionService
             
             try
             {
+                // 新增游戏事件：用于分类服务在运行时将新游戏加入游玩状态/开发商分类
+                GalgameAddedEvent?.Invoke(meta);
                 PhrasedEvent2?.Invoke(meta);
                 GalgameChangedEvent?.Invoke(meta);
             }

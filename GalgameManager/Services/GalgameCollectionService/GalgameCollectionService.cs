@@ -183,6 +183,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
             if(selectedRss == RssType.None)
                 selectedRss = galgame.RssType == RssType.None ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType) : galgame.RssType;
             Galgame result = galgame;
+            // 根据传入的type要求，获取需要游戏信息、角色、封面
             if (type.HasFlag(GameParseType.GameInfo) || type.HasFlag(GameParseType.Character) || type.HasFlag(GameParseType.Image))
                 result = await ParseAsync(galgame, PhraserList[(int)selectedRss], type);
             if (requireConfirm)
@@ -238,8 +239,10 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         RssType selectedRss = rssType;
         if (selectedRss == RssType.None)
             selectedRss = galgame.RssType == RssType.None
-                ? LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType).Result
+                ? await LocalSettingsService.ReadSettingAsync<RssType>(KeyValues.RssType)
                 : galgame.RssType;
+        
+        
         Galgame result = await ParseAsync(galgame, PhraserList[(int)selectedRss], GameParseType.All);
         if (requireConfirm)
         {
@@ -315,6 +318,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         Galgame? tmp = await phraser.GetGalgameInfo(galgame);
         if (tmp == null) return galgame;
 
+        // 更新galgame信息，调用UI线程，通过属性的Set方法更新
         await UiThreadInvokeHelper.InvokeAsync(async () =>
         {
             galgame.RssType = phraser.GetPhraseType();
