@@ -410,4 +410,76 @@ public static class SaveDetectionConstants
 
         return false;
     }
+
+    /// <summary>
+    /// 获取便携式路径（使用环境变量或相对路径）
+    /// </summary>
+    public static string GetPortablePath(string path, string? localPath)
+    {
+        if (string.IsNullOrEmpty(path)) return path;
+
+        // 1. Local Path (Relative)
+        if (!string.IsNullOrEmpty(localPath) && path.StartsWith(localPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return Path.GetRelativePath(localPath, path);
+        }
+
+        // 2. Special Folders
+        var mappings = new Dictionary<string, string>
+        {
+            { Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "%AppData%" },
+            { Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "%LocalAppData%" },
+            { Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "%Documents%" },
+            { Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "%UserProfile%" },
+            { Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), "%LocalLow%" }
+        };
+
+        foreach (var mapping in mappings.OrderByDescending(m => m.Key.Length))
+        {
+            if (path.StartsWith(mapping.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                if (path.Length == mapping.Key.Length) return mapping.Value;
+                
+                if (path[mapping.Key.Length] == Path.DirectorySeparatorChar || path[mapping.Key.Length] == Path.AltDirectorySeparatorChar)
+                {
+                     var relative = path.Substring(mapping.Key.Length + 1);
+                     return $"{mapping.Value}/{relative}".Replace('\\', '/');
+                }
+            }
+        }
+
+        return path;
+    }
+
+    /// <summary>
+    /// 获取绝对路径（解析环境变量和相对路径）
+    /// </summary>
+    public static string GetAbsolutePath(string? path, string? localPath)
+    {
+        if (string.IsNullOrEmpty(path)) return string.Empty;
+        
+        var result = path;
+        
+        // 1. Special Folders
+        result = result.Replace("%AppData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), StringComparison.OrdinalIgnoreCase)
+                       .Replace("%LocalAppData%", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), StringComparison.OrdinalIgnoreCase)
+                       .Replace("%Documents%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), StringComparison.OrdinalIgnoreCase)
+                       .Replace("%UserProfile%", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), StringComparison.OrdinalIgnoreCase)
+                       .Replace("%LocalLow%", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), StringComparison.OrdinalIgnoreCase);
+
+        // 2. Relative Path
+        if (!Path.IsPathRooted(result) && !string.IsNullOrEmpty(localPath))
+        {
+            try 
+            {
+                result = Path.GetFullPath(Path.Combine(localPath, result));
+            }
+            catch
+            {
+                // ignore invalid path combination
+            }
+        }
+        
+        return result;
+    }
 }

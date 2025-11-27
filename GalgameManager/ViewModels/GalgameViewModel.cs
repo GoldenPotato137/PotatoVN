@@ -566,7 +566,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private async Task OpenSaveDirectory()
     {
         if (Item == null) return;
-        if (string.IsNullOrEmpty(Item.DetectedSavePosition))
+        if (string.IsNullOrWhiteSpace(Item.DetectedSavePosition))
         {
             _infoService.Info(InfoBarSeverity.Warning, "GalgamePage_NoSaveDirectoryDetected".GetLocalized(), displayTimeMs: 3000);
             return;
@@ -574,7 +574,13 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
         try
         {
-            await Launcher.LaunchUriAsync(new Uri(Item.DetectedSavePosition));
+            var absolutePath = SaveDetectionConstants.GetAbsolutePath(Item.DetectedSavePosition, Item.LocalPath);
+            if (string.IsNullOrWhiteSpace(absolutePath))
+            {
+                _infoService.Info(InfoBarSeverity.Error, "GalgamePage_OpenSaveDirectoryFailed".GetLocalized(), "GalgamePage_InvalidSavePath".GetLocalized());
+                return;
+            }
+            await Launcher.LaunchUriAsync(new Uri(absolutePath));
         }
         catch (Exception e)
         {

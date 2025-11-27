@@ -293,9 +293,10 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         {
             // 确定起始路径：如果已检测到存档位置则使用它，否则使用 AppData
             string initialPath;
-            if (!string.IsNullOrEmpty(Gal.DetectedSavePosition) && Directory.Exists(Gal.DetectedSavePosition))
+            var absolutePath = SaveDetectionConstants.GetAbsolutePath(Gal.DetectedSavePosition, Gal.LocalPath);
+            if (!string.IsNullOrEmpty(absolutePath) && Directory.Exists(absolutePath))
             {
-                initialPath = Gal.DetectedSavePosition;
+                initialPath = absolutePath;
             }
             else
             {
@@ -391,7 +392,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
         StorageFolder? folder = await folderPicker.PickSingleFolderAsync();
         if (folder is not null)
         {
-            Gal.DetectedSavePosition = folder.Path;
+            Gal.DetectedSavePosition = SaveDetectionConstants.GetPortablePath(folder.Path, Gal.LocalPath);
             await _galService.SaveGalgameAsync(Gal);
             _infoService.Info(InfoBarSeverity.Success, "GalgameSettingPage_SavePositionUpdated".GetLocalized(), displayTimeMs: 2000);
         }
