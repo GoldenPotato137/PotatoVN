@@ -26,14 +26,14 @@ public partial class PluginService
         public List<Galgame> GetAllGames() => _gameService.Galgames.ToList();
 
         #endregion
-        
+
         #region DATA
-        
+
         public Task<string?> GetDataAsync()
         {
             //Task包一层，防止调用方直接在UI线程调用
             return Task.Run(() =>
-            {   
+            {
                 PluginData? data = _pluginDataDb.FindById(plugin.Info.Id);
                 return data?.Data;
             });
@@ -59,7 +59,7 @@ public partial class PluginService
                     _pluginDataDb.Update(existing);
                 }
             });
-        }        
+        }
 
         #endregion
 
@@ -71,14 +71,14 @@ public partial class PluginService
 
         #region NOTIFICATION
 
-        public void Info(InfoBarSeverity infoBarSeverity, string? title = null, string? msg = null, int? displayTimeMs = 3000)  
+        public void Info(InfoBarSeverity infoBarSeverity, string? title = null, string? msg = null, int? displayTimeMs = 3000)
             => _infoService.Info(infoBarSeverity, title, msg, displayTimeMs);
 
         public void Event(InfoBarSeverity infoBarSeverity, string title, Exception? exception = null, string? msg = null,
             Action? callbackAction = null, string? callbackButtonText = null) =>
-            _infoService.Event(EventType.PluginEvent ,infoBarSeverity, title, exception, msg, callbackAction, callbackButtonText);
+            _infoService.Event(EventType.PluginEvent, infoBarSeverity, title, exception, msg, callbackAction, callbackButtonText);
 
-        public void DeveloperEvent(InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning, string? msg = null, Exception? e = null) 
+        public void DeveloperEvent(InfoBarSeverity infoBarSeverity = InfoBarSeverity.Warning, string? msg = null, Exception? e = null)
             => _infoService.DeveloperEvent(infoBarSeverity, msg, e);
 
         public void Log(InfoBarSeverity severity = InfoBarSeverity.Warning, string msg = "") =>
@@ -95,7 +95,7 @@ public partial class PluginService
         public T? GetBgTask<T>(string key) where T : BgTaskBase => _bgTaskService.GetBgTask<T>(key);
 
         #endregion
-        
+
         #region UTILS
 
         public async Task<string?> DownloadImageAsync(string imageUrl, string imageName, HttpClient? client,
@@ -109,8 +109,24 @@ public partial class PluginService
         }
 
         public string GetPluginPath() => plugin.Path;
-        
+
         public void InvokeOnMainThread(Action action) => UiThreadInvokeHelper.Invoke(action);
+
+        #endregion
+
+        #region LLM
+
+        private readonly LlmManagerService _llmManager = App.GetService<LlmManagerService>();
+
+        public async Task<ChatMessage> ChatAsync(string prompt)
+        {
+            return await _llmManager.ChatAsync(prompt);
+        }
+
+        public Task<BatchChatResponse> BatchChatAsync(string prompt)
+        {
+            return _llmManager.BatchChatAsync(prompt);
+        }
 
         #endregion
     }

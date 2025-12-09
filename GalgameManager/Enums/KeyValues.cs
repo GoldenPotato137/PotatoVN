@@ -31,16 +31,16 @@ public static class KeyValues
     public const string AutoExportPath = "autoExportPath"; //string, 导出路径
     public const string LastExportTime = "lastExportTime"; //DateTime, 上次导出时间
     public const string MaxBackupNumber = "maxBackupNumber"; //int, 最多保存备份数目
-    
+
     //账户相关
-    public const string BangumiAccount= "bangumiAccount"; //BgmAccount?, Bangumi账户, 若为null则未登录
+    public const string BangumiAccount = "bangumiAccount"; //BgmAccount?, Bangumi账户, 若为null则未登录
     public const string BangumiOAuthStateLastUpdate = "bangumiOAuthStateLastUpdate";
     public const string PvnServerType = "pvnServerType"; //enum: PvnServerType, 服务器类型（官方/自定义）
     public const string PvnServerEndpoint = "pvnServerEndpoint"; //string, 自定义服务器Url
     public const string PvnAccount = "pvnAccount"; //PvnAccount?, PotatoVN账户, 若为null则未登录
     public const string PvnAccountUserName = "pvnAccountUserName"; //string, PotatoVN账户名
     public const string VndbAccount = "vndbAccount"; //VndbAccount?, Vndb账户, 若为null则未登录
-    
+
     //游玩相关
     public const string RecordOnlyWhenForeground = "recordOnlyWhenForeground"; //bool, 是否只在游戏窗口在前台时记录游玩时间
     public const string PlayingWindowMode = "playingWindowMode"; // WindowMode,游玩时窗口模式
@@ -57,18 +57,18 @@ public static class KeyValues
     public const string GameSaveDetector = "gameSaveDetector";
 
     public const string AlwaysMuteInBackground = "AlwaysMuteInBackground"; //bool, 是否无视各个游戏设置总是在后台时静音游戏
-    
+
     //启动与跳转相关
     public const string QuitStart = "quitStart"; //bool, 是否在jump list跳转打开游戏时启动游戏
     public const string CategoryGroup = "categoryGroup"; // string，分类页展示的分类组
     public const string StartPage = "startPage"; // PageEnum,启动时显示的页面
     public const string AutoStartWhenLogin = "autoStartWhenLogin"; //bool, 是否开机自启
     public const string MinToTrayWhenAutoStart = "minToTrayWhenAutoStart"; //bool, 开机自启时是否最小化到托盘
-    
+
     //数据相关
     public const string GalgameSources = "galgameSources";
     ///int, 当前已经用到的最大的galgameSource的id
-    public const string GalgameSourcesId = "galgameSourcesId"; 
+    public const string GalgameSourcesId = "galgameSourcesId";
     public const string Galgames = "galgames";
     public const string Filters = "filters";
     public const string KeepFilters = "keepFilters"; //bool, 离开界面/关闭软件时是否保留筛选器
@@ -84,7 +84,7 @@ public static class KeyValues
     public const string SyncStaff = "syncStaff"; //bool, 是否同步staff
     public const string SyncHeaderImage = "syncHeaderImage"; //bool, 是否同步header图
     public const string ToDeleteStaff = "toDeleteStaff"; //List<int>, 待删除的staff pvn id
-    
+
     //搜刮设置
     public const string RssType = "rssType";
     public const string OverrideLocalName = "overrideLocalName";
@@ -94,7 +94,7 @@ public static class KeyValues
     public const string MixedPhraserOrder = "mixedPhraserOrder"; //MixedPhraserOrder,混合搜刮器的顺序
     public const string MixedPhraserEnabled = "mixedPhraserEnabled"; //MixedPhraserEnabled,混合搜刮器各个搜刮器的启用状态
     public const string VndbTranslateTags = "vndbTranslateTags"; //bool, 是否翻译VNDB标签
-    
+
     //显示相关
     public const string DisplayPlayTypePolygon = "displayPlayTypePolygon"; //bool, 游戏页是否显示游玩状态的小三角形
     public const string FixHorizontalPicture = "fixHorizontalPictrue"; //bool, 游戏页是否裁剪横图
@@ -134,17 +134,17 @@ public static class KeyValues
     public const string LibraryGameSortDescending = "LibraryGameSortDescending"; //bool, 是否降序排列，默认是false（升序）
     public const string LibraryFolderSortKey = "LibraryFolderSortKey"; //string, 库文件夹排序的key
     public const string LibraryFolderSortDescending = "LibraryFolderSortDescending"; //bool, 库文件夹是否降序排列
-    
+
     //游戏详情界面
     public const string NotifiedSteamNeedManual = "notifyedSteamNeedManual"; //bool, 是否已经通知过Steam游戏需要手动选择游戏进程
-    
+
     //消息通知相关 (最小化到托盘时是否通知/全局消息通知)
     public const string NotifyWhenGetGalgameInFolder = "notifyWhenGetGalgameInFolder"; //bool, 完成获取文件夹内游戏
     public const string EventGetGalgameInFolderEmpty = "eventGetGalgameInFolderEmpty"; //bool, 是否通知扫描游戏空事件（即没有新游戏）
     public const string NotifyWhenUnpackGame = "notifyWhenUnpackGame"; //bool, 完成解压游戏
     public const string EventPvnSyncNotify = "eventPvnSyncNotify"; //bool, 是否通知PotatoVN同步事件
     public const string EventPvnSyncEmptyNotify = "eventPvnSyncEmptyNotify"; //bool, 是否通知PotatoVN同步空事件（即已是最新）
-    
+
     //软件本体设置相关
     public const string MemoryImprove = "memoryImprove"; //bool, 是否启用内存优化
     public const string UploadData = "uploadData"; // bool,是否将匿名数据上传到AppCenter
@@ -170,11 +170,13 @@ public static class KeyValues
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
     public const string MixedPhraserOrderVersion = "mixedPhraserOrderVersion"; //int，当前配置中的混合搜刮器顺序的版本
-    
-    
+
+    //LLM相关
+    public const string LlMConfig = "LlMConfig"; // LlmConfig
+
     //废弃Key，只读，仅用于升级
     public const string BangumiToken = "bangumiToken";
-    public const string BangumiOAuthState= "bangumiOAuthState"; //BgmAccount?, Bangumi账户, 若为null则未登录
+    public const string BangumiOAuthState = "bangumiOAuthState"; //BgmAccount?, Bangumi账户, 若为null则未登录
     public const string GalgameFolders = "galgameFolders"; //旧游戏文件夹，仅用于升级
     public const string SyncTo = "syncTo"; //map<mac:string, id:int>，每台设备merge到的commit id
     public const string SearchChildFolderDepth = "searchChildFolderDepth"; //int, 搜索子文件夹的深度，默认是0（不搜索），新版本改成智能搜索，不需要这个了

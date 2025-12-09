@@ -42,11 +42,11 @@ public partial class App : Application
 
     public static T GetService<T>() where T : class
     {
-           if ((Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+        if ((Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
         return service;
     }
-    
+
     public static T GetResource<T>(string key)
     {
         if (Current.Resources[key] is not T resource)
@@ -57,7 +57,7 @@ public partial class App : Application
     private static Application _instance = null!;
     public static WindowEx? MainWindow { get; set; }
     public static TaskbarIcon? SystemTray { get; set; }
-    
+
     public static UIElement? AppTitlebar { get; set; }
     public static WindowMode Status = WindowMode.Booting;
     public static event Action? OnAppClosing;
@@ -74,7 +74,7 @@ public partial class App : Application
         {
             // Utils
             services.AddAutoMapper(typeof(App).Assembly);
-            
+
             // 启动跳转处理
             // 从前往后依次处理，直到找到能处理的处理器
             // Launch Activation Handlers
@@ -115,6 +115,8 @@ public partial class App : Application
             services.AddSingleton<ISteamService, SteamService>();
             services.AddSingleton<ISourceScanResultService, SourceScanResultService>();
             services.AddSingleton<IPluginService, PluginService>();
+            // Register LLM service
+            services.AddSingleton<ILlMService, LlmManagerService>();
             // Main Bus
             services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
@@ -191,7 +193,7 @@ public partial class App : Application
         if (Status != WindowMode.Booting)
             AppInstance.Restart("/safemode");
     }
-    
+
     /// <summary>
     /// 应用启动入口
     /// </summary>
@@ -208,7 +210,7 @@ public partial class App : Application
         await GetService<IActivationService>().LaunchedAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
     }
 
-    private async void OnActivated(object?_, AppActivationArguments arguments)
+    private async void OnActivated(object? _, AppActivationArguments arguments)
     {
         if (Status == WindowMode.Booting) return; // 应用启动时不响应激活，避免启动软件时启动多次
         await GetService<IActivationService>().HandleActivationAsync(arguments);
@@ -217,7 +219,7 @@ public partial class App : Application
             SetWindowMode(WindowMode.Normal);
         });
     }
-    
+
     /// <summary>
     /// 设置窗口模式<br/>
     /// <para>
@@ -235,7 +237,7 @@ public partial class App : Application
                 GetService<IPageService>().InitAsync();
                 MainWindow!.Activate();
                 MainWindow!.BringToFront();
-                MainWindow.Content.Visibility = Visibility.Visible; 
+                MainWindow.Content.Visibility = Visibility.Visible;
                 if (GetService<ILocalSettingsService>().ReadSettingAsync<string>(KeyValues.LastError)
                         .Result is { } error)
                 {

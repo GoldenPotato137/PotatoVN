@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.LLM;
 using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.WinApp.Base.Contracts;
@@ -13,7 +14,7 @@ public interface IPotatoVnApi
 {
     //与游戏相关的API
     #region GAMES
-    
+
     /// <summary>
     /// 获取所有游戏，这个列表只是一个快照（即后续添加的游戏或删除的游戏均不会在这个List中反馈）
     /// </summary>
@@ -21,7 +22,7 @@ public interface IPotatoVnApi
     public List<Galgame> GetAllGames();
 
     #endregion
-    
+
     //与插件数据存储相关的API
     #region DATA
 
@@ -30,7 +31,7 @@ public interface IPotatoVnApi
     /// </summary>
     /// <returns></returns>
     public Task<string?> GetDataAsync();
-    
+
     /// <summary>
     /// 保存本插件存储的数据
     /// </summary>
@@ -60,7 +61,7 @@ public interface IPotatoVnApi
     /// <param name="title"></param>
     /// <param name="msg"></param>
     /// <param name="displayTimeMs"></param>
-    public void Info(InfoBarSeverity infoBarSeverity, string? title = null, string? msg = null,int? displayTimeMs = 3000);
+    public void Info(InfoBarSeverity infoBarSeverity, string? title = null, string? msg = null, int? displayTimeMs = 3000);
 
     /// <summary>
     /// 记录并通知事件
@@ -114,8 +115,8 @@ public interface IPotatoVnApi
     public T? GetBgTask<T>(string key) where T : BgTaskBase;
 
     #endregion BG_TASKS
-    
-    
+
+
     #region UTILS
 
     /// <summary>
@@ -134,12 +135,30 @@ public interface IPotatoVnApi
     /// </summary>
     /// <returns></returns>
     public string GetPluginPath();
-    
+
     /// <summary>
     /// 在主线程执行某个操作（一般用于UI相关操作）
     /// </summary>
     /// <param name="action"></param>
     public void InvokeOnMainThread(Action action);
-    
+
+    #endregion
+
+    #region AI
+
+    /// <summary>
+    /// 使用AI进行对话
+    /// </summary>
+    /// <param name="prompt">用户提示</param>
+    /// <returns>AI响应消息</returns>
+    Task<ChatMessage> ChatAsync(string prompt);
+
+    /// <summary>
+    /// 批量AI对话 - 将同一个prompt发送给所有已配置的LLM
+    /// </summary>
+    /// <param name="prompt">用户提示</param>
+    /// <returns>所有LLM的响应结果</returns>
+    Task<BatchChatResponse> BatchChatAsync(string prompt);
+
     #endregion
 }
