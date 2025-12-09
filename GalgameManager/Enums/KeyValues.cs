@@ -1,4 +1,4 @@
-﻿namespace GalgameManager.Enums;
+namespace GalgameManager.Enums;
 
 public static class KeyValues
 {

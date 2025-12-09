@@ -10,6 +10,7 @@ using GalgameManager.Models;
 using GalgameManager.Services;
 using GalgameManager.ViewModels;
 using GalgameManager.Views;
+using GalgameManager.WinApp.Base.Contracts;
 using H.NotifyIcon;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
 using Microsoft.Extensions.DependencyInjection;

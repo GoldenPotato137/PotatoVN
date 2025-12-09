@@ -1,10 +1,11 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.LLM;
 using GalgameManager.WinApp.Base.Contracts;
 using LiteDB;
 using Microsoft.UI.Xaml.Controls;
@@ -118,14 +119,9 @@ public partial class PluginService
 
         private readonly LlmManagerService _llmManager = App.GetService<LlmManagerService>();
 
-        public async Task<ChatMessage> ChatAsync(string prompt)
+        public Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models)
         {
-            return await _llmManager.ChatAsync(prompt);
-        }
-
-        public Task<BatchChatResponse> BatchChatAsync(string prompt)
-        {
-            return _llmManager.BatchChatAsync(prompt);
+            return _llmManager.ChatLLMAsync(prompt, models);
         }
 
         #endregion

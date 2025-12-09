@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using GalgameManager.Enums;
 using GalgameManager.Models.LLM;
 using GalgameManager.WinApp.Base.Contracts;
 using Newtonsoft.Json.Linq;
@@ -11,22 +12,31 @@ namespace GalgameManager.Services;
 public class LocalLlmService : ILlMService
 {
     private readonly HttpClient _httpClient;
+    private LlMProvider _config = null!;
 
     public LocalLlmService()
     {
         _httpClient = new HttpClient();
     }
 
-    public async Task<ChatMessage> ChatAsync(string prompt)
+    public async Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models)
     {
         // This method should not be used directly
-        // Configuration should be passed through the ChatAsync(messages, config) method
-        throw new InvalidOperationException("LocalLlmService requires configuration. Use ChatAsync(messages, config) instead.");
+        // Configuration should be passed through the Initialize method
+        throw new InvalidOperationException("LocalLlmService requires configuration. Use Initialize() method first.");
     }
 
-    public async Task<ChatMessage> ChatAsync(List<ChatMessage> messages, LlMProvider config)
+    public void Initialize(LlMProvider config)
     {
-        var (endpoint, model) = ParseConfig(config);
+        _config = config;
+    }
+
+    public async Task<ChatResponse> ChatAsync(List<ChatMessage> messages)
+    {
+        if (_config == null)
+            throw new InvalidOperationException("LocalLlmService not initialized. Call Initialize() first.");
+
+        var (endpoint, model) = ParseConfig();
 
         // If no model specified, try to use a default
         if (string.IsNullOrEmpty(model))
@@ -49,15 +59,15 @@ public class LocalLlmService : ILlMService
         else
         {
             // Try to execute as command line (for llama.cpp etc.)
-            return await ChatWithCommandLine(messages, config);
+            return await ChatWithCommandLine(messages);
         }
     }
 
-    private (string endpoint, string model) ParseConfig(LlMProvider provider)
+    private (string endpoint, string model) ParseConfig()
     {
         // For local LLM, BaseUrl should contain the endpoint (e.g., http://localhost:11434)
-        var endpoint = provider.BaseUrl;
-        var model = provider.Model;
+        var endpoint = _config.BaseUrl;
+        var model = _config.Model;
 
         // Set default endpoint if not provided
         if (string.IsNullOrEmpty(endpoint))
@@ -69,7 +79,7 @@ public class LocalLlmService : ILlMService
         return (endpoint, model);
     }
 
-    private async Task<ChatMessage> ChatWithOllama(List<ChatMessage> messages, string endpoint, string model)
+    private async Task<ChatResponse> ChatWithOllama(List<ChatMessage> messages, string endpoint, string model)
     {
         var requestBody = new
         {
@@ -87,17 +97,38 @@ public class LocalLlmService : ILlMService
             Encoding.UTF8,
             "application/json");
 
-        var response = await _httpClient.PostAsync($"{endpoint}api/chat", content);
-        response.EnsureSuccessStatusCode();
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            var response = await _httpClient.PostAsync($"{endpoint}api/chat", content);
+            response.EnsureSuccessStatusCode();
 
-        var responseString = await response.Content.ReadAsStringAsync();
-        var json = JObject.Parse(responseString);
-        var messageContent = json["message"]?["content"]?.ToString() ?? string.Empty;
+            var responseString = await response.Content.ReadAsStringAsync();
+            var json = JObject.Parse(responseString);
+            var messageContent = json["message"]?["content"]?.ToString() ?? string.Empty;
 
-        return new ChatMessage(ChatRole.Assistant, messageContent);
+            stopwatch.Stop();
+            return ChatResponse.CreateSuccess(
+                _config.Type,
+                _config.Name,
+                ChatRole.Assistant,
+                messageContent,
+                stopwatch.ElapsedMilliseconds
+            );
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            return ChatResponse.CreateFailure(
+                _config.Type,
+                _config.Name,
+                ex.Message,
+                stopwatch.ElapsedMilliseconds
+            );
+        }
     }
 
-    private async Task<ChatMessage> ChatWithOpenAiCompatible(List<ChatMessage> messages, string endpoint, string model)
+    private async Task<ChatResponse> ChatWithOpenAiCompatible(List<ChatMessage> messages, string endpoint, string model)
     {
         var requestBody = new
         {
@@ -114,21 +145,42 @@ public class LocalLlmService : ILlMService
             Encoding.UTF8,
             "application/json");
 
-        var response = await _httpClient.PostAsync($"{endpoint}v1/chat/completions", content);
-        response.EnsureSuccessStatusCode();
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            var response = await _httpClient.PostAsync($"{endpoint}v1/chat/completions", content);
+            response.EnsureSuccessStatusCode();
 
-        var responseString = await response.Content.ReadAsStringAsync();
-        var json = JObject.Parse(responseString);
-        var messageContent = json["choices"]?[0]?["message"]?["content"]?.ToString() ?? string.Empty;
+            var responseString = await response.Content.ReadAsStringAsync();
+            var json = JObject.Parse(responseString);
+            var messageContent = json["choices"]?[0]?["message"]?["content"]?.ToString() ?? string.Empty;
 
-        return new ChatMessage(ChatRole.Assistant, messageContent);
+            stopwatch.Stop();
+            return ChatResponse.CreateSuccess(
+                _config.Type,
+                _config.Name,
+                ChatRole.Assistant,
+                messageContent,
+                stopwatch.ElapsedMilliseconds
+            );
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            return ChatResponse.CreateFailure(
+                _config.Type,
+                _config.Name,
+                ex.Message,
+                stopwatch.ElapsedMilliseconds
+            );
+        }
     }
 
-    private async Task<ChatMessage> ChatWithCommandLine(List<ChatMessage> messages, LlMProvider config)
+    private async Task<ChatResponse> ChatWithCommandLine(List<ChatMessage> messages)
     {
         // For command-line execution, we'll use the BaseUrl as the executable path
         // and ApiKey as additional parameters if needed
-        var exePath = config.BaseUrl;
+        var exePath = _config.BaseUrl;
 
         if (string.IsNullOrEmpty(exePath))
         {
@@ -141,29 +193,50 @@ public class LocalLlmService : ILlMService
         var startInfo = new ProcessStartInfo
         {
             FileName = exePath,
-            Arguments = $"--prompt \"{prompt}\" --model {config.Model}",
+            Arguments = $"--prompt \"{prompt}\" --model {_config.Model}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true
         };
 
-        using var process = Process.Start(startInfo);
-        if (process == null)
+        var stopwatch = Stopwatch.StartNew();
+        try
         {
-            throw new InvalidOperationException($"Failed to start process: {exePath}");
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                throw new InvalidOperationException($"Failed to start process: {exePath}");
+            }
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Process exited with code {process.ExitCode}: {error}");
+            }
+
+            stopwatch.Stop();
+            return ChatResponse.CreateSuccess(
+                _config.Type,
+                _config.Name,
+                ChatRole.Assistant,
+                output.Trim(),
+                stopwatch.ElapsedMilliseconds
+            );
         }
-
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-
-        if (process.ExitCode != 0)
+        catch (Exception ex)
         {
-            throw new InvalidOperationException($"Process exited with code {process.ExitCode}: {error}");
+            stopwatch.Stop();
+            return ChatResponse.CreateFailure(
+                _config.Type,
+                _config.Name,
+                ex.Message,
+                stopwatch.ElapsedMilliseconds
+            );
         }
-
-        return new ChatMessage(ChatRole.Assistant, output.Trim());
     }
 
     private async Task<string?> GetDefaultModel(string endpoint)

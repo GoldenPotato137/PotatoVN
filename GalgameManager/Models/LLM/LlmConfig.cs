@@ -55,7 +55,44 @@ public class LlMProvider
     public bool Enabled { get; set; } = true;
 
     /// <summary>
+    /// 系统提示词（用于设置AI的角色和行为）
+    /// </summary>
+    public string SystemPrompt { get; set; } = "";
+
+    /// <summary>
+    /// 用户预设提示词前缀（会自动添加到每个用户请求前）
+    /// </summary>
+    public string UserPromptPrefix { get; set; } = "";
+
+    /// <summary>
+    /// 用户预设提示词后缀（会自动添加到每个用户请求后）
+    /// </summary>
+    public string UserPromptSuffix { get; set; } = "";
+
+    /// <summary>
     /// 额外参数（如temperature、max_tokens等）
     /// </summary>
     public Dictionary<string, object> Parameters { get; set; } = new();
+
+    /// <summary>
+    /// 处理用户消息，添加预设的前缀和后缀
+    /// </summary>
+    /// <param name="userMessage">原始用户消息</param>
+    /// <returns>处理后的消息</returns>
+    public string ProcessUserMessage(string userMessage)
+    {
+        var result = userMessage;
+
+        if (!string.IsNullOrEmpty(UserPromptPrefix))
+        {
+            result = $"{UserPromptPrefix}\n\n{result}";
+        }
+
+        if (!string.IsNullOrEmpty(UserPromptSuffix))
+        {
+            result = $"{result}\n\n{UserPromptSuffix}";
+        }
+
+        return result;
+    }
 }

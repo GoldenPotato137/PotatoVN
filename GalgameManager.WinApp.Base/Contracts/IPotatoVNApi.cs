@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -144,21 +144,15 @@ public interface IPotatoVnApi
 
     #endregion
 
-    #region AI
+    #region LLM
 
     /// <summary>
-    /// 使用AI进行对话
+    /// 与LLM进行对话
     /// </summary>
-    /// <param name="prompt">用户提示</param>
-    /// <returns>AI响应消息</returns>
-    Task<ChatMessage> ChatAsync(string prompt);
-
-    /// <summary>
-    /// 批量AI对话 - 将同一个prompt发送给所有已配置的LLM
-    /// </summary>
-    /// <param name="prompt">用户提示</param>
-    /// <returns>所有LLM的响应结果</returns>
-    Task<BatchChatResponse> BatchChatAsync(string prompt);
+    /// <param name="prompt">用户提问</param>
+    /// <param name="models">可选的模型名称数组，如果传入则批量调用匹配的模型，不传则使用默认模型</param>
+    /// <returns>单个AI响应或批量响应</returns>
+    Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models);
 
     #endregion
 }
