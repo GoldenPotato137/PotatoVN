@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models.LLM;
@@ -27,20 +22,6 @@ public class LlmManagerService : ILlMService
         return _cachedConfig;
     }
 
-    private async Task<List<LlMProvider>> GetAllProvidersAsync()
-    {
-        var config = await GetConfigAsync();
-
-        // Ensure we have at least one provider
-        if (config.Providers.Count == 0)
-        {
-            await GetActiveProviderAsync(); // This will create a default provider
-            return (await GetConfigAsync()).Providers;
-        }
-
-        return config.Providers;
-    }
-
     private async Task<LlMProvider> GetActiveProviderAsync()
     {
         var config = await GetConfigAsync();
@@ -62,7 +43,7 @@ public class LlmManagerService : ILlMService
             provider = new LlMProvider
             {
                 Name = "Default OpenAI",
-                Type = "OpenAiService",
+                Type = LlMProviderType.OpenAiService,
                 BaseUrl = "https://api.openai.com/v1/",
                 Model = "gpt-3.5-turbo"
             };
@@ -100,19 +81,11 @@ public class LlmManagerService : ILlMService
         {
             var providerConfig = await GetActiveProviderAsync();
 
-            // 创建服务实例
-            var service = CreateServiceInstance(providerConfig.Type);
-
-            // 初始化服务配置
-            var initializeMethod = service.GetType().GetMethod("Initialize");
-            initializeMethod?.Invoke(service, new object[] { providerConfig });
-
             // 构建消息列表（包含系统提示词）
             var messages = BuildMessagesWithPrompts(prompt, providerConfig);
 
-            // 调用服务的ChatAsync方法
-            var chatMethod = service.GetType().GetMethod("ChatAsync");
-            var response = await (Task<ChatResponse>)chatMethod?.Invoke(service, new object[] { messages })!;
+            // 直接调用具体服务的ChatWithConfigAsync方法
+            var response = await CallServiceWithConfig(providerConfig.Type, messages, providerConfig);
 
             stopwatch.Stop();
             return response;
@@ -121,7 +94,7 @@ public class LlmManagerService : ILlMService
         {
             stopwatch.Stop();
             return ChatResponse.CreateFailure(
-                "Unknown",
+                LlMProviderType.OpenAiService,
                 "AI服务",
                 $"AI服务错误: {ex.Message}",
                 stopwatch.ElapsedMilliseconds
@@ -157,7 +130,7 @@ public class LlmManagerService : ILlMService
         {
             stopwatch.Stop();
             return ChatResponse.CreateFailure(
-                "System",
+                LlMProviderType.LocalLlmService,
                 "批量调用",
                 $"未找到匹配的已启用模型: {string.Join(", ", modelNames)}",
                 stopwatch.ElapsedMilliseconds
@@ -170,19 +143,11 @@ public class LlmManagerService : ILlMService
             var providerStopwatch = Stopwatch.StartNew();
             try
             {
-                // 创建服务实例
-                var service = CreateServiceInstance(provider.Type);
-
-                // 初始化服务配置
-                var initializeMethod = service.GetType().GetMethod("Initialize");
-                initializeMethod?.Invoke(service, new object[] { provider });
-
                 // 构建消息列表（包含系统提示词）
                 var messages = BuildMessagesWithPrompts(prompt, provider);
 
-                // 调用服务的ChatAsync方法
-                var chatMethod = service.GetType().GetMethod("ChatAsync");
-                var response = await (Task<ChatResponse>)chatMethod?.Invoke(service, new object[] { messages })!;
+                // 直接调用具体服务的ChatWithConfigAsync方法
+                var response = await CallServiceWithConfig(provider.Type, messages, provider);
 
                 providerStopwatch.Stop();
                 return response;
@@ -207,47 +172,20 @@ public class LlmManagerService : ILlMService
     }
 
     /// <summary>
-    /// 创建LLM服务实例
+    /// 调用具体服务的ChatWithConfigAsync方法
     /// </summary>
-    /// <param name="serviceType">服务类型名称</param>
-    /// <returns>服务实例</returns>
-    private object CreateServiceInstance(string serviceType)
+    /// <param name="providerType">服务提供者类型</param>
+    /// <param name="messages">消息列表</param>
+    /// <param name="config">提供者配置</param>
+    /// <returns>聊天响应</returns>
+    private async Task<ChatResponse> CallServiceWithConfig(LlMProviderType providerType, List<ChatMessage> messages, LlMProvider config)
     {
-        return serviceType switch
+        return providerType switch
         {
-            "OpenAiService" => new OpenAiService(),
-            "LocalLlmService" => new LocalLlmService(),
-            _ => CreateDynamicServiceInstance(serviceType)
+            LlMProviderType.OpenAiService => await new OpenAiService().ChatWithConfigAsync(messages, config),
+            LlMProviderType.LocalLlmService => await new LocalLlmService().ChatWithConfigAsync(messages, config),
+            _ => throw new NotSupportedException($"Provider type {providerType} is not supported")
         };
-    }
-
-    /// <summary>
-    /// 动态创建LLM服务实例
-    /// </summary>
-    /// <param name="serviceType">服务类型名称</param>
-    /// <returns>服务实例</returns>
-    private object CreateDynamicServiceInstance(string serviceType)
-    {
-        // Get current assembly
-        var assembly = Assembly.GetExecutingAssembly();
-
-        // Find the type
-        var type = assembly.GetTypes()
-            .FirstOrDefault(t => t.Name == serviceType);
-
-        if (type == null)
-        {
-            throw new TypeLoadException($"Provider type {serviceType} not found");
-        }
-
-        // Create instance
-        var service = Activator.CreateInstance(type);
-        if (service == null)
-        {
-            throw new InvalidOperationException($"Failed to create instance of {serviceType}");
-        }
-
-        return service;
     }
 
     /// <summary>
@@ -274,34 +212,20 @@ public class LlmManagerService : ILlMService
     }
 
     // Helper methods for the main application
-    public IReadOnlyList<string> GetAvailableProviders()
+    public IReadOnlyList<LlMProviderType> GetAvailableProviders()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        return assembly.GetTypes()
-            .Where(t => t.IsClass &&
-                       !t.IsAbstract &&
-                       t.GetMethods().Any(m => m.Name == "ChatAsync") &&
-                       t.GetMethods().Any(m => m.Name == "Initialize") &&
-                       t.Name != nameof(LlmManagerService))
-            .Select(t => t.Name)
-            .ToList();
+        return Enum.GetValues<LlMProviderType>().ToList();
     }
 
-    public object GetProviderService(string typeName)
+    public object GetProviderService(LlMProviderType providerType)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var type = assembly.GetTypes()
-            .FirstOrDefault(t => t.Name == typeName);
-
-        if (type == null)
+        return providerType switch
         {
-            throw new ArgumentException($"Provider {typeName} not found");
-        }
-
-        return Activator.CreateInstance(type)!;
+            LlMProviderType.OpenAiService => new OpenAiService(),
+            LlMProviderType.LocalLlmService => new LocalLlmService(),
+            _ => throw new NotSupportedException($"Provider type {providerType} is not supported")
+        };
     }
-
-
 
     /// <summary>
     /// 获取所有已启用的Provider名称

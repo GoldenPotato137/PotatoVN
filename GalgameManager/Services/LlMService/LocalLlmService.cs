@@ -12,7 +12,6 @@ namespace GalgameManager.Services;
 public class LocalLlmService : ILlMService
 {
     private readonly HttpClient _httpClient;
-    private LlMProvider _config = null!;
 
     public LocalLlmService()
     {
@@ -21,22 +20,16 @@ public class LocalLlmService : ILlMService
 
     public async Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models)
     {
-        // This method should not be used directly
-        // Configuration should be passed through the Initialize method
-        throw new InvalidOperationException("LocalLlmService requires configuration. Use Initialize() method first.");
+        // This method is called from LlmManagerService with direct config passing
+        throw new NotImplementedException("Use ChatWithConfigAsync method instead.");
     }
 
-    public void Initialize(LlMProvider config)
+    /// <summary>
+    /// 使用配置直接进行对话
+    /// </summary>
+    public async Task<ChatResponse> ChatWithConfigAsync(List<ChatMessage> messages, LlMProvider config)
     {
-        _config = config;
-    }
-
-    public async Task<ChatResponse> ChatAsync(List<ChatMessage> messages)
-    {
-        if (_config == null)
-            throw new InvalidOperationException("LocalLlmService not initialized. Call Initialize() first.");
-
-        var (endpoint, model) = ParseConfig();
+        var (endpoint, model) = ParseConfig(config);
 
         // If no model specified, try to use a default
         if (string.IsNullOrEmpty(model))
@@ -49,25 +42,25 @@ public class LocalLlmService : ILlMService
         if (endpoint.Contains("11434"))
         {
             // Ollama API format
-            return await ChatWithOllama(messages, endpoint, model);
+            return await ChatWithOllama(messages, endpoint, model, config);
         }
         else if (endpoint.Contains("api"))
         {
             // Generic OpenAI-compatible API format
-            return await ChatWithOpenAiCompatible(messages, endpoint, model);
+            return await ChatWithOpenAiCompatible(messages, endpoint, model, config);
         }
         else
         {
             // Try to execute as command line (for llama.cpp etc.)
-            return await ChatWithCommandLine(messages);
+            return await ChatWithCommandLine(messages, config);
         }
     }
 
-    private (string endpoint, string model) ParseConfig()
+    private (string endpoint, string model) ParseConfig(LlMProvider config)
     {
         // For local LLM, BaseUrl should contain the endpoint (e.g., http://localhost:11434)
-        var endpoint = _config.BaseUrl;
-        var model = _config.Model;
+        var endpoint = config.BaseUrl;
+        var model = config.Model;
 
         // Set default endpoint if not provided
         if (string.IsNullOrEmpty(endpoint))
@@ -79,7 +72,7 @@ public class LocalLlmService : ILlMService
         return (endpoint, model);
     }
 
-    private async Task<ChatResponse> ChatWithOllama(List<ChatMessage> messages, string endpoint, string model)
+    private async Task<ChatResponse> ChatWithOllama(List<ChatMessage> messages, string endpoint, string model, LlMProvider config)
     {
         var requestBody = new
         {
@@ -109,8 +102,8 @@ public class LocalLlmService : ILlMService
 
             stopwatch.Stop();
             return ChatResponse.CreateSuccess(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ChatRole.Assistant,
                 messageContent,
                 stopwatch.ElapsedMilliseconds
@@ -120,15 +113,15 @@ public class LocalLlmService : ILlMService
         {
             stopwatch.Stop();
             return ChatResponse.CreateFailure(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ex.Message,
                 stopwatch.ElapsedMilliseconds
             );
         }
     }
 
-    private async Task<ChatResponse> ChatWithOpenAiCompatible(List<ChatMessage> messages, string endpoint, string model)
+    private async Task<ChatResponse> ChatWithOpenAiCompatible(List<ChatMessage> messages, string endpoint, string model, LlMProvider config)
     {
         var requestBody = new
         {
@@ -157,8 +150,8 @@ public class LocalLlmService : ILlMService
 
             stopwatch.Stop();
             return ChatResponse.CreateSuccess(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ChatRole.Assistant,
                 messageContent,
                 stopwatch.ElapsedMilliseconds
@@ -168,19 +161,19 @@ public class LocalLlmService : ILlMService
         {
             stopwatch.Stop();
             return ChatResponse.CreateFailure(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ex.Message,
                 stopwatch.ElapsedMilliseconds
             );
         }
     }
 
-    private async Task<ChatResponse> ChatWithCommandLine(List<ChatMessage> messages)
+    private async Task<ChatResponse> ChatWithCommandLine(List<ChatMessage> messages, LlMProvider config)
     {
         // For command-line execution, we'll use the BaseUrl as the executable path
         // and ApiKey as additional parameters if needed
-        var exePath = _config.BaseUrl;
+        var exePath = config.BaseUrl;
 
         if (string.IsNullOrEmpty(exePath))
         {
@@ -193,7 +186,7 @@ public class LocalLlmService : ILlMService
         var startInfo = new ProcessStartInfo
         {
             FileName = exePath,
-            Arguments = $"--prompt \"{prompt}\" --model {_config.Model}",
+            Arguments = $"--prompt \"{prompt}\" --model {config.Model}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -220,8 +213,8 @@ public class LocalLlmService : ILlMService
 
             stopwatch.Stop();
             return ChatResponse.CreateSuccess(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ChatRole.Assistant,
                 output.Trim(),
                 stopwatch.ElapsedMilliseconds
@@ -231,8 +224,8 @@ public class LocalLlmService : ILlMService
         {
             stopwatch.Stop();
             return ChatResponse.CreateFailure(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ex.Message,
                 stopwatch.ElapsedMilliseconds
             );

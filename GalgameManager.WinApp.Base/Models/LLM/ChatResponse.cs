@@ -5,6 +5,22 @@ using GalgameManager.Enums;
 namespace GalgameManager.Models.LLM;
 
 /// <summary>
+/// LLM服务提供者类型枚举
+/// </summary>
+public enum LlMProviderType
+{
+    /// <summary>
+    /// OpenAI兼容服务
+    /// </summary>
+    OpenAiService,
+
+    /// <summary>
+    /// 本地LLM服务
+    /// </summary>
+    LocalLlmService
+}
+
+/// <summary>
 /// Chat消息
 /// </summary>
 public class ChatMessage
@@ -27,9 +43,9 @@ public class ChatMessage
 public class ChatResponse
 {
     /// <summary>
-    /// Provider名称
+    /// Provider类型
     /// </summary>
-    public string ProviderName { get; set; } = string.Empty;
+    public LlMProviderType ProviderType { get; set; }
 
     /// <summary>
     /// Provider显示名称
@@ -74,11 +90,11 @@ public class ChatResponse
     /// <summary>
     /// 创建单个成功响应
     /// </summary>
-    public static ChatResponse CreateSuccess(string providerName, string displayName, ChatRole role, string content, long responseTimeMs = 0)
+    public static ChatResponse CreateSuccess(LlMProviderType providerType, string displayName, ChatRole role, string content, long responseTimeMs = 0)
     {
         return new ChatResponse
         {
-            ProviderName = providerName,
+            ProviderType = providerType,
             DisplayName = displayName,
             IsSuccess = true,
             Role = role,
@@ -90,11 +106,11 @@ public class ChatResponse
     /// <summary>
     /// 创建失败响应
     /// </summary>
-    public static ChatResponse CreateFailure(string providerName, string displayName, string error, long responseTimeMs = 0)
+    public static ChatResponse CreateFailure(LlMProviderType providerType, string displayName, string error, long responseTimeMs = 0)
     {
         return new ChatResponse
         {
-            ProviderName = providerName,
+            ProviderType = providerType,
             DisplayName = displayName,
             IsSuccess = false,
             Role = ChatRole.Assistant,
@@ -111,7 +127,7 @@ public class ChatResponse
     {
         return new ChatResponse
         {
-            ProviderName = "Batch",
+            ProviderType = LlMProviderType.OpenAiService, // 批量响应使用默认类型
             DisplayName = "批量响应",
             IsSuccess = items.All(x => x.IsSuccess),
             Role = ChatRole.Assistant,

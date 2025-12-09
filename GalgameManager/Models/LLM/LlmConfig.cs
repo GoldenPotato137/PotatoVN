@@ -30,9 +30,9 @@ public class LlMProvider
     public string Name { get; set; } = "";
 
     /// <summary>
-    /// Provider类型（类名，如 "OpenAiService", "LocalLlmService"）
+    /// Provider类型
     /// </summary>
-    public string Type { get; set; } = "";
+    public LlMProviderType Type { get; set; } = LlMProviderType.OpenAiService;
 
     /// <summary>
     /// API基础URL

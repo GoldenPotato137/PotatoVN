@@ -13,7 +13,6 @@ namespace GalgameManager.Services;
 public class OpenAiService : ILlMService
 {
     private readonly HttpClient _httpClient;
-    private LlMProvider _config = null!;
 
     public OpenAiService()
     {
@@ -22,22 +21,16 @@ public class OpenAiService : ILlMService
 
     public async Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models)
     {
-        // This method should not be used directly
-        // Configuration should be passed through the Initialize method
-        throw new InvalidOperationException("OpenAiService requires configuration. Use Initialize() method first.");
+        // This method is called from LlmManagerService with direct config passing
+        throw new NotImplementedException("Use ChatWithConfigAsync method instead.");
     }
 
-    public void Initialize(LlMProvider config)
+    /// <summary>
+    /// 使用配置直接进行对话
+    /// </summary>
+    public async Task<ChatResponse> ChatWithConfigAsync(List<ChatMessage> messages, LlMProvider config)
     {
-        _config = config;
-    }
-
-    public async Task<ChatResponse> ChatAsync(List<ChatMessage> messages)
-    {
-        if (_config == null)
-            throw new InvalidOperationException("OpenAiService not initialized. Call Initialize() first.");
-
-        var (apiKey, baseUrl, model) = ParseConfig();
+        var (apiKey, baseUrl, model) = ParseConfig(config);
 
         var requestBody = new
         {
@@ -72,8 +65,8 @@ public class OpenAiService : ILlMService
 
             stopwatch.Stop();
             return ChatResponse.CreateSuccess(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ChatRole.Assistant,
                 messageContent,
                 stopwatch.ElapsedMilliseconds
@@ -83,19 +76,19 @@ public class OpenAiService : ILlMService
         {
             stopwatch.Stop();
             return ChatResponse.CreateFailure(
-                _config.Type,
-                _config.Name,
+                config.Type,
+                config.Name,
                 ex.Message,
                 stopwatch.ElapsedMilliseconds
             );
         }
     }
 
-    private (string apiKey, string baseUrl, string model) ParseConfig()
+    private (string apiKey, string baseUrl, string model) ParseConfig(LlMProvider config)
     {
-        var apiKey = _config.ApiKey;
-        var baseUrl = _config.BaseUrl;
-        var model = _config.Model;
+        var apiKey = config.ApiKey;
+        var baseUrl = config.BaseUrl;
+        var model = config.Model;
 
         if (!baseUrl.EndsWith("/")) baseUrl += "/";
         return (apiKey, baseUrl, model);
