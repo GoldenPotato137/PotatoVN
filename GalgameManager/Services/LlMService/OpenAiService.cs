@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
@@ -53,10 +47,10 @@ public class OpenAiService : ILlMService
 
         while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
         {
-            var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+            var charsRead = await reader.ReadAsync(buffer, cancellationToken);
             if (charsRead == 0) break;
 
-            for (int i = 0; i < charsRead; i++)
+            for (var i = 0; i < charsRead; i++)
             {
                 var c = buffer[i];
                 if (c == '\n')

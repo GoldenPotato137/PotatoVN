@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 using GalgameManager.Models.LLM;
 
 namespace GalgameManager.Services;
@@ -139,47 +140,81 @@ public class LlmManagerService : ILlMService
 
     private async IAsyncEnumerable<StreamingChatChunk> ChatSingleStreamInternalAsync(IEnumerable<ChatMessage> messages, LlMProvider provider, [EnumeratorCancellation] CancellationToken token)
     {
-        ILlMService service;
+        ILlMService? service = null;
+        StreamingChatChunk? errorChunk = null;
         try
         {
             service = await GetServiceInstanceAsync(provider);
         }
         catch (Exception ex)
         {
-            yield return ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
+            errorChunk = ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
+        }
+
+        if (errorChunk != null)
+        {
+            yield return errorChunk.Value;
             yield break;
         }
+
+        if (service == null) yield break;
 
         IAsyncEnumerator<StreamingChatChunk>? enumerator = null;
         try
         {
             enumerator = service.ChatStreamAsync(messages, token).GetAsyncEnumerator(token);
-            while (true)
-            {
-                // MoveNextAsync with timeout handling implicitly via token
-                if (!await enumerator.MoveNextAsync()) break;
-                
-                var chunk = enumerator.Current;
-                yield return chunk with { ProviderName = provider.Type.ToString(), DisplayName = provider.Name };
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            yield return ErrorChunk(provider.Type.ToString(), provider.Name, "Request timed out.");
         }
         catch (Exception ex)
         {
-            yield return ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
+            errorChunk = ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
         }
-        finally
+
+        if (errorChunk != null)
         {
-            if (enumerator != null) await enumerator.DisposeAsync();
+            yield return errorChunk.Value;
+            yield break;
         }
+        
+        while (true)
+        {
+            StreamingChatChunk? chunkToYield = null;
+            var shouldBreak = false;
+            try
+            {
+                if (!await enumerator!.MoveNextAsync())
+                {
+                    shouldBreak = true;
+                }
+                else
+                {
+                    var chunk = enumerator.Current;
+                    chunkToYield = chunk with { ProviderName = provider.Type.ToString(), DisplayName = provider.Name };
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                chunkToYield = ErrorChunk(provider.Type.ToString(), provider.Name, "Request timed out.");
+                shouldBreak = true;
+            }
+            catch (Exception ex)
+            {
+                chunkToYield = ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
+                shouldBreak = true;
+            }
+
+            if (chunkToYield != null)
+                yield return chunkToYield.Value;
+            
+            if (shouldBreak) break;
+        }
+
+        if (enumerator != null) await enumerator.DisposeAsync();
     }
 
     private async IAsyncEnumerable<StreamingChatChunk> ChatBatchStreamAsync(string prompt, List<LlMProvider> providers, [EnumeratorCancellation] CancellationToken token)
     {
         var activeEnumerators = new List<(IAsyncEnumerator<StreamingChatChunk> Enumerator, LlMProvider Provider, Task<bool> NextTask)>();
+        var initErrors = new List<StreamingChatChunk>();
 
         // Initialize all streams
         foreach (var provider in providers)
@@ -193,8 +228,13 @@ public class LlmManagerService : ILlMService
             }
             catch (Exception ex)
             {
-                yield return ErrorChunk(provider.Type.ToString(), provider.Name, $"Init failed: {ex.Message}");
+                initErrors.Add(ErrorChunk(provider.Type.ToString(), provider.Name, $"Init failed: {ex.Message}"));
             }
+        }
+
+        foreach (var error in initErrors)
+        {
+            yield return error;
         }
 
         try
@@ -209,18 +249,28 @@ public class LlmManagerService : ILlMService
                 
                 var (enumerator, provider, _) = activeEnumerators[index];
                 
-                bool hasMore = false;
+                var hasMore = false;
+                StreamingChatChunk? errorChunk = null;
+
                 try
                 {
                     hasMore = await completedTask;
                 }
                 catch (OperationCanceledException)
                 {
-                    yield return ErrorChunk(provider.Type.ToString(), provider.Name, "Timeout");
+                    errorChunk = ErrorChunk(provider.Type.ToString(), provider.Name, "Timeout");
                 }
                 catch (Exception ex)
                 {
-                    yield return ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
+                    errorChunk = ErrorChunk(provider.Type.ToString(), provider.Name, ex.Message);
+                }
+
+                if (errorChunk != null)
+                {
+                    yield return errorChunk.Value;
+                    await enumerator.DisposeAsync();
+                    activeEnumerators.RemoveAt(index);
+                    continue;
                 }
 
                 if (hasMore)
@@ -267,7 +317,7 @@ public class LlmManagerService : ILlMService
 
     private async Task<LlMConfig> GetConfigAsync()
     {
-        _cachedConfig ??= await _localSettingsService.ReadSettingAsync<LlMConfig>(KeyValues.LlmConfig) ?? new LlMConfig();
+        _cachedConfig ??= await _localSettingsService.ReadSettingAsync<LlMConfig>(KeyValues.LlMConfig) ?? new LlMConfig();
         return _cachedConfig;
     }
 
@@ -287,7 +337,7 @@ public class LlmManagerService : ILlMService
             };
             config.Providers.Add(provider);
             config.DefaultProvider = provider.Name;
-            await _localSettingsService.SaveSettingAsync(KeyValues.LlmConfig, config);
+            await _localSettingsService.SaveSettingAsync(KeyValues.LlMConfig, config);
             _cachedConfig = config;
         }
         return provider;

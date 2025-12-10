@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -8,6 +8,7 @@ using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.LLM;
 using LiteDB;
 using Microsoft.UI.Xaml.Controls;
+using GalgameManager.WinApp.Base.Contracts;
 
 namespace GalgameManager.Services;
 
