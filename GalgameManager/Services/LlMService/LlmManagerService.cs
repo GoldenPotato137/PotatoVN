@@ -1,15 +1,25 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using GalgameManager.Contracts.Services;
-using GalgameManager.Enums;
 using GalgameManager.Models.LLM;
-using GalgameManager.WinApp.Base.Contracts;
 
 namespace GalgameManager.Services;
 
+/// <summary>
+/// LLM管理器 - 只支持流式响应
+/// </summary>
 public class LlmManagerService : ILlMService
 {
     private readonly ILocalSettingsService _localSettingsService;
     private LlMConfig? _cachedConfig;
+
+    // 缓存的Service实例，避免重复创建
+    private readonly Dictionary<LlMProviderType, ILlMService> _serviceCache = new();
 
     public LlmManagerService(ILocalSettingsService localSettingsService)
     {
@@ -18,28 +28,17 @@ public class LlmManagerService : ILlMService
 
     private async Task<LlMConfig> GetConfigAsync()
     {
-        _cachedConfig ??= await _localSettingsService.ReadSettingAsync<LlMConfig>(KeyValues.LlMConfig) ?? new LlMConfig();
+        _cachedConfig ??= await _localSettingsService.ReadSettingAsync<LlMConfig>(KeyValues.LlmConfig) ?? new LlMConfig();
         return _cachedConfig;
     }
 
     private async Task<LlMProvider> GetActiveProviderAsync()
     {
         var config = await GetConfigAsync();
-
-        // Find the default provider
-        LlMProvider? provider = null;
-
-        if (!string.IsNullOrEmpty(config.DefaultProvider))
-        {
-            provider = config.Providers.FirstOrDefault(p => p.Name == config.DefaultProvider);
-        }
-
-        // If no default found or not specified, use the first provider
-        provider ??= config.Providers.FirstOrDefault();
+        var provider = config.Providers.FirstOrDefault(p => p.Name == config.DefaultProvider) ?? config.Providers.FirstOrDefault();
 
         if (provider == null)
         {
-            // Create a default one if none exists
             provider = new LlMProvider
             {
                 Name = "Default OpenAI",
@@ -49,73 +48,92 @@ public class LlmManagerService : ILlMService
             };
             config.Providers.Add(provider);
             config.DefaultProvider = provider.Name;
-            await _localSettingsService.SaveSettingAsync(KeyValues.LlMConfig, config);
+            await _localSettingsService.SaveSettingAsync(KeyValues.LlmConfig, config);
             _cachedConfig = config;
         }
 
         return provider;
     }
 
-    // ILlMService implementation
-    public async Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models)
+    /// <summary>
+    /// 流式对话实现
+    /// </summary>
+    public async IAsyncEnumerable<StreamingChatChunk> ChatStreamAsync(string prompt, string[]? models = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (models == null || models.Length == 0)
         {
-            // 单个模型调用 - 使用默认Provider
-            return await ChatWithSingleProvider(prompt);
+            // 单个Provider流式响应
+            await foreach (var chunk in ChatSingleStreamAsync(prompt, cancellationToken))
+            {
+                yield return chunk;
+            }
         }
         else
         {
-            // 批量模型调用
-            return await ChatWithMultipleProviders(prompt, models);
+            // 批量Provider流式响应
+            await foreach (var chunk in ChatBatchStreamAsync(prompt, models, cancellationToken))
+            {
+                yield return chunk;
+            }
         }
     }
 
     /// <summary>
-    /// 使用单个Provider进行对话
+    /// 单个Provider流式响应
     /// </summary>
-    private async Task<ChatResponse> ChatWithSingleProvider(string prompt)
+    private async IAsyncEnumerable<StreamingChatChunk> ChatSingleStreamAsync(string prompt, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        var providerConfig = await GetActiveProviderAsync();
         var stopwatch = Stopwatch.StartNew();
+
         try
         {
-            var providerConfig = await GetActiveProviderAsync();
-
-            // 构建消息列表（包含系统提示词）
+            // 构建消息列表
             var messages = BuildMessagesWithPrompts(prompt, providerConfig);
 
-            // 直接调用具体服务的ChatWithConfigAsync方法
-            var response = await CallServiceWithConfig(providerConfig.Type, messages, providerConfig);
+            // 获取或创建Service实例
+            var service = GetCachedService(providerConfig.Type);
 
-            stopwatch.Stop();
-            return response;
+            // 流式调用
+            await foreach (var chunk in service.ChatStreamAsync(messages, providerConfig, cancellationToken))
+            {
+                // 创建新的chunk，添加provider信息
+                yield return new StreamingChatChunk
+                {
+                    ProviderName = providerConfig.Type.ToString(),
+                    DisplayName = providerConfig.Name,
+                    Role = chunk.Role,
+                    Content = chunk.Content,
+                    IsEnd = chunk.IsEnd,
+                    Error = chunk.Error
+                };
+            }
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            return ChatResponse.CreateFailure(
-                LlMProviderType.OpenAiService,
-                "AI服务",
-                $"AI服务错误: {ex.Message}",
-                stopwatch.ElapsedMilliseconds
-            );
+            yield return new StreamingChatChunk
+            {
+                ProviderName = providerConfig.Type.ToString(),
+                DisplayName = providerConfig.Name,
+                Role = Enums.ChatRole.Assistant,
+                Error = $"AI服务错误: {ex.Message}",
+                IsEnd = true
+            };
         }
     }
 
     /// <summary>
-    /// 使用多个Provider进行批量对话
+    /// 批量Provider流式响应
     /// </summary>
-    private async Task<ChatResponse> ChatWithMultipleProviders(string prompt, string[] modelNames)
+    private async IAsyncEnumerable<StreamingChatChunk> ChatBatchStreamAsync(string prompt, string[] modelNames, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var config = await GetConfigAsync();
-        var stopwatch = Stopwatch.StartNew();
 
-        // 根据模型名称查找匹配的Providers
+        // 查找匹配的Providers
         var targetProviders = new List<LlMProvider>();
-
         foreach (var modelName in modelNames)
         {
-            // 优先按Name匹配
             var provider = config.Providers.FirstOrDefault(p =>
                 p.Enabled && (p.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase) ||
                                p.Model.Equals(modelName, StringComparison.OrdinalIgnoreCase)));
@@ -128,72 +146,104 @@ public class LlmManagerService : ILlMService
 
         if (targetProviders.Count == 0)
         {
-            stopwatch.Stop();
-            return ChatResponse.CreateFailure(
-                LlMProviderType.LocalLlmService,
-                "批量调用",
-                $"未找到匹配的已启用模型: {string.Join(", ", modelNames)}",
-                stopwatch.ElapsedMilliseconds
-            );
+            yield return new StreamingChatChunk
+            {
+                ProviderName = "System",
+                DisplayName = "批量响应",
+                Role = Enums.ChatRole.Assistant,
+                Error = $"未找到匹配的已启用模型: {string.Join(", ", modelNames)}",
+                IsEnd = true
+            };
+            yield break;
         }
 
-        // 创建批量任务
+        // 创建并发任务
         var tasks = targetProviders.Select(async provider =>
         {
-            var providerStopwatch = Stopwatch.StartNew();
             try
             {
-                // 构建消息列表（包含系统提示词）
                 var messages = BuildMessagesWithPrompts(prompt, provider);
-
-                // 直接调用具体服务的ChatWithConfigAsync方法
-                var response = await CallServiceWithConfig(provider.Type, messages, provider);
-
-                providerStopwatch.Stop();
-                return response;
+                var service = GetCachedService(provider.Type);
+                return await service.ChatStreamAsync(messages, provider, cancellationToken).ToListAsync();
             }
             catch (Exception ex)
             {
-                providerStopwatch.Stop();
-                return ChatResponse.CreateFailure(
-                    provider.Type,
-                    provider.Name,
-                    ex.Message,
-                    providerStopwatch.ElapsedMilliseconds
-                );
+                return new List<StreamingChatChunk>
+                {
+                    new StreamingChatChunk
+                    {
+                        ProviderName = provider.Type.ToString(),
+                        DisplayName = provider.Name,
+                        Role = Enums.ChatRole.Assistant,
+                        Error = ex.Message,
+                        IsEnd = true
+                    }
+                };
             }
         });
 
-        // 等待所有任务完成
+        // 等待所有任务开始
         var results = await Task.WhenAll(tasks);
 
-        stopwatch.Stop();
-        return ChatResponse.CreateBatch(results);
+        // 合并流式响应 - 按时间戳交错输出
+        await foreach (var chunk in MergeStreams(results))
+        {
+            yield return chunk;
+        }
     }
 
     /// <summary>
-    /// 调用具体服务的ChatWithConfigAsync方法
+    /// 合并多个流式响应
     /// </summary>
-    /// <param name="providerType">服务提供者类型</param>
-    /// <param name="messages">消息列表</param>
-    /// <param name="config">提供者配置</param>
-    /// <returns>聊天响应</returns>
-    private async Task<ChatResponse> CallServiceWithConfig(LlMProviderType providerType, List<ChatMessage> messages, LlMProvider config)
+    private static async IAsyncEnumerable<StreamingChatChunk> MergeStreams(List<List<StreamingChatChunk>> streams)
     {
-        return providerType switch
+        var enumerators = streams.Select(s => s.AsEnumerable()).ToList();
+        var enumeratorsQueue = new Queue<IEnumerator<StreamingChatChunk>>(enumerators);
+
+        while (enumeratorsQueue.Count > 0)
         {
-            LlMProviderType.OpenAiService => await new OpenAiService().ChatWithConfigAsync(messages, config),
-            LlMProviderType.LocalLlmService => await new LocalLlmService().ChatWithConfigAsync(messages, config),
-            _ => throw new NotSupportedException($"Provider type {providerType} is not supported")
-        };
+            var currentEnumerator = enumeratorsQueue.Dequeue();
+            if (currentEnumerator.MoveNext())
+            {
+                yield return currentEnumerator.Current;
+                enumeratorsQueue.Enqueue(currentEnumerator);
+            }
+            else
+            {
+                currentEnumerator.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取缓存的Service实例
+    /// </summary>
+    private ILlMService GetCachedService(LlMProviderType type)
+    {
+        if (_serviceCache.TryGetValue(type, out var service))
+        {
+            return service;
+        }
+
+        switch (type)
+        {
+            case LlMProviderType.OpenAiService:
+                service = new OpenAiService();
+                break;
+            case LlMProviderType.LocalLlmService:
+                service = new LocalLlmService();
+                break;
+            default:
+                throw new NotSupportedException($"Provider type {type} is not supported");
+        }
+
+        _serviceCache[type] = service;
+        return service;
     }
 
     /// <summary>
     /// 构建包含系统提示词和用户提示词的消息列表
     /// </summary>
-    /// <param name="userPrompt">原始用户提示</param>
-    /// <param name="config">Provider配置</param>
-    /// <returns>完整的消息列表</returns>
     private List<ChatMessage> BuildMessagesWithPrompts(string userPrompt, LlMProvider config)
     {
         var messages = new List<ChatMessage>();
@@ -201,12 +251,12 @@ public class LlmManagerService : ILlMService
         // 添加系统提示词（如果有）
         if (!string.IsNullOrEmpty(config.SystemPrompt))
         {
-            messages.Add(new ChatMessage(ChatRole.System, config.SystemPrompt));
+            messages.Add(new ChatMessage(Enums.ChatRole.System, config.SystemPrompt));
         }
 
         // 处理用户提示词（添加前缀和后缀）
         var processedPrompt = config.ProcessUserMessage(userPrompt);
-        messages.Add(new ChatMessage(ChatRole.User, processedPrompt));
+        messages.Add(new ChatMessage(Enums.ChatRole.User, processedPrompt));
 
         return messages;
     }
@@ -217,20 +267,14 @@ public class LlmManagerService : ILlMService
         return Enum.GetValues<LlMProviderType>().ToList();
     }
 
-    public object GetProviderService(LlMProviderType providerType)
+    public ILlMService GetProviderService(LlMProviderType providerType)
     {
-        return providerType switch
-        {
-            LlMProviderType.OpenAiService => new OpenAiService(),
-            LlMProviderType.LocalLlmService => new LocalLlmService(),
-            _ => throw new NotSupportedException($"Provider type {providerType} is not supported")
-        };
+        return GetCachedService(providerType);
     }
 
     /// <summary>
     /// 获取所有已启用的Provider名称
     /// </summary>
-    /// <returns>已启用的Provider名称列表</returns>
     public async Task<string[]> GetEnabledProviderNamesAsync()
     {
         var config = await GetConfigAsync();
@@ -238,5 +282,28 @@ public class LlmManagerService : ILlMService
             .Where(p => p.Enabled)
             .Select(p => p.Name)
             .ToArray();
+    }
+
+    /// <summary>
+    /// 清理缓存
+    /// </summary>
+    public void ClearCache()
+    {
+        foreach (var service in _serviceCache.Values)
+        {
+            if (service is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+        _serviceCache.Clear();
+    }
+
+    // ILlMService implementation - just forward to ChatStreamAsync with prompt
+    IAsyncEnumerable<StreamingChatChunk> Contracts.Services.ILlMService.ChatStreamAsync(List<ChatMessage> messages, LlMProvider config, CancellationToken cancellationToken)
+    {
+        // Convert messages back to prompt for simplicity
+        var prompt = string.Join("\n", messages.Select(m => $"{m.Role}: {m.Content}"));
+        return ChatStreamAsync(prompt, null, cancellationToken);
     }
 }

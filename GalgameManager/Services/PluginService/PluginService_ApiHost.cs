@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using Windows.Storage;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -6,7 +6,6 @@ using GalgameManager.Helpers;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.LLM;
-using GalgameManager.WinApp.Base.Contracts;
 using LiteDB;
 using Microsoft.UI.Xaml.Controls;
 
@@ -117,12 +116,8 @@ public partial class PluginService
 
         #region LLM
 
-        private readonly LlmManagerService _llmManager = App.GetService<LlmManagerService>();
-
-        public Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models)
-        {
-            return _llmManager.ChatLLMAsync(prompt, models);
-        }
+        public IAsyncEnumerable<StreamingChatChunk> ChatLLMStreamAsync(string prompt, string[]? models = null) =>
+            App.GetService<LlmManagerService>().ChatStreamAsync(prompt, models);
 
         #endregion
     }

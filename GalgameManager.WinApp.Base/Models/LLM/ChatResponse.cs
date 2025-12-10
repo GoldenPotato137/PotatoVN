@@ -1,24 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
 using GalgameManager.Enums;
+using System.Collections.Generic;
 
 namespace GalgameManager.Models.LLM;
-
-/// <summary>
-/// LLM服务提供者类型枚举
-/// </summary>
-public enum LlMProviderType
-{
-    /// <summary>
-    /// OpenAI兼容服务
-    /// </summary>
-    OpenAiService,
-
-    /// <summary>
-    /// 本地LLM服务
-    /// </summary>
-    LocalLlmService
-}
 
 /// <summary>
 /// Chat消息
@@ -38,101 +21,178 @@ public class ChatMessage
 }
 
 /// <summary>
-/// Chat响应结果（支持单个和批量响应）
+/// 流式聊天块
 /// </summary>
-public class ChatResponse
+public sealed class StreamingChatChunk
 {
     /// <summary>
-    /// Provider类型
+    /// Provider名称
     /// </summary>
-    public LlMProviderType ProviderType { get; set; }
+    public string ProviderName { get; init; } = "";
 
     /// <summary>
     /// Provider显示名称
     /// </summary>
-    public string DisplayName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 是否成功
-    /// </summary>
-    public bool IsSuccess { get; set; }
+    public string DisplayName { get; init; } = "";
 
     /// <summary>
     /// 消息角色
     /// </summary>
-    public ChatRole Role { get; set; }
+    public ChatRole Role { get; init; }
 
     /// <summary>
-    /// 响应内容
+    /// 内容块 - 使用ReadOnlyMemory避免字符串拷贝
     /// </summary>
-    public string Content { get; set; } = string.Empty;
+    public ReadOnlyMemory<char> Content { get; init; }
 
     /// <summary>
-    /// 错误信息
+    /// 内容的字符串表示
     /// </summary>
-    public string? Error { get; set; }
+    public string ContentString => Content.ToString();
 
+    /// <summary>
+    /// 是否为结束标记
+    /// </summary>
+    public bool IsEnd { get; init; }
+
+    /// <summary>
+    /// 错误信息（如果有）
+    /// </summary>
+    public string? Error { get; init; }
+
+    /// <summary>
+    /// 是否有错误
+    /// </summary>
+    public bool HasError => !string.IsNullOrEmpty(Error);
+}
+
+/// <summary>
+/// 批量流式聊天响应处理器
+/// </summary>
+public class BatchStreamingHandler : IDisposable
+{
+    private readonly Dictionary<string, StreamingChatState> _states = new();
+    private bool _disposed = false;
+
+    /// <summary>
+    /// 总数
+    /// </summary>
+    public int TotalCount { get; private set; }
+
+    /// <summary>
+    /// 完成数量
+    /// </summary>
+    public int CompletedCount { get; private set; }
+
+    /// <summary>
+    /// 错误数量
+    /// </summary>
+    public int ErrorCount => _states.Values.Count(s => s.HasError);
+
+    /// <summary>
+    /// 是否全部完成
+    /// </summary>
+    public bool AllCompleted => CompletedCount + ErrorCount >= TotalCount;
+
+    /// <summary>
+    /// 初始化批量响应
+    /// </summary>
+    public void Initialize(int totalCount)
+    {
+        TotalCount = totalCount;
+        _states.Clear();
+        CompletedCount = 0;
+    }
+
+    /// <summary>
+    /// 更新流式响应状态
+    /// </summary>
+    public void UpdateChunk(string providerName, StreamingChatChunk chunk)
+    {
+        if (!_states.TryGetValue(providerName, out var state))
+        {
+            state = new StreamingChatState();
+            _states[providerName] = state;
+        }
+
+        // 累积内容
+        if (!chunk.Content.IsEmpty)
+        {
+            state.AccumulatedContent += chunk.ContentString;
+        }
+
+        // 检查是否结束
+        if (chunk.IsEnd || chunk.HasError)
+        {
+            state.IsCompleted = true;
+            state.HasError = chunk.HasError;
+            state.Error = chunk.Error;
+            if (!chunk.HasError)
+            {
+                CompletedCount++;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取指定Provider的累积内容
+    /// </summary>
+    public string GetAccumulatedContent(string providerName)
+    {
+        return _states.TryGetValue(providerName, out var state) ? state.AccumulatedContent : "";
+    }
+
+    /// <summary>
+    /// 获取所有Provider的完成状态
+    /// </summary>
+    public IReadOnlyDictionary<string, StreamingChatState> GetStates()
+    {
+        return _states;
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _states.Clear();
+            _disposed = true;
+        }
+    }
+}
+
+/// <summary>
+/// 流式聊天状态
+/// </summary>
+public class StreamingChatState
+{
+    public string AccumulatedContent { get; set; } = "";
+    public bool IsCompleted { get; set; }
+    public bool HasError { get; set; }
+    public string Error { get; set; } = "";
+}
+
+/// <summary>
+/// 聊天元数据
+/// </summary>
+public class ChatMetadata
+{
     /// <summary>
     /// 响应时间（毫秒）
     /// </summary>
     public long ResponseTimeMs { get; set; }
 
     /// <summary>
-    /// 子响应集合（用于批量响应）
+    /// Token数量（如果支持）
     /// </summary>
-    public List<ChatResponse>? Items { get; set; }
+    public int TokenCount { get; set; }
 
     /// <summary>
-    /// 是否是批量响应
+    /// 模型名称
     /// </summary>
-    public bool IsBatch => Items?.Count > 0;
+    public string Model { get; set; } = "";
 
     /// <summary>
-    /// 创建单个成功响应
+    /// 额外参数
     /// </summary>
-    public static ChatResponse CreateSuccess(LlMProviderType providerType, string displayName, ChatRole role, string content, long responseTimeMs = 0)
-    {
-        return new ChatResponse
-        {
-            ProviderType = providerType,
-            DisplayName = displayName,
-            IsSuccess = true,
-            Role = role,
-            Content = content,
-            ResponseTimeMs = responseTimeMs
-        };
-    }
-
-    /// <summary>
-    /// 创建失败响应
-    /// </summary>
-    public static ChatResponse CreateFailure(LlMProviderType providerType, string displayName, string error, long responseTimeMs = 0)
-    {
-        return new ChatResponse
-        {
-            ProviderType = providerType,
-            DisplayName = displayName,
-            IsSuccess = false,
-            Role = ChatRole.Assistant,
-            Content = string.Empty,
-            Error = error,
-            ResponseTimeMs = responseTimeMs
-        };
-    }
-
-    /// <summary>
-    /// 创建批量响应
-    /// </summary>
-    public static ChatResponse CreateBatch(IEnumerable<ChatResponse> items)
-    {
-        return new ChatResponse
-        {
-            ProviderType = LlMProviderType.OpenAiService, // 批量响应使用默认类型
-            DisplayName = "批量响应",
-            IsSuccess = items.All(x => x.IsSuccess),
-            Role = ChatRole.Assistant,
-            Content = string.Empty,
-            Items = items.ToList()
-        };
-    }
+    public Dictionary<string, object> Parameters { get; set; } = new();
 }

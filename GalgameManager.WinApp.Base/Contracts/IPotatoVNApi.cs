@@ -147,12 +147,12 @@ public interface IPotatoVnApi
     #region LLM
 
     /// <summary>
-    /// 与LLM进行对话
+    /// 与LLM进行流式对话
     /// </summary>
-    /// <param name="prompt">用户提问</param>
-    /// <param name="models">可选的模型名称数组，如果传入则批量调用匹配的模型，不传则使用默认模型</param>
-    /// <returns>单个AI响应或批量响应</returns>
-    Task<ChatResponse> ChatLLMAsync(string prompt, params string[] models);
+    /// <param name="prompt">用户提示</param>
+    /// <param name="models">可选的模型名称数组</param>
+    /// <returns>流式响应</returns>
+    public IAsyncEnumerable<StreamingChatChunk> ChatLLMStreamAsync(string prompt, string[]? models = null);
 
     #endregion
 }
