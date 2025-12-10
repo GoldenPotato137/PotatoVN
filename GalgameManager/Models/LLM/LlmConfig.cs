@@ -4,6 +4,15 @@ using System.Collections.Generic;
 namespace GalgameManager.Models.LLM;
 
 /// <summary>
+/// LLM Provider类型
+/// </summary>
+public enum LlMProviderType
+{
+    OpenAI,
+    Local
+}
+
+/// <summary>
 /// LLM配置
 /// </summary>
 public class LlMConfig
@@ -32,7 +41,7 @@ public class LlMProvider
     /// <summary>
     /// Provider类型
     /// </summary>
-    public LlMProviderType Type { get; set; } = LlMProviderType.OpenAiService;
+    public LlMProviderType Type { get; set; } = LlMProviderType.OpenAI;
 
     /// <summary>
     /// API基础URL

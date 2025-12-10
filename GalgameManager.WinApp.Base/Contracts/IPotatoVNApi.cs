@@ -149,10 +149,9 @@ public interface IPotatoVnApi
     /// <summary>
     /// 与LLM进行流式对话
     /// </summary>
-    /// <param name="prompt">用户提示</param>
-    /// <param name="models">可选的模型名称数组</param>
+    /// <param name="request">LLM请求</param>
     /// <returns>流式响应</returns>
-    public IAsyncEnumerable<StreamingChatChunk> ChatLLMStreamAsync(string prompt, string[]? models = null);
+    public IAsyncEnumerable<StreamingChatChunk> ChatLLMStreamAsync(LlmRequest request);
 
     #endregion
 }

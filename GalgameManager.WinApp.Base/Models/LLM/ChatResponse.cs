@@ -6,24 +6,17 @@ namespace GalgameManager.Models.LLM;
 /// <summary>
 /// Chat消息
 /// </summary>
-public class ChatMessage
-{
-    public ChatRole Role { get; set; }
-    public string Content { get; set; } = string.Empty;
-
-    public ChatMessage() { }
-
-    public ChatMessage(ChatRole role, string content)
-    {
-        Role = role;
-        Content = content;
-    }
-}
+public record struct ChatMessage(ChatRole Role, string Content);
 
 /// <summary>
-/// 流式聊天块
+/// LLM 请求对象
 /// </summary>
-public sealed class StreamingChatChunk
+public record LlmRequest(string Prompt, string[]? Models = null);
+
+/// <summary>
+/// 流式聊天块 - 优化为结构体以减少GC压力
+/// </summary>
+public readonly record struct StreamingChatChunk
 {
     /// <summary>
     /// Provider名称
@@ -38,137 +31,29 @@ public sealed class StreamingChatChunk
     /// <summary>
     /// 消息角色
     /// </summary>
-    public ChatRole Role { get; init; }
+    public ChatRole Role { get; init; } = ChatRole.Assistant;
 
     /// <summary>
-    /// 内容块 - 使用ReadOnlyMemory避免字符串拷贝
+    /// 内容块
     /// </summary>
-    public ReadOnlyMemory<char> Content { get; init; }
-
-    /// <summary>
-    /// 内容的字符串表示
-    /// </summary>
-    public string ContentString => Content.ToString();
+    public string Content { get; init; } = "";
 
     /// <summary>
     /// 是否为结束标记
     /// </summary>
-    public bool IsEnd { get; init; }
+    public bool IsEnd { get; init; } = false;
 
     /// <summary>
     /// 错误信息（如果有）
     /// </summary>
-    public string? Error { get; init; }
+    public string? Error { get; init; } = null;
 
     /// <summary>
     /// 是否有错误
     /// </summary>
     public bool HasError => !string.IsNullOrEmpty(Error);
-}
 
-/// <summary>
-/// 批量流式聊天响应处理器
-/// </summary>
-public class BatchStreamingHandler : IDisposable
-{
-    private readonly Dictionary<string, StreamingChatState> _states = new();
-    private bool _disposed = false;
-
-    /// <summary>
-    /// 总数
-    /// </summary>
-    public int TotalCount { get; private set; }
-
-    /// <summary>
-    /// 完成数量
-    /// </summary>
-    public int CompletedCount { get; private set; }
-
-    /// <summary>
-    /// 错误数量
-    /// </summary>
-    public int ErrorCount => _states.Values.Count(s => s.HasError);
-
-    /// <summary>
-    /// 是否全部完成
-    /// </summary>
-    public bool AllCompleted => CompletedCount + ErrorCount >= TotalCount;
-
-    /// <summary>
-    /// 初始化批量响应
-    /// </summary>
-    public void Initialize(int totalCount)
-    {
-        TotalCount = totalCount;
-        _states.Clear();
-        CompletedCount = 0;
-    }
-
-    /// <summary>
-    /// 更新流式响应状态
-    /// </summary>
-    public void UpdateChunk(string providerName, StreamingChatChunk chunk)
-    {
-        if (!_states.TryGetValue(providerName, out var state))
-        {
-            state = new StreamingChatState();
-            _states[providerName] = state;
-        }
-
-        // 累积内容
-        if (!chunk.Content.IsEmpty)
-        {
-            state.AccumulatedContent += chunk.ContentString;
-        }
-
-        // 检查是否结束
-        if (chunk.IsEnd || chunk.HasError)
-        {
-            state.IsCompleted = true;
-            state.HasError = chunk.HasError;
-            state.Error = chunk.Error;
-            if (!chunk.HasError)
-            {
-                CompletedCount++;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 获取指定Provider的累积内容
-    /// </summary>
-    public string GetAccumulatedContent(string providerName)
-    {
-        return _states.TryGetValue(providerName, out var state) ? state.AccumulatedContent : "";
-    }
-
-    /// <summary>
-    /// 获取所有Provider的完成状态
-    /// </summary>
-    public IReadOnlyDictionary<string, StreamingChatState> GetStates()
-    {
-        return _states;
-    }
-
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _states.Clear();
-            _disposed = true;
-        }
-    }
-}
-
-/// <summary>
-/// 流式聊天状态
-/// </summary>
-public class StreamingChatState
-{
-    public string AccumulatedContent { get; set; } = "";
-    public bool IsCompleted { get; set; }
-    public bool HasError { get; set; }
-    public string Error { get; set; } = "";
+    public StreamingChatChunk() { }
 }
 
 /// <summary>

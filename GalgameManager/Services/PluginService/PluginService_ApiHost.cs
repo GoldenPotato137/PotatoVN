@@ -116,8 +116,8 @@ public partial class PluginService
 
         #region LLM
 
-        public IAsyncEnumerable<StreamingChatChunk> ChatLLMStreamAsync(string prompt, string[]? models = null) =>
-            App.GetService<LlmManagerService>().ChatStreamAsync(prompt, models);
+        public IAsyncEnumerable<StreamingChatChunk> ChatLLMStreamAsync(LlmRequest request) =>
+            App.GetService<LlmManagerService>().ChatStreamAsync(request.Prompt, request.Models);
 
         #endregion
     }

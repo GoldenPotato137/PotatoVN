@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -9,282 +11,231 @@ using System.Threading.Tasks;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models.LLM;
-using Newtonsoft.Json.Linq;
 
 namespace GalgameManager.Services;
 
 public class LocalLlmService : ILlMService
 {
     private readonly HttpClient _httpClient;
+    private readonly string _baseUrl;
+    private readonly string _model;
+    private readonly string _providerName;
+    private readonly LlMProviderType _providerType;
+    private readonly bool _isOllama;
 
-    public LocalLlmService()
+    public LocalLlmService(LlMProvider config)
     {
-        _httpClient = new HttpClient();
+        _httpClient = new HttpClient(); // Local requests don't need the default proxy/headers usually
+        _httpClient.Timeout = TimeSpan.FromMinutes(5); // Long timeout for local inference
+
+        var url = config.BaseUrl;
+        if (string.IsNullOrEmpty(url)) url = "http://localhost:11434";
+        if (!url.EndsWith("/")) url += "/";
+        
+        _baseUrl = url;
+        _model = config.Model;
+        _providerName = config.Name;
+        _providerType = config.Type;
+        _isOllama = url.Contains("11434"); // Simple heuristic
     }
 
-    /// <summary>
-    /// 流式对话实现
-    /// </summary>
-    public async IAsyncEnumerable<StreamingChatChunk> ChatStreamAsync(List<ChatMessage> messages, LlMProvider config, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<StreamingChatChunk> ChatStreamAsync(IEnumerable<ChatMessage> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var (endpoint, model) = ParseConfig(config);
+        var model = await ResolveModelAsync();
+        var endpoint = _isOllama ? "api/chat" : "v1/chat/completions";
+        var request = CreateRequest(endpoint, messages, model, true);
 
-        // If no model specified, try to use a default
-        if (string.IsNullOrEmpty(model))
-        {
-            model = await GetDefaultModel(endpoint) ?? "llama2";
-        }
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
 
-        // Try to detect the local LLM service type and format request accordingly
-        if (endpoint.Contains("11434"))
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var reader = new System.IO.StreamReader(stream);
+
+        var buffer = new char[8192];
+        var currentLine = new StringBuilder();
+
+        while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
         {
-            // Ollama API format
-            await foreach (var chunk in ChatStreamWithOllama(messages, endpoint, model, config, cancellationToken))
+            var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+            if (charsRead == 0) break;
+
+            for (int i = 0; i < charsRead; i++)
             {
-                yield return chunk;
+                var c = buffer[i];
+                if (c == '\n')
+                {
+                    var line = currentLine.ToString().Trim();
+                    currentLine.Clear();
+                    if (string.IsNullOrEmpty(line)) continue;
+
+                    StreamingChatChunk? chunk;
+                    if (_isOllama)
+                        chunk = ParseOllamaChunk(line);
+                    else
+                        chunk = ParseOpenAiChunk(line);
+
+                    if (chunk.HasValue) yield return chunk.Value;
+                }
+                else
+                {
+                    currentLine.Append(c);
+                }
             }
         }
-        else if (endpoint.Contains("api"))
+    }
+
+    public async Task<string> ChatAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
+    {
+        var model = await ResolveModelAsync();
+        var endpoint = _isOllama ? "api/chat" : "v1/chat/completions";
+        var request = CreateRequest(endpoint, messages, model, false);
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var jsonDoc = JsonDocument.Parse(responseString);
+        var root = jsonDoc.RootElement;
+
+        if (_isOllama)
         {
-            // Generic OpenAI-compatible API format
-            await foreach (var chunk in ChatStreamWithOpenAiCompatible(messages, endpoint, model, config, cancellationToken))
-            {
-                yield return chunk;
-            }
+            if (root.TryGetProperty("message", out var msg) && msg.TryGetProperty("content", out var content))
+                return content.GetString() ?? "";
         }
         else
         {
-            // Command line doesn't support true streaming, return error
-            yield return new StreamingChatChunk
+            if (root.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0)
             {
-                ProviderName = config.Type.ToString(),
-                DisplayName = config.Name,
-                Role = ChatRole.Assistant,
-                Error = "命令行模式不支持流式响应，请使用HTTP API",
-                IsEnd = true
-            };
-        }
-    }
-
-    private (string endpoint, string model) ParseConfig(LlMProvider config)
-    {
-        // For local LLM, BaseUrl should contain the endpoint (e.g., http://localhost:11434)
-        var endpoint = config.BaseUrl;
-        var model = config.Model;
-
-        // Set default endpoint if not provided
-        if (string.IsNullOrEmpty(endpoint))
-        {
-            endpoint = "http://localhost:11434"; // Default to Ollama endpoint
-        }
-
-        if (!endpoint.EndsWith("/")) endpoint += "/";
-        return (endpoint, model);
-    }
-
-    private async IAsyncEnumerable<StreamingChatChunk> ChatStreamWithOllama(List<ChatMessage> messages, string endpoint, string model, LlMProvider config, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var requestBody = new
-        {
-            model,
-            messages = messages.Select(m => new
-            {
-                role = m.Role.ToString().ToLower(),
-                content = m.Content
-            }).ToList(),
-            stream = true
-        };
-
-        var content = new StringContent(
-            System.Text.Json.JsonSerializer.Serialize(requestBody),
-            Encoding.UTF8,
-            "application/json");
-
-        try
-        {
-            using var response = await _httpClient.PostAsync($"{endpoint}api/chat", content, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            response.EnsureSuccessStatusCode();
-
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            using var reader = new System.IO.StreamReader(stream);
-
-            var buffer = new char[4096];
-            var currentLine = new StringBuilder();
-
-            while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
-            {
-                var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                if (charsRead == 0) break;
-
-                for (int i = 0; i < charsRead; i++)
-                {
-                    currentLine.Append(buffer[i]);
-                    if (buffer[i] == '\n')
-                    {
-                        var line = currentLine.ToString().Trim();
-                        currentLine.Clear();
-
-                        if (!string.IsNullOrEmpty(line))
-                        {
-                            try
-                            {
-                                using var jsonDoc = JsonDocument.Parse(line);
-                                var root = jsonDoc.RootElement;
-
-                                if (root.TryGetProperty("message", out var message) && message.TryGetProperty("content", out var contentElem))
-                                {
-                                    yield return new StreamingChatChunk
-                                    {
-                                        ProviderName = config.Type.ToString(),
-                                        DisplayName = config.Name,
-                                        Role = ChatRole.Assistant,
-                                        Content = (contentElem.GetString() ?? "").AsMemory(),
-                                        IsEnd = root.TryGetProperty("done", out var done) && done.GetBoolean()
-                                    };
-                                }
-                            }
-                            catch (JsonException)
-                            {
-                                // 忽略无效的JSON行
-                                continue;
-                            }
-                        }
-                    }
-                }
+                var choice = choices[0];
+                if (choice.TryGetProperty("message", out var message) && message.TryGetProperty("content", out var content))
+                    return content.GetString() ?? "";
             }
         }
-        catch (Exception ex)
-        {
-            yield return new StreamingChatChunk
-            {
-                ProviderName = config.Type.ToString(),
-                DisplayName = config.Name,
-                Role = ChatRole.Assistant,
-                Error = $"Ollama服务错误: {ex.Message}",
-                IsEnd = true
-            };
-        }
+
+        return "";
     }
 
-    private async IAsyncEnumerable<StreamingChatChunk> ChatStreamWithOpenAiCompatible(List<ChatMessage> messages, string endpoint, string model, LlMProvider config, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var requestBody = new
-        {
-            model,
-            messages = messages.Select(m => new
-            {
-                role = m.Role.ToString().ToLower(),
-                content = m.Content
-            }).ToList(),
-            stream = true
-        };
-
-        var content = new StringContent(
-            System.Text.Json.JsonSerializer.Serialize(requestBody),
-            Encoding.UTF8,
-            "application/json");
-
-        try
-        {
-            using var response = await _httpClient.PostAsync($"{endpoint}v1/chat/completions", content, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            response.EnsureSuccessStatusCode();
-
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            using var reader = new System.IO.StreamReader(stream);
-
-            var buffer = new char[4096];
-            var currentLine = new StringBuilder();
-
-            while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
-            {
-                var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                if (charsRead == 0) break;
-
-                for (int i = 0; i < charsRead; i++)
-                {
-                    currentLine.Append(buffer[i]);
-                    if (buffer[i] == '\n')
-                    {
-                        var line = currentLine.ToString().Trim();
-                        currentLine.Clear();
-
-                        if (line.StartsWith("data: "))
-                        {
-                            var data = line.Substring(6);
-                            if (data == "[DONE]")
-                            {
-                                yield return new StreamingChatChunk
-                                {
-                                    ProviderName = config.Type.ToString(),
-                                    DisplayName = config.Name,
-                                    Role = ChatRole.Assistant,
-                                    Content = ReadOnlyMemory<char>.Empty,
-                                    IsEnd = true
-                                };
-                                yield break;
-                            }
-
-                            try
-                            {
-                                using var jsonDoc = JsonDocument.Parse(data);
-                                var root = jsonDoc.RootElement;
-
-                                if (root.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0)
-                                {
-                                    var choice = choices[0];
-                                    if (choice.TryGetProperty("delta", out var delta))
-                                    {
-                                        var contentChunk = delta.TryGetProperty("content", out var contentElem) ? contentElem.GetString() : "";
-
-                                        yield return new StreamingChatChunk
-                                        {
-                                            ProviderName = config.Type.ToString(),
-                                            DisplayName = config.Name,
-                                            Role = ChatRole.Assistant,
-                                            Content = (contentChunk ?? "").AsMemory(),
-                                            IsEnd = false
-                                        };
-                                    }
-                                }
-                            }
-                            catch (JsonException)
-                            {
-                                // 忽略无效的JSON行
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            yield return new StreamingChatChunk
-            {
-                ProviderName = config.Type.ToString(),
-                DisplayName = config.Name,
-                Role = ChatRole.Assistant,
-                Error = $"本地API服务错误: {ex.Message}",
-                IsEnd = true
-            };
-        }
-    }
-
-    private async Task<string?> GetDefaultModel(string endpoint)
+    public async Task<bool> TestConnectionAsync()
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{endpoint}api/tags");
-            if (!response.IsSuccessStatusCode) return null;
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            var json = JObject.Parse(responseString);
-            var firstModel = json["models"]?.FirstOrDefault()?["name"]?.ToString();
-            return firstModel;
+            var endpoint = _isOllama ? "api/tags" : "v1/models";
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            using var response = await _httpClient.GetAsync(_baseUrl + endpoint, cts.Token);
+            return response.IsSuccessStatusCode;
         }
         catch
         {
-            return null;
+            return false;
         }
+    }
+
+    public async Task<string[]> GetModelsAsync()
+    {
+        try
+        {
+            var endpoint = _isOllama ? "api/tags" : "v1/models";
+            using var response = await _httpClient.GetAsync(_baseUrl + endpoint);
+            if (!response.IsSuccessStatusCode) return Array.Empty<string>();
+
+            var content = await response.Content.ReadAsStringAsync();
+            using var jsonDoc = JsonDocument.Parse(content);
+            
+            if (_isOllama)
+            {
+                if (jsonDoc.RootElement.TryGetProperty("models", out var models))
+                    return models.EnumerateArray()
+                        .Select(m => m.TryGetProperty("name", out var n) ? n.GetString() : null)
+                        .Where(x => x != null)
+                        .Cast<string>()
+                        .ToArray();
+            }
+            else
+            {
+                if (jsonDoc.RootElement.TryGetProperty("data", out var data))
+                    return data.EnumerateArray()
+                        .Select(m => m.TryGetProperty("id", out var id) ? id.GetString() : null)
+                        .Where(x => x != null)
+                        .Cast<string>()
+                        .ToArray();
+            }
+        }
+        catch { }
+        return Array.Empty<string>();
+    }
+
+    private async Task<string> ResolveModelAsync()
+    {
+        if (!string.IsNullOrEmpty(_model)) return _model;
+        var models = await GetModelsAsync();
+        return models.FirstOrDefault() ?? "llama2";
+    }
+
+    private HttpRequestMessage CreateRequest(string endpoint, IEnumerable<ChatMessage> messages, string model, bool stream)
+    {
+        var payload = new
+        {
+            model,
+            messages = messages.Select(m => new { role = m.Role.ToString().ToLower(), content = m.Content }).ToArray(),
+            stream
+        };
+
+        return new HttpRequestMessage(HttpMethod.Post, _baseUrl + endpoint)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+        };
+    }
+
+    private StreamingChatChunk? ParseOllamaChunk(string line)
+    {
+        try
+        {
+            using var jsonDoc = JsonDocument.Parse(line);
+            var root = jsonDoc.RootElement;
+            if (root.TryGetProperty("message", out var msg) && msg.TryGetProperty("content", out var content))
+            {
+                var isDone = root.TryGetProperty("done", out var done) && done.GetBoolean();
+                return new StreamingChatChunk
+                {
+                    ProviderName = _providerType.ToString(),
+                    DisplayName = _providerName,
+                    Role = ChatRole.Assistant,
+                    Content = content.GetString() ?? "",
+                    IsEnd = isDone
+                };
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    private StreamingChatChunk? ParseOpenAiChunk(string line)
+    {
+        if (!line.StartsWith("data: ")) return null;
+        var data = line.Substring(6);
+        if (data == "[DONE]") return new StreamingChatChunk { IsEnd = true, ProviderName = _providerType.ToString(), DisplayName = _providerName };
+
+        try
+        {
+            using var jsonDoc = JsonDocument.Parse(data);
+            var root = jsonDoc.RootElement;
+            if (root.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0)
+            {
+                var choice = choices[0];
+                if (choice.TryGetProperty("delta", out var delta) && delta.TryGetProperty("content", out var content))
+                {
+                    return new StreamingChatChunk
+                    {
+                        ProviderName = _providerType.ToString(),
+                        DisplayName = _providerName,
+                        Role = ChatRole.Assistant,
+                        Content = content.GetString() ?? "",
+                        IsEnd = false
+                    };
+                }
+            }
+        }
+        catch { }
+        return null;
     }
 }
