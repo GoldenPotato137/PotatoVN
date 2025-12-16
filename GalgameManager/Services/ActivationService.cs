@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
 using GalgameManager.Activation;
@@ -73,8 +73,43 @@ public class ActivationService : IActivationService
             if (activationArgs is AppActivationArguments args)
             {
                 await instances[0].RedirectActivationToAsync(args);
+
+                var isCommandLineAliasActivation = false;
+                if (args.Data is ILaunchActivatedEventArgs launchData)
+                {
+                    var argsString = launchData.Arguments?.Trim();
+                    if (!string.IsNullOrEmpty(argsString))
+                    {
+                        // Heuristic: Check if arguments start with a quoted executable path,
+                        // which is typical for AppExecutionAlias activations.
+                        if (argsString.StartsWith("\""))
+                        {
+                            var closingQuoteIndex = argsString.IndexOf('"', 1);
+                            // Ensure it's not just a single quoted argument, but a path followed by more stuff
+                            if (closingQuoteIndex != -1 && closingQuoteIndex < argsString.Length - 1)
+                            {
+                                isCommandLineAliasActivation = true;
+                            }
+                        }
+                    }
+                }
+
+                if (isCommandLineAliasActivation)
+                {
+                    // It's a command-line alias activation, exit forcefully to release the shell
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    // Not a command-line alias activation (e.g., JumpList, or other launches), use graceful exit
+                    Application.Current.Exit();
+                }
             }
-            Application.Current.Exit();
+            else
+            {
+                // Fallback if not AppActivationArguments (shouldn't happen for AppInstance.GetCurrent().GetActivatedEventArgs())
+                Application.Current.Exit(); // Default to graceful exit
+            }
             return;
         }
         

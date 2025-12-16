@@ -76,6 +76,13 @@
                   DisplayName="PotatoVN"/>
         </uap5:Extension>
 
+        <uap5:Extension
+          Category="windows.appExecutionAlias">
+          <uap5:AppExecutionAlias>
+            <uap5:ExecutionAlias Alias="galgamemanager.exe" />
+          </uap5:AppExecutionAlias>
+        </uap5:Extension>
+
         <uap3:Extension
                 Category="windows.protocol">
           <uap3:Protocol
