@@ -34,7 +34,7 @@ public class ActivationService : IActivationService
     private readonly IPvnService _pvnService;
     private readonly IPluginService _pluginService;
     private readonly IInfoService _infoService;
-    
+
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
         IGalgameSourceCollectionService galgameFolderCollectionService,
@@ -67,6 +67,7 @@ public class ActivationService : IActivationService
     public async Task LaunchedAsync(object activationArgs)
     {
         // 多实例启动，切换到第一实例，第一实例 App.OnActivated() 响应
+        // 如果检测到已有实例在运行，将当前激活参数重定向到主实例
         IList<AppInstance> instances = AppInstance.GetInstances();
         if (instances.Count > 1 && AppInstance.GetCurrent() != instances[0])
         {
@@ -74,18 +75,17 @@ public class ActivationService : IActivationService
             {
                 await instances[0].RedirectActivationToAsync(args);
 
+                // 检查是否是命令行别名启动
                 var isCommandLineAliasActivation = false;
                 if (args.Data is ILaunchActivatedEventArgs launchData)
                 {
                     var argsString = launchData.Arguments?.Trim();
                     if (!string.IsNullOrEmpty(argsString))
                     {
-                        // Heuristic: Check if arguments start with a quoted executable path,
-                        // which is typical for AppExecutionAlias activations.
+                        // 简单的启发式检查：命令行别名通常以带引号的 exe 路径开头
                         if (argsString.StartsWith("\""))
                         {
                             var closingQuoteIndex = argsString.IndexOf('"', 1);
-                            // Ensure it's not just a single quoted argument, but a path followed by more stuff
                             if (closingQuoteIndex != -1 && closingQuoteIndex < argsString.Length - 1)
                             {
                                 isCommandLineAliasActivation = true;
@@ -96,7 +96,8 @@ public class ActivationService : IActivationService
 
                 if (isCommandLineAliasActivation)
                 {
-                    // It's a command-line alias activation, exit forcefully to release the shell
+                    // 如果是命令行启动的第二实例，必须强制退出 (Exit 0)
+                    // 这样父进程 (CMD/PS) 才能知道命令已结束并释放光标
                     Environment.Exit(0);
                 }
                 else
@@ -112,7 +113,7 @@ public class ActivationService : IActivationService
             }
             return;
         }
-        
+
         // Execute tasks before activation.
         await InitializeAsync();
 
@@ -123,7 +124,7 @@ public class ActivationService : IActivationService
             {
                 Application.Current.Exit();
                 return;
-            } 
+            }
         }
 
         ImportWindow? importWindow = null;
@@ -184,7 +185,7 @@ public class ActivationService : IActivationService
         {
             await _bgTaskService.ResolvedBgTasksAsync();
         }
-        
+
         App.Status = WindowMode.SystemTray;
 
         // Execute tasks after activation.
@@ -216,7 +217,7 @@ public class ActivationService : IActivationService
             //防止有人手快按到页面内容
             App.MainWindow!.Content.Visibility = Visibility.Collapsed;
         }
-        
+
         //系统托盘
         App.GetResource<XamlUICommand>("SetWindowNormalCommand").ExecuteRequested += (_, _) =>
         {
@@ -298,10 +299,10 @@ public class ActivationService : IActivationService
                 {
                     await _localSettingsService.SaveSettingAsync(KeyValues.FontInstalled, checkBox.IsChecked);
                 };
-                
+
                 await dialog.ShowAsync();
             }
-            
+
             if (Utils.IsFontInstalled("Segoe Fluent Icons"))
                 await _localSettingsService.SaveSettingAsync(KeyValues.FontInstalled, true);
         }
@@ -329,7 +330,7 @@ public class ActivationService : IActivationService
         }
         return false;
     }
-    
+
     private static bool IsSafeMode()
     {
         AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();

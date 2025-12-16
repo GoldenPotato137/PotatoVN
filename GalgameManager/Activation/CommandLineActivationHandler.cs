@@ -1,3 +1,4 @@
+using System.Text;
 using Windows.ApplicationModel.Activation;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Models;
@@ -22,40 +23,26 @@ public class CommandLineActivationHandler : ActivationHandler<AppActivationArgum
         if (args.Kind != ExtendedActivationKind.Launch) return false;
         if (args.Data is not ILaunchActivatedEventArgs launchArgs) return false;
 
-        var fullArgs = launchArgs.Arguments.Trim();
-        var actualArgs = fullArgs;
+        var fullArgs = launchArgs.Arguments;
+        if (string.IsNullOrWhiteSpace(fullArgs)) return false;
 
-        // Extract actual arguments by handling the quoted executable path
-        if (fullArgs.StartsWith("\""))
+        // Robust parsing of arguments
+        var parsedArgs = ParseCommandLine(fullArgs);
+
+        foreach (var arg in parsedArgs)
         {
-            var closingQuoteIndex = fullArgs.IndexOf('\"', 1);
-            if (closingQuoteIndex != -1)
-            {
-                actualArgs = fullArgs.Substring(closingQuoteIndex + 1).TrimStart();
-            }
-        }
+            // Skip flags (like /detached, -debug, etc.)
+            if (arg.StartsWith("/") || arg.StartsWith("-")) continue;
 
-        if (string.IsNullOrEmpty(actualArgs)) return false;
+            // Skip likely executable paths (common in Execution Alias scenarios)
+            if (arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) continue;
 
-        try
-        {
-            var target = actualArgs.Trim();
-            // Remove quotes if present
-            if (target.StartsWith("\"") && target.EndsWith("\"") && target.Length >= 2)
-            {
-                target = target[1..^1];
-            }
-
-            // Direct UUID check (no /j prefix required)
-            if (Guid.TryParse(target, out var guid))
+            // Check if it's a UUID
+            if (Guid.TryParse(arg, out var guid))
             {
                 _game = _galgameCollectionService.GetGalgameFromUuid(guid);
-                return _game is not null;
+                if (_game != null) return true;
             }
-        }
-        catch (Exception)
-        {
-            return false;
         }
 
         return false;
@@ -69,5 +56,39 @@ public class CommandLineActivationHandler : ActivationHandler<AppActivationArgum
             StartGame = true
         });
         await Task.CompletedTask;
+    }
+
+    private static List<string> ParseCommandLine(string cmdLine)
+    {
+        var args = new List<string>();
+        if (string.IsNullOrWhiteSpace(cmdLine)) return args;
+
+        var currentArg = new StringBuilder();
+        bool inQuote = false;
+
+        for (int i = 0; i < cmdLine.Length; i++)
+        {
+            char c = cmdLine[i];
+            if (c == '"')
+            {
+                inQuote = !inQuote;
+            }
+            else if (char.IsWhiteSpace(c) && !inQuote)
+            {
+                if (currentArg.Length > 0)
+                {
+                    args.Add(currentArg.ToString());
+                    currentArg.Clear();
+                }
+            }
+            else
+            {
+                currentArg.Append(c);
+            }
+        }
+
+        if (currentArg.Length > 0) args.Add(currentArg.ToString());
+
+        return args;
     }
 }
