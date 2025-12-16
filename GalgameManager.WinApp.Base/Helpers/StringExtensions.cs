@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -44,7 +44,7 @@ public static class StringExtensions
             return 0;
         return (match / (double)n + match / (double)m + (match - swap / 2.0) / match) / 3.0;
     }
-    
+
     /// <summary>
     /// 计算两个字符串的编辑距离
     /// </summary>
@@ -69,10 +69,10 @@ public static class StringExtensions
 
         return dp[n, m];
     }
-    
+
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? str) => string.IsNullOrEmpty(str);
     public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
-    
+
     /// <summary>
     /// 移除字符串中的非法字符
     /// </summary>

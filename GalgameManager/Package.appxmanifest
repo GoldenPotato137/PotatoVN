@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -79,7 +79,7 @@
         <uap5:Extension
           Category="windows.appExecutionAlias">
           <uap5:AppExecutionAlias>
-            <uap5:ExecutionAlias Alias="galgamemanager.exe" />
+            <uap5:ExecutionAlias Alias="potatovn.exe" />
           </uap5:AppExecutionAlias>
         </uap5:Extension>
 

@@ -26,6 +26,9 @@ public class CommandLineActivationHandler : ActivationHandler<AppActivationArgum
         var fullArgs = launchArgs.Arguments;
         if (string.IsNullOrWhiteSpace(fullArgs)) return false;
 
+        // Avoid conflict with JumpListActivationHandler
+        if (fullArgs.StartsWith("/j")) return false;
+
         // Robust parsing of arguments
         var parsedArgs = ParseCommandLine(fullArgs);
 
@@ -53,7 +56,8 @@ public class CommandLineActivationHandler : ActivationHandler<AppActivationArgum
         App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, new GalgamePageParameter
         {
             Galgame = _game!,
-            StartGame = true
+            StartGame = true,
+            IsCommandLineLaunch = true
         });
         await Task.CompletedTask;
     }
