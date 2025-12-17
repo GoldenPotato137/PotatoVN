@@ -81,6 +81,7 @@ public partial class App : Application
             services.AddTransient<IActivationHandler, JumpListActivationHandler>();     // JumpList
             services.AddTransient<IActivationHandler, UpdateContentHandler>();          // 更新内容
             // Protocol Activation Handlers
+            services.AddTransient<IActivationHandler, UriActivationHandler>();          // PotatoVN Protocol
             services.AddTransient<IActivationHandler, BgmOAuthActivationHandler>();     // BgmOAuth
             // Default Handler
             services.AddTransient<IActivationHandler, DefaultActivationHandler>();      // 启动页
