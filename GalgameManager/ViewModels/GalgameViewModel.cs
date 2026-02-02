@@ -338,7 +338,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             if (string.IsNullOrEmpty(Item.ExePath)) return;
         }
 
-        Process process = null!;
+        GameSessionManager session = new();
         // 非steam游戏启动参数
         if (!isSteamGame)
         {
@@ -350,25 +350,38 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 args = Item.ExePath;
             }
 
-            ProcessStartInfo info = new()
+            bool createNoWindow = !string.IsNullOrEmpty(args);
+            bool useShellExecute = Item.RunAsAdmin | Item.ExePath!.ToLower().EndsWith("lnk");
+            if (useShellExecute)
             {
-                FileName = exePath,
-                CreateNoWindow = !string.IsNullOrEmpty(args),
-                WorkingDirectory = Item.LocalPath,
-                UseShellExecute = Item.RunAsAdmin | Item.ExePath!.ToLower().EndsWith("lnk"),
-                Verb = Item.RunAsAdmin ? "runas" : null,
-            };
-            if (args is not null) info.ArgumentList.Add(args);
-            process = new() { StartInfo = info };
+                ProcessStartInfo info = new()
+                {
+                    FileName = exePath,
+                    CreateNoWindow = createNoWindow,
+                    WorkingDirectory = Item.LocalPath,
+                    UseShellExecute = useShellExecute,
+                    Verb = Item.RunAsAdmin ? "runas" : null,
+                };
+                if (args is not null) info.ArgumentList.Add(args);
+                Process process = new() { StartInfo = info };
+                session.StartGame(process);
+            }
+            else
+            {
+                if (exePath is null && args is null) { throw new ArgumentNullException(nameof(exePath));}
+                session.StartGame(exePath!, args ?? "", new()
+                {
+                    WorkingDirectory = Item.LocalPath,
+                    CreateNoWindow = createNoWindow,
+                });
+            }
         }
         // Steam游戏第一次启动会弹窗警告，提示用户选择游戏进程以记录游戏时长
         else if (isSteamGame && string.IsNullOrEmpty(Item.ProcessName) && !await DisplaySteamMsgAsync()) return; //false:取消对话框
 
         try
         {
-            if (!isSteamGame)
-                process.Start();
-            else
+            if (isSteamGame)
             {
                 Uri steamUri = new($"steam://run/{Item.Ids[(int)RssType.Steam]}");
                 _infoService.Info(InfoBarSeverity.Informational, msg: "GalgamePage_Play_StartingSteam".GetLocalized());
@@ -387,23 +400,23 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             Item.LastPlayTime = DateTime.Now;
             await _galgameService.SaveGalgameAsync(Item);
             // _galgameService.Sort();
-            if (Item.ProcessName is not null)
+
+            Process? gameProcess = await session.WaitGame(Item.ProcessName, Item.ExePath, Item.ExeArguments);
+            Process process = session.GetLatestProcess();
+            if (gameProcess is null)
             {
-                await Task.Delay(1000 * 2); //有可能引导进程和游戏进程是一个名字，等2s让引导进程先退出
-                process = await WaitForProcessStartAsync(Item.ProcessName) ?? process;
-            }
-            if (!string.IsNullOrEmpty(Item.ExeArguments) && Item.ProcessName is null)
-            {
-                //启动的进程和游戏进程不是同一个进程，需要知道到底启动什么进程
-                await Task.Delay(1000 * 2);
-                if (TryGetProcessFromName() is { } p) // 尝试根据游戏可执行文件名获取进程
+                await SelectProcess();
+                if (Item.ProcessName.IsNullOrEmpty() == false)
                 {
-                    process = p;
-                    Item.ProcessName = p.ProcessName;
+                    process = TryGetProcessFromName() ?? session.GetLatestProcess();
                 }
-                else
-                    await SelectProcess();
             }
+            else
+            {
+                process = gameProcess;
+                Item.ProcessName = process.ProcessName;
+            }
+
             await _galgameService.SaveGalgameAsync(Item);
             _ = _bgTaskService.AddBgTask(new RecordPlayTimeTask(Item, process));
             await _jumpListService.AddToJumpListAsync(Item);
