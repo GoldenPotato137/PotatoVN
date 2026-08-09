@@ -73,6 +73,13 @@ public interface IGalgameSourceCollectionService
     public Task DeleteGalgameFolderAsync(GalgameSourceBase source);
 
     /// <summary>
+    /// 不显示确认界面地删除游戏库。
+    /// </summary>
+    /// <param name="source">要删除的游戏库</param>
+    /// <param name="removeGames">是否删除失去最后一个来源的逻辑游戏</param>
+    public Task DeleteGalgameFolderAsync(GalgameSourceBase source, bool removeGames);
+
+    /// <summary>
     /// 扫描所有库
     /// </summary>
     public void ScanAll();

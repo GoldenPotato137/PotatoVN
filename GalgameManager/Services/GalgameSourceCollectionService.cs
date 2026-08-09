@@ -234,8 +234,6 @@ public class GalgameSourceCollectionService(
     
     public async Task DeleteGalgameFolderAsync(GalgameSourceBase source)
     {
-        var removeFromLibrary = false;
-        
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow!.Content.XamlRoot,
@@ -253,58 +251,49 @@ public class GalgameSourceCollectionService(
             SecondaryButtonText = "Cancel".GetLocalized(),
             DefaultButton = ContentDialogButton.Secondary
         };
-        
-        dialog.PrimaryButtonClick += async (_, _) =>
+
+        ContentDialogResult result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+        CheckBox checkBox = (CheckBox)((StackPanel)dialog.Content).Children[1];
+        await DeleteGalgameFolderAsync(source, checkBox.IsChecked ?? false);
+    }
+
+    public async Task DeleteGalgameFolderAsync(GalgameSourceBase source, bool removeGames)
+    {
+        if (!_galgameSources.Contains(source)) return;
+
+        List<GalgameSourceBase> sourcesToDelete = [source];
+        CollectAllSubSources(source, sourcesToDelete);
+
+        foreach (GalgameSourceBase sourceToDelete in sourcesToDelete)
         {
-            var checkBox = (CheckBox)((StackPanel)dialog.Content).Children[1];
-            removeFromLibrary = checkBox?.IsChecked ?? false;
-            
-            if (!_galgameSources.Contains(source)) return;
-            
-            // 获取所有子文件夹
-            var sourcesToDelete = new List<GalgameSourceBase> { source };
-            CollectAllSubSources(source, sourcesToDelete);
-            
-            // 从所有要删除的源中删除游戏
-            foreach (var sourceToDelete in sourcesToDelete)
+            try
             {
-                try
+                foreach (GalgameAndPath entry in sourceToDelete.Galgames.ToList())
                 {
-                    List<GalgameAndPath> sourceEntries = sourceToDelete.Galgames.ToList();
-                    foreach (GalgameAndPath entry in sourceEntries)
-                    {
-                        Galgame galgame = entry.Galgame;
-                        await MoveOutNoOperate(entry);
-                        
-                        // 如果用户选择同时从游戏库中删除游戏
-                        if (removeFromLibrary && galgame.Sources.Count == 0)
-                        {
-                            var gameService = GameService;
-                            await gameService.RemoveGalgame(galgame, false);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    infoService.DeveloperEvent(InfoBarSeverity.Error,
-                        msg: $"Failed to move game out of source {sourceToDelete.Url}\n{e.StackTrace}");
+                    Galgame game = entry.Galgame;
+                    await MoveOutNoOperate(entry);
+                    if (removeGames && game.Sources.Count == 0)
+                        await GameService.RemoveGalgame(game, false);
                 }
             }
-            
-            // 从集合中删除所有源并从数据库中删除
-            foreach (var sourceToDelete in sourcesToDelete)
+            catch (Exception e)
             {
-                _galgameSources.Remove(sourceToDelete);
-                _dbSet.Delete(sourceToDelete.Id);
-                sourceToDelete.Detect = false; // 关掉监听，触发取消监听事件
-                OnSourceDeleted?.Invoke(sourceToDelete);
+                infoService.DeveloperEvent(InfoBarSeverity.Error,
+                    msg: $"Failed to move game out of source {sourceToDelete.Url}\n{e.StackTrace}");
             }
-            
-            CalcSubSources();
-            OnSourceChanged?.Invoke();
-        };
-        
-        await dialog.ShowAsync();
+        }
+
+        foreach (GalgameSourceBase sourceToDelete in sourcesToDelete)
+        {
+            _galgameSources.Remove(sourceToDelete);
+            _dbSet.Delete(sourceToDelete.Id);
+            sourceToDelete.Detect = false;
+            OnSourceDeleted?.Invoke(sourceToDelete);
+        }
+
+        CalcSubSources();
+        OnSourceChanged?.Invoke();
     }
     
     // 递归收集所有子源

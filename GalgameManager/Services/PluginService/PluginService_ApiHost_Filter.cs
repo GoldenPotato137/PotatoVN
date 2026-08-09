@@ -1,5 +1,6 @@
 using GalgameManager.Contracts.Services;
 using GalgameManager.Helpers;
+using GalgameManager.Models;
 using GalgameManager.WinApp.Base.Contracts;
 using GalgameManager.WinApp.Base.Models.Filters;
 
@@ -26,5 +27,13 @@ public partial class PluginService
             await UiThreadInvokeHelper.InvokeAsync(() => result = _filterService.GetFilters().ToList());
             return result;
         }
+
+        public bool ApplyFilters(Galgame game) => _filterService.ApplyFilters(ResolveGame(game));
+
+        public Task<List<FilterBase>> SearchFiltersAsync(string searchText) =>
+            _filterService.SearchFilters(searchText);
+
+        public void SetFilter(FilterBase filter) =>
+            UiThreadInvokeHelper.Invoke(() => _filterService.SetFilter(filter));
     }
 }

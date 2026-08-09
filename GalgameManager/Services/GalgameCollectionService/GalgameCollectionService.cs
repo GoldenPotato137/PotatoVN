@@ -365,35 +365,39 @@ public partial class GalgameCollectionService : IGalgameCollectionService
     public async Task<List<string>> ParserGalImagesAsync(Galgame galgame, GameParseType parseType)
     {
         List<Task<List<string>>> tasks = [];
-        foreach (RssType rssType in RssTypeHelper.UsablePhrasers)
+        foreach ((int rssTypeValue, IGalInfoPhraser phraser) in PhraserList.ToList())
         {
-            if (PhraserList.TryGetValue((int)rssType, out IGalInfoPhraser? phraser) && phraser != null)
+            RssType rssType = (RssType)rssTypeValue;
+            string? parserId = rssTypeValue >= 100
+                ? galgame.IdForPlugins.GetValueOrDefault(rssTypeValue)
+                : rssTypeValue < galgame.Ids.Length ? galgame.Ids[rssTypeValue] : null;
+            if (parserId == "-1") continue;
+            Galgame game = new()
             {
-                if (galgame.Ids[(int)rssType] == "-1") continue;
-                Galgame game = new();
-                game.Name.Value = galgame.Name.Value;
-                game.RssType = rssType;
-                game.Ids = (string?[])galgame.Ids.Clone();
+                RssType = rssType,
+                Ids = (string?[])galgame.Ids.Clone(),
+                IdForPlugins = galgame.IdForPlugins.ToDictionary(),
+            };
+            game.Name.Value = galgame.Name.Value;
 
-                if (parseType == GameParseType.HeaderImage)
+            if (parseType == GameParseType.HeaderImage)
+            {
+                if (phraser is IGalHeadersParser headerParser)
                 {
-                    if (phraser is IGalHeadersParser headerParser)
-                    {
-                        tasks.Add(Task.Run(async () => await headerParser.GetGalHeadersAsync(game)));
-                    }
+                    tasks.Add(Task.Run(async () => await headerParser.GetGalHeadersAsync(game)));
                 }
-                else if (parseType == GameParseType.Image)
+            }
+            else if (parseType == GameParseType.Image)
+            {
+                if (phraser is IGalCoversParser coverParser)
                 {
-                    if (phraser is IGalCoversParser coverParser)
-                    {
-                        if (phraser is MixedPhraser) continue; // 混合搜刮器是所有搜刮器并集的真子集，没必要再调用一次
-                        tasks.Add(Task.Run(async () => await coverParser.GetGalCoversAsync(game)));
-                    }
+                    if (phraser is MixedPhraser) continue; // 混合搜刮器是所有搜刮器并集的真子集，没必要再调用一次
+                    tasks.Add(Task.Run(async () => await coverParser.GetGalCoversAsync(game)));
                 }
-                else
-                {
-                    throw new ArgumentException("Unsupported GameParseType for ParserGalImagesAsync");
-                }
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported GameParseType for ParserGalImagesAsync");
             }
         }
 

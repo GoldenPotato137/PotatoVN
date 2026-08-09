@@ -5,5 +5,5 @@ public enum CategoryGroupType
     Developer,
     Status,
     Custom,
-    Engine
+    Engine,
 }

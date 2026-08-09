@@ -31,6 +31,15 @@ public partial class PluginService
 
         public List<Galgame> GetAllGames() => _gameService.Galgames.ToList();
 
+        public Galgame? GetGameByUuid(Guid? uuid) => _gameService.GetGalgameFromUuid(uuid);
+
+        public Galgame? GetGameByUid(GalgameUid? uid, GalgameUidFetchMode mode = GalgameUidFetchMode.Same) =>
+            _gameService.GetGalgameFromUid(uid, mode);
+
+        public Galgame? GetGameById(string? id, RssType rssType) => _gameService.GetGalgameFromId(id, rssType);
+
+        public Galgame? GetGameByName(string? name) => _gameService.GetGalgameFromName(name);
+
         /// <inheritdoc />
         public async Task<Galgame> AddGameInstallation(string path, bool force = true, bool requireConfirm = true)
         {
@@ -45,20 +54,25 @@ public partial class PluginService
             return result ?? throw new InvalidOperationException("Failed to add virtual game.");
         }
 
+        public async Task AddVirtualGameAsync(Galgame game)
+        {
+            ArgumentNullException.ThrowIfNull(game);
+            if (_gameService.GetGalgameFromUuid(game.Uuid) is not null)
+                throw new InvalidOperationException($"Game {game.Uuid} is already in the library.");
+            await _gameService.AddVirtualGalgameAsync(game);
+        }
+
         /// <inheritdoc />
-        public IReadOnlyList<GameInstallationInfo> GetGameInstallations(Galgame game) =>
-            game.LocalInstallations.Select(installation => new GameInstallationInfo(
-                installation.EntryId,
-                installation.Source?.Id ?? Guid.Empty,
-                installation.Source?.SourceType ?? GalgameSourceType.UnKnown,
-                installation.Source?.Name ?? string.Empty,
-                installation.Path,
-                game.PreferredInstallationId == installation.EntryId,
-                Directory.Exists(installation.Path))).ToList();
+        public IReadOnlyList<GameInstallationInfo> GetGameInstallations(Galgame game)
+        {
+            Galgame hostGame = ResolveGame(game);
+            return hostGame.LocalInstallations.Select(ToInstallationInfo).ToList();
+        }
 
         /// <inheritdoc />
         public async Task LaunchGameAsync(Galgame game, Guid? installationId = null)
         {
+            game = ResolveGame(game);
             GalgameAndPath? installation = installationId is { } id
                 ? game.LocalInstallations.FirstOrDefault(i => i.EntryId == id)
                 : game.LocalInstallations.FirstOrDefault(i => i.EntryId == game.PreferredInstallationId);
@@ -67,6 +81,84 @@ public partial class PluginService
                 throw new InvalidOperationException("No unambiguous local installation is available.");
             await UiThreadInvokeHelper.InvokeAsync(() => _gameLaunchService.LaunchAsync(game, installation));
         }
+
+        public LocalInstallationConfig? GetGameInstallationConfiguration(Galgame game, Guid installationId) =>
+            ResolveGame(game).LocalInstallations
+                .FirstOrDefault(installation => installation.EntryId == installationId)?.LocalConfig?.Clone();
+
+        public async Task UpdateGameInstallationAsync(Galgame game, Guid installationId,
+            LocalInstallationConfig configuration, bool makePreferred = false)
+        {
+            ArgumentNullException.ThrowIfNull(configuration);
+            Galgame hostGame = ResolveGame(game);
+            GalgameAndPath installation = FindInstallation(hostGame, installationId);
+            installation.LocalConfig = configuration.Clone();
+            if (makePreferred) hostGame.SetPreferredInstallation(installation);
+            _sourceCollectionService.Save(installation.Source!);
+            await _gameService.SaveGalgameAsync(hostGame);
+        }
+
+        public async Task SetPreferredGameInstallationAsync(Galgame game, Guid installationId)
+        {
+            Galgame hostGame = ResolveGame(game);
+            GalgameAndPath installation = FindInstallation(hostGame, installationId);
+            hostGame.SetPreferredInstallation(installation);
+            await _gameService.SaveGalgameAsync(hostGame);
+        }
+
+        public Task RemoveGameInstallationAsync(Galgame game, Guid installationId, bool deleteFiles = false)
+        {
+            Galgame hostGame = ResolveGame(game);
+            return _sourceCollectionService.MoveOutNoOperate(FindInstallation(hostGame, installationId), deleteFiles);
+        }
+
+        public Task SaveGameAsync(Galgame game) => _gameService.SaveGalgameAsync(ResolveGame(game));
+
+        public Task SaveGameMetadataAsync(Galgame game, Guid? sourceId = null)
+        {
+            Galgame hostGame = ResolveGame(game);
+            GalgameSourceBase? source = sourceId is { } id
+                ? _sourceCollectionService.GetGalgameSourceFromId(id)
+                    ?? throw new KeyNotFoundException($"Game source {id} was not found.")
+                : null;
+            return _gameService.SaveGalgameMetaAsync(hostGame, source);
+        }
+
+        public Task RemoveGameAsync(Galgame game, bool removeFromDisk = false) =>
+            _gameService.RemoveGalgame(ResolveGame(game), removeFromDisk);
+
+        public Task<Galgame> ParseGameAsync(Galgame game, RssType rssType = RssType.None,
+            bool requireConfirm = false, GameParseType type = GameParseType.All) =>
+            _gameService.ParseGalInfoAsync(ResolveGame(game), rssType, requireConfirm, type);
+
+        public Task<Galgame> ParseGameInfoOnlyAsync(Galgame game, RssType rssType = RssType.None,
+            bool requireConfirm = false) => _gameService.ParseGalInfoOnlyAsync(game, rssType, requireConfirm);
+
+        public Task<GalgameCharacter> ParseGameCharacterAsync(GalgameCharacter character,
+            RssType rssType = RssType.None) => _gameService.PhraseGalCharacterAsync(character, rssType);
+
+        public Task<List<string>> ParseGameImagesAsync(Galgame game, GameParseType type) =>
+            _gameService.ParserGalImagesAsync(game, type);
+
+        private Galgame ResolveGame(Galgame game)
+        {
+            ArgumentNullException.ThrowIfNull(game);
+            return _gameService.GetGalgameFromUuid(game.Uuid)
+                   ?? throw new KeyNotFoundException($"Game {game.Uuid} was not found.");
+        }
+
+        private static GalgameAndPath FindInstallation(Galgame game, Guid installationId) =>
+            game.LocalInstallations.FirstOrDefault(installation => installation.EntryId == installationId)
+            ?? throw new KeyNotFoundException($"Game installation {installationId} was not found.");
+
+        private static GameInstallationInfo ToInstallationInfo(GalgameAndPath installation) => new(
+            installation.EntryId,
+            installation.Source?.Id ?? Guid.Empty,
+            installation.Source?.SourceType ?? GalgameSourceType.UnKnown,
+            installation.Source?.Name ?? string.Empty,
+            installation.Path,
+            installation.IsPreferred,
+            Directory.Exists(installation.Path));
 
         #endregion
 
@@ -180,6 +272,8 @@ public partial class PluginService
         }
 
         public void InvokeOnMainThread(Action action) => UiThreadInvokeHelper.Invoke(action);
+
+        public Task InvokeOnMainThreadAsync(Func<Task> action) => UiThreadInvokeHelper.InvokeAsync(action);
 
         #endregion
 

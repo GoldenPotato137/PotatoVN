@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using GalgameManager.Enums;
 using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.Sources;
 using GalgameManager.WinApp.Base.Contracts.NavigationApi;
 using GalgameManager.WinApp.Base.Models.Filters;
 using GalgameManager.WinApp.Base.Models.Plugin;
@@ -25,6 +26,26 @@ public interface IPotatoVnApi
     /// </summary>
     /// <returns></returns>
     public List<Galgame> GetAllGames();
+
+    /// <summary>
+    /// 按宿主生成的稳定 UUID 获取游戏。
+    /// </summary>
+    public Galgame? GetGameByUuid(Guid? uuid);
+
+    /// <summary>
+    /// 按跨信息源 UID 获取游戏。
+    /// </summary>
+    public Galgame? GetGameByUid(GalgameUid? uid, GalgameUidFetchMode mode = GalgameUidFetchMode.Same);
+
+    /// <summary>
+    /// 按指定信息源 ID 获取游戏。
+    /// </summary>
+    public Galgame? GetGameById(string? id, RssType rssType);
+
+    /// <summary>
+    /// 按名称获取游戏。
+    /// </summary>
+    public Galgame? GetGameByName(string? name);
 
     /// <summary>
     /// 以本地文件夹安装的方式添加游戏。识别到已有逻辑游戏时，会为其新增安装实例。
@@ -51,6 +72,27 @@ public interface IPotatoVnApi
     public Task LaunchGameAsync(Galgame game, Guid? installationId = null);
 
     /// <summary>
+    /// 获取指定安装实例的独立配置副本；找不到时返回 null。
+    /// </summary>
+    public LocalInstallationConfig? GetGameInstallationConfiguration(Galgame game, Guid installationId);
+
+    /// <summary>
+    /// 更新指定安装实例的本机配置并持久化。
+    /// </summary>
+    public Task UpdateGameInstallationAsync(Galgame game, Guid installationId,
+        LocalInstallationConfig configuration, bool makePreferred = false);
+
+    /// <summary>
+    /// 将指定本地安装实例设为首选实例并持久化。
+    /// </summary>
+    public Task SetPreferredGameInstallationAsync(Galgame game, Guid installationId);
+
+    /// <summary>
+    /// 从游戏库解除指定安装实例；仅当 deleteFiles 为 true 时删除磁盘文件。
+    /// </summary>
+    public Task RemoveGameInstallationAsync(Galgame game, Guid installationId, bool deleteFiles = false);
+
+    /// <summary>
     /// 添加一个虚拟游戏（非本地游戏）。
     /// </summary>
     /// <param name="name">虚拟游戏显示名。这里传的是游戏名，不是文件路径。</param>
@@ -63,6 +105,153 @@ public interface IPotatoVnApi
     /// 创建纯占位条目的常见写法：<c>await hostApi.AddVirtualGame(name, requireConfirm: false)</c>。
     /// </remarks>
     public Task<Galgame> AddVirtualGame(string name, bool force = true, bool requireConfirm = true);
+
+    /// <summary>
+    /// 直接添加一个已经构造好的虚拟游戏，不触发搜刮流程。
+    /// </summary>
+    public Task AddVirtualGameAsync(Galgame game);
+
+    /// <summary>
+    /// 保存游戏及其本地元数据。
+    /// </summary>
+    public Task SaveGameAsync(Galgame game);
+
+    /// <summary>
+    /// 保存游戏的 meta 备份；sourceId 为 null 时保存到所有已启用备份的来源。
+    /// </summary>
+    public Task SaveGameMetadataAsync(Galgame game, Guid? sourceId = null);
+
+    /// <summary>
+    /// 从游戏库删除逻辑游戏；仅当 removeFromDisk 为 true 时删除磁盘文件。
+    /// </summary>
+    public Task RemoveGameAsync(Galgame game, bool removeFromDisk = false);
+
+    /// <summary>
+    /// 对库内游戏执行完整搜刮流程。
+    /// </summary>
+    public Task<Galgame> ParseGameAsync(Galgame game, RssType rssType = RssType.None,
+        bool requireConfirm = false, GameParseType type = GameParseType.All);
+
+    /// <summary>
+    /// 只搜刮基本游戏信息，可用于尚未加入游戏库的对象。
+    /// </summary>
+    public Task<Galgame> ParseGameInfoOnlyAsync(Galgame game, RssType rssType = RssType.None,
+        bool requireConfirm = false);
+
+    /// <summary>
+    /// 搜刮角色信息并直接更新传入对象。
+    /// </summary>
+    public Task<GalgameCharacter> ParseGameCharacterAsync(GalgameCharacter character,
+        RssType rssType = RssType.None);
+
+    /// <summary>
+    /// 搜刮游戏封面或头图 URL。
+    /// </summary>
+    public Task<List<string>> ParseGameImagesAsync(Galgame game, GameParseType type);
+
+    #endregion
+
+    #region SOURCES
+
+    /// <summary>
+    /// 获取全部游戏来源快照。
+    /// </summary>
+    public List<GalgameSourceBase> GetAllSources();
+
+    public GalgameSourceBase? GetSourceById(Guid sourceId);
+
+    public GalgameSourceBase? GetSourceByUrl(string url);
+
+    public GalgameSourceBase? GetSource(GalgameSourceType type, string path);
+
+    /// <summary>
+    /// 添加游戏来源，并可选择立即扫描。
+    /// </summary>
+    public Task<GalgameSourceBase> AddSourceAsync(GalgameSourceType type, string path,
+        bool scan = true, bool manualSelectFolder = false);
+
+    /// <summary>
+    /// 删除游戏来源。宿主会显示现有的确认界面。
+    /// </summary>
+    public Task DeleteSourceAsync(GalgameSourceBase source);
+
+    /// <summary>
+    /// 不显示确认界面地删除游戏来源。
+    /// </summary>
+    /// <param name="source">要删除的来源</param>
+    /// <param name="removeGames">是否同时删除失去最后一个来源的逻辑游戏；不会删除磁盘文件</param>
+    public Task DeleteSourceAsync(GalgameSourceBase source, bool removeGames);
+
+    public void ScanAllSources();
+
+    public void ScanSource(GalgameSourceBase source);
+
+    public void SaveSource(GalgameSourceBase source);
+
+    /// <summary>
+    /// 在不移动物理文件的情况下，把游戏关联到来源。
+    /// </summary>
+    public GameInstallationInfo? AddGameToSource(GalgameSourceBase source, Galgame game, string path,
+        LocalInstallationConfig? localConfiguration = null);
+
+    /// <summary>
+    /// 启动物理移动后台任务。moveOutSourceId 为 null 时只执行移入。
+    /// </summary>
+    public BgTaskBase MoveGame(Galgame game, Guid? moveInSourceId, string? moveInPath = null,
+        Guid? moveOutSourceId = null);
+
+    /// <summary>
+    /// 根据游戏路径计算其来源根路径。
+    /// </summary>
+    public string GetSourcePath(GalgameSourceType type, string gamePath);
+
+    #endregion
+
+    #region CATEGORIES
+
+    public Task<List<CategoryGroup>> GetCategoryGroupsAsync();
+
+    public CategoryGroup? GetCategoryGroup(Guid id);
+
+    public Category? GetCategory(Guid id);
+
+    public Category? GetCategory(string name);
+
+    public Category? GetDeveloperCategory(Galgame game);
+
+    public Category? GetEngineCategory(Galgame game);
+
+    public CategoryGroup StatusCategoryGroup { get; }
+
+    public CategoryGroup DeveloperCategoryGroup { get; }
+
+    public CategoryGroup EngineCategoryGroup { get; }
+
+    public CategoryGroup AddCategoryGroup(string name);
+
+    public void DeleteCategoryGroup(CategoryGroup group);
+
+    public void SaveCategory(Category category);
+
+    public void SaveCategoryGroup(CategoryGroup group);
+
+    public void DeleteCategory(Category category);
+
+    public void AddCategoryToGroup(CategoryGroup group, Category category);
+
+    public void RemoveCategoryFromGroup(CategoryGroup group, Category category);
+
+    public void MergeCategories(Category target, Category source);
+
+    /// <summary>
+    /// 重新计算所有游戏的系统分类。
+    /// </summary>
+    public Task RefreshGameCategoriesAsync();
+
+    /// <summary>
+    /// 刷新分类的外部信息（目前为开发商图片）。
+    /// </summary>
+    public void RefreshCategory(Category category);
 
     #endregion
 
@@ -97,6 +286,21 @@ public interface IPotatoVnApi
     /// </remarks>
     Task<List<FilterBase>> GetFiltersAsync();
 
+    /// <summary>
+    /// 判断游戏是否通过当前全部过滤器。
+    /// </summary>
+    bool ApplyFilters(Galgame game);
+
+    /// <summary>
+    /// 搜索可用过滤器。
+    /// </summary>
+    Task<List<FilterBase>> SearchFiltersAsync(string searchText);
+
+    /// <summary>
+    /// 用同类型过滤器替换当前过滤条件。
+    /// </summary>
+    void SetFilter(FilterBase filter);
+
     #endregion
 
     // 与 staff 相关的 API
@@ -106,6 +310,11 @@ public interface IPotatoVnApi
     /// 根据 staffId 获取 staff，不存在则返回 null
     /// </summary>
     Staff? GetStaff(Guid? id);
+
+    /// <summary>
+    /// 按 Staff 标识符获取匹配度最高的 Staff。
+    /// </summary>
+    Staff? GetStaff(StaffIdentifier identifier);
 
     /// <summary>
     /// 获取所有 staff 列表（快照）
@@ -121,6 +330,21 @@ public interface IPotatoVnApi
     /// 保存 staff（新增 / 修改）。默认会触发同步逻辑（若宿主启用）。
     /// </summary>
     void SaveStaff(Staff staff, bool sync = true);
+
+    /// <summary>
+    /// 搜刮单个 Staff 信息。
+    /// </summary>
+    Task<Staff> ParseStaffAsync(Staff staff, RssType rssType);
+
+    /// <summary>
+    /// 搜刮并保存游戏关联的 Staff。
+    /// </summary>
+    Task ParseGameStaffAsync(Galgame game);
+
+    /// <summary>
+    /// 删除 Staff。
+    /// </summary>
+    void DeleteStaff(Staff staff, bool sync = true);
 
     #endregion
 
@@ -308,6 +532,11 @@ public interface IPotatoVnApi
     /// </summary>
     /// <param name="action"></param>
     public void InvokeOnMainThread(Action action);
+
+    /// <summary>
+    /// 在主线程执行异步操作，并等待操作完成。
+    /// </summary>
+    public Task InvokeOnMainThreadAsync(Func<Task> action);
 
     #endregion
 
