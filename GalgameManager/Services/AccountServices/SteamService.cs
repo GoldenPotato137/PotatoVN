@@ -42,7 +42,9 @@ public class SteamService(IGalgameCollectionService gameService) : ISteamService
         List<SteamGameDto> galgameList = [];
         foreach (var game in gameList)
         {
-            if (await PhraseHelper.TryGetSteamIdAsync(game.name) != null)
+            // 这里只需判断这个steam游戏是不是galgame，即vndb里有没有同名条目，
+            // 不要求它在映射库里有steam映射（TryGetSteamIdAsync只认完全匹配的steam映射，会漏掉不少galgame）
+            if (await PhraseHelper.TryGetVndbIdAsync(game.name) != null)
             {
                 galgameList.Add(game);
             }

@@ -1,8 +1,8 @@
 ﻿name: Update DB
 
+# 数据库是二进制文件，每提交一次仓库就大一次，所以不再定时更新，
+# 需要时到 Actions 里手动跑这个工作流
 on:
-  schedule:
-    - cron: '30 15 * * 2' # Every Tuesday at 15:30 UTC
   workflow_dispatch:
 
 permissions: write-all

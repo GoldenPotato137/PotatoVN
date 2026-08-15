@@ -9,6 +9,7 @@ using Refit;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Web;
+using PotatoDBMapper.Models;
 
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -109,20 +110,19 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
         int? id;
         try
         {
-            // if (galgame.RssType != RssType.Ymgal) throw new Exception();
-            // id = Convert.ToInt32(galgame.Id ?? "");
-            // return id;
-            if (galgame.RssType == RssType.Ymgal)
+            if (galgame.RssType == RssType.Ymgal && !string.IsNullOrEmpty(galgame.Id))
                 return Convert.ToInt32(galgame.Id ?? "");
-            else if (galgame.RssType == RssType.Mixed)
+            if (galgame.RssType == RssType.Mixed && !string.IsNullOrEmpty(galgame.Ids[(int)RssType.Ymgal]))
             {
                 id = Convert.ToInt32(galgame.Ids[(int)RssType.Ymgal]);
                 if (id == 0 || id == null)
                     throw new Exception();
                 return id;
             }
-            else
-                throw new Exception();
+            MapModel? map = await PhraseHelper.TryGetMapAsync(galgame);
+            if (map is not null && map.YmgalId > 0 && map.YmgalSimilarity >= 0.95)
+                return map.YmgalId;
+            throw new Exception();
         }
         catch (Exception)
         {

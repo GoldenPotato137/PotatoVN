@@ -128,7 +128,8 @@ public class SteamParser : IGalInfoPhraser, IGalHeaderParser, IGalCoversParser, 
     {
         try
         {
-            if (await PhraseHelper.TryGetMapAsync(game) is { } map && map.SteamSimilarity > 0.9) return map.SteamId;
+            if (await PhraseHelper.TryGetMapAsync(game) is { SteamId: > 0 } map &&
+                map.SteamSimilarity >= PhraseHelper.MinSimilarity) return map.SteamId;
             if (string.IsNullOrEmpty(game.Name.Value)) return null;
             List<string> nameLists = await PhraseHelper.TryGetAliasesAsync(game.Name.Value);
             if (!nameLists.Contains(game.Name.Value)) nameLists.Insert(0, game.Name.Value);

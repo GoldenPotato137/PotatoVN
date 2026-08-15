@@ -5016,4 +5016,19 @@
   <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
     <value>全局按键映射已保存，将在游戏下次启动时应用。</value>
   </data>
+  <data name="PluginStorePage_StatusFilter.Text" xml:space="preserve">
+    <value>安装状态</value>
+  </data>
+  <data name="StorePluginFilter_All" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="StorePluginFilter_Installed" xml:space="preserve">
+    <value>已安装</value>
+  </data>
+  <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
+    <value>有更新</value>
+  </data>
+  <data name="PluginStorePage_Filter.Label" xml:space="preserve">
+    <value>过滤</value>
+  </data>
 </root>

@@ -4028,4 +4028,19 @@
   <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
     <value>グローバルキーマッピングを保存しました。ゲームの次回起動時に適用されます。</value>
   </data>
+  <data name="PluginStorePage_StatusFilter.Text" xml:space="preserve">
+    <value>インストール状態</value>
+  </data>
+  <data name="StorePluginFilter_All" xml:space="preserve">
+    <value>すべて</value>
+  </data>
+  <data name="StorePluginFilter_Installed" xml:space="preserve">
+    <value>インストール済み</value>
+  </data>
+  <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
+    <value>更新あり</value>
+  </data>
+  <data name="PluginStorePage_Filter.Label" xml:space="preserve">
+    <value>フィルター</value>
+  </data>
 </root>

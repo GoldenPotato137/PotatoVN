@@ -4102,4 +4102,19 @@ If play time can record correctly, just cancel this popup.
   <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
     <value>Global key mappings saved. They will apply when a game starts.</value>
   </data>
+  <data name="PluginStorePage_StatusFilter.Text" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="StorePluginFilter_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="StorePluginFilter_Installed" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="PluginStorePage_Filter.Label" xml:space="preserve">
+    <value>Filter</value>
+  </data>
 </root>
