@@ -4951,11 +4951,6 @@
     <value>在外部网站中打开</value>
   </data>
 
-
-
-
-
-
   <data name="GalgamePage_OpenInBgmMenu.Text" xml:space="preserve">
     <value>在Bangumi中打开</value>
   </data>
@@ -5016,9 +5011,7 @@
   <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
     <value>全局按键映射已保存，将在游戏下次启动时应用。</value>
   </data>
-  <data name="PluginStorePage_StatusFilter.Text" xml:space="preserve">
-    <value>安装状态</value>
-  </data>
+
   <data name="StorePluginFilter_All" xml:space="preserve">
     <value>全部</value>
   </data>
@@ -5028,7 +5021,11 @@
   <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
     <value>有更新</value>
   </data>
-  <data name="PluginStorePage_Filter.Label" xml:space="preserve">
-    <value>过滤</value>
+
+  <data name="PluginStorePage_NoPluginMatched.Text" xml:space="preserve">
+    <value>没有符合条件的插件</value>
+  </data>
+  <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
+    <value>重置过滤条件</value>
   </data>
 </root>

@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:GalgameManager.Models"
     xmlns:converter="using:GalgameManager.Helpers.Converter"
-    xmlns:control="using:GalgameManager.Views.Control"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:viewModels="using:GalgameManager.ViewModels"
     x:Name="Page"
     mc:Ignorable="d">
@@ -16,104 +16,110 @@
         <converter:ImagePathConverter x:Key="ImagePathConverter" />
         <converter:StorePluginStatusToOpacityConverter x:Key="StorePluginStatusToOpacityConverter" />
         <converter:StorePluginStatusToTextConverter x:Key="StorePluginStatusToTextConverter" />
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <Grid RowDefinitions="Auto,*">
-        <CommandBar Grid.Row="0" Background="Transparent" IsOpen="False" DefaultLabelPosition="Right"
-                    Margin="{StaticResource CommandBarMargin}">
-            <!-- 安装状态过滤 -->
-            <AppBarButton x:Uid="PluginStorePage_Filter" AllowFocusOnInteraction="True">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" />
-                </AppBarButton.Icon>
-                <AppBarButton.Flyout>
-                    <Flyout Placement="Bottom">
-                        <StackPanel MinWidth="200" Spacing="8">
-                            <TextBlock x:Uid="PluginStorePage_StatusFilter" FontWeight="SemiBold"/>
-                            <control:ComboBoxWithI18N ItemsSource="{x:Bind ViewModel.StatusFilters}"
-                                                      SelectedItem="{x:Bind ViewModel.SelectedStatusFilter, Mode=TwoWay}"
-                                                      HorizontalAlignment="Stretch"/>
-                        </StackPanel>
-                    </Flyout>
-                </AppBarButton.Flyout>
-            </AppBarButton>
-        </CommandBar>
-
-        <NavigationView Grid.Row="1" IsBackButtonVisible="Collapsed" IsBackEnabled="False" OpenPaneLength="150"
+    <Grid>
+        <NavigationView IsBackButtonVisible="Collapsed" IsBackEnabled="False" OpenPaneLength="150"
                         MenuItemsSource="{x:Bind ViewModel.PluginTypes}"
                         SelectedItem="{x:Bind ViewModel.SelectedPluginType, Mode=TwoWay}"
-                        IsSettingsVisible="False">
+                        IsSettingsVisible="False"
+                        >
             <NavigationView.MenuItemTemplate>
                 <DataTemplate x:DataType="viewModels:PluginTypeViewModel">
                     <NavigationViewItem Content="{x:Bind Title}"
                                         Icon="{x:Bind Icon}"/>
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
-            <ScrollViewer>
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Plugins}" Margin="20">
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="models:StorePlugin">
-                            <Button Style="{ThemeResource TransparentButtonWithHover}"
-                                    DataContext="{x:Bind}"
-                                    Command="{Binding ElementName=Page, Path=ViewModel.ItemClickCommand}"
-                                    CommandParameter="{x:Bind}">
-                                <Grid Width="300" Height="120" ColumnSpacing="20" Margin="10 10" VerticalAlignment="Center">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
 
-                                    <!-- Logo -->
-                                    <Grid Grid.Column="0" CornerRadius="10" Width="65" Height="65" VerticalAlignment="Center">
-                                        <Image Source="{x:Bind Logo, Mode=OneWay, Converter={StaticResource ImagePathConverter}}"
-                                               Stretch="UniformToFill">
-                                        </Image>
-                                    </Grid>
+            <Grid RowDefinitions="Auto,*">
+                <!-- 安装状态过滤-->
+                <!-- 选项由ViewModel.StatusFilters在代码后置里生成，见PluginStorePage.xaml.cs -->
+                <controls:SelectorBar x:Name="StatusFilterBar" Grid.Row="0"
+                                      HorizontalAlignment="Left" Margin="20,0,20,0"
+                                      SelectionChanged="StatusFilterBar_SelectionChanged"/>
 
-                                    <Grid Grid.Column="1" Margin="0 0 10 0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="1">
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Plugins}" Margin="20,12,20,20">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:StorePlugin">
+                                <Button Style="{ThemeResource TransparentButtonWithHover}"
+                                        DataContext="{x:Bind}"
+                                        Command="{Binding ElementName=Page, Path=ViewModel.ItemClickCommand}"
+                                        CommandParameter="{x:Bind}">
+                                    <Grid Width="300" Height="120" ColumnSpacing="20" Margin="10 10" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
-                                        <!-- Title -->
-                                        <TextBlock Text="{x:Bind Name, Mode=OneWay}"
-                                                   Style="{ThemeResource SubtitleTextBlockStyle}"
-                                                   TextTrimming="CharacterEllipsis"/>
+                                        <!-- Logo -->
+                                        <Grid Grid.Column="0" CornerRadius="10" Width="65" Height="65" VerticalAlignment="Center">
+                                            <Image Source="{x:Bind Logo, Mode=OneWay, Converter={StaticResource ImagePathConverter}}"
+                                                   Stretch="UniformToFill">
+                                            </Image>
+                                        </Grid>
 
-                                        <!-- Description -->
-                                        <TextBlock Grid.Row="1" Text="{x:Bind DescriptionShort, Mode=OneWay}"
-                                                   Style="{ThemeResource BodyTextBlockStyle}"
-                                                   TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                                                   Margin="0,4,0,0" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <Grid Grid.Column="1" Margin="0 0 10 0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
 
-                                        <!-- Release Date -->
-                                        <TextBlock Grid.Row="2" Text="{x:Bind ReleaseDate, Mode=OneWay, Converter={StaticResource DateTimeToStringConverter}}"
-                                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                   HorizontalAlignment="Left"/>
+                                            <!-- Title -->
+                                            <TextBlock Text="{x:Bind Name, Mode=OneWay}"
+                                                       Style="{ThemeResource SubtitleTextBlockStyle}"
+                                                       TextTrimming="CharacterEllipsis"/>
 
-                                        <!-- Status -->
-                                        <Grid Grid.Row="2" HorizontalAlignment="Right"
-                                              Opacity="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToOpacityConverter}}">
-                                            <Border Background="{ThemeResource SystemControlBackgroundAccentBrush}" CornerRadius="4" Padding="6 2">
-                                                <TextBlock Text="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToTextConverter}}"
-                                                           Style="{ThemeResource CaptionTextBlockStyle}"
-                                                           Foreground="White"/>
-                                            </Border>
+                                            <!-- Description -->
+                                            <TextBlock Grid.Row="1" Text="{x:Bind DescriptionShort, Mode=OneWay}"
+                                                       Style="{ThemeResource BodyTextBlockStyle}"
+                                                       TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                                       Margin="0,4,0,0" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+                                            <!-- Release Date -->
+                                            <TextBlock Grid.Row="2" Text="{x:Bind ReleaseDate, Mode=OneWay, Converter={StaticResource DateTimeToStringConverter}}"
+                                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                       HorizontalAlignment="Left"/>
+
+                                            <!-- Status -->
+                                            <Grid Grid.Row="2" HorizontalAlignment="Right"
+                                                  Opacity="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToOpacityConverter}}">
+                                                <Border Background="{ThemeResource SystemControlBackgroundAccentBrush}" CornerRadius="4" Padding="6 2">
+                                                    <TextBlock Text="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToTextConverter}}"
+                                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
-                                </Grid>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout MinItemWidth="300" ItemsStretch="Fill"
-                                           MinRowSpacing="10" MinColumnSpacing="10"/>
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
-            </ScrollViewer>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                        <ItemsRepeater.Layout>
+                            <UniformGridLayout MinItemWidth="300" ItemsStretch="Fill"
+                                               MinRowSpacing="10" MinColumnSpacing="10"/>
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollViewer>
+
+                <!-- 过滤结果为空时的提示，顺手给一个把过滤条件恢复成默认值的入口 -->
+                <StackPanel Grid.Row="1" Spacing="8" MaxWidth="320"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.ShowEmptyHint, Mode=OneWay,
+                                Converter={StaticResource BoolToVisibilityConverter}}">
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" FontSize="32"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                    <TextBlock x:Uid="PluginStorePage_NoPluginMatched"
+                               Style="{ThemeResource BodyTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextAlignment="Center" TextWrapping="Wrap"/>
+                    <HyperlinkButton x:Uid="PluginStorePage_ResetFilter" HorizontalAlignment="Center"
+                                     Command="{x:Bind ViewModel.ResetFilterCommand}"/>
+                </StackPanel>
+            </Grid>
         </NavigationView>
     </Grid>
 </Page>

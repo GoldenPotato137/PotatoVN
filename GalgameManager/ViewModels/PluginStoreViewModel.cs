@@ -27,18 +27,41 @@ public partial class PluginStoreViewModel(
     // ReSharper disable once CollectionNeverQueried.Global
     public readonly List<StorePluginFilter> StatusFilters = StorePluginFilterHelper.GetAllFilters();
     [ObservableProperty] private StorePluginFilter _selectedStatusFilter = StorePluginFilter.All;
+    /// 过滤结果为空时才提示"没有插件"，插件还在下载的时候空列表是正常的
+    [ObservableProperty] private bool _showEmptyHint;
+    private bool _loading = true;
 
     public void OnNavigatedTo(object parameter)
     {
         Plugins.Filter = IsVisible; //过滤器只设置一次，条件变化时走RefreshFilter，原因见IsVisible的注释
+        Plugins.VectorChanged += (_, _) => UpdateEmptyHint(); //新增插件与RefreshFilter都会走到这里
         foreach (PluginType type in PluginTypeHelper.GetAllTypes())
             PluginTypes.Add(new()
             {
                 Type = type, Title = type.GetLocalized(), Icon = new FontIcon { Glyph = type.ToGlyph() }
             });
-        bgTaskService.AddBgTask(new GetStorePluginTask(Plugins));
+        _ = LoadPluginsAsync();
         SelectedPluginType = PluginTypes.FirstOrDefault(p => p.Type == PluginType.All) ?? PluginTypes.First();
     }
+
+    private async Task LoadPluginsAsync()
+    {
+        try
+        {
+            await bgTaskService.AddBgTask(new GetStorePluginTask(Plugins));
+        }
+        catch (Exception e)
+        {
+            infoService.DeveloperEvent(e: e);
+        }
+        finally
+        {
+            _loading = false;
+            UpdateEmptyHint();
+        }
+    }
+
+    private void UpdateEmptyHint() => ShowEmptyHint = !_loading && Plugins.Count == 0;
 
     public void OnNavigatedFrom() {}
 
@@ -72,6 +95,14 @@ public partial class PluginStoreViewModel(
         {
             infoService.DeveloperEvent(e: e);
         }
+    }
+
+    /// 把过滤条件恢复成默认值（全部类别 + 全部安装状态），给空状态提示用
+    [RelayCommand]
+    private void ResetFilter()
+    {
+        SelectedStatusFilter = StorePluginFilter.All;
+        SelectedPluginType = PluginTypes.FirstOrDefault(p => p.Type == PluginType.All) ?? SelectedPluginType;
     }
 
     partial void OnSelectedPluginTypeChanged(PluginTypeViewModel value) => Plugins.RefreshFilter();

@@ -4037,11 +4037,6 @@ If play time can record correctly, just cancel this popup.
     <value>Open on external website</value>
   </data>
 
-
-
-
-
-
   <data name="GalgamePage_OpenInBgmMenu.Text" xml:space="preserve">
     <value>Open in Bangumi</value>
   </data>
@@ -4102,9 +4097,7 @@ If play time can record correctly, just cancel this popup.
   <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
     <value>Global key mappings saved. They will apply when a game starts.</value>
   </data>
-  <data name="PluginStorePage_StatusFilter.Text" xml:space="preserve">
-    <value>Status</value>
-  </data>
+
   <data name="StorePluginFilter_All" xml:space="preserve">
     <value>All</value>
   </data>
@@ -4114,7 +4107,11 @@ If play time can record correctly, just cancel this popup.
   <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
     <value>Update available</value>
   </data>
-  <data name="PluginStorePage_Filter.Label" xml:space="preserve">
-    <value>Filter</value>
+
+  <data name="PluginStorePage_NoPluginMatched.Text" xml:space="preserve">
+    <value>No plugin matches the current filter</value>
+  </data>
+  <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
+    <value>Reset filters</value>
   </data>
 </root>
