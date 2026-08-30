@@ -4150,4 +4150,13 @@ If play time can record correctly, just cancel this popup.
   <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
     <value>“{0}” is already running or its play time is being recorded.</value>
   </data>
+  <data name="RecordPlayTimeTask_WaitingForMainWindow" xml:space="preserve">
+    <value>Waiting for the game window: {0} (launch dialogs are not counted)</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Title" xml:space="preserve">
+    <value>Do not count launch dialogs</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Description" xml:space="preserve">
+    <value>For installations that first show a disclaimer, patch notice, or launcher. Recording starts after a stable window transition; leave this off for games that open directly.</value>
+  </data>
 </root>

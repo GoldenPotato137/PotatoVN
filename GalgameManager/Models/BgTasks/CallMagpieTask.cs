@@ -15,13 +15,28 @@ public class CallMagpieTask : BgTaskBase
     public string ProcessName { get; set; } = null!;
     public bool HashFinished { get; set; }
     private Process? _process;
+    private GameRuntimeProcessRelay? _processRelay;
 
-    public CallMagpieTask() { } // Just for serialization
+    public CallMagpieTask() { } // 仅用于后台任务序列化恢复
 
     public CallMagpieTask(Galgame game, Process process)
+        : this(game, process, null)
+    {
+    }
+
+    public CallMagpieTask(Galgame game, Process process, GameRuntimeProcessRelay? processRelay)
     {
         Galgame = game;
         _process = process;
+        _processRelay = processRelay;
+        try
+        {
+            ProcessName = process.ProcessName;
+        }
+        catch
+        {
+            // 短命启动器退出后仍等待计时任务发布正式游戏进程。
+        }
     }
     
     protected async override Task RecoverFromJsonInternal()
@@ -38,13 +53,30 @@ public class CallMagpieTask : BgTaskBase
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
             if (_process is null) throw new PvnException("Process not found");
         }
+        if (_processRelay is not null)
+        {
+            Process? confirmed = await _processRelay.WaitForConfirmationAsync();
+            if (confirmed is null || !GameProcessDetector.IsAlive(confirmed) || HashFinished)
+            {
+                ChangeProgress(1, 1, string.Empty, false);
+                return;
+            }
+            _process = confirmed;
+        }
         var magpiePath = await App.GetService<ILocalSettingsService>().ReadSettingAsync<string>(KeyValues.MagpiePath);
         if (string.IsNullOrEmpty(magpiePath)) throw new PvnException("CallMagpieTask_NoMagpiePath".GetLocalized());
         ChangeProgress(0, 1, "CallMagpieTask_LaunchingMagpie".GetLocalized());
         await MagpieHelper.LaunchMagpieAsync(magpiePath);
 
-        if (_process.HasExited || HashFinished) return;
-        ProcessName = _process.ProcessName;
+        if (!GameProcessDetector.IsAlive(_process) || HashFinished) return;
+        try
+        {
+            ProcessName = _process.ProcessName;
+        }
+        catch
+        {
+            // 受保护进程可能拒绝读取名称，仍继续尝试通过窗口调用 Magpie。
+        }
         for (var retry = 0; retry < MaxRetryCount && !HashFinished; retry++)
         {
             try
@@ -127,10 +159,10 @@ public static class MagpieHelper
         List<int> shortcuts = App.GetService<ILocalSettingsService>()
             .ReadSettingAsync<List<int>>(KeyValues.MagpieHotkeys).Result ?? [];
         InputSimulator keyboard = new();
-        // Press down all keys in the shortcut
+        // 依次按下快捷键。
         foreach (var shortcut in shortcuts)
             keyboard.Keyboard.KeyDown((VirtualKeyCode)shortcut);
-        // Release all keys in the shortcut (in reverse order is a common practice, though not strictly necessary for all cases)
+        // 按相反顺序释放快捷键。
         for (var i = shortcuts.Count - 1; i >= 0; i--)
             keyboard.Keyboard.KeyUp((VirtualKeyCode)shortcuts[i]);
     }

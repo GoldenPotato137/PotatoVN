@@ -17,14 +17,18 @@ public class KeyMappingTask : BgTaskBase
     public Galgame? Galgame;
     public override bool ProgressOnTrayIcon => false;
     public List<KeyMapping> KeyMappings { get; set; } = new();
+    public bool HasPreLaunchProcessSnapshot { get; set; } // 是否已经在启动游戏前采集安装目录进程快照
+    public List<int> PreExistingProcessIds { get; set; } = []; // 启动前已经存在于安装目录的进程Id
 
-    private Process? _process;
+    private volatile Process? _process;
+    private GameRuntimeProcessRelay? _processRelay;
     private string[] _directoryPrefixes = [];
     private readonly HashSet<int> _trackedProcessIds = [];
     private List<KeyMapping> _runtimeGameMappings = [];
     private bool _runtimeGameMappingOptInEnabled;
     private KeyMappingRuntimeSnapshot _snapshot = KeyMappingRuntimeSnapshot.Empty;
     private KeyMappingRuntimeSnapshot? _pendingSnapshot;
+    private volatile int _confirmedGameplayProcessId;
     private readonly Dictionary<int, KeyMappingOutput> _activeKeyboardMappings = new();
     private readonly Dictionary<int, KeyMappingOutput> _activeMouseMappings = new();
     private readonly HashSet<int> _pressedPhysicalKeyboardKeys = [];
@@ -149,12 +153,30 @@ public class KeyMappingTask : BgTaskBase
     }
 
     public KeyMappingTask(Galgame game, Process process, IEnumerable<KeyMapping> keyMappings)
+        : this(game, process, keyMappings, null, null)
+    {
+    }
+
+    public KeyMappingTask(Galgame game, Process process, IEnumerable<KeyMapping> keyMappings,
+        IReadOnlyCollection<int>? preExistingProcessIds, GameRuntimeProcessRelay? processRelay)
         : this()
     {
-        ProcessName = process.ProcessName;
         Galgame = game;
         _process = process;
+        _processRelay = processRelay;
+        HasPreLaunchProcessSnapshot = preExistingProcessIds is not null;
+        PreExistingProcessIds = preExistingProcessIds?.ToList() ?? [];
+        foreach (int processId in PreExistingProcessIds)
+            _trackedProcessIds.Add(processId);
         _trackedProcessIds.Add(GameProcessDetector.SafeGetId(process));
+        try
+        {
+            ProcessName = process.ProcessName;
+        }
+        catch
+        {
+            // 短命启动器可能在任务创建前已经退出，仍保留任务以便接力到正式游戏进程。
+        }
         KeyMappings = keyMappings.Select(m => new KeyMapping
         {
             From = new List<int>(m.From),
@@ -171,6 +193,8 @@ public class KeyMappingTask : BgTaskBase
     protected override Task RecoverFromJsonInternal()
     {
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
+        HasPreLaunchProcessSnapshot = false;
+        PreExistingProcessIds = [];
         if (_process is not null) _trackedProcessIds.Add(GameProcessDetector.SafeGetId(_process));
         InitDirectoryPrefixes();
         return Task.CompletedTask;
@@ -364,23 +388,51 @@ public class KeyMappingTask : BgTaskBase
     {
         while (_process is not null)
         {
-            try
+            TryFollowConfirmedProcess();
+            Process? tracked = _process;
+            if (tracked is null) break;
+            while (ReferenceEquals(_process, tracked) && GameProcessDetector.IsAlive(tracked))
             {
-                await _process.WaitForExitAsync();
+                TryFollowConfirmedProcess();
+                await Task.Delay(200);
             }
-            catch
-            {
-                // ShellExecute 和快捷方式返回的 Process 可能无法等待，交给目录探测兜底。
-            }
+            if (!ReferenceEquals(_process, tracked)) continue;
 
-            int exitedProcessId = GameProcessDetector.SafeGetId(_process);
+            int exitedProcessId = GameProcessDetector.SafeGetId(tracked);
             if (exitedProcessId > 0) _trackedProcessIds.Add(exitedProcessId);
+            if (!GameSessionExitPolicy.ShouldWaitForReplacement(
+                    _confirmedGameplayProcessId > 0, _confirmedGameplayProcessId, exitedProcessId))
+                break;
             Process? replacement = await WaitForReplacementProcessAsync();
             if (replacement is null) break;
 
-            _process = replacement;
-            ProcessName = replacement.ProcessName;
-            _trackedProcessIds.Add(replacement.Id);
+            AttachProcess(replacement);
+        }
+    }
+
+    private void TryFollowConfirmedProcess()
+    {
+        Process? confirmed = _processRelay?.ConfirmedProcess;
+        if (confirmed is null || !GameProcessDetector.IsAlive(confirmed)) return;
+        int confirmedProcessId = GameProcessDetector.SafeGetId(confirmed);
+        if (confirmedProcessId <= 0) return;
+
+        _confirmedGameplayProcessId = confirmedProcessId;
+        if (_process is not null && GameProcessDetector.SafeGetId(_process) == confirmedProcessId) return;
+        AttachProcess(confirmed);
+    }
+
+    private void AttachProcess(Process process)
+    {
+        _process = process;
+        _trackedProcessIds.Add(GameProcessDetector.SafeGetId(process));
+        try
+        {
+            ProcessName = process.ProcessName;
+        }
+        catch
+        {
+            // 进程可能在身份切换期间退出，后续仍由生命周期检查完成清理。
         }
     }
 
@@ -636,7 +688,9 @@ public class KeyMappingTask : BgTaskBase
 
         try
         {
-            if (_process is { HasExited: false } && _process.Id == foregroundProcessId)
+            Process? tracked = _process;
+            if (tracked is not null && GameProcessDetector.IsAlive(tracked) &&
+                GameProcessDetector.SafeGetId(tracked) == foregroundProcessId)
             {
                 matchReason = "跟踪进程一致";
                 return true;
