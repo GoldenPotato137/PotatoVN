@@ -18,7 +18,6 @@
     <Grid Margin="{ThemeResource PageButtonMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
@@ -28,42 +27,309 @@
             </core:EventTriggerBehavior>
         </interactivity:Interaction.Behaviors>
         
-        <TextBlock Grid.Row="0" Text="{x:Bind ViewModel.Game.Name.Value}" Style="{ThemeResource TitleTextBlockStyle}"/>
+        <Grid Grid.Row="0" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{x:Bind ViewModel.Game.Name.Value}"
+                       Style="{ThemeResource TitleTextBlockStyle}"
+                       TextTrimming="CharacterEllipsis"
+                       MaxLines="1"
+                       VerticalAlignment="Center"
+                       ToolTipService.ToolTip="{x:Bind ViewModel.Game.Name.Value}"/>
 
-        <CommandBar  Grid.Row="1" Background="Transparent" DefaultLabelPosition="Right"  Margin="0 -40 0 0">
-            <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}"
-                          AllowFocusOnInteraction="True">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton x:Uid="Edit" Command="{x:Bind ViewModel.EditCommand}"
-                          AllowFocusOnInteraction="True">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70F;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-        </CommandBar>
+            <CommandBar Grid.Column="1"
+                        Background="Transparent"
+                        DefaultLabelPosition="Right"
+                        HorizontalAlignment="Right">
+                <AppBarButton x:Uid="Back" Command="{x:Bind ViewModel.BackCommand}"
+                              AllowFocusOnInteraction="True">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE72B;"/>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarToggleButton x:Uid="PlayedTimePage_RecordingMode"
+                                    Label="{x:Bind ViewModel.RecordingModeLabel, Mode=OneWay}"
+                                    IsChecked="{x:Bind ViewModel.PrecisePlayTimeEnabled, Mode=OneWay}"
+                                    Command="{x:Bind ViewModel.ToggleRecordingModeCommand}"
+                                    AllowFocusOnInteraction="True">
+                    <AppBarToggleButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE916;"/>
+                    </AppBarToggleButton.Icon>
+                </AppBarToggleButton>
+                <AppBarButton x:Uid="PlayedTimePage_DateSort"
+                              Label="{x:Bind ViewModel.DateSortLabel, Mode=OneWay}"
+                              Command="{x:Bind ViewModel.ToggleDateSortCommand}"
+                              AllowFocusOnInteraction="True">
+                    <AppBarButton.Icon>
+                        <SymbolIcon Symbol="Sort"/>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton x:Uid="Edit" Command="{x:Bind ViewModel.EditCommand}"
+                              AllowFocusOnInteraction="True">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70F;"/>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton x:Uid="PlayedTimePage_AddSession"
+                              Command="{x:Bind ViewModel.AddSessionCommand}"
+                              Visibility="{x:Bind ViewModel.PreciseModeVisibility, Mode=OneWay}"
+                              AllowFocusOnInteraction="True">
+                    <AppBarButton.Icon>
+                        <SymbolIcon Symbol="Add"/>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollMode="Auto" HorizontalScrollMode="Disabled"
+        <ScrollViewer x:Name="PlayedTimeScrollViewer"
+                      Grid.Row="1" VerticalScrollMode="Auto" HorizontalScrollMode="Disabled"
                       Margin="{ThemeResource MediumTopMargin}">
-            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items}"
-                           Layout="{StaticResource VerticalStackLayout}">
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:PlayTimeViewModelItem">
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <TextBlock Text="{x:Bind Date}" MinWidth="100" />
-                            <Rectangle Fill="{ThemeResource SystemAccentColor}"
-                                       Width="{x:Bind Width, Mode=OneWay}"
-                                       Height="24" HorizontalAlignment="Left" />
-                            <TextBlock
-                                Text="{x:Bind PlayTime, Mode=OneWay, 
-                                Converter={StaticResource TimeToDisplayTimeConverter}}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
+            <StackPanel Spacing="12" Padding="0,0,12,80">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="5"
+                            Visibility="{x:Bind ViewModel.PreciseModeVisibility, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind ViewModel.Summary, Mode=OneWay}"
+                               Style="{ThemeResource DescriptionTextStyle}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"/>
+                    <Button x:Uid="PlayedTimePage_PreciseTotalHelp"
+                            Width="24"
+                            Height="24"
+                            MinWidth="24"
+                            MinHeight="24"
+                            Padding="4"
+                            BorderThickness="0"
+                            CornerRadius="12"
+                            Background="Transparent"
+                            VerticalAlignment="Center">
+                        <Button.Flyout>
+                            <Flyout>
+                                <TextBlock x:Uid="PlayedTimePage_PreciseTotalHelpFlyout"
+                                           MaxWidth="320"
+                                           TextWrapping="Wrap"/>
+                            </Flyout>
+                        </Button.Flyout>
+                        <Border Width="16"
+                                Height="16"
+                                BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <TextBlock Text="?"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                    </Button>
+                </StackPanel>
+                <TextBlock x:Uid="PlayedTimePage_SessionDescription"
+                           Visibility="{x:Bind ViewModel.PreciseModeVisibility, Mode=OneWay}"
+                           Style="{ThemeResource DescriptionTextStyle}"
+                           TextWrapping="Wrap"/>
+                <ItemsRepeater x:Name="PlayedTimeItemsRepeater"
+                               ItemsSource="{x:Bind ViewModel.Items}"
+                               Layout="{StaticResource VerticalStackLayout}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:PlayTimeDayViewModelItem">
+                            <Grid>
+                                <Expander HorizontalContentAlignment="Stretch"
+                                          IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                                          Visibility="{x:Bind PreciseVisibility, Mode=OneWay}"
+                                          Margin="0,0,0,8">
+                                <Expander.Header>
+                                    <Grid ColumnSpacing="12" MinHeight="42">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="180"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Date, Mode=OneWay}"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"/>
+                                        <ItemsControl Grid.Column="1"
+                                                      ItemsSource="{x:Bind Segments}"
+                                                      Width="{x:Bind Width, Mode=OneWay}"
+                                                      HorizontalAlignment="Left">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="viewModels:PlayTimeBarSegmentViewModelItem">
+                                                    <Grid Width="{x:Bind Width, Mode=OneWay}"
+                                                          Height="22"
+                                                          Margin="0,0,2,0">
+                                                        <Rectangle Fill="{ThemeResource SystemAccentColor}"
+                                                                   Opacity="{x:Bind Opacity}"
+                                                                   ToolTipService.ToolTip="{x:Bind ToolTip}"/>
+                                                        <Button Width="{x:Bind Width, Mode=OneWay}"
+                                                                Height="22"
+                                                                MinWidth="0"
+                                                                MinHeight="0"
+                                                                Padding="0"
+                                                                BorderThickness="0"
+                                                                CornerRadius="0"
+                                                                Background="Transparent"
+                                                                HorizontalContentAlignment="Stretch"
+                                                                VerticalContentAlignment="Stretch"
+                                                                Visibility="{x:Bind InteractiveVisibility}"
+                                                                ToolTipService.ToolTip="{x:Bind ToolTip}"
+                                                                AutomationProperties.Name="{x:Bind ToolTip}"
+                                                                Tapped="ActivateBarSegment"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{x:Bind TotalText, Mode=OneWay}"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"
+                                                   RightTapped="ChangeTimeFormat"/>
+                                    </Grid>
+                                </Expander.Header>
+                                <StackPanel Spacing="8" Padding="12,8,4,10">
+                                    <TextBlock Text="{x:Bind LegacyText, Mode=OneWay}"
+                                               Style="{ThemeResource DescriptionTextStyle}"
+                                               TextWrapping="Wrap"/>
+                                    <ItemsRepeater ItemsSource="{x:Bind Sessions}">
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:PlayTimeSessionViewModelItem">
+                                                <Expander HorizontalContentAlignment="Stretch"
+                                                          IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
+                                                    <Expander.Header>
+                                                        <Grid ColumnSpacing="12" MinHeight="42">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="180"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="{x:Bind TimeRange, Mode=OneWay}"
+                                                                       VerticalAlignment="Center"
+                                                                       FontWeight="SemiBold"/>
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{x:Bind Kind, Mode=OneWay}"
+                                                                       VerticalAlignment="Center"
+                                                                       Style="{ThemeResource DescriptionTextStyle}"/>
+                                                            <TextBlock Grid.Column="2"
+                                                                       Text="{x:Bind Duration, Mode=OneWay}"
+                                                                       VerticalAlignment="Center"
+                                                                       RightTapped="ChangeTimeFormat"/>
+                                                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
+                                                                <Button x:Uid="PlayedTimePage_EditSession"
+                                                                        Command="{x:Bind EditCommand}"
+                                                                        Visibility="{x:Bind EditVisibility, Mode=OneWay}">
+                                                                    <SymbolIcon Symbol="Edit"/>
+                                                                </Button>
+                                                                <Button x:Uid="PlayedTimePage_CloseSession"
+                                                                        Command="{x:Bind CloseCommand}"
+                                                                        Visibility="{x:Bind CloseVisibility, Mode=OneWay}">
+                                                                    <FontIcon Glyph="&#xE73E;"/>
+                                                                </Button>
+                                                                <Button x:Uid="PlayedTimePage_DeleteSession"
+                                                                        Command="{x:Bind DeleteCommand}"
+                                                                        Visibility="{x:Bind DeleteVisibility, Mode=OneWay}">
+                                                                    <SymbolIcon Symbol="Delete"/>
+                                                                </Button>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Expander.Header>
+                                                    <StackPanel Spacing="6" Padding="20,2,4,10">
+                                                        <TextBlock x:Uid="PlayedTimePage_ActivityIntervals"
+                                                                   Style="{ThemeResource DescriptionTextStyle}"/>
+                                                        <TextBlock x:Uid="PlayedTimePage_NoActivityIntervals"
+                                                                   Visibility="{x:Bind EmptyActivityVisibility, Mode=OneWay}"
+                                                                   Style="{ThemeResource DescriptionTextStyle}"/>
+                                                        <ItemsRepeater ItemsSource="{x:Bind ActivityIntervals}">
+                                                            <ItemsRepeater.ItemTemplate>
+                                                                <DataTemplate x:DataType="viewModels:PlayTimeActivityViewModelItem">
+                                                                    <Grid ColumnSpacing="12" MinHeight="32">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="180"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock Text="{x:Bind TimeRange}"
+                                                                                   VerticalAlignment="Center"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   Text="{x:Bind Duration}"
+                                                                                   VerticalAlignment="Center"
+                                                                                   RightTapped="ChangeTimeFormat"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsRepeater.ItemTemplate>
+                                                        </ItemsRepeater>
+                                                    </StackPanel>
+                                                </Expander>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </StackPanel>
+                                </Expander>
+                                <StackPanel Visibility="{x:Bind MinuteVisibility, Mode=OneWay}"
+                                            Orientation="Horizontal"
+                                            Spacing="5">
+                                    <TextBlock Text="{x:Bind Date, Mode=OneWay}" MinWidth="100"
+                                               VerticalAlignment="Center"/>
+                                    <ItemsControl ItemsSource="{x:Bind Segments}"
+                                                  Width="{x:Bind Width, Mode=OneWay}"
+                                                  HorizontalAlignment="Left">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:PlayTimeBarSegmentViewModelItem">
+                                                <Button Width="{x:Bind Width, Mode=OneWay}"
+                                                        Height="24"
+                                                        MinWidth="0"
+                                                        MinHeight="0"
+                                                        Padding="0"
+                                                        Margin="0,0,2,0"
+                                                        BorderThickness="0"
+                                                        CornerRadius="0"
+                                                        Background="Transparent"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        VerticalContentAlignment="Stretch"
+                                                        Command="{x:Bind ActivateCommand}"
+                                                        ToolTipService.ToolTip="{x:Bind ToolTip}"
+                                                        AutomationProperties.Name="{x:Bind ToolTip}">
+                                                    <Rectangle Fill="{ThemeResource SystemAccentColor}"
+                                                               Opacity="{x:Bind Opacity}"/>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="{x:Bind TotalText, Mode=OneWay}"
+                                               VerticalAlignment="Center"
+                                               RightTapped="ChangeTimeFormat"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
         </ScrollViewer>
+
+        <Button x:Uid="PlayedTimePage_Refresh"
+                Grid.Row="1"
+                Width="44"
+                Height="44"
+                MinWidth="44"
+                MinHeight="44"
+                Padding="0"
+                Margin="0,0,24,24"
+                CornerRadius="22"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Click="RefreshPlayedTime"
+                Canvas.ZIndex="1">
+            <SymbolIcon Symbol="Refresh"/>
+        </Button>
     </Grid>
     
 </Page>

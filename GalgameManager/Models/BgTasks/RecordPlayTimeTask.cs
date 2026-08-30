@@ -19,6 +19,10 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     public string ProcessName { get; set; } = string.Empty;
     public DateTime StartTime { get; set; }= DateTime.Now;
     public int CurrentPlayTime { get; set; } //本次游玩时间
+    public long CurrentPlayTimeSeconds { get; set; } // 本次实际累计秒数
+    public bool? PrecisePlayTimeMode { get; set; } // 本次启动锁定的计时模式，恢复任务时保持不变
+    public Guid? ActiveSessionId { get; set; } // 异常退出/托盘恢复时继续同一原生时段
+    public Guid? ActiveMinuteSessionId { get; set; } // 异常退出/托盘恢复时继续同一条分钟级启动分段
     public Guid? InstallationId { get; set; } // 本次游玩使用的安装实例Id
     public bool HasPreLaunchProcessSnapshot { get; set; } // 是否已经在启动游戏前采集安装目录进程快照
     public List<int> PreExistingProcessIds { get; set; } = []; // 启动前已经存在于安装目录的进程Id
@@ -35,8 +39,9 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     private bool _recoveredFromJson;
     private volatile bool _recordingStarted;
     private volatile int _confirmedGameplayProcessId;
-    private readonly StableProcessHandoffGate _foregroundProcessHandoffGate = new();
     private readonly StableGameWindowGate _directWindowGate = new();
+    private readonly StableProcessHandoffGate _foregroundProcessHandoffGate = new();
+    private bool _recordingStartedMessageSent;
     private GameRuntimeProcessRelay? _processRelay;
     private GameWindowSnapshot? _initialWindowSnapshot;
     private GameLaunchWindowTracker? _launchWindowTracker;
@@ -64,7 +69,20 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     /// <param name="process">要跟踪的游戏进程</param>
     /// <param name="installationId">本次游玩使用的安装实例Id</param>
     public RecordPlayTimeTask(Galgame game, Process process, Guid? installationId)
-        : this(game, process, installationId, null, null)
+        : this(game, process, installationId, null)
+    {
+    }
+
+    /// <summary>
+    /// 使用启动前进程快照创建游玩时间记录任务。
+    /// </summary>
+    /// <param name="game">目标逻辑游戏</param>
+    /// <param name="process">启动操作返回的初始进程</param>
+    /// <param name="installationId">本次游玩使用的安装实例Id</param>
+    /// <param name="preExistingProcessIds">启动前已经存在于安装目录的进程Id</param>
+    public RecordPlayTimeTask(Galgame game, Process process, Guid? installationId,
+        IReadOnlyCollection<int>? preExistingProcessIds)
+        : this(game, process, installationId, preExistingProcessIds, null)
     {
     }
 
@@ -127,7 +145,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
         }
         catch
         {
-            // 进程对象可能无效（例如通过 ShellExecute 启动的快捷方式），仍创建任务，由目录检查兜底。
+            // 进程对象可能无效（例如通过ShellExecute启动的快捷方式），仍创建任务，由退出后的目录检查兜底
         }
         DelayPlayTimeUntilMainWindow = game.SourceEntries.FirstOrDefault(e => e.EntryId == installationId)
             ?.LocalConfig?.DelayPlayTimeUntilMainWindow == true;
@@ -137,10 +155,53 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     protected override Task RecoverFromJsonInternal()
     {
         _recoveredFromJson = true;
-        _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         HasPreLaunchProcessSnapshot = false;
         InitDirectoryWatch();
+        _process = FindRecoveryProcess();
         return Task.CompletedTask;
+    }
+
+    private Process? FindRecoveryProcess()
+    {
+        Process? directoryProcess = _directoryPrefix is null
+            ? null
+            : GameProcessDetector.FindBestProcessInDirectory(
+                _directoryPrefix,
+                requiredProcessName: ProcessName);
+        if (directoryProcess is not null) return directoryProcess;
+
+        Process[] candidates = string.IsNullOrWhiteSpace(ProcessName)
+            ? []
+            : Process.GetProcessesByName(ProcessName);
+        Process? result = null;
+        foreach (Process candidate in candidates)
+        {
+            if (result is null || IsBetterRecoveryCandidate(candidate, result))
+            {
+                result?.Dispose();
+                result = candidate;
+            }
+            else
+            {
+                candidate.Dispose();
+            }
+        }
+        return result;
+
+        static bool IsBetterRecoveryCandidate(Process candidate, Process current)
+        {
+            bool candidateHasWindow = GameProcessDetector.HasWindow(candidate);
+            bool currentHasWindow = GameProcessDetector.HasWindow(current);
+            if (candidateHasWindow != currentHasWindow) return candidateHasWindow;
+            try
+            {
+                return candidate.StartTime > current.StartTime;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
     private void InitDirectoryWatch()
@@ -168,9 +229,19 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
 
     private async Task RunCoreAsync()
     {
-        if(_process is null || Galgame is null) return ;
+        if (Galgame is null) return;
+        if (_process is null)
+        {
+            if (_recoveredFromJson) await FinalizeOrphanedRecoveredSessionsAsync();
+            return;
+        }
+        PrecisePlayTimeMode = PlayTimeRecordingModeHelper.ResolvePreciseMode(
+            PrecisePlayTimeMode,
+            ActiveSessionId.HasValue,
+            await _localSettingsService.ReadSettingAsync<bool>(KeyValues.PrecisePlayTime));
         ChangeProgress(0, 1, "RecordPlayTimeTask_ProgressMsg".GetLocalized(Galgame.Name.Value!));
-        Task t = Task.Run(async () =>
+
+        Task processMonitor = Task.Run(async () =>
         {
             while (true)
             {
@@ -180,16 +251,19 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
                 while (ReferenceEquals(_process, tracked) && GameProcessDetector.IsAlive(tracked))
                 {
                     if (_confirmedGameplayProcessId <= 0)
-                    {
                         TryAttachStableForegroundProcess(_foregroundProcessHandoffGate);
-                        TryConfirmDirectGameplayProcess(_process);
-                    }
                     await Task.Delay(500);
                 }
 
+                // 预备计时可能已经主动接替到一个仍在运行的前台游戏进程。
                 if (!ReferenceEquals(_process, tracked)) continue;
+
+                // 已确认进入正式游戏的进程退出后应立即结束（#709）；仍处于启动/弹窗/接力阶段时
+                // 才保留5秒目录扫描，兼容汉化启动器拉起不同exe的场景。
                 if (!GameSessionExitPolicy.ShouldWaitForReplacement(
-                        _recordingStarted, _confirmedGameplayProcessId, trackedProcessId))
+                        _recordingStarted,
+                        _confirmedGameplayProcessId,
+                        trackedProcessId))
                 {
                     App.GetService<IInfoService>().Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
                         $"Confirmed gameplay process exited; finishing immediately: gameUuid={Galgame.Uuid:D}, " +
@@ -206,6 +280,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
                 {
                     next = null;
                 }
+
                 if (!ReferenceEquals(_process, tracked))
                 {
                     next?.Dispose();
@@ -215,36 +290,74 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
                 AttachProcess(next, "previous process exited");
             }
             _stopped = true;
-            var windowMode = await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode);
-            await UiThreadInvokeHelper.InvokeAsync(() =>
-            {
-                _gameService.SaveGalgameAsync(Galgame);
-                GalgamePageParameter parma = new()
-                {
-                    Galgame = Galgame,
-                    SelectProgress = DateTime.Now - StartTime < TimeSpan.FromSeconds(ManuallySelectProcessSec)
-                                     && Galgame.SourceEntries.FirstOrDefault(e => e.EntryId == InstallationId)
-                                         ?.LocalConfig?.ProcessName is null
-                };
-                if (windowMode == WindowMode.SystemTray)
-                    App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, parma);
-                App.SetWindowMode(WindowMode.Normal);
-                ChangeProgress(1, 1,
-                    "RecordPlayTimeTask_Done".GetLocalized(Galgame.Name.Value ?? string.Empty,
-                        TimeToDisplayTimeConverter.Convert(CurrentPlayTime)));
-                // 手动通知LastPlayTime属性已更改
-                Galgame.RaisePropertyChanged(nameof(Galgame.LastPlayTime));
-                if (CurrentPlayTime >= _minPlayTimeRecordThreshold) Galgame!.PlayCount++;
-                App.GetService<IMessenger>().Send(new GalgameStoppedMessage(Galgame));
-            });
-            await App.GetService<IGalgameCollectionService>().SaveGalgameAsync(Galgame);
-            if(await App.GetService<ILocalSettingsService>().ReadSettingAsync<bool>(KeyValues.SyncGames))
-                App.GetService<IPvnService>().Upload(Galgame, PvnUploadProperties.PlayTime);
         });
 
-        _ = RecordPlayTimeAsync();
+        Task recording = RecordPlayTimeAsync();
+        await processMonitor;
+        await recording;
 
-        await t;
+        WindowMode windowMode = await _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode);
+        bool precisePlayTime = PrecisePlayTimeMode == true;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            GalgamePageParameter parma = new()
+            {
+                Galgame = Galgame,
+                SelectProgress = DateTime.Now - StartTime < TimeSpan.FromSeconds(ManuallySelectProcessSec)
+                                 && Galgame.SourceEntries.FirstOrDefault(e => e.EntryId == InstallationId)
+                                     ?.LocalConfig?.ProcessName is null
+            };
+            if (windowMode == WindowMode.SystemTray)
+                App.GetService<INavigationService>().NavigateTo(typeof(GalgameViewModel).FullName!, parma);
+            App.SetWindowMode(WindowMode.Normal);
+            ChangeProgress(1, 1,
+                "RecordPlayTimeTask_Done".GetLocalized(Galgame.Name.Value ?? string.Empty,
+                    precisePlayTime
+                        ? TimeToDisplayTimeConverter.ConvertSeconds(CurrentPlayTimeSeconds)
+                        : TimeToDisplayTimeConverter.Convert(CurrentPlayTime)));
+            Galgame.RaisePropertyChanged(nameof(Galgame.LastPlayTime));
+            bool reachesPlayCountThreshold = precisePlayTime
+                ? CurrentPlayTimeSeconds > 0 &&
+                  CurrentPlayTimeSeconds >= _minPlayTimeRecordThreshold * 60L
+                : CurrentPlayTime >= _minPlayTimeRecordThreshold;
+            if (reachesPlayCountThreshold) Galgame.PlayCount++;
+            App.GetService<IMessenger>().Send(new GalgameStoppedMessage(Galgame));
+        });
+        await _gameService.SaveGalgameAsync(Galgame);
+        if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncGames))
+            App.GetService<IPvnService>().Upload(Galgame, PvnUploadProperties.PlayTime);
+    }
+
+    /// <summary>
+    /// 恢复时若原进程已经退出，使用最后一次持久化的边界关闭开放记录，
+    /// 避免详情页永久显示“正在记录”。这里不会把应用离线后的时间补入汇总。
+    /// </summary>
+    private async Task FinalizeOrphanedRecoveredSessionsAsync()
+    {
+        bool changed = false;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            if (ActiveSessionId is { } preciseSessionId)
+            {
+                changed |= PlayTimeSessionHelper.CloseOpenSession(Galgame!, preciseSessionId);
+                ActiveSessionId = null;
+            }
+
+            if (ActiveMinuteSessionId is { } minuteSessionId)
+            {
+                PlayTimeSession? minuteSession = Galgame!.PlayTimeSessions.FirstOrDefault(session =>
+                    session.Id == minuteSessionId && session.Kind == PlayTimeSessionKind.MinuteSampled);
+                changed |= PlayTimeSessionHelper.CloseOpenSession(Galgame, minuteSessionId);
+                ActiveMinuteSessionId = null;
+                if (minuteSession is not null && !PlayTimeSessionHelper.HasMinuteSamples(minuteSession))
+                {
+                    Galgame.PlayTimeSessions.Remove(minuteSession);
+                    PlayTimeSessionHelper.RefreshDerivedState(Galgame);
+                    changed = true;
+                }
+            }
+        });
+        if (changed) await _gameService.SaveGalgameAsync(Galgame!);
     }
 
     /// <summary>
@@ -276,67 +389,259 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     {
         return Task.Run(async () =>
         {
-            var recordOnlyWhenForeground =
+            bool recordOnlyWhenForeground =
                 await _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground);
-            _minPlayTimeRecordThreshold = await _localSettingsService.ReadSettingAsync<int>(KeyValues.MinPlayTimeRecordThreshold);
+            _minPlayTimeRecordThreshold =
+                await _localSettingsService.ReadSettingAsync<int>(KeyValues.MinPlayTimeRecordThreshold);
             if (!await WaitForPlayableWindowAsync()) return;
+            SendRecordingStartedMessage();
+
+            if (PrecisePlayTimeMode != true)
+            {
+                await RecordLegacyPlayTimeAsync(recordOnlyWhenForeground);
+                return;
+            }
+
+            PlayTimeSession? launchSession = ActiveSessionId is { } activeId
+                ? Galgame!.PlayTimeSessions.FirstOrDefault(session => session.Id == activeId && session.IsOpen)
+                : null;
+            if (launchSession is null)
+                launchSession = await BeginSessionAsync(DateTime.Now);
+            else
+                await UiThreadInvokeHelper.InvokeAsync(() =>
+                    PlayTimeSessionHelper.EnsureExplicitActivityIntervals(launchSession));
+            PlayTimeActivityInterval? activeInterval = null;
+            DateTime lastSaveAt = DateTime.Now;
+
             try
             {
                 _localSettingsService.OnSettingChanged += OnSettingChanged;
-
                 while (!_stopped)
                 {
-                    Thread.Sleep(1000 * 60);
+                    await Task.Delay(1000);
+                    DateTime now = DateTime.Now;
                     Process? current = _process;
-                    if (_stopped || current is null || !GameProcessDetector.IsAlive(current) ||
-                        (recordOnlyWhenForeground && (current.IsMainWindowMinimized() || !current.IsMainWindowActive())))
-                        continue;
-                    UiThreadInvokeHelper.Invoke(() =>
+                    TryConfirmDirectGameplayProcess(current);
+                    bool eligible = !_stopped && current is not null && GameProcessDetector.IsAlive(current) &&
+                                    (!recordOnlyWhenForeground ||
+                                     (!current.IsMainWindowMinimized() && current.IsMainWindowActive()));
+
+                    if (!eligible)
                     {
-                        Galgame!.TotalPlayTime++;
-                        CurrentPlayTime++;
-                        _gameService.SaveGalgameAsync(Galgame);
+                        activeInterval = null;
+                        await UiThreadInvokeHelper.InvokeAsync(() => launchSession.EndedAt = now);
+                        continue;
+                    }
+
+                    if (activeInterval is null)
+                    {
+                        activeInterval = await BeginActivityIntervalAsync(launchSession, now);
+                        lastSaveAt = now;
+                        continue;
+                    }
+
+                    long sampleSeconds = 0;
+                    await UiThreadInvokeHelper.InvokeAsync(() =>
+                    {
+                        sampleSeconds = PlayTimeSessionHelper.ExtendActivityInterval(
+                            Galgame!, launchSession, activeInterval, now);
+                        CurrentPlayTimeSeconds = CurrentPlayTimeSeconds > long.MaxValue - sampleSeconds
+                            ? long.MaxValue
+                            : CurrentPlayTimeSeconds + sampleSeconds;
+                        CurrentPlayTime = checked((int)Math.Min(int.MaxValue, CurrentPlayTimeSeconds / 60));
                     });
-                    var now = DateTime.Now.ToStringDefault();
-                    if (!Galgame!.PlayedTime.TryAdd(now, 1))
-                        Galgame.PlayedTime[now]++;
+                    if (sampleSeconds <= 0) continue;
+
+                    if (now - lastSaveAt >= TimeSpan.FromSeconds(15))
+                    {
+                        await _gameService.SaveGalgameAsync(Galgame!);
+                        lastSaveAt = now;
+                    }
                 }
             }
             finally
             {
                 _localSettingsService.OnSettingChanged -= OnSettingChanged;
+                await CloseLaunchSessionAsync(launchSession, activeInterval is not null);
             }
-
-            return;
 
             void OnSettingChanged(string key, object? value)
             {
-                if(key == KeyValues.RecordOnlyWhenForeground && value is bool b)
+                if (key == KeyValues.RecordOnlyWhenForeground && value is bool b)
                     recordOnlyWhenForeground = b;
-                if(key == KeyValues.MinPlayTimeRecordThreshold && value is int i)
+                if (key == KeyValues.MinPlayTimeRecordThreshold && value is int i)
                     _minPlayTimeRecordThreshold = i;
             }
         });
     }
 
-    public override bool OnSearch(string key) =>
-        Galgame is not null && string.Equals(Galgame.Uuid.ToString("D"), key, StringComparison.OrdinalIgnoreCase);
+    private async Task RecordLegacyPlayTimeAsync(bool recordOnlyWhenForeground)
+    {
+        DateTime nextSampleAt = DateTime.Now.AddMinutes(1);
+        PlayTimeSession? launchSession = ActiveMinuteSessionId is { } activeId
+            ? Galgame!.PlayTimeSessions.FirstOrDefault(session =>
+                session.Id == activeId &&
+                session.IsOpen &&
+                session.Kind == PlayTimeSessionKind.MinuteSampled)
+            : null;
+        if (launchSession is null)
+            launchSession = await BeginMinuteSessionAsync(DateTime.Now);
+        try
+        {
+            _localSettingsService.OnSettingChanged += OnSettingChanged;
+            while (!_stopped)
+            {
+                await Task.Delay(1000);
+                DateTime now = DateTime.Now;
+                Process? current = _process;
+                TryConfirmDirectGameplayProcess(current);
+                if (now < nextSampleAt) continue;
+
+                // 与旧版一致，每次唤醒只采样一次；系统休眠或线程延迟不会追补中间分钟。
+                nextSampleAt = now.AddMinutes(1);
+                bool eligible = !_stopped && current is not null && GameProcessDetector.IsAlive(current) &&
+                                (!recordOnlyWhenForeground ||
+                                 (!current.IsMainWindowMinimized() && current.IsMainWindowActive()));
+                if (!eligible) continue;
+
+                await UiThreadInvokeHelper.InvokeAsync(() =>
+                {
+                    PlayTimeSessionHelper.AddLegacyMinuteSample(Galgame!, now, launchSession);
+                    if (CurrentPlayTime < int.MaxValue) CurrentPlayTime++;
+                    CurrentPlayTimeSeconds = CurrentPlayTimeSeconds > long.MaxValue - 60
+                        ? long.MaxValue
+                        : CurrentPlayTimeSeconds + 60;
+                });
+                await _gameService.SaveGalgameAsync(Galgame!);
+            }
+        }
+        finally
+        {
+            _localSettingsService.OnSettingChanged -= OnSettingChanged;
+            await CloseMinuteSessionAsync(launchSession);
+        }
+
+        void OnSettingChanged(string key, object? value)
+        {
+            if (key == KeyValues.RecordOnlyWhenForeground && value is bool b)
+                recordOnlyWhenForeground = b;
+            if (key == KeyValues.MinPlayTimeRecordThreshold && value is int i)
+                _minPlayTimeRecordThreshold = i;
+        }
+    }
+
+    private async Task<PlayTimeSession> BeginMinuteSessionAsync(DateTime startedAt)
+    {
+        PlayTimeSession session = new()
+        {
+            StartedAt = startedAt,
+            EndedAt = startedAt,
+            IsOpen = true,
+            InstallationId = InstallationId,
+            Kind = PlayTimeSessionKind.MinuteSampled,
+            CountsTowardPlayTime = false,
+            SampledMinutesByDay = [],
+            ActivityIntervals = [],
+        };
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            Galgame!.PlayTimeSessions.Add(session);
+            ActiveMinuteSessionId = session.Id;
+        });
+        await _gameService.SaveGalgameAsync(Galgame!);
+        return session;
+    }
+
+    private async Task CloseMinuteSessionAsync(PlayTimeSession session)
+    {
+        DateTime endedAt = DateTime.Now;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            session.EndedAt = endedAt < session.StartedAt ? session.StartedAt : endedAt;
+            session.IsOpen = false;
+            ActiveMinuteSessionId = null;
+            if (!PlayTimeSessionHelper.HasMinuteSamples(session))
+                Galgame!.PlayTimeSessions.RemoveAll(item => item.Id == session.Id);
+            PlayTimeSessionHelper.RefreshDerivedState(Galgame!);
+        });
+        await _gameService.SaveGalgameAsync(Galgame!);
+    }
+
+    private async Task<PlayTimeSession> BeginSessionAsync(DateTime startedAt)
+    {
+        PlayTimeSession session = new()
+        {
+            StartedAt = startedAt,
+            EndedAt = startedAt,
+            IsOpen = true,
+            InstallationId = InstallationId,
+            Kind = PlayTimeSessionKind.Native,
+            CountsTowardPlayTime = true,
+            ActivityIntervals = [],
+        };
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            Galgame!.PlayTimeSessions.Add(session);
+            ActiveSessionId = session.Id;
+        });
+        await _gameService.SaveGalgameAsync(Galgame!);
+        return session;
+    }
+
+    private async Task<PlayTimeActivityInterval> BeginActivityIntervalAsync(
+        PlayTimeSession session, DateTime startedAt)
+    {
+        PlayTimeActivityInterval? interval = null;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+            interval = PlayTimeSessionHelper.BeginActivityInterval(session, startedAt));
+        await _gameService.SaveGalgameAsync(Galgame!);
+        return interval!;
+    }
+
+    private async Task CloseLaunchSessionAsync(PlayTimeSession session, bool extendActiveInterval)
+    {
+        DateTime endedAt = DateTime.Now;
+        await UiThreadInvokeHelper.InvokeAsync(() =>
+        {
+            PlayTimeActivityInterval? interval = session.ActivityIntervals?.LastOrDefault();
+            if (extendActiveInterval && interval is not null)
+            {
+                long addedSeconds = PlayTimeSessionHelper.ExtendActivityInterval(
+                    Galgame!, session, interval, endedAt);
+                CurrentPlayTimeSeconds = CurrentPlayTimeSeconds > long.MaxValue - addedSeconds
+                    ? long.MaxValue
+                    : CurrentPlayTimeSeconds + addedSeconds;
+                CurrentPlayTime = checked((int)Math.Min(int.MaxValue, CurrentPlayTimeSeconds / 60));
+            }
+            session.EndedAt = endedAt < session.StartedAt ? session.StartedAt : endedAt;
+            session.IsOpen = false;
+            ActiveSessionId = null;
+            PlayTimeSessionHelper.RefreshDerivedState(Galgame!);
+        });
+        await _gameService.SaveGalgameAsync(Galgame!);
+    }
+
+    private void SendRecordingStartedMessage()
+    {
+        if (_recordingStartedMessageSent || Galgame is null) return;
+        _recordingStartedMessageSent = true;
+        App.GetService<IMessenger>().Send(new GalgamePlayTimeRecordingStartedMessage(Galgame));
+    }
 
     private void TryConfirmDirectGameplayProcess(Process? process)
     {
         if (!_recordingStarted || process is null || !GameProcessDetector.IsAlive(process)) return;
-        // 启用弹窗等待的安装实例只能由窗口切换门控确认。恢复任务缺少启动前快照，
+        // 启用弹窗等待的安装实例只能由下方切换门控确认。恢复任务缺少启动前快照，
         // 此时将稳定存在的游戏窗口作为最安全的确认依据。
         if (DelayPlayTimeUntilMainWindow && !_recoveredFromJson) return;
 
         GameWindowSnapshot? snapshot = GameProcessDetector.TryGetPrimaryWindowSnapshot(process);
         if (!_directWindowGate.Observe(snapshot) || !snapshot.HasValue) return;
         if (_confirmedGameplayProcessId == snapshot.Value.ProcessId) return;
-
         _confirmedGameplayProcessId = snapshot.Value.ProcessId;
-        PublishGameplayProcess(process, _confirmedGameplayProcessId);
+        SendGameplayProcessConfirmedMessage(_confirmedGameplayProcessId);
         App.GetService<IInfoService>().Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
-            $"Gameplay process confirmed by stable window: gameUuid={Galgame!.Uuid:D}, " +
+            $"Direct gameplay process confirmed by stable window: gameUuid={Galgame!.Uuid:D}, " +
             $"installationId={InstallationId:D}, pid={_confirmedGameplayProcessId}");
     }
 
@@ -375,9 +680,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
             {
                 _recordingStarted = true;
                 _confirmedGameplayProcessId = confirmedSnapshot.Value.ProcessId;
-                Process? confirmedProcess = _process;
-                if (confirmedProcess is not null)
-                    PublishGameplayProcess(confirmedProcess, _confirmedGameplayProcessId);
+                SendGameplayProcessConfirmedMessage(_confirmedGameplayProcessId);
                 ChangeProgress(0, 1, "RecordPlayTimeTask_ProgressMsg".GetLocalized(Galgame.Name.Value!));
                 App.GetService<IInfoService>().Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
                     $"Play-time recording started after window transition: gameUuid={Galgame.Uuid:D}, " +
@@ -416,10 +719,12 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
         }
     }
 
-    private void PublishGameplayProcess(Process process, int processId)
+    private void SendGameplayProcessConfirmedMessage(int processId)
     {
-        if (processId > 0 && GameProcessDetector.SafeGetId(process) == processId)
-            _processRelay?.Confirm(process);
+        if (Galgame is null || processId <= 0) return;
+        Process? current = _process;
+        if (current is not null && GameProcessDetector.SafeGetId(current) == processId)
+            _processRelay?.Confirm(current);
     }
 
     private void TryAttachStableForegroundProcess(StableProcessHandoffGate handoffGate)
@@ -457,25 +762,17 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     {
         int previousProcessId = _process is null ? -1 : GameProcessDetector.SafeGetId(_process);
         _process = process;
+        ProcessName = process.ProcessName;
         _confirmedGameplayProcessId = 0;
         _directWindowGate.Reset();
-        try
-        {
-            ProcessName = process.ProcessName;
-        }
-        catch
-        {
-            // 进程可能在接替期间退出，后续生命周期检查会继续处理。
-        }
         lock (_knownProcessIdsLock)
-            _knownProcessIds?.Add(GameProcessDetector.SafeGetId(process));
+            _knownProcessIds?.Add(process.Id);
         ChangeProgress(0, 1, _recordingStarted
             ? "RecordPlayTimeTask_ProgressMsg".GetLocalized(Galgame!.Name.Value!)
             : "RecordPlayTimeTask_WaitingForMainWindow".GetLocalized(Galgame!.Name.Value ?? string.Empty));
         App.GetService<IInfoService>().Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
             $"Play-time process attached: gameUuid={Galgame.Uuid:D}, installationId={InstallationId:D}, " +
-            $"previousPid={previousProcessId}, pid={GameProcessDetector.SafeGetId(process)}, " +
-            $"process={ProcessName}, reason={reason}");
+            $"previousPid={previousProcessId}, pid={process.Id}, process={ProcessName}, reason={reason}");
     }
 
     private void LogWindowObservation(GameWindowSnapshot snapshot)
@@ -485,6 +782,9 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
             $"pid={snapshot.ProcessId}, hwnd=0x{snapshot.WindowHandle:X}, class={snapshot.ClassName}, " +
             $"size={snapshot.Width}x{snapshot.Height}, title={snapshot.Title}");
     }
+
+    public override bool OnSearch(string key) =>
+        Galgame is not null && string.Equals(Galgame.Uuid.ToString("D"), key, StringComparison.OrdinalIgnoreCase);
 
     public override string Title { get; } = "RecordPlayTimeTask_Title".GetLocalized();
 }

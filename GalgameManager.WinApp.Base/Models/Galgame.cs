@@ -57,6 +57,16 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     public string? HeaderImageUrl { get; set; }
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public Dictionary<string, int> PlayedTime { get; set; }= new(); //ShortDateString() -> PlayedTime, 分钟
+    /// <summary>
+    /// 精确到秒的逐日游玩汇总。首次写入某日时会从 <see cref="PlayedTime"/> 的旧分钟数初始化，
+    /// 因此旧数据与新数据可以无损叠加；旧版客户端会安全忽略此字段。
+    /// </summary>
+    public Dictionary<string, long> PlayedTimeSeconds { get; set; } = new();
+    /// <summary>
+    /// 原生逐段游玩记录。精确模式保存实际计时区间，分钟模式只保存每次启动贡献的整分钟采样数；
+    /// 启动弹窗等待阶段不会创建有效计时分段。
+    /// </summary>
+    public List<PlayTimeSession> PlayTimeSessions { get; set; } = new();
     [ObservableProperty] private LockableProperty<string> _name = "";
     [ObservableProperty] private string _cnName = "";
     [ObservableProperty] private LockableProperty<string> _originalName = "";
@@ -628,13 +638,41 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
             if (!PlayedTime.TryAdd(key, value))
                 PlayedTime[key] = int.Max(value, PlayedTime[key]);
         }
+        // 秒级数据只在本地原生保存，服务端仍同步分钟。若云端分钟数更大，向上补齐本地秒数，
+        // 避免旧客户端或另一台设备的记录在合并后又被精确计时兼容层降回去。
+        foreach ((string key, int minutes) in PlayedTime.ToArray())
+        {
+            long compatibleSeconds = Math.Max(0, minutes) * 60L;
+            if (!PlayedTimeSeconds.TryAdd(key, compatibleSeconds))
+                PlayedTimeSeconds[key] = Math.Max(PlayedTimeSeconds[key], compatibleSeconds);
+        }
+        foreach ((string key, long seconds) in other.PlayedTimeSeconds)
+        {
+            if (!PlayedTimeSeconds.TryAdd(key, Math.Max(0, seconds)))
+                PlayedTimeSeconds[key] = Math.Max(PlayedTimeSeconds[key], Math.Max(0, seconds));
+        }
+        foreach (PlayTimeSession session in other.PlayTimeSessions)
+        {
+            if (PlayTimeSessions.All(existing => existing.Id != session.Id))
+                PlayTimeSessions.Add(session.Clone());
+        }
         // 排序PlayedTime
         PlayedTime = PlayedTime.OrderBy(pair => Utils.TryParseDateGuessCulture(pair.Key))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
-        TotalPlayTime = PlayedTime.Values.Sum();
-        LastPlayTime = PlayedTime.Count > 0
+        long totalMinutes = PlayedTime.Values.Aggregate(0L, (total, minutes) =>
+            total > long.MaxValue - Math.Max(0, minutes)
+                ? long.MaxValue
+                : total + Math.Max(0, minutes));
+        TotalPlayTime = checked((int)Math.Min(int.MaxValue, totalMinutes));
+        DateTime latestLegacy = PlayedTime.Count > 0
             ? PlayedTime.Keys.Select(Utils.TryParseDateGuessCulture).Max()
             : DateTime.MinValue;
+        DateTime latestSession = PlayTimeSessions
+            .Where(session => session.EndedAt >= session.StartedAt)
+            .Select(session => session.EndedAt)
+            .DefaultIfEmpty(DateTime.MinValue)
+            .Max();
+        LastPlayTime = new[] { LastPlayTime, other.LastPlayTime, latestLegacy, latestSession }.Max();
         ReleaseDate.Value = other.ReleaseDate.Value > ReleaseDate.Value ? other.ReleaseDate.Value : ReleaseDate.Value;
     }
 

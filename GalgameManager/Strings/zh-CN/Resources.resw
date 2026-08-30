@@ -5071,4 +5071,232 @@
   <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Description" xml:space="preserve">
     <value>适用于先显示声明、补丁说明或启动器的安装实例。开启后会等到窗口发生稳定切换再开始计时；直接进入游戏的实例请保持关闭。</value>
   </data>
+  <data name="EditPlayTimeDialog_DateColumn.Text" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="EditPlayTimeDialog_Description.Text" xml:space="preserve">
+    <value>日汇总包含已有游玩时段，以及没有起止边界的历史或手工补正余量。汇总不能小于时段总和；需要精确起止时间时，请使用游玩时间页面的“新增时段”。</value>
+  </data>
+  <data name="EditPlayTimeDialog_HourColumn.Text" xml:space="preserve">
+    <value>小时</value>
+  </data>
+  <data name="EditPlayTimeDialog_MinuteColumn.Text" xml:space="preserve">
+    <value>分钟</value>
+  </data>
+  <data name="EditPlayTimeDialog_MinuteDescription" xml:space="preserve">
+    <value>按整数分钟编辑每日汇总。单击详情页柱状图中的启动分段，可编辑或删除该段。本对话框只调整未归入启动记录的历史或手工余量，每日总时长不能小于各启动记录之和。</value>
+  </data>
+  <data name="EditPlayTimeDialog_PreciseDescription" xml:space="preserve">
+    <value>日汇总包含已有游玩时段，以及没有起止边界的历史或手工补正余量。汇总不能小于时段总和；需要精确起止时间时，请使用游玩时间页面的“新增时段”。</value>
+  </data>
+  <data name="EditPlayTimeDialog_SecondColumn.Text" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="EditPlayTimeDialog_SessionDateCannotDelete" xml:space="preserve">
+    <value>{0} 已有游玩时段，不能在这里删除日汇总。请先删除对应时段。</value>
+  </data>
+  <data name="EditPlayTimeDialog_SessionMinimum" xml:space="preserve">
+    <value>{0} 的汇总时长不能小于已有时段总和（{1}）。请先编辑或删除对应时段。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_AddTitle" xml:space="preserve">
+    <value>新增游玩时段</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_DateRequired" xml:space="preserve">
+    <value>请选择开始日期和结束日期。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Description.Text" xml:space="preserve">
+    <value>编辑开始和结束时间后，本次启动会按所选完整区间重新计算，并同步更新秒级日汇总及兼容旧版的分钟数。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndBeforeStart" xml:space="preserve">
+    <value>结束时间必须晚于开始时间。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndDate.Header" xml:space="preserve">
+    <value>结束日期</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndTime.Text" xml:space="preserve">
+    <value>结束时间</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Hour.Header" xml:space="preserve">
+    <value>时</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Minute.Header" xml:space="preserve">
+    <value>分</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Overlap" xml:space="preserve">
+    <value>所选时段与已有记录重叠，请调整开始或结束时间。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Second.Header" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_StartDate.Header" xml:space="preserve">
+    <value>开始日期</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_StartTime.Text" xml:space="preserve">
+    <value>开始时间</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Title" xml:space="preserve">
+    <value>编辑游玩时段</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>小时</value>
+  </data>
+  <data name="LessThanOneMinute" xml:space="preserve">
+    <value>不足 1 分钟</value>
+  </data>
+  <data name="PlayedTimePage_ActiveSessionCannotClose" xml:space="preserve">
+    <value>这个时段仍在实时记录，请先正常退出游戏再进行修改。</value>
+  </data>
+  <data name="PlayedTimePage_ActivityIntervals.Text" xml:space="preserve">
+    <value>有效计时片段</value>
+  </data>
+  <data name="PlayedTimePage_AddSession.Label" xml:space="preserve">
+    <value>新增时段</value>
+  </data>
+  <data name="PlayedTimePage_AddSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>新增带有精确起止时间的游玩时段</value>
+  </data>
+  <data name="PlayedTimePage_CloseSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>结束未完成时段</value>
+  </data>
+  <data name="PlayedTimePage_CloseSessionMessage" xml:space="preserve">
+    <value>要在最后记录时间（{0}）结束这个时段吗？</value>
+  </data>
+  <data name="PlayedTimePage_CloseSessionTitle" xml:space="preserve">
+    <value>结束未完成时段</value>
+  </data>
+  <data name="PlayedTimePage_CrossDayMinuteSegmentOpenToolTip" xml:space="preserve">
+    <value>正在记录或异常中断的跨日启动在 {0} 当天计入的部分 · {1}；单击可结束整条记录</value>
+  </data>
+  <data name="PlayedTimePage_CrossDayMinuteSegmentToolTip" xml:space="preserve">
+    <value>跨日启动在 {0} 当天计入的部分 · {1}；单击只编辑当天部分</value>
+  </data>
+  <data name="PlayedTimePage_DateSort.ToolTipService.ToolTip" xml:space="preserve">
+    <value>切换日期排序</value>
+  </data>
+  <data name="PlayedTimePage_DateSortNewestFirst" xml:space="preserve">
+    <value>最新在前</value>
+  </data>
+  <data name="PlayedTimePage_DateSortOldestFirst" xml:space="preserve">
+    <value>最早在前</value>
+  </data>
+  <data name="PlayedTimePage_DeleteCrossDayMinuteSessionMessage" xml:space="preserve">
+    <value>这是一条跨日启动记录。确定删除 {0} 当天计入的部分（{1}）吗？其他日期的部分保持不变，对应时长会从当天总计中扣除。</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionButton" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionMessage" xml:space="preserve">
+    <value>删除 {0} 的这次启动记录（{1}）？对应时长也会从当天总计中扣除。</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionTitle" xml:space="preserve">
+    <value>删除单次启动记录</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>删除时段</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSessionMessage" xml:space="preserve">
+    <value>确定删除 {0} 至 {1} 的时段（{2}）吗？对应时长也会从原生总时长中扣除。</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSessionTitle" xml:space="preserve">
+    <value>删除游玩时段</value>
+  </data>
+  <data name="PlayedTimePage_EditCrossDayMinuteSessionDescription" xml:space="preserve">
+    <value>这是一条跨日启动记录。当前只修改 {0} 当天计入的整分钟数，其他日期的部分保持不变；当天总时长会按相同差额同步调整。</value>
+  </data>
+  <data name="PlayedTimePage_EditMinuteSessionDescription" xml:space="preserve">
+    <value>修改 {0} 这次启动计入的整分钟数。当天总时长会按相同差额同步调整。</value>
+  </data>
+  <data name="PlayedTimePage_EditMinuteSessionTitle" xml:space="preserve">
+    <value>编辑单次启动时长</value>
+  </data>
+  <data name="PlayedTimePage_EditSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>编辑时段</value>
+  </data>
+  <data name="PlayedTimePage_LegacySummary" xml:space="preserve">
+    <value>没有开始/结束边界的历史分钟汇总：{0}</value>
+  </data>
+  <data name="PlayedTimePage_MinuteLegacySummary" xml:space="preserve">
+    <value>未归入单次启动记录的历史或手工时长：{0}；单击可编辑日汇总</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSegmentOpenToolTip" xml:space="preserve">
+    <value>正在记录或异常中断的分钟模式启动 · {0}；单击可结束此记录</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSegmentToolTip" xml:space="preserve">
+    <value>分钟模式第 {0} 次启动 · {1}；单击可编辑</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSummary" xml:space="preserve">
+    <value>{0} 个日期 · 分钟级计时</value>
+  </data>
+  <data name="PlayedTimePage_NoActivityIntervals.Text" xml:space="preserve">
+    <value>本次启动尚未记录到有效计时片段</value>
+  </data>
+  <data name="PlayedTimePage_NoSessions" xml:space="preserve">
+    <value>暂无游玩时间记录。</value>
+  </data>
+  <data name="PlayedTimePage_OpenSessionCannotEdit" xml:space="preserve">
+    <value>仍处于开放状态的时段不能编辑或删除，请先明确结束该时段。</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSegmentMinuteOpenToolTip" xml:space="preserve">
+    <value>正在记录或异常中断的秒级启动记录 · {0}；单击可结束此记录</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSegmentMinuteToolTip" xml:space="preserve">
+    <value>秒级启动记录 · {0}；单击可编辑完整启动记录</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSummary" xml:space="preserve">
+    <value>{0} 个日期 · {1} 条游玩记录 · 秒级总计 {2}</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelp.AutomationProperties.Name" xml:space="preserve">
+    <value>说明秒级总计与总分钟数的差值</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelp.ToolTipService.ToolTip" xml:space="preserve">
+    <value>秒级总计会保留每天的秒数后再汇总；其他界面显示的总分钟数会先分别舍去每天的秒数再相加，因此两者可能存在差值。</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelpFlyout.Text" xml:space="preserve">
+    <value>秒级总计会保留每天的秒数后再汇总；其他界面显示的总分钟数会先分别舍去每天的秒数再相加，因此两者可能存在差值。</value>
+  </data>
+  <data name="PlayedTimePage_RecordingMode.ToolTipService.ToolTip" xml:space="preserve">
+    <value>切换分钟级与秒级计时；设置页中的“精确游玩时间”会同步更新，正在运行的游戏从下次启动起应用</value>
+  </data>
+  <data name="PlayedTimePage_RecordingModeMinute" xml:space="preserve">
+    <value>分钟级计时</value>
+  </data>
+  <data name="PlayedTimePage_RecordingModePrecise" xml:space="preserve">
+    <value>秒级计时</value>
+  </data>
+  <data name="PlayedTimePage_Refresh.AutomationProperties.Name" xml:space="preserve">
+    <value>刷新游玩时间详情</value>
+  </data>
+  <data name="PlayedTimePage_Refresh.ToolTipService.ToolTip" xml:space="preserve">
+    <value>刷新游玩时间详情</value>
+  </data>
+  <data name="PlayedTimePage_SaveFailed" xml:space="preserve">
+    <value>保存游玩时段失败</value>
+  </data>
+  <data name="PlayedTimePage_SessionDescription.Text" xml:space="preserve">
+    <value>每条“单次启动记录”代表一次从进入游戏到退出的完整启动过程，展开后可查看其中的有效计时片段。</value>
+  </data>
+  <data name="PlayedTimePage_SessionImported" xml:space="preserve">
+    <value>导入的历史时段</value>
+  </data>
+  <data name="PlayedTimePage_SessionManual" xml:space="preserve">
+    <value>手动新增时段</value>
+  </data>
+  <data name="PlayedTimePage_SessionNative" xml:space="preserve">
+    <value>单次启动记录</value>
+  </data>
+  <data name="PlayedTimePage_SessionOpen" xml:space="preserve">
+    <value>原生时段 · 正在记录或异常中断</value>
+  </data>
+  <data name="PlayedTimePage_Summary" xml:space="preserve">
+    <value>{0} 个日期 · {1} 条游玩记录</value>
+  </data>
+  <data name="Second" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="SettingsPage_Game_PrecisePlayTime.Description" xml:space="preserve">
+    <value>开启后按秒采集游玩时长，并记录每次启动及前台计时片段；关闭后沿用原版的整分钟采样。模式在每次启动游戏时锁定，切换后从下次启动生效。</value>
+  </data>
+  <data name="SettingsPage_Game_PrecisePlayTime.Title" xml:space="preserve">
+    <value>启用精确游玩时间</value>
+  </data>
 </root>

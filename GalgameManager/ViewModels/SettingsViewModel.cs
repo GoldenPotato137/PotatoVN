@@ -88,6 +88,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         // 设置页会被 Frame 缓存；外部入口（例如单游戏按键映射对话框）修改总开关后，
         // 每次返回设置页都重新读取，避免界面状态与真实启动配置不一致。
         GameReMapEnabled = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GameReMapEnabled);
+        PrecisePlayTime = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.PrecisePlayTime);
         try
         {
             await _updateService.UpdateSettingsBadgeAsync(); //通过这句话来触发更新弹窗提醒（如果这个版本没触发过的话）
@@ -138,6 +139,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
         //GAME
         _recordOnlyForeground = _localSettingsService.ReadSettingAsync<bool>(KeyValues.RecordOnlyWhenForeground).Result;
+        _precisePlayTime = _localSettingsService.ReadSettingAsync<bool>(KeyValues.PrecisePlayTime).Result;
         _playingWindowMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode).Result;
         _minPlayTimeRecordThreshold = _localSettingsService.ReadSettingAsync<int>(KeyValues.MinPlayTimeRecordThreshold).Result;
         LocalEmulatorPath = _localSettingsService.ReadSettingAsync<string>(KeyValues.LocaleEmulatorPath).Result;
@@ -453,6 +455,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     #region GAME
 
     [ObservableProperty] private bool _recordOnlyForeground;
+    [ObservableProperty] private bool _precisePlayTime;
     [ObservableProperty] private WindowMode _playingWindowMode;
     [ObservableProperty] private int _minPlayTimeRecordThreshold;
     [ObservableProperty] private string? _localEmulatorPath;
@@ -469,6 +472,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     public WindowMode[] PlayingWindowModes;
 
     partial void OnRecordOnlyForegroundChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.RecordOnlyWhenForeground, value);
+
+    partial void OnPrecisePlayTimeChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.PrecisePlayTime, value);
 
     partial void OnPlayingWindowModeChanged(WindowMode value) => _localSettingsService.SaveSettingAsync(KeyValues.PlayingWindowMode, value);
 

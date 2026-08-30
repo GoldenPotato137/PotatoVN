@@ -4159,4 +4159,232 @@ If play time can record correctly, just cancel this popup.
   <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Description" xml:space="preserve">
     <value>For installations that first show a disclaimer, patch notice, or launcher. Recording starts after a stable window transition; leave this off for games that open directly.</value>
   </data>
+  <data name="EditPlayTimeDialog_DateColumn.Text" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="EditPlayTimeDialog_Description.Text" xml:space="preserve">
+    <value>Daily totals include recorded sessions and any historical or manually added remainder. A total cannot be shorter than its sessions; use Add session on the play-time page when exact start and end times are needed.</value>
+  </data>
+  <data name="EditPlayTimeDialog_HourColumn.Text" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="EditPlayTimeDialog_MinuteColumn.Text" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
+  <data name="EditPlayTimeDialog_MinuteDescription" xml:space="preserve">
+    <value>Edit daily totals in whole minutes. Click a launch segment in the details-page bar to edit or delete that segment. This dialog changes only historical or manually added time that is not assigned to a launch, and a daily total cannot be shorter than its launch records.</value>
+  </data>
+  <data name="EditPlayTimeDialog_PreciseDescription" xml:space="preserve">
+    <value>Daily totals include recorded sessions and any historical or manually added remainder. A total cannot be shorter than its sessions; use Add session on the play-time page when exact start and end times are needed.</value>
+  </data>
+  <data name="EditPlayTimeDialog_SecondColumn.Text" xml:space="preserve">
+    <value>Seconds</value>
+  </data>
+  <data name="EditPlayTimeDialog_SessionDateCannotDelete" xml:space="preserve">
+    <value>{0} contains recorded sessions, so its daily total cannot be deleted here. Delete those sessions first.</value>
+  </data>
+  <data name="EditPlayTimeDialog_SessionMinimum" xml:space="preserve">
+    <value>The total for {0} cannot be shorter than its recorded sessions ({1}). Edit or delete those sessions first.</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_AddTitle" xml:space="preserve">
+    <value>Add play session</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_DateRequired" xml:space="preserve">
+    <value>Select both a start date and an end date.</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Description.Text" xml:space="preserve">
+    <value>Editing the start and end replaces this launch with the complete selected interval, then updates the exact daily total and its legacy minute-compatible value.</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndBeforeStart" xml:space="preserve">
+    <value>The end time must be later than the start time.</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndDate.Header" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndTime.Text" xml:space="preserve">
+    <value>End time</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Hour.Header" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Minute.Header" xml:space="preserve">
+    <value>Minute</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Overlap" xml:space="preserve">
+    <value>The selected interval overlaps an existing record. Adjust its start or end time.</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Second.Header" xml:space="preserve">
+    <value>Second</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_StartDate.Header" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_StartTime.Text" xml:space="preserve">
+    <value>Start time</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Title" xml:space="preserve">
+    <value>Edit play session</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="LessThanOneMinute" xml:space="preserve">
+    <value>Less than 1 minute</value>
+  </data>
+  <data name="PlayedTimePage_ActiveSessionCannotClose" xml:space="preserve">
+    <value>This session is still being recorded. Close the game normally before changing it.</value>
+  </data>
+  <data name="PlayedTimePage_ActivityIntervals.Text" xml:space="preserve">
+    <value>Effective timing segments</value>
+  </data>
+  <data name="PlayedTimePage_AddSession.Label" xml:space="preserve">
+    <value>Add session</value>
+  </data>
+  <data name="PlayedTimePage_AddSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add a play session with an exact start and end time</value>
+  </data>
+  <data name="PlayedTimePage_CloseSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>End incomplete session</value>
+  </data>
+  <data name="PlayedTimePage_CloseSessionMessage" xml:space="preserve">
+    <value>End this session at its last recorded time ({0})?</value>
+  </data>
+  <data name="PlayedTimePage_CloseSessionTitle" xml:space="preserve">
+    <value>End incomplete session</value>
+  </data>
+  <data name="PlayedTimePage_CrossDayMinuteSegmentOpenToolTip" xml:space="preserve">
+    <value>Active or interrupted cross-day launch portion counted on {0} · {1}. Click to finish the entire record.</value>
+  </data>
+  <data name="PlayedTimePage_CrossDayMinuteSegmentToolTip" xml:space="preserve">
+    <value>Portion of a cross-day launch counted on {0} · {1}. Click to edit only this day's portion.</value>
+  </data>
+  <data name="PlayedTimePage_DateSort.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Toggle date order</value>
+  </data>
+  <data name="PlayedTimePage_DateSortNewestFirst" xml:space="preserve">
+    <value>Newest first</value>
+  </data>
+  <data name="PlayedTimePage_DateSortOldestFirst" xml:space="preserve">
+    <value>Oldest first</value>
+  </data>
+  <data name="PlayedTimePage_DeleteCrossDayMinuteSessionMessage" xml:space="preserve">
+    <value>This launch spans multiple days. Delete only the portion counted on {0} ({1})? Portions on other dates remain unchanged, and this duration will be removed from the daily total.</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionMessage" xml:space="preserve">
+    <value>Delete this launch record on {0} ({1})? Its duration will also be removed from the daily total.</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionTitle" xml:space="preserve">
+    <value>Delete launch record</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete session</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSessionMessage" xml:space="preserve">
+    <value>Delete the session from {0} to {1} ({2})? Its duration will also be removed from the native total.</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSessionTitle" xml:space="preserve">
+    <value>Delete play session</value>
+  </data>
+  <data name="PlayedTimePage_EditCrossDayMinuteSessionDescription" xml:space="preserve">
+    <value>This launch spans multiple days. Only the whole minutes counted on {0} will be changed; portions on other dates remain unchanged. The daily total will be adjusted by the same difference.</value>
+  </data>
+  <data name="PlayedTimePage_EditMinuteSessionDescription" xml:space="preserve">
+    <value>Change the whole minutes counted for this launch on {0}. The daily total will be adjusted by the same difference.</value>
+  </data>
+  <data name="PlayedTimePage_EditMinuteSessionTitle" xml:space="preserve">
+    <value>Edit launch duration</value>
+  </data>
+  <data name="PlayedTimePage_EditSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit session</value>
+  </data>
+  <data name="PlayedTimePage_LegacySummary" xml:space="preserve">
+    <value>Historical minute total without start/end boundaries: {0}</value>
+  </data>
+  <data name="PlayedTimePage_MinuteLegacySummary" xml:space="preserve">
+    <value>Historical or manually added time not assigned to a launch record: {0}. Click to edit the daily total.</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSegmentOpenToolTip" xml:space="preserve">
+    <value>Active or interrupted minute-mode launch · {0}. Click to finish this record.</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSegmentToolTip" xml:space="preserve">
+    <value>Minute-mode launch {0} · {1}. Click to edit.</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSummary" xml:space="preserve">
+    <value>{0} days · minute-level timing</value>
+  </data>
+  <data name="PlayedTimePage_NoActivityIntervals.Text" xml:space="preserve">
+    <value>No effective timing segment was recorded for this launch.</value>
+  </data>
+  <data name="PlayedTimePage_NoSessions" xml:space="preserve">
+    <value>No play-time records yet.</value>
+  </data>
+  <data name="PlayedTimePage_OpenSessionCannotEdit" xml:space="preserve">
+    <value>A session that is still open cannot be edited or deleted. End it explicitly first.</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSegmentMinuteOpenToolTip" xml:space="preserve">
+    <value>Active or interrupted precise-mode launch · {0}. Click to finish this record.</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSegmentMinuteToolTip" xml:space="preserve">
+    <value>Precise-mode launch · {0}. Click to edit the complete launch record.</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSummary" xml:space="preserve">
+    <value>{0} dates · {1} play records · Precise total {2}</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelp.AutomationProperties.Name" xml:space="preserve">
+    <value>Explain the difference between precise total and total minutes</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelp.ToolTipService.ToolTip" xml:space="preserve">
+    <value>The precise total preserves the second remainder of every day before summing. The total minutes shown elsewhere truncates seconds for each day before adding the days, so the two totals may differ.</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelpFlyout.Text" xml:space="preserve">
+    <value>The precise total preserves the second remainder of every day before summing. The total minutes shown elsewhere truncates seconds for each day before adding the days, so the two totals may differ.</value>
+  </data>
+  <data name="PlayedTimePage_RecordingMode.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Switch between minute and precise timing. The Precise play time setting updates with this control; a running game uses the new mode on its next launch.</value>
+  </data>
+  <data name="PlayedTimePage_RecordingModeMinute" xml:space="preserve">
+    <value>Minute timing</value>
+  </data>
+  <data name="PlayedTimePage_RecordingModePrecise" xml:space="preserve">
+    <value>Precise timing</value>
+  </data>
+  <data name="PlayedTimePage_Refresh.AutomationProperties.Name" xml:space="preserve">
+    <value>Refresh play-time details</value>
+  </data>
+  <data name="PlayedTimePage_Refresh.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Refresh play-time details</value>
+  </data>
+  <data name="PlayedTimePage_SaveFailed" xml:space="preserve">
+    <value>Failed to save play sessions</value>
+  </data>
+  <data name="PlayedTimePage_SessionDescription.Text" xml:space="preserve">
+    <value>Each “Launch record” represents one complete game launch from entering the game until exit. Expand it to view the effective timing segments.</value>
+  </data>
+  <data name="PlayedTimePage_SessionImported" xml:space="preserve">
+    <value>Imported historical session</value>
+  </data>
+  <data name="PlayedTimePage_SessionManual" xml:space="preserve">
+    <value>Manually added session</value>
+  </data>
+  <data name="PlayedTimePage_SessionNative" xml:space="preserve">
+    <value>Launch record</value>
+  </data>
+  <data name="PlayedTimePage_SessionOpen" xml:space="preserve">
+    <value>Native session · active or interrupted</value>
+  </data>
+  <data name="PlayedTimePage_Summary" xml:space="preserve">
+    <value>{0} dates · {1} play records</value>
+  </data>
+  <data name="Second" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="SettingsPage_Game_PrecisePlayTime.Description" xml:space="preserve">
+    <value>When enabled, play time is recorded by the second with per-launch sessions and foreground activity intervals. When disabled, the original whole-minute sampling is used. The mode is locked when each game starts, so changes apply to the next launch.</value>
+  </data>
+  <data name="SettingsPage_Game_PrecisePlayTime.Title" xml:space="preserve">
+    <value>Enable precise play time</value>
+  </data>
 </root>
