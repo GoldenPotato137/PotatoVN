@@ -117,6 +117,7 @@
                                                         </Button>
                                                         <Button x:Uid="MultiInstall_SetPreferred"
                                                                 Style="{StaticResource InstallationActionButtonStyle}"
+                                                                IsEnabled="{x:Bind IsLocalInstallation, Mode=OneWay}"
                                                                 Click="SetPreferredInstallation_OnClick">
                                                             <Grid>
                                                                 <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE734;"

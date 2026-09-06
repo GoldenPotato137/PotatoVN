@@ -3128,7 +3128,7 @@ If play time can record correctly, just cancel this popup.
     <value>Save metadata backup</value>
   </data>
   <data name="GalgameSourcePage_Setting_SaveMetaBackup.Description" xml:space="preserve">
-    <value>Save game metadata within the game folder for this library (.PotatoVN folder)</value>
+    <value>Save game metadata backup for this library (.PotatoVN folder). For folder libraries it is stored inside each game folder; for archive libraries it is stored under the archive library root (named after the archive file).</value>
   </data>
   <data name="SelectGameInfoToFetchDialog_Description.Text" xml:space="preserve">
     <value>Select the types of game information you want to fetch:</value>
@@ -4113,5 +4113,38 @@ If play time can record correctly, just cancel this popup.
   </data>
   <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
     <value>Reset filters</value>
+  </data>
+  <data name="AddSourceDialog_ZipInfo" xml:space="preserve">
+    <value>An archive library stores games as compressed archives (zip/rar/7z). When you move a game into it the game folder is compressed into an archive; the archive itself is not playable directly.'move out to play' is not supported yet.</value>
+  </data>
+  <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
+    <value>The game will be compressed into an archive in {0}</value>
+  </data>
+  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
+    <value>Moving a game out of an archive library is not supported yet. Use 'Add game from archive' on the target local library instead.</value>
+  </data>
+  <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
+    <value>The game has no local folder installation to pack</value>
+  </data>
+  <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
+    <value>Also delete the files on disk (game folder / archive)</value>
+  </data>
+  <data name="PackGameTask_Compressing" xml:space="preserve">
+    <value>Compressing {0}...</value>
+  </data>
+  <data name="PackGameTask_Registering" xml:space="preserve">
+    <value>Registering into the archive library...</value>
+  </data>
+  <data name="PackGameTask_Done" xml:space="preserve">
+    <value>Packed to {0}</value>
+  </data>
+  <data name="PackGameTask_Failed" xml:space="preserve">
+    <value>Failed to pack the game: {0}</value>
+  </data>
+  <data name="PackGameTask_Recovered_RequiredInfoLost" xml:space="preserve">
+    <value>Cannot resume the packing task because required information was lost</value>
+  </data>
+  <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
+    <value>No target library available. Add another library first.</value>
   </data>
 </root>

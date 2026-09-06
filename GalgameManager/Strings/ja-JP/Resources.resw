@@ -3129,7 +3129,7 @@
     <value>メタデータバックアップを保存</value>
   </data>
   <data name="GalgameSourcePage_Setting_SaveMetaBackup.Description" xml:space="preserve">
-    <value>このライブラリのゲームフォルダ内にゲーム情報データを保存します（.PotatoVNフォルダ）</value>
+    <value>このライブラリのゲームメタデータをバックアップします（.PotatoVNフォルダ）。フォルダライブラリでは各ゲームフォルダ内、アーカイブライブラリではアーカイブライブラリのルート（アーカイブファイル名のフォルダ）に保存されます。</value>
   </data>
   <data name="SelectGameInfoToFetchDialog_Description.Text" xml:space="preserve">
     <value>取得したいゲーム情報の種類を選択してください:</value>
@@ -4039,5 +4039,41 @@
   </data>
   <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
     <value>フィルターをリセット</value>
+  </data>
+  <data name="GalgameSourceType_Steam" xml:space="preserve">
+    <value>Steamゲームライブラリ</value>
+  </data>
+  <data name="AddSourceDialog_ZipInfo" xml:space="preserve">
+    <value>アーカイブライブラリはゲームを圧縮ファイル（zip/rar/7z）として保存します。ゲームを移入するとフォルダが圧縮されます。アーカイブは直接プレイできず、現時点では「プレイのための移出」は未対応です。</value>
+  </data>
+  <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
+    <value>ゲームは圧縮されて {0} にアーカイブとして保存されます</value>
+  </data>
+  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
+    <value>アーカイブライブラリからのゲームの移出はまだサポートされていません。代わりに対象のローカルライブラリで「アーカイブからゲームを追加」を使用してください。</value>
+  </data>
+  <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
+    <value>ゲームに圧縮可能なローカルフォルダインストールがありません</value>
+  </data>
+  <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
+    <value>ディスク上のファイルも削除する（ゲームフォルダ/アーカイブ）</value>
+  </data>
+  <data name="PackGameTask_Compressing" xml:space="preserve">
+    <value>{0} を圧縮しています...</value>
+  </data>
+  <data name="PackGameTask_Registering" xml:space="preserve">
+    <value>アーカイブライブラリに登録しています...</value>
+  </data>
+  <data name="PackGameTask_Done" xml:space="preserve">
+    <value>{0} に圧縮しました</value>
+  </data>
+  <data name="PackGameTask_Failed" xml:space="preserve">
+    <value>ゲームの圧縮に失敗しました: {0}</value>
+  </data>
+  <data name="PackGameTask_Recovered_RequiredInfoLost" xml:space="preserve">
+    <value>必要な情報が失われたため、圧縮タスクを再開できません</value>
+  </data>
+  <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
+    <value>移動先のライブラリがありません。先に別のライブラリを追加してください。</value>
   </data>
 </root>

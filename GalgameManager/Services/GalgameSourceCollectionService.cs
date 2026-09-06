@@ -342,16 +342,36 @@ public class GalgameSourceCollectionService(
 
     private static Task DeleteInstallationFilesAsync(GalgameAndPath installation)
     {
-        if (installation.Source is not GalgameFolderSource)
-            throw new PvnException("MultiInstall_DeleteFiles_LocalFolderOnly".GetLocalized());
-        return Task.Run(() =>
+        if (installation.Source is GalgameFolderSource)
         {
-            if (Directory.Exists(installation.Path))
-                new DirectoryInfo(installation.Path).Delete(true);
-        });
+            return Task.Run(() =>
+            {
+                if (Directory.Exists(installation.Path))
+                    new DirectoryInfo(installation.Path).Delete(true);
+            });
+        }
+        if (installation.Source is GalgameZipSource)
+        {
+            return Task.Run(() =>
+            {
+                if (File.Exists(installation.Path))
+                    File.Delete(installation.Path);
+            });
+        }
+        throw new PvnException("MultiInstall_DeleteFiles_LocalFolderOnly".GetLocalized());
     }
 
-    public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc, Galgame game)
+    /// <summary>
+    /// 移动游戏；若移出操作包含物理移出（删除压缩包/游戏文件夹），通过 <paramref name="deleteFiles"/> 指定
+    /// </summary>
+    /// <param name="moveInSrc">要移入的库，若设为null则表示不移入任何库</param>
+    /// <param name="moveInPath">要移入的路径，若设置为null则表示让service自行决定路径</param>
+    /// <param name="moveOutSrc">要移出的库</param>
+    /// <param name="game">游戏</param>
+    /// <param name="deleteFiles">移出原库时是否物理删除对应文件/文件夹（默认false）</param>
+    /// <returns>一个已经启动的BgTask</returns>
+    public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc,
+        Galgame game, bool deleteFiles = false)
     {
         if (game.Sources.Any(s => s == moveInSrc))
         {
@@ -364,7 +384,7 @@ public class GalgameSourceCollectionService(
             infoService.DeveloperEvent(e: new PvnException($"{game.Name.Value} is not in {moveOutSrc.Url}"));
             moveOutSrc = null;
         }
-        SourceMoveTask task = new(game, moveInSrc, moveInPath, moveOutSrc);
+        SourceMoveTask task = new(game, moveInSrc, moveInPath, moveOutSrc, deleteFiles);
         bgTaskService.AddBgTask(task);
         return task;
     }
@@ -456,13 +476,26 @@ public class GalgameSourceCollectionService(
             });
         }
 
+        if (source is GalgameZipSource)
+        {
+            // 压缩库可能在可移动磁盘上，尊重其CheckOnStart设置
+            if (!source.CheckOnStart) return Task.FromResult(new List<Galgame>());
+            return Task.Run(async () =>
+            {
+                List<GalgameAndPath> entriesToRemove =
+                    source.Galgames.Where(entry => !File.Exists(entry.Path)).ToList();
+                foreach (GalgameAndPath entry in entriesToRemove)
+                    await MoveOutNoOperate(entry);
+                return entriesToRemove.Select(entry => entry.Galgame).ToList();
+            });
+        }
+
         switch (source.SourceType)
         {
-            case GalgameSourceType.Virtual: 
+            case GalgameSourceType.Virtual:
                 return Task.FromResult(new List<Galgame>());
             case GalgameSourceType.LocalFolder:
             case GalgameSourceType.Steam:
-            case GalgameSourceType.LocalZip:
             case GalgameSourceType.UnKnown:
             default:
                 throw new NotSupportedException();

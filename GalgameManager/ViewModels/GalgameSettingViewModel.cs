@@ -122,7 +122,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     {
         selectedId ??= SelectedInstallation?.EntryId ?? Gal.PreferredInstallationId;
         Installations.Clear();
-        foreach (GalgameAndPath installation in Gal.LocalInstallations)
+        foreach (GalgameAndPath installation in Gal.SourceEntries)
             Installations.Add(installation);
         SelectedInstallation = Installations.FirstOrDefault(i => i.EntryId == selectedId)
                                ?? Installations.FirstOrDefault();
@@ -430,7 +430,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [RelayCommand]
     private async Task SetPreferredInstallation(GalgameAndPath? installation)
     {
-        if (installation is null) return;
+        if (installation is null || !installation.IsLocalInstallation) return;
         Gal.SetPreferredInstallation(installation);
         await _galService.SaveGalgameAsync(Gal);
         RefreshInstallations(installation.EntryId);
@@ -457,8 +457,10 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
     [RelayCommand]
     private static async Task OpenInstallationFolder(GalgameAndPath? installation)
     {
-        if (installation is null || !Directory.Exists(installation.Path)) return;
-        StorageFolder folder = await StorageFolder.GetFolderFromPathAsync(installation.Path);
+        var path = installation?.Path;
+        if (File.Exists(path)) path = Path.GetDirectoryName(path); //对于部分库，其entry是一个文件，取其所在目录
+        if (installation is null || !Directory.Exists(path)) return;
+        StorageFolder folder = await StorageFolder.GetFolderFromPathAsync(path);
         await Windows.System.Launcher.LaunchFolderAsync(folder);
     }
 

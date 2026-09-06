@@ -380,8 +380,7 @@
                     <!-- 移入另一个源 -->
                     <AppBarButton x:Uid="GalgamePage_MoveToAnotherSource"
                                   Command="{x:Bind ViewModel.MoveToSourceCommand}"
-                                  IsEnabled="False"
-                                  Visibility="Collapsed">
+                                  IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DE;" />
                         </AppBarButton.Icon>

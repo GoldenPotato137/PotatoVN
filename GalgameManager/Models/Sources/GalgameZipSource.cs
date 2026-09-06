@@ -10,12 +10,12 @@ namespace GalgameManager.Models.Sources;
 
 public class GalgameZipSource : GalgameSourceBase
 {
-    public static string FxRegex = @"(?<=\\)(?<name>[^\.\\]+)(?:(\.part1)?\.(zip|rar|7z))$";
+    public static string FxRegex = @"(?<name>[^\.\\]+)(?:(\.part1)?\.(zip|rar|7z|001))$";
     public override GalgameSourceType SourceType => GalgameSourceType.LocalZip;
     public override bool CanChangeScanOnStart => false;
     public override bool CanChangeCheckOnStart => true;
     public override bool CanChangeDetect => false;
-    public override bool CanChangeSaveMetaBackup => false;
+    public override bool CanChangeSaveMetaBackup => true;
     public override bool IsGameAddable => false;
     public override bool IsSourceScanable => true;
     public override bool IsDelectable => true;
@@ -26,7 +26,16 @@ public class GalgameZipSource : GalgameSourceBase
 
     public GalgameZipSource()
     {
-        
+
+    }
+
+    /// 从压缩包路径提取包名（如 "game.part1.zip" -> "game"）；不匹配时退化为去扩展名
+    /// 也作为元数据备份文件夹名（库根/.PotatoVN/&lt;包名&gt;，见 ZipSourceService）
+    public static string GetPackName(string packPath)
+    {
+        var fileName = SystemPath.GetFileName(packPath);
+        Match m = Regex.Match(fileName, FxRegex);
+        return m.Success ? m.Groups["name"].Value : SystemPath.GetFileNameWithoutExtension(fileName);
     }
 
     public override bool IsInSource(string path)
@@ -46,9 +55,12 @@ public class GalgameZipSource : GalgameSourceBase
         while (pathToCheck.Count > 0)
         {
             var (currentPath, currentDepth) = pathToCheck.Dequeue();
-            
+
             foreach (var f in Directory.GetFiles(currentPath))
             {
+                // 显式过滤.meta备份目录下的文件（防御性）
+                if (f.Contains($"{SystemPath.DirectorySeparatorChar}.PotatoVN{SystemPath.DirectorySeparatorChar}"))
+                    continue;
                 Match m = Regex.Match(f, FxRegex);
                 if (m.Success)
                 {

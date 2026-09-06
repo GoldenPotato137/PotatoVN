@@ -153,10 +153,18 @@ public partial class GalgameCollectionService
     {
         switch (sourceType)
         {
-            case GalgameSourceType.Virtual: 
+            case GalgameSourceType.Virtual:
                 return path;
-            case GalgameSourceType.LocalFolder:
             case GalgameSourceType.LocalZip:
+            {
+                // 压缩包：从文件名提取包名（去掉 .part1.zip 等后缀）
+                var zipName = GalgameZipSource.GetPackName(path);
+                var zipPattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
+                var zipRegexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
+                var zipRemoveBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
+                return NameRegex.GetName(zipName, zipPattern, zipRemoveBorder, zipRegexIndex);
+            }
+            case GalgameSourceType.LocalFolder:
             case GalgameSourceType.Steam:
                 var name = Path.GetFileName(Path.GetDirectoryName(path + Path.DirectorySeparatorChar)) ??
                            throw new Exception("GalgameCollectionService_GetNameFromPathFailed".GetLocalized());

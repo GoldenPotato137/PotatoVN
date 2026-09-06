@@ -33,6 +33,7 @@ public class BgTaskService : IBgTaskService
         RegisterBgTaskType(typeof(RecordPlayTimeTask), "-record");
         RegisterBgTaskType(typeof(GetGalgameInSourceTask), "-getGalInSource");
         RegisterBgTaskType(typeof(UnpackGameTask), "-unpack");
+        RegisterBgTaskType(typeof(PackGameTask), "-pack");
         RegisterBgTaskType(typeof(SourceMoveTask), "-sourceMove");
         RegisterBgTaskType(typeof(GetGalgameCharactersFromRssTask), "-getGalChar");
         RegisterBgTaskType(typeof(DownloadCategoryImageTask), "-getCategoryImg");

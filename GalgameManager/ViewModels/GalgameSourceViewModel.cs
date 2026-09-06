@@ -45,7 +45,7 @@ public partial class GalgameSourceViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private int _progressValue;
     [ObservableProperty] private string _progressMsg = string.Empty;
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(GetInfoFromRssCommand), nameof(ScanAllCommand))]
+    [NotifyCanExecuteChangedFor(nameof(GetInfoFromRssCommand), nameof(ScanAllCommand), nameof(AddGalFromZipCommand))]
     private bool _canExecute; //是否正在运行命令
     [ObservableProperty] private bool _logExists; //是否存在日志文件
     [ObservableProperty] private bool _saveMetadata;

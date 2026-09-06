@@ -785,12 +785,22 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         await SaveAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task MoveToSource()
     {
         if (Item is null) return;
         ChangeSourceDialog dialog = new(Item);
         await dialog.ShowAsync();
+        if (!dialog.Ok) return;
+        try
+        {
+            _sourceService.MoveAsync(dialog.MoveInSource, dialog.MoveInSource.Path,
+                dialog.MoveOutSource, Item, dialog.DeleteFiles);
+        }
+        catch (Exception e)
+        {
+            _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
+        }
     }
 
     private async Task<bool> CheckLocaleEmulator()

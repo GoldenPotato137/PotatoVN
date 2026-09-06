@@ -3655,9 +3655,7 @@
     <value>保存元数据备份</value>
   </data>
   <data name="GalgameSourcePage_Setting_SaveMetaBackup.Description" xml:space="preserve">
-    <value>选择是否在游戏文件夹内备份游戏信息数据：
-启用：在游戏文件夹内创建备份文件（.PotatoVN文件夹），后续重新搜刮这个库时能快速读取这些数据。
-禁用：数据仅保存在软件内部，可以通过数据导入导出功能手动备份</value>
+    <value>是否为该库保存游戏元数据备份（.PotatoVN 文件夹）。本地库保存在各游戏文件夹内；压缩库保存在压缩库根目录下（以压缩包名命名的子文件夹）。</value>
   </data>
   <data name="GalgameSourcePage_SavingMeta" xml:space="preserve">
     <value>正在保存{0}的Meta信息</value>
@@ -5027,5 +5025,38 @@
   </data>
   <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
     <value>重置过滤条件</value>
+  </data>
+  <data name="AddSourceDialog_ZipInfo" xml:space="preserve">
+    <value>压缩库以压缩包（zip/rar/7z）的形式保存游戏。把游戏移入压缩库时会压缩游戏文件夹；压缩包不能直接游玩，目前暂不支持移出游玩。</value>
+  </data>
+  <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
+    <value>游戏将被压缩为压缩包并存到 {0}</value>
+  </data>
+  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
+    <value>暂不支持从压缩库移出游戏，请改用目标本地库的从压缩包添加游戏。</value>
+  </data>
+  <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
+    <value>该游戏没有可压缩的本地文件夹安装</value>
+  </data>
+  <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
+    <value>同时删除磁盘上的文件（游戏文件夹/压缩包）</value>
+  </data>
+  <data name="PackGameTask_Compressing" xml:space="preserve">
+    <value>正在压缩 {0}...</value>
+  </data>
+  <data name="PackGameTask_Registering" xml:space="preserve">
+    <value>正在登记到压缩库...</value>
+  </data>
+  <data name="PackGameTask_Done" xml:space="preserve">
+    <value>已压缩到 {0}</value>
+  </data>
+  <data name="PackGameTask_Failed" xml:space="preserve">
+    <value>压缩游戏失败：{0}</value>
+  </data>
+  <data name="PackGameTask_Recovered_RequiredInfoLost" xml:space="preserve">
+    <value>因必要信息丢失，无法恢复压缩任务</value>
+  </data>
+  <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
+    <value>没有可移动到的目标库，请先添加另一个库。</value>
   </data>
 </root>
