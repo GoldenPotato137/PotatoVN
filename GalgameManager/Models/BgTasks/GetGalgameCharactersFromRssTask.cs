@@ -110,7 +110,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
                 {
                     try
                     {
-                        character = await _gameService.PhraseGalCharacterAsync(character, game.RssType);
+                        character = await _gameService.PhraseGalCharacterAsync(character, game.RssType, game.Uuid);
                         break;
                     }
                     catch (ThrottledException)

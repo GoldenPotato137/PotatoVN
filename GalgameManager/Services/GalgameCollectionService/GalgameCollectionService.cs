@@ -356,10 +356,13 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         await LocalSettingsService.AddToExportAsync(KeyValues.Galgames, tmp);
     }
 
-    public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter, RssType rssType = RssType.None)
+    /// <inheritdoc />
+    public async Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter,
+        RssType rssType = RssType.None, Guid? gameUuid = null)
     {
-        GalgameCharacter result = await PhraserCharacterAsync(galgameCharacter, PhraserList[(int)rssType]);
-        return result;
+        gameUuid ??= _galgames.FirstOrDefault(g => g.Characters.Contains(galgameCharacter))?.Uuid;
+        // 插件可能解析尚未加入游戏的角色，此时使用临时图片命名空间，避免覆盖已有图片。
+        return await PhraserCharacterAsync(galgameCharacter, PhraserList[(int)rssType], gameUuid ?? Guid.NewGuid());
     }
 
     public async Task<List<string>> ParserGalImagesAsync(Galgame galgame, GameParseType parseType)
@@ -427,7 +430,15 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         return imageUrls.Distinct().ToList();
     }
 
-    private static async Task<GalgameCharacter> PhraserCharacterAsync(GalgameCharacter galgameCharacter, IGalInfoPhraser phraser)
+    /// <summary>
+    /// 获取角色信息，并下载按游戏隔离的角色图片。
+    /// </summary>
+    /// <param name="galgameCharacter">接收角色信息和本地图片路径的角色对象</param>
+    /// <param name="phraser">提供角色信息的搜刮器</param>
+    /// <param name="gameUuid">用于隔离图片文件名的游戏UUID，或未关联游戏时使用的临时图片命名空间</param>
+    /// <returns>更新后的角色对象；搜刮器不支持角色或未找到信息时返回原对象</returns>
+    private static async Task<GalgameCharacter> PhraserCharacterAsync(GalgameCharacter galgameCharacter,
+        IGalInfoPhraser phraser, Guid gameUuid)
     {
         if (phraser is not IGalCharacterPhraser characterPhraser) return galgameCharacter;
         GalgameCharacter? tmp = await characterPhraser.GetGalgameCharacter(galgameCharacter);
@@ -446,10 +457,11 @@ public partial class GalgameCollectionService : IGalgameCollectionService
 
         HttpClient? client = (phraser as IHttpClientProvider)?.HttpClient;
         galgameCharacter.ImagePath = await DownloadHelper.DownloadAndSaveImageWithDiffThread(tmp.ImageUrl,
-            fileNameWithoutExtension:$"{galgameCharacter.Name}_Large", client: client) ?? Galgame.DefaultCharacterImagePath;
+            fileNameWithoutExtension: DownloadHelper.GetCharacterImageFileName(gameUuid, galgameCharacter.Name),
+            client: client) ?? Galgame.DefaultCharacterImagePath;
         galgameCharacter.PreviewImagePath = await DownloadHelper.DownloadAndSaveImageWithDiffThread(tmp.PreviewImageUrl,
-                                                fileNameWithoutExtension:$"{galgameCharacter.Name}_Preview") ??
-                                            Galgame.DefaultCharacterImagePath;
+            fileNameWithoutExtension: DownloadHelper.GetCharacterImageFileName(gameUuid, galgameCharacter.Name, preview: true)) ??
+            Galgame.DefaultCharacterImagePath;
         return galgameCharacter;
     }
 

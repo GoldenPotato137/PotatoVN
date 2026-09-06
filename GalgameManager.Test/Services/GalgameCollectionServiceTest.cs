@@ -7,6 +7,7 @@ using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using GalgameManager.Services;
+using GalgameManager.WinApp.Base.Contracts;
 using LiteDB;
 using Moq;
 
@@ -65,6 +66,59 @@ public class GalgameCollectionServiceTest : ServiceTestBase
         phraser.Setup(x => x.GetPhraseType()).Returns(slot);
         service.PhraserList[(int)slot] = phraser.Object;
         return phraser;
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task PhraseGalCharacterAsync_SameNameInDifferentGames_DoesNotOverwriteOtherGameImage(bool provideGameUuid)
+    {
+        GalgameCollectionService service = CreateService();
+        Galgame gameA = CreateGame("游戏A");
+        Galgame gameB = CreateGame("游戏B");
+        GalgameCharacter characterA = new() { Name = "同名角色" };
+        GalgameCharacter characterB = new() { Name = "同名角色" };
+        gameA.Characters.Add(characterA);
+        gameB.Characters.Add(characterB);
+        service.Galgames.Add(gameA);
+        service.Galgames.Add(gameB);
+
+        using HttpClient client = new(new CharacterImageHandler());
+        Mock<IGalInfoPhraser> phraser = new();
+        phraser.As<IHttpClientProvider>().SetupGet(p => p.HttpClient).Returns(client);
+        phraser.As<IGalCharacterPhraser>().Setup(p => p.GetGalgameCharacter(It.IsAny<GalgameCharacter>()))
+            .ReturnsAsync(() => new GalgameCharacter { Name = "同名角色", ImageUrl = "https://example.invalid/image.png" });
+        service.PhraserList[(int)RssType.Bangumi] = phraser.Object;
+
+        await service.PhraseGalCharacterAsync(characterA, RssType.Bangumi, provideGameUuid ? gameA.Uuid : null);
+        await service.PhraseGalCharacterAsync(characterB, RssType.Bangumi, provideGameUuid ? gameB.Uuid : null);
+        Assert.That(File.Exists(characterA.ImagePath), Is.True);
+        Assert.That(File.Exists(characterB.ImagePath), Is.True);
+        byte[] originalA = await File.ReadAllBytesAsync(characterA.ImagePath);
+        byte[] originalB = await File.ReadAllBytesAsync(characterB.ImagePath);
+
+        await service.PhraseGalCharacterAsync(characterA, RssType.Bangumi, provideGameUuid ? gameA.Uuid : null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(characterA.ImagePath, Is.Not.EqualTo(characterB.ImagePath));
+            Assert.That(File.ReadAllBytes(characterA.ImagePath), Is.Not.EqualTo(originalA));
+            Assert.That(File.ReadAllBytes(characterB.ImagePath), Is.EqualTo(originalB));
+        });
+    }
+
+    private sealed class CharacterImageHandler : HttpMessageHandler
+    {
+        private byte _downloadCount;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            // 下载器按文件头识别格式；每次返回不同内容，验证覆盖范围，不访问网络。
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent([0x89, 0x50, 0x4E, 0x47, ++_downloadCount]),
+            });
+        }
     }
 
     #region 初始化与加载

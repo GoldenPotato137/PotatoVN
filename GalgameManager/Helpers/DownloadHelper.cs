@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -126,10 +126,21 @@ public static class DownloadHelper
     }
 
     /// <summary>
-    /// 从本地文件读取图片
+    /// 角色图片在共享图片目录中的文件名（不含扩展名），按游戏隔离。
     /// </summary>
-    /// <returns>图片路径</returns>
-    public static async Task<string?> PickImageAsync()
+    /// <param name="gameUuid">所属游戏的UUID，用于隔离不同游戏的同名角色图片</param>
+    /// <param name="characterName">角色名；为null时文件名中的角色名部分为空</param>
+    /// <param name="preview">是否为预览图；true使用Preview后缀，false（默认值）使用Large后缀</param>
+    /// <returns>已移除非法文件名字符、不含扩展名的图片文件名</returns>
+    public static string GetCharacterImageFileName(Guid gameUuid, string? characterName, bool preview = false) =>
+        $"{gameUuid:N}_{characterName}_{(preview ? "Preview" : "Large")}".RemoveInvalidChars();
+
+    /// <summary>
+    /// 选择本地图片并复制到应用的图片目录，同名目标文件会被覆盖。
+    /// </summary>
+    /// <param name="fileNameWithoutExtension">保存时使用的文件名（不含扩展名）；为null时保留原文件名，指定时沿用所选图片的扩展名并移除非法文件名字符</param>
+    /// <returns>保存后的图片路径；用户取消选择时返回null</returns>
+    public static async Task<string?> PickImageAsync(string? fileNameWithoutExtension = null)
     {
         FileOpenPicker openPicker = new()
         {
@@ -143,8 +154,13 @@ public static class DownloadHelper
         openPicker.FileTypeFilter.Add(".bmp");
         StorageFile? file = await openPicker.PickSingleFileAsync();
         if (file == null) return null;
-        StorageFile newFile = await file.CopyAsync(await FileHelper.GetFolderAsync(FileHelper.FolderType.Images),
-            $"{file.Name}", NameCollisionOption.ReplaceExisting);
+        var fileName = fileNameWithoutExtension is null
+            ? file.Name
+            : $"{fileNameWithoutExtension}{file.FileType}".RemoveInvalidChars();
+        StorageFolder folder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Images);
+        if (string.Equals(file.Path, Path.Combine(folder.Path, fileName), StringComparison.OrdinalIgnoreCase))
+            return file.Path;
+        StorageFile newFile = await file.CopyAsync(folder, fileName, NameCollisionOption.ReplaceExisting);
         return newFile.Path;
     }
 

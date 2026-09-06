@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
@@ -392,8 +392,10 @@ public class PvnSyncTask : BgTaskBase
                 payload.Characters.Add(dto);
                 uploadImgTasks.Add(Task.Run(() =>
                 {
-                    dto.ImageLoc = _pvnService.UploadFileAsync(c.ImagePath, $"{galgame.Name.Value}/{c.Name}").Result!;
-                    dto.PreviewImageLoc = _pvnService.UploadFileAsync(c.PreviewImagePath, $"{galgame.Name.Value}/{c.Name}_preview").Result!;
+                    dto.ImageLoc = _pvnService.UploadFileAsync(c.ImagePath,
+                        DownloadHelper.GetCharacterImageFileName(galgame.Uuid, c.Name)).Result!;
+                    dto.PreviewImageLoc = _pvnService.UploadFileAsync(c.PreviewImagePath,
+                        DownloadHelper.GetCharacterImageFileName(galgame.Uuid, c.Name, preview: true)).Result!;
                 }));
             }
             await Task.WhenAll(uploadImgTasks.ToArray());

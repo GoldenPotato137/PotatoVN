@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services;
@@ -86,7 +86,10 @@ public partial class GalgameCharacterViewModel (
     {
         if (Character is null) return;
         
-        var imagePath = await DownloadHelper.PickImageAsync();
+        Galgame? game = galgameService.Galgames.FirstOrDefault(g => g.Characters.Contains(Character));
+        if (game is null) return;
+        var imagePath = await DownloadHelper.PickImageAsync(
+            DownloadHelper.GetCharacterImageFileName(game.Uuid, Character.Name));
         if (imagePath is null) return;
         
         Character.ImagePath = imagePath;

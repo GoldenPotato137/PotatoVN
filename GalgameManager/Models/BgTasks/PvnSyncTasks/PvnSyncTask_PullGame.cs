@@ -114,9 +114,10 @@ public class PvnSyncTaskPullGame(
                     List<Task<string?>> fetchImageTask = [], fetchPreviewImageTask = [];
                     foreach (CharacterDto c in item.Characters)
                     {
-                        fetchImageTask.Add(DownloadHelper.DownloadAndSaveImageWithDiffThread(c.ImageUrl));
-                        fetchPreviewImageTask.Add(
-                            DownloadHelper.DownloadAndSaveImageWithDiffThread(c.PreviewImageUrl));
+                        fetchImageTask.Add(DownloadHelper.DownloadAndSaveImageWithDiffThread(c.ImageUrl,
+                            fileNameWithoutExtension: DownloadHelper.GetCharacterImageFileName(game.Uuid, c.Name)));
+                        fetchPreviewImageTask.Add(DownloadHelper.DownloadAndSaveImageWithDiffThread(c.PreviewImageUrl,
+                            fileNameWithoutExtension: DownloadHelper.GetCharacterImageFileName(game.Uuid, c.Name, preview: true)));
                     }
 
                     for (var i = 0; i < item.Characters.Count; i++)

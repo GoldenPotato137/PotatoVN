@@ -142,11 +142,12 @@ public interface IGalgameCollectionService
     /// <summary>
     /// 从信息源中搜刮游戏角色信息，直接修改传入的galgameCharacter
     /// </summary>
-    /// <param name="galgameCharacter"></param>
-    /// <param name="rssType"></param>
-    /// <returns></returns>
+    /// <param name="galgameCharacter">待搜刮的角色对象，获取的信息会直接写入该对象</param>
+    /// <param name="rssType">使用的信息源类型</param>
+    /// <param name="gameUuid">所属游戏UUID，用于隔离图片文件名；为null时从游戏列表查找所属游戏，未找到时使用临时图片命名空间</param>
+    /// <returns>更新后的角色对象</returns>
     public Task<GalgameCharacter> PhraseGalCharacterAsync(GalgameCharacter galgameCharacter,
-        RssType rssType = RssType.None);
+        RssType rssType = RssType.None, Guid? gameUuid = null);
 
     public Task<List<string>> ParserGalImagesAsync(Galgame galgame, GameParseType parseType);
 
