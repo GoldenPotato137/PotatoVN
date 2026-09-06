@@ -365,7 +365,7 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.MinPlayTimeRecordThreshold:
                 return (T?)(object)5; // 默认5分钟
             case KeyValues.MixedPhraserTimeout:
-                return (T?)(object)20; // 默认20秒
+                return (T?)(object)12; // 默认12秒
             case KeyValues.CustomTextFileExtensions:
                 return (T?)(object)new List<string> { ".doc", ".docx", ".pdf", ".txt", ".md" };
             case KeyValues.AutoExportInterval:

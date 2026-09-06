@@ -71,6 +71,13 @@
             </ComboBox>
         </StackPanel>
 
+        <!-- 同时删除磁盘文件（仅在从本地库/压缩库移出时可见） -->
+        <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,0,0,10"
+                    Visibility="{x:Bind DeleteFilesPanelVisibility, Mode=OneWay}">
+            <CheckBox x:Name="DeleteFilesCheckBox" x:Uid="ChangeSourceDialog_DeleteFiles"
+                      VerticalAlignment="Center" />
+        </StackPanel>
+
         <!-- 操作预览 -->
         <control:StackPanelWithSpacing Margin="0 5 0 0" 
                                        Visibility="{x:Bind OperatePanelDescriptionVisibility, Mode=OneWay}">

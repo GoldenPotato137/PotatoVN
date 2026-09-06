@@ -16,7 +16,7 @@ public class ExportTask (string targetPath) : BgTaskBase
     private readonly ICategoryService _categoryService = App.GetService<ICategoryService>();
     private readonly IStaffService _staffService = App.GetService<IStaffService>();
     private readonly IFileService _fileService = App.GetService<IFileService>();
-    private readonly string _fileName = $"PotatoVN_{DateTime.Now:yy-MM-dd}.pvnExport.zip";
+    private readonly string _fileName = CreateFileName(DateTime.Now);
     
     protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
     
@@ -89,6 +89,9 @@ public class ExportTask (string targetPath) : BgTaskBase
     public override string Title => "ExportTask_Title".GetLocalized();
     
     public override bool OnSearch(string key) => true;
+
+    private static string CreateFileName(DateTime timestamp) =>
+        $"PotatoVN_{timestamp:yy-MM-dd_HH-mm-ss}.pvnExport.zip";
     
     private string OutputFilePath => $"{TargetPath}\\{_fileName}";
 }

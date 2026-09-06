@@ -18,6 +18,27 @@
     </ContentDialog.Resources>
 
     <StackPanel Spacing="10">
+        <InfoBar x:Name="KeyMappingActivationInfoBar"
+                 IsOpen="True"
+                 IsClosable="False"
+                 Severity="Warning">
+            <InfoBar.Content>
+                <StackPanel Orientation="Horizontal"
+                            Spacing="8"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0">
+                    <Button x:Name="EnableGameKeyMappingButton"
+                            x:Uid="KeyMappingDialog_Activation_EnableGame"
+                            Click="EnableGameKeyMappingButton_Click" />
+                    <Button x:Name="EnableGlobalKeyMappingButton"
+                            x:Uid="KeyMappingDialog_Activation_EnableGlobal"
+                            Click="EnableGlobalKeyMappingButton_Click" />
+                    <Button x:Uid="KeyMappingDialog_Activation_EditGlobal"
+                            Click="EditGlobalKeyMappingButton_Click" />
+                </StackPanel>
+            </InfoBar.Content>
+        </InfoBar>
+
         <!-- 输入模式切换 -->
         <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="2">
             <Grid>
@@ -73,7 +94,12 @@
                 </Border>
 
                 <!-- 数据行容器 -->
-                <ScrollViewer Grid.Row="1" MaxHeight="400" MinHeight="200" MinWidth="800" VerticalScrollBarVisibility="Auto"
+                <ScrollViewer x:Name="MappingScrollViewer"
+                              Grid.Row="1"
+                              MaxHeight="250"
+                              MinHeight="120"
+                              MinWidth="800"
+                              VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{x:Bind DialogKeyMappings, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
@@ -110,6 +136,7 @@
                                         <!-- 游戏中按键列 -->
                                         <control:FlexibleHotkeyInputBox Grid.Column="2"
                                                                        HotkeyKeys="{x:Bind To, Mode=TwoWay}"
+                                                                       IsEnabled="{x:Bind IsGlobal, Converter={StaticResource InverseBooleanConverter}}"
                                                                        Margin="5"/>
 
                                         <!-- 开关列 -->
@@ -122,6 +149,7 @@
                                         <!-- 删除列 -->
                                         <Button Grid.Column="4" Click="DeleteButton_Click"
                                               Tag="{x:Bind}"
+                                              IsEnabled="{x:Bind IsGlobal, Converter={StaticResource InverseBooleanConverter}}"
                                               ToolTipService.ToolTip="{Binding KeyMappingDialog_Button_Delete_ToolTip, ElementName=dialog}"
                                               VerticalAlignment="Center"
                                               Background="Transparent"

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Contracts.Services; 
 using GalgameManager.Enums;
@@ -8,6 +8,7 @@ using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using GalgameManager.Views.Dialog;
 using LiteDB;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json;
 
@@ -16,7 +17,8 @@ namespace GalgameManager.Services;
 public class GalgameSourceCollectionService(
     ILocalSettingsService localSettingsService,
     IBgTaskService bgTaskService,
-    IInfoService infoService)
+    IInfoService infoService,
+    IServiceProvider serviceProvider)
     : IGalgameSourceCollectionService
 {
     public Action<GalgameSourceBase>? OnSourceDeleted { get; set; }
@@ -30,6 +32,11 @@ public class GalgameSourceCollectionService(
         new GalgameSourceConverter(),
     ];
     private ILiteCollection<GalgameSourceBase> _dbSet = null!;
+
+    private IGalgameCollectionService? _gameService;
+    /// 懒解析以打破与GalgameCollectionService之间的构造循环依赖
+    private IGalgameCollectionService GameService =>
+        _gameService ??= serviceProvider.GetRequiredService<IGalgameCollectionService>();
 
     public async Task InitAsync()
     {
@@ -51,11 +58,11 @@ public class GalgameSourceCollectionService(
                     "GalgameSourceCollectionService_InitAsync_GalgameIsNull".GetLocalized(g.Path, source.Url));
             }
         }
-        foreach (Galgame game in App.GetService<IGalgameCollectionService>().Galgames)
+        foreach (Galgame game in GameService.Galgames)
             game.EnsurePreferredInstallation();
         // 去除找不到的库（只对启用了启动检查的库进行检查）
-        // healthcheck 模式用于 E2E 迁移验证：不应做与当前机器文件系统相关的清理（例如删掉不存在路径的库），否则会影响迁移结果校验
-        if (!IsHealthCheckMode())
+        // 升级 E2E 使用历史路径夹具，不应按当前机器文件系统删除这些来源。
+        if (!AppStoragePaths.IsUpgradeUiTest)
         {
             List<GalgameSourceBase> toRemove = _galgameSources.Where(source =>
                 source is { CheckOnStart: true, SourceType: GalgameSourceType.LocalFolder } && !Directory.Exists(source.Path)).ToList();
@@ -93,7 +100,7 @@ public class GalgameSourceCollectionService(
         {
             _galgameSources.Clear();
             _galgameSources.SyncCollection(_dbSet.FindAll().ToList());
-            IGalgameCollectionService gameService = App.GetService<IGalgameCollectionService>();
+            IGalgameCollectionService gameService = GameService;
             foreach (GalgameSourceBase source in _galgameSources)
             {
                 foreach (GalgameAndPathDbDto dto in source.GetLoadedGalgames())
@@ -183,12 +190,6 @@ public class GalgameSourceCollectionService(
         }
     }
 
-    private static bool IsHealthCheckMode()
-    {
-        var args = Environment.GetCommandLineArgs();
-        return args.Any(a => string.Equals(a, "--healthcheck", StringComparison.OrdinalIgnoreCase));
-    }
-
     public async Task<GalgameSourceBase> AddGalgameSourceAsync(GalgameSourceType sourceType, string path,
         bool tryGetGalgame = true, bool manualSelectFolder = false)
     {
@@ -233,8 +234,6 @@ public class GalgameSourceCollectionService(
     
     public async Task DeleteGalgameFolderAsync(GalgameSourceBase source)
     {
-        var removeFromLibrary = false;
-        
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainWindow!.Content.XamlRoot,
@@ -252,58 +251,49 @@ public class GalgameSourceCollectionService(
             SecondaryButtonText = "Cancel".GetLocalized(),
             DefaultButton = ContentDialogButton.Secondary
         };
-        
-        dialog.PrimaryButtonClick += async (_, _) =>
+
+        ContentDialogResult result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+        CheckBox checkBox = (CheckBox)((StackPanel)dialog.Content).Children[1];
+        await DeleteGalgameFolderAsync(source, checkBox.IsChecked ?? false);
+    }
+
+    public async Task DeleteGalgameFolderAsync(GalgameSourceBase source, bool removeGames)
+    {
+        if (!_galgameSources.Contains(source)) return;
+
+        List<GalgameSourceBase> sourcesToDelete = [source];
+        CollectAllSubSources(source, sourcesToDelete);
+
+        foreach (GalgameSourceBase sourceToDelete in sourcesToDelete)
         {
-            var checkBox = (CheckBox)((StackPanel)dialog.Content).Children[1];
-            removeFromLibrary = checkBox?.IsChecked ?? false;
-            
-            if (!_galgameSources.Contains(source)) return;
-            
-            // 获取所有子文件夹
-            var sourcesToDelete = new List<GalgameSourceBase> { source };
-            CollectAllSubSources(source, sourcesToDelete);
-            
-            // 从所有要删除的源中删除游戏
-            foreach (var sourceToDelete in sourcesToDelete)
+            try
             {
-                try
+                foreach (GalgameAndPath entry in sourceToDelete.Galgames.ToList())
                 {
-                    List<GalgameAndPath> sourceEntries = sourceToDelete.Galgames.ToList();
-                    foreach (GalgameAndPath entry in sourceEntries)
-                    {
-                        Galgame galgame = entry.Galgame;
-                        await MoveOutNoOperate(entry);
-                        
-                        // 如果用户选择同时从游戏库中删除游戏
-                        if (removeFromLibrary && galgame.Sources.Count == 0)
-                        {
-                            var gameService = App.GetService<IGalgameCollectionService>();
-                            await gameService.RemoveGalgame(galgame, false);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    infoService.DeveloperEvent(InfoBarSeverity.Error,
-                        msg: $"Failed to move game out of source {sourceToDelete.Url}\n{e.StackTrace}");
+                    Galgame game = entry.Galgame;
+                    await MoveOutNoOperate(entry);
+                    if (removeGames && game.Sources.Count == 0)
+                        await GameService.RemoveGalgame(game, false);
                 }
             }
-            
-            // 从集合中删除所有源并从数据库中删除
-            foreach (var sourceToDelete in sourcesToDelete)
+            catch (Exception e)
             {
-                _galgameSources.Remove(sourceToDelete);
-                _dbSet.Delete(sourceToDelete.Id);
-                sourceToDelete.Detect = false; // 关掉监听，触发取消监听事件
-                OnSourceDeleted?.Invoke(sourceToDelete);
+                infoService.DeveloperEvent(InfoBarSeverity.Error,
+                    msg: $"Failed to move game out of source {sourceToDelete.Url}\n{e.StackTrace}");
             }
-            
-            CalcSubSources();
-            OnSourceChanged?.Invoke();
-        };
-        
-        await dialog.ShowAsync();
+        }
+
+        foreach (GalgameSourceBase sourceToDelete in sourcesToDelete)
+        {
+            _galgameSources.Remove(sourceToDelete);
+            _dbSet.Delete(sourceToDelete.Id);
+            sourceToDelete.Detect = false;
+            OnSourceDeleted?.Invoke(sourceToDelete);
+        }
+
+        CalcSubSources();
+        OnSourceChanged?.Invoke();
     }
     
     // 递归收集所有子源
@@ -347,21 +337,41 @@ public class GalgameSourceCollectionService(
         if (deleteFiles) await DeleteInstallationFilesAsync(installation);
         source.DeleteGalgame(installation.Galgame);
         Save(source);
-        await App.GetService<IGalgameCollectionService>().SaveGalgameAsync(installation.Galgame);
+        await GameService.SaveGalgameAsync(installation.Galgame);
     }
 
     private static Task DeleteInstallationFilesAsync(GalgameAndPath installation)
     {
-        if (installation.Source is not GalgameFolderSource)
-            throw new PvnException("MultiInstall_DeleteFiles_LocalFolderOnly".GetLocalized());
-        return Task.Run(() =>
+        if (installation.Source is GalgameFolderSource)
         {
-            if (Directory.Exists(installation.Path))
-                new DirectoryInfo(installation.Path).Delete(true);
-        });
+            return Task.Run(() =>
+            {
+                if (Directory.Exists(installation.Path))
+                    new DirectoryInfo(installation.Path).Delete(true);
+            });
+        }
+        if (installation.Source is GalgameZipSource)
+        {
+            return Task.Run(() =>
+            {
+                if (File.Exists(installation.Path))
+                    File.Delete(installation.Path);
+            });
+        }
+        throw new PvnException("MultiInstall_DeleteFiles_LocalFolderOnly".GetLocalized());
     }
 
-    public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc, Galgame game)
+    /// <summary>
+    /// 移动游戏；若移出操作包含物理移出（删除压缩包/游戏文件夹），通过 <paramref name="deleteFiles"/> 指定
+    /// </summary>
+    /// <param name="moveInSrc">要移入的库，若设为null则表示不移入任何库</param>
+    /// <param name="moveInPath">要移入的路径，若设置为null则表示让service自行决定路径</param>
+    /// <param name="moveOutSrc">要移出的库</param>
+    /// <param name="game">游戏</param>
+    /// <param name="deleteFiles">移出原库时是否物理删除对应文件/文件夹（默认false）</param>
+    /// <returns>一个已经启动的BgTask</returns>
+    public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc,
+        Galgame game, bool deleteFiles = false)
     {
         if (game.Sources.Any(s => s == moveInSrc))
         {
@@ -374,7 +384,7 @@ public class GalgameSourceCollectionService(
             infoService.DeveloperEvent(e: new PvnException($"{game.Name.Value} is not in {moveOutSrc.Url}"));
             moveOutSrc = null;
         }
-        SourceMoveTask task = new(game, moveInSrc, moveInPath, moveOutSrc);
+        SourceMoveTask task = new(game, moveInSrc, moveInPath, moveOutSrc, deleteFiles);
         bgTaskService.AddBgTask(task);
         return task;
     }
@@ -466,13 +476,26 @@ public class GalgameSourceCollectionService(
             });
         }
 
+        if (source is GalgameZipSource)
+        {
+            // 压缩库可能在可移动磁盘上，尊重其CheckOnStart设置
+            if (!source.CheckOnStart) return Task.FromResult(new List<Galgame>());
+            return Task.Run(async () =>
+            {
+                List<GalgameAndPath> entriesToRemove =
+                    source.Galgames.Where(entry => !File.Exists(entry.Path)).ToList();
+                foreach (GalgameAndPath entry in entriesToRemove)
+                    await MoveOutNoOperate(entry);
+                return entriesToRemove.Select(entry => entry.Galgame).ToList();
+            });
+        }
+
         switch (source.SourceType)
         {
-            case GalgameSourceType.Virtual: 
+            case GalgameSourceType.Virtual:
                 return Task.FromResult(new List<Galgame>());
             case GalgameSourceType.LocalFolder:
             case GalgameSourceType.Steam:
-            case GalgameSourceType.LocalZip:
             case GalgameSourceType.UnKnown:
             default:
                 throw new NotSupportedException();
@@ -557,7 +580,7 @@ public class GalgameSourceCollectionService(
         }
         // 将游戏搬入对应的源中
         {
-            IList<Galgame> games = App.GetService<IGalgameCollectionService>().Galgames;
+            IList<Galgame> games = GameService.Galgames;
             foreach (Galgame g in games)
             {
 #pragma warning disable CS0618 // 类型或成员已过时，升级旧数据使用
@@ -685,7 +708,7 @@ public class GalgameSourceCollectionService(
         if (status.GalgameMultiInstallUpgrade) return;
         try
         {
-            IGalgameCollectionService gameService = App.GetService<IGalgameCollectionService>();
+            IGalgameCollectionService gameService = GameService;
             foreach (Galgame game in gameService.Galgames)
             {
                 List<GalgameAndPath> installations = game.LocalInstallations.ToList();

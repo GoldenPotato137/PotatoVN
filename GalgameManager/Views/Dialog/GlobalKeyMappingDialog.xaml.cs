@@ -4,13 +4,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CommunityToolkit.Mvvm.Input;
 using GalgameManager.Models;
 using GalgameManager.Views.Control;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.WinUI;
 
 namespace GalgameManager.Views.Dialog;
@@ -72,6 +70,7 @@ public sealed partial class GlobalKeyMappingDialog : ContentDialog, INotifyPrope
         PrimaryButtonText = "GlobalKeyMappingDialog_Button_Save".GetLocalized();
         SecondaryButtonText = "GlobalKeyMappingDialog_Button_Clear".GetLocalized();
         CloseButtonText = "GlobalKeyMappingDialog_Button_Cancel".GetLocalized();
+        GlobalMappingInfoBar.Message = "GlobalKeyMappingDialog_Description".GetLocalized();
 
         Mappings = new ObservableCollection<KeyMapping>();
         foreach (var mapping in mappings)
@@ -79,9 +78,10 @@ public sealed partial class GlobalKeyMappingDialog : ContentDialog, INotifyPrope
             Mappings.Add(new KeyMapping
             {
                 Remark = mapping.Remark,
-                From = new List<int>(mapping.From),
+                From = mapping.From is null ? [] : [.. mapping.From],
+                To = mapping.To is null ? [] : [.. mapping.To],
                 IsEnabled = mapping.IsEnabled,
-                IsGlobal = mapping.IsGlobal
+                IsGlobal = true
             });
         }
 
@@ -104,6 +104,7 @@ public sealed partial class GlobalKeyMappingDialog : ContentDialog, INotifyPrope
 
         // 清空按钮逻辑：直接清空并返回Secondary结果，让ViewModel处理保存
         SecondaryButtonClick += (_, _) => Mappings.Clear();
+        PrimaryButtonClick += ValidateMappings;
     }
 
     private void UpdateHasMappings()
@@ -111,10 +112,29 @@ public sealed partial class GlobalKeyMappingDialog : ContentDialog, INotifyPrope
         HasMappings = Mappings.Count > 0;
     }
 
-    [RelayCommand]
     private void AddMapping()
     {
         Mappings.Add(new KeyMapping { IsGlobal = true });
+    }
+
+    private void AddMappingButton_Click(object sender, RoutedEventArgs e)
+    {
+        AddMapping();
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            MappingScrollViewer.UpdateLayout();
+            MappingScrollViewer.ChangeView(null, MappingScrollViewer.ScrollableHeight, null);
+        });
+    }
+
+    private void ValidateMappings(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        bool hasDuplicateSource = GalgameManager.Helpers.KeyMappingMergeHelper.HasDuplicateEnabledSources(Mappings);
+        if (!hasDuplicateSource) return;
+
+        args.Cancel = true;
+        GlobalMappingInfoBar.Severity = InfoBarSeverity.Error;
+        GlobalMappingInfoBar.Message = "GlobalKeyMappingDialog_DuplicateSource".GetLocalized();
     }
 
     private void RemoveMapping(KeyMapping? mapping)

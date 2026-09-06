@@ -12,7 +12,7 @@ namespace GalgameManager.Views.Dialog;
 [INotifyPropertyChanged]
 public partial class ConfirmGalInfoDialog
 {
-    public List<RssType> RssTypes { get; }= new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal, RssType.Cngal };
+    public List<RssType> RssTypes { get; }= new() { RssType.Bangumi, RssType.Vndb, RssType.Ymgal, RssType.Cngal, RssType.Hikarinagi };
     [ObservableProperty] private Galgame _galgame = null!;
     [ObservableProperty] private string? _id = string.Empty;
     [ObservableProperty] private RssType _selectedRssType = RssType.Bangumi;

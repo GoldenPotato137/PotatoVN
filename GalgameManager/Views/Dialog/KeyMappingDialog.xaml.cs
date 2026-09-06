@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using CommunityToolkit.WinUI;
 using System.Collections.ObjectModel;
+using GalgameManager.Contracts.Services;
+using GalgameManager.Enums;
 
 namespace GalgameManager.Views.Dialog;
 
@@ -13,6 +15,7 @@ public sealed partial class KeyMappingDialog : ContentDialog
 {
     public GalgameSettingViewModel ViewModel { get; }
     public ObservableCollection<KeyMapping> DialogKeyMappings { get; private set; } = null!;
+    public bool IsGlobalMappingEditorRequested { get; private set; }
     private readonly ObservableCollection<KeyMapping> _originalKeyMappings;
 
     public static readonly DependencyProperty HasMappingsProperty =
@@ -61,6 +64,88 @@ public sealed partial class KeyMappingDialog : ContentDialog
 
         // 添加PrimaryButtonClick事件处理
         PrimaryButtonClick += OnSaveButtonClick;
+        Loaded += async (_, _) => await UpdateKeyMappingActivationStatusAsync();
+    }
+
+    private async Task UpdateKeyMappingActivationStatusAsync()
+    {
+        bool globalEnabled = await App.GetService<ILocalSettingsService>()
+            .ReadSettingAsync<bool>(KeyValues.GameReMapEnabled);
+        bool gameEnabled = ViewModel.Gal.KeyReMap;
+
+        if (!globalEnabled && !gameEnabled)
+        {
+            KeyMappingActivationInfoBar.Severity = InfoBarSeverity.Warning;
+            KeyMappingActivationInfoBar.Title = "KeyMappingDialog_Activation_Disabled_Title".GetLocalized();
+            KeyMappingActivationInfoBar.Message = "KeyMappingDialog_Activation_Disabled_Message".GetLocalized();
+        }
+        else
+        {
+            KeyMappingActivationInfoBar.Severity = InfoBarSeverity.Success;
+            KeyMappingActivationInfoBar.Title = "KeyMappingDialog_Activation_Enabled_Title".GetLocalized();
+            KeyMappingActivationInfoBar.Message = (gameEnabled, globalEnabled) switch
+            {
+                (true, true) => "KeyMappingDialog_Activation_Enabled_Both_Message".GetLocalized(),
+                (true, false) => "KeyMappingDialog_Activation_Enabled_Game_Message".GetLocalized(),
+                _ => "KeyMappingDialog_Activation_Enabled_Global_Message".GetLocalized(),
+            };
+        }
+
+        EnableGameKeyMappingButton.Content = (gameEnabled
+            ? GetButtonLabel("KeyMappingDialog_Activation_DisableGame_Label", "停用本游戏映射")
+            : GetButtonLabel("KeyMappingDialog_Activation_EnableGame_Label", "启用本游戏映射"));
+        EnableGlobalKeyMappingButton.Content = (globalEnabled
+            ? GetButtonLabel("KeyMappingDialog_Activation_DisableGlobal_Label", "停止为所有游戏启用")
+            : GetButtonLabel("KeyMappingDialog_Activation_EnableGlobal_Label", "为所有游戏启用"));
+        EnableGameKeyMappingButton.Visibility = Visibility.Visible;
+        EnableGlobalKeyMappingButton.Visibility = Visibility.Visible;
+    }
+
+    private static string GetButtonLabel(string resourceKey, string fallback)
+    {
+        string? localized = resourceKey.GetLocalized();
+        return string.IsNullOrWhiteSpace(localized) ? fallback : localized;
+    }
+
+    private async void EnableGameKeyMappingButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.Gal.KeyReMap = !ViewModel.Gal.KeyReMap;
+        await UpdateKeyMappingActivationStatusAsync();
+    }
+
+    private async void EnableGlobalKeyMappingButton_Click(object sender, RoutedEventArgs e)
+    {
+        ILocalSettingsService settings = App.GetService<ILocalSettingsService>();
+        bool enabled = await settings.ReadSettingAsync<bool>(KeyValues.GameReMapEnabled);
+        await settings.SaveSettingAsync(KeyValues.GameReMapEnabled, !enabled);
+        await UpdateKeyMappingActivationStatusAsync();
+    }
+
+    private void EditGlobalKeyMappingButton_Click(object sender, RoutedEventArgs e)
+    {
+        IsGlobalMappingEditorRequested = true;
+        Hide();
+    }
+
+    public bool ConsumeGlobalMappingEditorRequest()
+    {
+        if (!IsGlobalMappingEditorRequested) return false;
+        IsGlobalMappingEditorRequested = false;
+        return true;
+    }
+
+    public void RefreshGlobalMappings(IEnumerable<KeyMapping> globalMappings)
+    {
+        List<KeyMapping> persistedGameMappings =
+            GalgameManager.Helpers.KeyMappingMergeHelper.BuildPersistedGameMappings(DialogKeyMappings);
+        List<KeyMapping> refreshedMappings =
+            GalgameManager.Helpers.KeyMappingMergeHelper.BuildEffectiveMappings(
+                persistedGameMappings, globalMappings);
+
+        DialogKeyMappings.Clear();
+        foreach (KeyMapping mapping in refreshedMappings)
+            DialogKeyMappings.Add(GalgameManager.Helpers.KeyMappingMergeHelper.Clone(mapping));
+        UpdateHasMappings();
     }
 
     private ObservableCollection<KeyMapping> CreateDeepCopy(ObservableCollection<KeyMapping> source)
@@ -82,7 +167,7 @@ public sealed partial class KeyMappingDialog : ContentDialog
 
     private void RemoveKeyMapping(KeyMapping? mapping)
     {
-        if (mapping != null) // 允许删除所有快捷键，包括全局快捷键
+        if (mapping is { IsGlobal: false })
         {
             DialogKeyMappings.Remove(mapping);
             UpdateHasMappings();
@@ -99,8 +184,13 @@ public sealed partial class KeyMappingDialog : ContentDialog
 
     private void OnSaveButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        // 只有在用户点击保存时，才将对话框中的数据应用到 ViewModel
-        ViewModel.KeyMappings = new ObservableCollection<KeyMapping>(DialogKeyMappings);
+        List<KeyMapping> localMappings = DialogKeyMappings.Where(mapping => !mapping.IsGlobal).ToList();
+        if (!GalgameManager.Helpers.KeyMappingMergeHelper.HasDuplicateEnabledSources(localMappings)) return;
+
+        args.Cancel = true;
+        KeyMappingActivationInfoBar.Severity = InfoBarSeverity.Error;
+        KeyMappingActivationInfoBar.Title = "KeyMappingDialog_DuplicateSource_Title".GetLocalized();
+        KeyMappingActivationInfoBar.Message = "KeyMappingDialog_DuplicateSource_Message".GetLocalized();
     }
 
     private void AddKeyMapping()
@@ -112,6 +202,11 @@ public sealed partial class KeyMappingDialog : ContentDialog
     private void AddKeyMappingButton_Click(object sender, RoutedEventArgs e)
     {
         AddKeyMapping();
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            MappingScrollViewer.UpdateLayout();
+            MappingScrollViewer.ChangeView(null, MappingScrollViewer.ScrollableHeight, null);
+        });
     }
 
     private void UpdateHasMappings()

@@ -10,5 +10,6 @@
         <CheckBox x:Name="EnginePanelCheckBox" x:Uid="HomeFilterPanelVisibilityDialog_EnginePanelCheckBox" />
         <CheckBox x:Name="DeveloperPanelCheckBox" x:Uid="HomeFilterPanelVisibilityDialog_DeveloperPanelCheckBox" />
         <CheckBox x:Name="TagPanelCheckBox" x:Uid="HomeFilterPanelVisibilityDialog_TagPanelCheckBox" />
+        <CheckBox x:Name="CategoryPanelCheckBox" x:Uid="HomeFilterPanelVisibilityDialog_CategoryPanelCheckBox" />
     </StackPanel>
 </ContentDialog>

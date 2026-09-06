@@ -265,6 +265,7 @@
                     </AppBarToggleButton>
                     <!-- 快捷键映射 -->
                     <AppBarToggleButton x:Uid="GamePage_KeyReMap"
+                                        Command="{x:Bind ViewModel.SaveCommand}"
                                         IsChecked="{x:Bind ViewModel.Item.KeyReMap, Mode=TwoWay, FallbackValue=False}"
                                         IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
                         <AppBarToggleButton.Icon>
@@ -272,45 +273,40 @@
                         </AppBarToggleButton.Icon>
                     </AppBarToggleButton>
                     <AppBarSeparator/>
-                    <!-- 在BGM中打开 -->
-                    <AppBarButton x:Uid="GalgamePage_OpenInBgm" Command="{x:Bind ViewModel.OpenInBgmCommand}"
-                                  Visibility="{x:Bind ViewModel.CanOpenInBgm,
-                                  Mode=OneWay}">
+                    <!-- 在外部网站中打开 -->
+                    <AppBarButton x:Uid="GalgamePage_OpenInExternalWebsite"
+                                  Visibility="{x:Bind ViewModel.CanOpenInExternalWebsite, Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
                         </AppBarButton.Icon>
-                    </AppBarButton>
-                    <!-- 在Vndb中打开 -->
-                    <AppBarButton x:Uid="GalgamePage_OpenInVndb" Command="{x:Bind ViewModel.OpenInVndbCommand}"
-                                  Visibility="{x:Bind ViewModel.CanOpenInVndb,
-                                  Mode=OneWay}">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <!-- 在Ymgal中打开 -->
-                    <AppBarButton x:Uid="GalgamePage_OpenInYmgal" Command="{x:Bind ViewModel.OpenInYmgalCommand}"
-                                  Visibility="{x:Bind ViewModel.CanOpenInYmgal,
-                                  Mode=OneWay}">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <!-- 在Cngal中打开 -->
-                    <AppBarButton x:Uid="GalgamePage_OpenInCngal" Command="{x:Bind ViewModel.OpenInCngalCommand}"
-                                  Visibility="{x:Bind ViewModel.CanOpenInCngal,
-                                  Mode=OneWay}">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <!-- 在Steam中打开 -->
-                    <AppBarButton x:Uid="GalgamePage_OpenInSteam" Command="{x:Bind ViewModel.OpenInSteamCommand}"
-                                  Visibility="{x:Bind ViewModel.CanOpenInSteam,
-                                  Mode=OneWay}">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AD;" />
-                        </AppBarButton.Icon>
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem x:Uid="GalgamePage_OpenInBgmMenu"
+                                                Icon="{ui:FontIcon Glyph=&#xE8AD;}"
+                                                Command="{x:Bind ViewModel.OpenInBgmCommand}"
+                                                Visibility="{x:Bind ViewModel.CanOpenInBgm, Mode=OneWay}" />
+                                <MenuFlyoutItem x:Uid="GalgamePage_OpenInVndbMenu"
+                                                Icon="{ui:FontIcon Glyph=&#xE8AD;}"
+                                                Command="{x:Bind ViewModel.OpenInVndbCommand}"
+                                                Visibility="{x:Bind ViewModel.CanOpenInVndb, Mode=OneWay}" />
+                                <MenuFlyoutItem x:Uid="GalgamePage_OpenInYmgalMenu"
+                                                Icon="{ui:FontIcon Glyph=&#xE8AD;}"
+                                                Command="{x:Bind ViewModel.OpenInYmgalCommand}"
+                                                Visibility="{x:Bind ViewModel.CanOpenInYmgal, Mode=OneWay}" />
+                                <MenuFlyoutItem x:Uid="GalgamePage_OpenInCngalMenu"
+                                                Icon="{ui:FontIcon Glyph=&#xE8AD;}"
+                                                Command="{x:Bind ViewModel.OpenInCngalCommand}"
+                                                Visibility="{x:Bind ViewModel.CanOpenInCngal, Mode=OneWay}" />
+                                <MenuFlyoutItem x:Uid="GalgamePage_OpenInHikarinagiMenu"
+                                                Icon="{ui:FontIcon Glyph=&#xE8AD;}"
+                                                Command="{x:Bind ViewModel.OpenInHikarinagiCommand}"
+                                                Visibility="{x:Bind ViewModel.CanOpenInHikarinagi, Mode=OneWay}" />
+                                <MenuFlyoutItem x:Uid="GalgamePage_OpenInSteamMenu"
+                                                Icon="{ui:FontIcon Glyph=&#xE8AD;}"
+                                                Command="{x:Bind ViewModel.OpenInSteamCommand}"
+                                                Visibility="{x:Bind ViewModel.CanOpenInSteam, Mode=OneWay}" />
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
                     </AppBarButton>
                     <!-- 下载游玩状态 -->
                     <AppBarButton x:Uid="GalgamePage_SyncFromBgm"
@@ -384,8 +380,7 @@
                     <!-- 移入另一个源 -->
                     <AppBarButton x:Uid="GalgamePage_MoveToAnotherSource"
                                   Command="{x:Bind ViewModel.MoveToSourceCommand}"
-                                  IsEnabled="False"
-                                  Visibility="Collapsed">
+                                  IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DE;" />
                         </AppBarButton.Icon>

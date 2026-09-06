@@ -7,7 +7,10 @@ namespace GalgameManager.Server.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class ServerController (IUserService userService, IBangumiService bgmService): ControllerBase
+public class ServerController(
+    IUserService userService,
+    IBangumiService bgmService,
+    IHikarinagiService hikarinagiService): ControllerBase
 {
     /// <summary>获取服务器信息</summary>
     [HttpGet("info")]
@@ -19,6 +22,7 @@ public class ServerController (IUserService userService, IBangumiService bgmServ
         return Ok(new ServerInfoDto
         {
             BangumiOAuth2Enable = bgmService.IsOauth2Enable,
+            HikarinagiOAuth2Enable = hikarinagiService.IsOAuth2Enable,
             DefaultLoginEnable = userService.IsDefaultLoginEnable,
             BangumiLoginEnable = bgmService.IsLoginEnable,
             GalgameStaffAvailable = true,

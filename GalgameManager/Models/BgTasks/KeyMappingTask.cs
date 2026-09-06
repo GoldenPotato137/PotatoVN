@@ -1,12 +1,13 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using CommunityToolkit.Mvvm.Messaging;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models;
+using GalgameManager.WinApp.Base.Models.Msgs;
 using Windows.System;
-using WindowsInput;
-using WindowsInput.Native;
 
 namespace GalgameManager.Models.BgTasks;
 
@@ -18,10 +19,30 @@ public class KeyMappingTask : BgTaskBase
     public List<KeyMapping> KeyMappings { get; set; } = new();
 
     private Process? _process;
-    private nint _keyboardHookId = nint.Zero;
-    private nint _mouseHookId = nint.Zero;
-    private readonly IInputSimulator _inputSimulator = new InputSimulator();
-    private readonly Dictionary<string, (List<VirtualKeyCode> modifiers, VirtualKeyCode? key, int? mouseButton)> _lookupMap = new();
+    private string[] _directoryPrefixes = [];
+    private readonly HashSet<int> _trackedProcessIds = [];
+    private List<KeyMapping> _runtimeGameMappings = [];
+    private bool _runtimeGameMappingOptInEnabled;
+    private KeyMappingRuntimeSnapshot _snapshot = KeyMappingRuntimeSnapshot.Empty;
+    private KeyMappingRuntimeSnapshot? _pendingSnapshot;
+    private readonly Dictionary<int, KeyMappingOutput> _activeKeyboardMappings = new();
+    private readonly Dictionary<int, KeyMappingOutput> _activeMouseMappings = new();
+    private readonly HashSet<int> _pressedPhysicalKeyboardKeys = [];
+    private readonly HashSet<int> _pressedPhysicalMouseButtons = [];
+    private readonly KeyMappingHeldInputGuard _heldInputGuard = new();
+    private readonly KeyMappingOutputState _outputState;
+    private readonly SemaphoreSlim _reloadSemaphore = new(1, 1);
+    private ILocalSettingsService? _localSettingsService;
+    private IMessenger? _messenger;
+    private volatile bool _isMonitoring;
+    private nint _keyboardHookId;
+    private nint _mouseHookId;
+    private Thread? _hookThread;
+    private uint _hookThreadId;
+    private readonly ManualResetEventSlim _hookStarted = new(false);
+    private readonly ManualResetEventSlim _snapshotApplied = new(false);
+    private Exception? _hookStartException;
+    private int _callbackErrorLogged;
 
     private delegate nint LowLevelKeyboardProc(int nCode, nint wParam, nint lParam);
     private delegate nint LowLevelMouseProc(int nCode, nint wParam, nint lParam);
@@ -29,184 +50,464 @@ public class KeyMappingTask : BgTaskBase
     private LowLevelMouseProc? _mouseHookProc;
 
     #region P_INVOKE
+
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern nint SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, nint hMod, uint dwThreadId);
+
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern nint SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, nint hMod, uint dwThreadId);
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+
+    [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool UnhookWindowsHookEx(nint hhk);
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern nint CallNextHookEx(nint hhk, int nCode, nint wParam, nint lParam);
+
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern nint GetModuleHandle(string lpModuleName);
+    private static extern nint GetModuleHandle(string? lpModuleName);
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
+
     [DllImport("user32.dll")]
     private static extern nint GetForegroundWindow();
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetWindowThreadProcessId(nint hWnd, out uint lpdwProcessId);
-    [DllImport("user32.dll")]
-    private static extern short GetKeyState(int nVirtKey);
-    [DllImport("user32.dll")]
-    private static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, int dwExtraInfo);
 
-    // 鼠标事件常量
-    private const uint MOUSEEVENTF_LEFTDOWN = 0x02;
-    private const uint MOUSEEVENTF_LEFTUP = 0x04;
-    private const uint MOUSEEVENTF_RIGHTDOWN = 0x08;
-    private const uint MOUSEEVENTF_RIGHTUP = 0x10;
-    private const uint MOUSEEVENTF_MIDDLEDOWN = 0x20;
-    private const uint MOUSEEVENTF_MIDDLEUP = 0x40;
-    private const uint MOUSEEVENTF_XDOWN = 0x0080;
-    private const uint MOUSEEVENTF_XUP = 0x0100;
-    private const uint MOUSEEVENTF_WHEEL = 0x0800;
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int nVirtKey);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint SendInput(uint inputCount, NativeInput[] inputs, int inputSize);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int GetMessage(out NativeMessage lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PeekMessage(out NativeMessage lpMsg, nint hWnd, uint wMsgFilterMin,
+        uint wMsgFilterMax, uint wRemoveMsg);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PostThreadMessage(uint idThread, uint msg, nuint wParam, nint lParam);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool TranslateMessage(ref NativeMessage lpMsg);
+
+    [DllImport("user32.dll")]
+    private static extern nint DispatchMessage(ref NativeMessage lpMsg);
+
     #endregion
-    
-    private const int WH_KEYBOARD_LL = 13;
-    private const int WM_KEYDOWN = 0x0100;
-    private const int WM_SYSKEYDOWN = 0x0104;
 
-    // 鼠标常量
-    private const int WH_MOUSE_LL = 14;
-    private const int WM_LBUTTONDOWN = 0x0201;
-    private const int WM_RBUTTONDOWN = 0x0204;
-    private const int WM_MBUTTONDOWN = 0x0207;
-    private const int WM_XBUTTONDOWN = 0x020B;
-    private const int WM_MOUSEWHEEL = 0x020A;
+    private const int WhKeyboardLl = 13;
+    private const int WhMouseLl = 14;
+    private const int WmKeyDown = 0x0100;
+    private const int WmKeyUp = 0x0101;
+    private const int WmSysKeyDown = 0x0104;
+    private const int WmSysKeyUp = 0x0105;
+    private const int WmLButtonDown = 0x0201;
+    private const int WmLButtonUp = 0x0202;
+    private const int WmRButtonDown = 0x0204;
+    private const int WmRButtonUp = 0x0205;
+    private const int WmMButtonDown = 0x0207;
+    private const int WmMButtonUp = 0x0208;
+    private const int WmMouseWheel = 0x020A;
+    private const int WmXButtonDown = 0x020B;
+    private const int WmXButtonUp = 0x020C;
+    private const uint WmQuit = 0x0012;
+    private const uint WmApplySnapshot = 0x8001;
+    private const uint LlkhfExtended = 0x01;
+    private const uint LlkhfInjected = 0x10;
+    private const uint LlmhfInjected = 0x01;
 
-    public KeyMappingTask() { }
+    private const uint InputMouse = 0;
+    private const uint InputKeyboard = 1;
+    private const uint KeyEventExtendedKey = 0x0001;
+    private const uint KeyEventKeyUp = 0x0002;
+    private const uint MouseEventLeftDown = 0x0002;
+    private const uint MouseEventLeftUp = 0x0004;
+    private const uint MouseEventRightDown = 0x0008;
+    private const uint MouseEventRightUp = 0x0010;
+    private const uint MouseEventMiddleDown = 0x0020;
+    private const uint MouseEventMiddleUp = 0x0040;
+    private const uint MouseEventXDown = 0x0080;
+    private const uint MouseEventXUp = 0x0100;
+    private const uint MouseEventWheel = 0x0800;
+
+    public KeyMappingTask()
+    {
+        _outputState = new(SendKeyboardState, SendMouseState);
+    }
 
     public KeyMappingTask(Galgame game, Process process)
+        : this(game, process, game.KeyMappings)
+    {
+    }
+
+    public KeyMappingTask(Galgame game, Process process, IEnumerable<KeyMapping> keyMappings)
+        : this()
     {
         ProcessName = process.ProcessName;
         Galgame = game;
         _process = process;
-        KeyMappings = game.KeyMappings.Select(m => new KeyMapping
+        _trackedProcessIds.Add(GameProcessDetector.SafeGetId(process));
+        KeyMappings = keyMappings.Select(m => new KeyMapping
         {
             From = new List<int>(m.From),
             To = new List<int>(m.To),
             IsEnabled = m.IsEnabled,
-            Remark = m.Remark
+            Remark = m.Remark,
+            IsGlobal = m.IsGlobal,
         }).ToList();
+        _runtimeGameMappings = KeyMappings.Select(KeyMappingMergeHelper.Clone).ToList();
+        _runtimeGameMappingOptInEnabled = game.KeyReMap;
+        InitDirectoryPrefixes();
     }
 
     protected override Task RecoverFromJsonInternal()
     {
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
+        if (_process is not null) _trackedProcessIds.Add(GameProcessDetector.SafeGetId(_process));
+        InitDirectoryPrefixes();
         return Task.CompletedTask;
     }
 
-    protected async override Task RunInternal()
+    protected override async Task RunInternal()
     {
         if (_process is null || Galgame is null) return;
 
-        BuildLookupMap();
-        if (_lookupMap.Count == 0) return;
-
+        _localSettingsService = App.GetService<ILocalSettingsService>();
+        _messenger = App.GetService<IMessenger>();
+        _runtimeGameMappings = (Galgame.KeyMappings ?? [])
+            .Select(KeyMappingMergeHelper.Clone)
+            .ToList();
+        _runtimeGameMappingOptInEnabled = Galgame.KeyReMap;
+        _isMonitoring = true;
+        _localSettingsService.OnSettingChanged += OnSettingChanged;
+        Galgame.PropertyChanged += OnGalgamePropertyChanged;
+        _messenger.Register<KeyMappingsChangedMessage>(this, (_, message) =>
+        {
+            if (Galgame?.Uuid == message.GalgameUuid)
+                message.Reply(ReloadMappingsSafelyAsync(
+                    "game mappings saved",
+                    message.GameMappings,
+                    message.GameMappingOptInEnabled,
+                    reportGameMappingsApplied: true));
+        });
         ChangeProgress(0, 1, "KeyMappingTask_ProgressMsg".GetLocalized(Galgame.Name.Value!));
-
-        _keyboardHookProc = KeyboardHookCallback;
-        _mouseHookProc = MouseHookCallback;
-        _keyboardHookId = SetKeyboardHook(_keyboardHookProc);
-        _mouseHookId = SetMouseHook(_mouseHookProc);
-
         try
         {
-            await _process.WaitForExitAsync();
+            _ = await ReloadMappingsSafelyAsync("game launched");
+            await FollowGameProcessAsync();
+        }
+        finally
+        {
+            _isMonitoring = false;
+            _localSettingsService.OnSettingChanged -= OnSettingChanged;
+            Galgame.PropertyChanged -= OnGalgamePropertyChanged;
+            _messenger.Unregister<KeyMappingsChangedMessage>(this);
+            await _reloadSemaphore.WaitAsync();
+            try
+            {
+                await Task.Run(StopHookThread);
+                Volatile.Write(ref _snapshot, KeyMappingRuntimeSnapshot.Empty);
+            }
+            finally
+            {
+                _reloadSemaphore.Release();
+            }
+            ChangeProgress(1, 1, "KeyMappingTask_Done".GetLocalized());
+        }
+    }
+
+    private void OnSettingChanged(string key, object? value)
+    {
+        if (key is KeyValues.GameReMapEnabled or KeyValues.GlobalKeyMappings)
+            _ = ReloadMappingsSafelyAsync($"setting changed: {key}");
+    }
+
+    private void OnGalgamePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(GalgameManager.Models.Galgame.KeyReMap))
+            _ = ReloadMappingsSafelyAsync(
+                "game mapping toggle changed",
+                updatedGameMappingOptInEnabled: Galgame?.KeyReMap);
+    }
+
+    private async Task<bool> ReloadMappingsSafelyAsync(
+        string reason,
+        IReadOnlyList<KeyMapping>? updatedGameMappings = null,
+        bool? updatedGameMappingOptInEnabled = null,
+        bool reportGameMappingsApplied = false)
+    {
+        if (!_isMonitoring || Galgame is null || _localSettingsService is null) return false;
+
+        await _reloadSemaphore.WaitAsync();
+        try
+        {
+            if (!_isMonitoring) return false;
+            if (updatedGameMappings is not null)
+                _runtimeGameMappings = updatedGameMappings
+                    .Select(KeyMappingMergeHelper.Clone)
+                    .ToList();
+            if (updatedGameMappingOptInEnabled is not null)
+                _runtimeGameMappingOptInEnabled = updatedGameMappingOptInEnabled.Value;
+
+            bool globalEnabled =
+                await _localSettingsService.ReadSettingAsync<bool>(KeyValues.GameReMapEnabled);
+            bool mappingActive = _runtimeGameMappingOptInEnabled || globalEnabled;
+            List<KeyMapping> globalMappings = mappingActive
+                ? await _localSettingsService.ReadSettingAsync<List<KeyMapping>>(KeyValues.GlobalKeyMappings) ?? []
+                : [];
+            List<KeyMapping> effectiveMappings = KeyMappingRuntimeSnapshot.BuildEffectiveMappings(
+                _runtimeGameMappings,
+                globalMappings,
+                _runtimeGameMappingOptInEnabled,
+                globalEnabled);
+            KeyMappings = effectiveMappings.Select(KeyMappingMergeHelper.Clone).ToList();
+            KeyMappingRuntimeSnapshot nextSnapshot = KeyMappingRuntimeSnapshot.Create(effectiveMappings);
+
+            await ApplySnapshotAsync(nextSnapshot);
+            App.GetService<IInfoService>().Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+                $"Key mappings reloaded: gameUuid={Galgame.Uuid:D}, rules={nextSnapshot.LookupMap.Count}, " +
+                $"gameOptIn={_runtimeGameMappingOptInEnabled}, globalEnabled={globalEnabled}, " +
+                $"mappingActive={mappingActive}, hookActive={!nextSnapshot.IsEmpty}, " +
+                $"mappings={DescribeSnapshot(nextSnapshot)}, reason={reason}");
+            return !reportGameMappingsApplied || mappingActive;
+        }
+        catch (Exception exception)
+        {
+            App.GetService<IInfoService>().DeveloperEvent(
+                msg: $"Failed to reload key mappings: gameUuid={Galgame?.Uuid:D}, reason={reason}",
+                e: exception);
+            return false;
+        }
+        finally
+        {
+            _reloadSemaphore.Release();
+        }
+    }
+
+    private static string DescribeSnapshot(KeyMappingRuntimeSnapshot snapshot)
+    {
+        if (snapshot.IsEmpty) return "<empty>";
+        return string.Join("; ", snapshot.LookupMap
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair =>
+            {
+                KeyMappingOutput output = pair.Value;
+                IEnumerable<int> target = output.Modifiers
+                    .Concat(output.Key is null ? [] : [output.Key.Value])
+                    .Concat(output.MouseButton is null ? [] : [output.MouseButton.Value]);
+                return $"{pair.Key}->{string.Join(',', target)}";
+            }));
+    }
+
+    private async Task ApplySnapshotAsync(KeyMappingRuntimeSnapshot nextSnapshot)
+    {
+        Thread? hookThread = _hookThread;
+        if (hookThread is null || !hookThread.IsAlive || _hookThreadId == 0)
+        {
+            Volatile.Write(ref _snapshot, nextSnapshot);
+            if (!nextSnapshot.IsEmpty)
+                await Task.Run(StartHookThread);
+            return;
+        }
+
+        Interlocked.Exchange(ref _pendingSnapshot, nextSnapshot);
+        _snapshotApplied.Reset();
+        if (!PostThreadMessage(_hookThreadId, WmApplySnapshot, 0, nint.Zero))
+        {
+            await RestartHookThreadWithSnapshotAsync(nextSnapshot, hookThread);
+            return;
+        }
+
+        bool applied = await Task.Run(() => _snapshotApplied.Wait(TimeSpan.FromSeconds(3)));
+        if (!applied)
+        {
+            await RestartHookThreadWithSnapshotAsync(nextSnapshot, hookThread);
+            return;
+        }
+        if (nextSnapshot.IsEmpty)
+            await Task.Run(StopHookThread);
+    }
+
+    private async Task RestartHookThreadWithSnapshotAsync(
+        KeyMappingRuntimeSnapshot nextSnapshot,
+        Thread previousHookThread)
+    {
+        await Task.Run(StopHookThread);
+        if (previousHookThread.IsAlive)
+            throw new TimeoutException("停止无响应的按键映射钩子线程超时。");
+
+        Interlocked.Exchange(ref _pendingSnapshot, null);
+        Volatile.Write(ref _snapshot, nextSnapshot);
+        if (!nextSnapshot.IsEmpty)
+            await Task.Run(StartHookThread);
+    }
+
+    private void InitDirectoryPrefixes()
+    {
+        _directoryPrefixes = Galgame?.SourceEntries
+            .Select(entry => entry.Path)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => GameProcessDetector.GetDirectoryPrefix(path!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
+    }
+
+    private async Task FollowGameProcessAsync()
+    {
+        while (_process is not null)
+        {
+            try
+            {
+                await _process.WaitForExitAsync();
+            }
+            catch
+            {
+                // ShellExecute 和快捷方式返回的 Process 可能无法等待，交给目录探测兜底。
+            }
+
+            int exitedProcessId = GameProcessDetector.SafeGetId(_process);
+            if (exitedProcessId > 0) _trackedProcessIds.Add(exitedProcessId);
+            Process? replacement = await WaitForReplacementProcessAsync();
+            if (replacement is null) break;
+
+            _process = replacement;
+            ProcessName = replacement.ProcessName;
+            _trackedProcessIds.Add(replacement.Id);
+        }
+    }
+
+    private async Task<Process?> WaitForReplacementProcessAsync()
+    {
+        if (_directoryPrefixes.Length == 0) return null;
+
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            foreach (string prefix in _directoryPrefixes)
+            {
+                Process? candidate = GameProcessDetector.FindBestProcessInDirectory(prefix, _trackedProcessIds);
+                if (candidate is not null) return candidate;
+            }
+            await Task.Delay(1000);
+        }
+        return null;
+    }
+
+    private void StartHookThread()
+    {
+        _hookStartException = null;
+        _hookStarted.Reset();
+        _hookThread = new Thread(HookThreadMain)
+        {
+            IsBackground = true,
+            Name = "PotatoVN native key mapping hook",
+        };
+        _hookThread.Start();
+
+        if (!_hookStarted.Wait(TimeSpan.FromSeconds(5)))
+        {
+            StopHookThread();
+            throw new TimeoutException("启动键位映射钩子超时。");
+        }
+        if (_hookStartException is not null)
+        {
+            Exception inner = _hookStartException;
+            StopHookThread();
+            throw new InvalidOperationException("无法启动键位映射钩子。", inner);
+        }
+    }
+
+    private void HookThreadMain()
+    {
+        try
+        {
+            _hookThreadId = GetCurrentThreadId();
+            _ = PeekMessage(out _, nint.Zero, 0, 0, 0);
+
+            _keyboardHookProc = KeyboardHookCallback;
+            _mouseHookProc = MouseHookCallback;
+            nint moduleHandle = GetModuleHandle(null);
+
+            _keyboardHookId = SetWindowsHookEx(WhKeyboardLl, _keyboardHookProc, moduleHandle, 0);
+            if (_keyboardHookId == nint.Zero) throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            _mouseHookId = SetWindowsHookEx(WhMouseLl, _mouseHookProc, moduleHandle, 0);
+            if (_mouseHookId == nint.Zero) throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            SeedPressedPhysicalKeys();
+            SeedPressedPhysicalMouseButtons();
+            _heldInputGuard.BeginTransition(_pressedPhysicalKeyboardKeys, _pressedPhysicalMouseButtons);
+            _hookStarted.Set();
+            while (true)
+            {
+                int result = GetMessage(out NativeMessage message, nint.Zero, 0, 0);
+                if (result == 0) break;
+                if (result < 0) throw new Win32Exception(Marshal.GetLastWin32Error());
+                if (message.Message == WmApplySnapshot)
+                {
+                    ApplyPendingSnapshot();
+                    continue;
+                }
+                _ = TranslateMessage(ref message);
+                _ = DispatchMessage(ref message);
+            }
+        }
+        catch (Exception ex)
+        {
+            _hookStartException ??= ex;
+            _hookStarted.Set();
         }
         finally
         {
             if (_keyboardHookId != nint.Zero)
             {
-                UnhookWindowsHookEx(_keyboardHookId);
+                _ = UnhookWindowsHookEx(_keyboardHookId);
                 _keyboardHookId = nint.Zero;
             }
             if (_mouseHookId != nint.Zero)
             {
-                UnhookWindowsHookEx(_mouseHookId);
+                _ = UnhookWindowsHookEx(_mouseHookId);
                 _mouseHookId = nint.Zero;
             }
+
+            ReleaseAllOutputs();
             _keyboardHookProc = null;
             _mouseHookProc = null;
-            ChangeProgress(1, 1, "KeyMappingTask_Done".GetLocalized());
+            _hookThreadId = 0;
         }
     }
 
-    private void BuildLookupMap()
+    private void StopHookThread()
     {
-        foreach (var mapping in KeyMappings)
+        Thread? thread = _hookThread;
+        if (thread is null) return;
+
+        uint threadId = _hookThreadId;
+        if (threadId != 0) _ = PostThreadMessage(threadId, WmQuit, 0, nint.Zero);
+        if (Thread.CurrentThread != thread) _ = thread.Join(TimeSpan.FromSeconds(3));
+        if (!thread.IsAlive) _hookThread = null;
+    }
+
+    private void ApplyPendingSnapshot()
+    {
+        KeyMappingRuntimeSnapshot? nextSnapshot = Interlocked.Exchange(ref _pendingSnapshot, null);
+        if (nextSnapshot is null)
         {
-            if (!mapping.IsEnabled || mapping.From.Count == 0 || mapping.To.Count == 0) continue;
-
-            // 检查是否是鼠标到键盘的映射
-            var fromMouseButton = mapping.From.FirstOrDefault(IsMouseButtonCode);
-            if (fromMouseButton != 0)
-            {
-                // 鼠标映射到键盘
-                var toKeys = mapping.To.Select(k => (VirtualKey)k).ToList();
-                var toModifiers = toKeys.Where(IsModifierKey).Select(k => (VirtualKeyCode)k).ToList();
-                var toKey = toKeys.FirstOrDefault(k => !IsModifierKey(k));
-                if (toKey == default)
-                {
-                    toKey = toKeys.FirstOrDefault();
-                }
-
-                var fromKeyString = $"Mouse{fromMouseButton}";
-                _lookupMap[fromKeyString] = (toModifiers, (VirtualKeyCode)toKey, null);
-            }
-            else
-            {
-                // 键盘映射（到键盘或鼠标）
-                var fromKeys = mapping.From.Select(k => (VirtualKey)k).ToList();
-                fromKeys.Sort((a, b) => GetKeyOrder(a) - GetKeyOrder(b));
-                var fromKeyString = string.Join("+", fromKeys.Select(GetKeyDisplayName));
-
-                // 检查是否包含鼠标按键
-                var mouseButton = mapping.To.FirstOrDefault(IsMouseButtonCode);
-                if (mouseButton != 0)
-                {
-                    // 键盘映射到鼠标
-                    _lookupMap[fromKeyString] = (new List<VirtualKeyCode>(), null, mouseButton);
-                }
-                else
-                {
-                    // 键盘映射到键盘
-                    var toKeys = mapping.To.Select(k => (VirtualKey)k).ToList();
-                    var toModifiers = toKeys.Where(IsModifierKey).Select(k => (VirtualKeyCode)k).ToList();
-                    var toKey = toKeys.FirstOrDefault(k => !IsModifierKey(k));
-                    if (toKey == default)
-                    {
-                        toKey = toKeys.FirstOrDefault();
-                    }
-                    _lookupMap[fromKeyString] = (toModifiers, (VirtualKeyCode)toKey, null);
-                }
-            }
+            _snapshotApplied.Set();
+            return;
         }
-    }
 
-    private static bool IsMouseButtonCode(int code) => code switch
-    {
-        1 => true, // 鼠标左键
-        2 => true, // 鼠标右键
-        3 => true, // 鼠标中键
-        4 => true, // X1按钮
-        5 => true, // X2按钮
-        6 => true, // 鼠标滚轮向上
-        7 => true, // 鼠标滚轮向下
-        _ => false
-    };
-
-    private nint SetKeyboardHook(LowLevelKeyboardProc proc)
-    {
-        using Process curProcess = Process.GetCurrentProcess();
-        using ProcessModule curModule = curProcess.MainModule!;
-        return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName!), 0);
-    }
-
-    private nint SetMouseHook(LowLevelMouseProc proc)
-    {
-        using Process curProcess = Process.GetCurrentProcess();
-        using ProcessModule curModule = curProcess.MainModule!;
-        return SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(curModule.ModuleName!), 0);
+        ReleaseMappedOutputs();
+        _heldInputGuard.BeginTransition(_pressedPhysicalKeyboardKeys, _pressedPhysicalMouseButtons);
+        Volatile.Write(ref _snapshot, nextSnapshot);
+        _snapshotApplied.Set();
     }
 
     private nint KeyboardHookCallback(int nCode, nint wParam, nint lParam)
@@ -215,46 +516,48 @@ public class KeyMappingTask : BgTaskBase
 
         try
         {
-            if (_process is null || _process.HasExited) return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
+            KbdLlHookStruct data = Marshal.PtrToStructure<KbdLlHookStruct>(lParam);
+            if ((data.Flags & LlkhfInjected) != 0)
+                return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
 
-            var foregroundWindowHandle = GetForegroundWindow();
-            GetWindowThreadProcessId(foregroundWindowHandle, out var foregroundProcessId);
-            if (_process.Id != foregroundProcessId) return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
-
-            if (wParam != WM_KEYDOWN && wParam != WM_SYSKEYDOWN) return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
-
-            var vkCode = (VirtualKey)Marshal.ReadInt32(lParam);
-            if (IsModifierKey(vkCode)) return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
-
-            List<VirtualKey> pressedKeys = new() { vkCode };
-            if (IsKeyDown(VirtualKey.Control)) pressedKeys.Add(VirtualKey.Control);
-            if (IsKeyDown(VirtualKey.Shift)) pressedKeys.Add(VirtualKey.Shift);
-            if (IsKeyDown(VirtualKey.Menu)) pressedKeys.Add(VirtualKey.Menu); // Alt
-            if (IsKeyDown(VirtualKey.LeftWindows) || IsKeyDown(VirtualKey.RightWindows)) pressedKeys.Add(VirtualKey.LeftWindows);
-
-            pressedKeys.Sort((a, b) => GetKeyOrder(a) - GetKeyOrder(b));
-            var keyString = string.Join("+", pressedKeys.Select(GetKeyDisplayName));
-
-            if (_lookupMap.TryGetValue(keyString, out var toHotkey))
+            int message = unchecked((int)wParam.ToInt64());
+            int sourceKey = (int)ResolvePhysicalModifier(data);
+            if (message is WmKeyUp or WmSysKeyUp)
             {
-                if (toHotkey.mouseButton.HasValue)
+                _pressedPhysicalKeyboardKeys.Remove(sourceKey);
+                _heldInputGuard.ReleaseKeyboard(sourceKey);
+                if (_activeKeyboardMappings.Remove(sourceKey, out KeyMappingOutput? active))
                 {
-                    // 映射到鼠标按键
-                    SimulateMouseClick(toHotkey.mouseButton.Value);
+                    ReleaseOutput(active);
+                    return 1;
                 }
-                else if (toHotkey.key.HasValue)
-                {
-                    // 映射到键盘按键
-                    _inputSimulator.Keyboard.ModifiedKeyStroke(toHotkey.modifiers, toHotkey.key.Value);
-                }
-                return 1;
+                return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
             }
+            if (message is not (WmKeyDown or WmSysKeyDown))
+                return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
+
+            _pressedPhysicalKeyboardKeys.Add(sourceKey);
+            if (_activeKeyboardMappings.ContainsKey(sourceKey)) return 1;
+            List<int> sourceKeys = BuildPressedKeyboardSourceKeys(sourceKey);
+            if (_heldInputGuard.IsKeyboardSuppressed(sourceKeys))
+                return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
+            string keyString = KeyMappingMergeHelper.CreateSourceSignature(sourceKeys);
+            KeyMappingRuntimeSnapshot snapshot = Volatile.Read(ref _snapshot);
+            snapshot.LookupMap.TryGetValue(keyString, out KeyMappingOutput? output);
+
+            bool targetForeground = IsTargetGameForeground(out _, out _);
+            if (!targetForeground || output is null)
+                return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
+
+            PressOutput(output);
+            _activeKeyboardMappings[sourceKey] = output;
+            return 1;
         }
-        catch(Exception)
+        catch (Exception ex)
         {
-            // Ignored
+            LogCallbackError(ex);
+            return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
         }
-        return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
     }
 
     private nint MouseHookCallback(int nCode, nint wParam, nint lParam)
@@ -263,117 +566,421 @@ public class KeyMappingTask : BgTaskBase
 
         try
         {
-            if (_process is null || _process.HasExited) return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
+            MsllHookStruct data = Marshal.PtrToStructure<MsllHookStruct>(lParam);
+            if ((data.Flags & LlmhfInjected) != 0)
+                return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
 
-            var foregroundWindowHandle = GetForegroundWindow();
-            GetWindowThreadProcessId(foregroundWindowHandle, out var foregroundProcessId);
-            if (_process.Id != foregroundProcessId) return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
-
-            // 检查是否是需要处理的鼠标事件
-            if (!IsMouseEvent(wParam)) return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
-
-            var mouseButton = GetMouseButtonFromWParam(wParam, lParam);
+            int message = unchecked((int)wParam.ToInt64());
+            int mouseButton = GetMouseButton(message, data.MouseData);
             if (mouseButton == 0) return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
 
-            // 处理鼠标到键盘的映射
-            var fromKeyString = $"Mouse{mouseButton}";
-            if (_lookupMap.TryGetValue(fromKeyString, out var toHotkey))
+            if (IsMouseButtonUp(message))
             {
-                if (toHotkey.key.HasValue)
+                _pressedPhysicalMouseButtons.Remove(mouseButton);
+                _heldInputGuard.ReleaseMouse(mouseButton);
+                if (_activeMouseMappings.Remove(mouseButton, out KeyMappingOutput? active))
                 {
-                    // 鼠标映射到键盘按键
-                    _inputSimulator.Keyboard.ModifiedKeyStroke(toHotkey.modifiers, toHotkey.key.Value);
+                    ReleaseOutput(active);
+                    return 1;
                 }
-                return 1; // 阻止原始鼠标事件
+                return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
+            }
+
+            if (message != WmMouseWheel)
+                _pressedPhysicalMouseButtons.Add(mouseButton);
+
+            KeyMappingRuntimeSnapshot snapshot = Volatile.Read(ref _snapshot);
+            List<int> sourceKeyboardKeys = GetPressedMouseSourceKeyboardKeys(snapshot, mouseButton);
+            if (_heldInputGuard.IsMouseSuppressed(mouseButton, sourceKeyboardKeys))
+                return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
+            bool targetForeground = IsTargetGameForeground(out _, out _);
+            string sourceSignature = KeyMappingMergeHelper.CreateSourceSignature(
+                sourceKeyboardKeys.Prepend(mouseButton));
+            snapshot.LookupMap.TryGetValue(sourceSignature, out KeyMappingOutput? output);
+            if (!targetForeground || output is null)
+                return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
+
+            if (message == WmMouseWheel)
+            {
+                PulseOutput(output);
+                return 1;
+            }
+            if (_activeMouseMappings.ContainsKey(mouseButton)) return 1;
+
+            PressOutput(output);
+            _activeMouseMappings[mouseButton] = output;
+            return 1;
+        }
+        catch (Exception ex)
+        {
+            LogCallbackError(ex);
+            return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
+        }
+    }
+
+    private bool IsTargetGameForeground(out uint foregroundProcessId, out string matchReason)
+    {
+        nint window = GetForegroundWindow();
+        foregroundProcessId = 0;
+        if (window == nint.Zero)
+        {
+            matchReason = "无前台窗口";
+            return false;
+        }
+        _ = GetWindowThreadProcessId(window, out foregroundProcessId);
+        if (foregroundProcessId == 0)
+        {
+            matchReason = "前台进程未知";
+            return false;
+        }
+
+        try
+        {
+            if (_process is { HasExited: false } && _process.Id == foregroundProcessId)
+            {
+                matchReason = "跟踪进程一致";
+                return true;
             }
         }
-        catch(Exception)
+        catch
         {
-            // Ignored
+            // 继续通过安装目录判断。
         }
-        return CallNextHookEx(_mouseHookId, nCode, wParam, lParam);
+
+        try
+        {
+            using Process foreground = Process.GetProcessById(checked((int)foregroundProcessId));
+            string? executablePath = foreground.TryGetExecutablePath();
+            if (executablePath is not null && _directoryPrefixes.Any(prefix =>
+                    executablePath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+            {
+                matchReason = "位于游戏安装目录";
+                return true;
+            }
+
+            if (_directoryPrefixes.Length == 0 &&
+                foreground.ProcessName.Equals(ProcessName, StringComparison.OrdinalIgnoreCase))
+            {
+                matchReason = "进程名一致";
+                return true;
+            }
+
+            matchReason = executablePath is null
+                ? $"前台进程={foreground.ProcessName}，路径不可读"
+                : $"前台进程={foreground.ProcessName}";
+            return false;
+        }
+        catch
+        {
+            matchReason = "读取前台进程失败";
+            return false;
+        }
     }
 
-    private void SimulateMouseClick(int mouseButton)
+    private List<int> BuildPressedKeyboardSourceKeys(int currentKey)
     {
-        switch (mouseButton)
+        int normalizedCurrent = (int)NormalizeExactModifier((VirtualKey)currentKey);
+        List<int> pressed = [normalizedCurrent];
+        AddPressedModifiers(pressed);
+        return pressed;
+    }
+
+    private List<int> GetPressedMouseSourceKeyboardKeys(KeyMappingRuntimeSnapshot snapshot, int mouseButton)
+    {
+        List<int> pressed = [];
+        if (snapshot.MouseSourceKeyboardKeysByButton.TryGetValue(mouseButton, out var candidates))
+            pressed.AddRange(candidates.Where(IsMouseSourceCandidateDown));
+        return pressed;
+    }
+
+    private bool IsMouseSourceCandidateDown(int key) =>
+        (VirtualKey)key == VirtualKey.LeftWindows
+            ? _pressedPhysicalKeyboardKeys.Contains((int)VirtualKey.LeftWindows) ||
+              _pressedPhysicalKeyboardKeys.Contains((int)VirtualKey.RightWindows)
+            : _pressedPhysicalKeyboardKeys.Contains(key);
+
+    private void SeedPressedPhysicalKeys()
+    {
+        KeyMappingRuntimeSnapshot snapshot = Volatile.Read(ref _snapshot);
+        HashSet<int> candidates =
+        [
+            (int)VirtualKey.LeftControl,
+            (int)VirtualKey.RightControl,
+            (int)VirtualKey.LeftShift,
+            (int)VirtualKey.RightShift,
+            (int)VirtualKey.LeftMenu,
+            (int)VirtualKey.RightMenu,
+            (int)VirtualKey.LeftWindows,
+            (int)VirtualKey.RightWindows,
+        ];
+        candidates.UnionWith(snapshot.MouseSourceKeyboardKeysByButton.Values.SelectMany(keys => keys));
+        foreach (int key in candidates.Where(IsKeyDown))
+            _pressedPhysicalKeyboardKeys.Add(key);
+    }
+
+    private void SeedPressedPhysicalMouseButtons()
+    {
+        for (var button = 1; button <= 5; button++)
         {
-            case 1: // 左键
-                mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                break;
-            case 2: // 右键
-                mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
-                break;
-            case 3: // 中键
-                mouse_event(MOUSEEVENTF_MIDDLEDOWN | MOUSEEVENTF_MIDDLEUP, 0, 0, 0, 0);
-                break;
-            case 4: // X1键
-            case 5: // X2键
-                mouse_event(MOUSEEVENTF_XDOWN, 0, 0, (uint)(mouseButton == 4 ? 1 : 2), 0);
-                mouse_event(MOUSEEVENTF_XUP, 0, 0, (uint)(mouseButton == 4 ? 1 : 2), 0);
-                break;
-            case 6: // 鼠标滚轮向上
-                mouse_event(MOUSEEVENTF_WHEEL, 0, 0, 120, 0);
-                break;
-            case 7: // 鼠标滚轮向下
-                mouse_event(MOUSEEVENTF_WHEEL, 0, 0, unchecked((uint)-120), 0);
-                break;
+            int virtualKey = KeyMappingMergeHelper.GetMouseButtonVirtualKey(button);
+            if (virtualKey != 0 && IsKeyDown(virtualKey))
+                _pressedPhysicalMouseButtons.Add(button);
         }
     }
 
-    private static bool IsMouseEvent(nint wParam) => wParam switch
+    private void AddPressedModifiers(ICollection<int> pressed)
     {
-        WM_LBUTTONDOWN or WM_RBUTTONDOWN or WM_MBUTTONDOWN or WM_XBUTTONDOWN or WM_MOUSEWHEEL => true,
-        _ => false
+        void AddIfPressed(VirtualKey key)
+        {
+            if (_pressedPhysicalKeyboardKeys.Contains((int)key)) pressed.Add((int)key);
+        }
+
+        AddIfPressed(VirtualKey.LeftControl);
+        AddIfPressed(VirtualKey.RightControl);
+        AddIfPressed(VirtualKey.LeftShift);
+        AddIfPressed(VirtualKey.RightShift);
+        AddIfPressed(VirtualKey.LeftMenu);
+        AddIfPressed(VirtualKey.RightMenu);
+        if (_pressedPhysicalKeyboardKeys.Contains((int)VirtualKey.LeftWindows) ||
+            _pressedPhysicalKeyboardKeys.Contains((int)VirtualKey.RightWindows))
+            pressed.Add((int)VirtualKey.LeftWindows);
+    }
+
+    private void PressOutput(KeyMappingOutput output) => _outputState.Press(output);
+
+    private void ReleaseOutput(KeyMappingOutput output) => _outputState.Release(output);
+
+    private void PulseOutput(KeyMappingOutput output) => _outputState.Pulse(output);
+
+    private void ReleaseAllOutputs()
+    {
+        ReleaseMappedOutputs();
+        _pressedPhysicalKeyboardKeys.Clear();
+        _pressedPhysicalMouseButtons.Clear();
+        _heldInputGuard.Clear();
+    }
+
+    private void ReleaseMappedOutputs()
+    {
+        try
+        {
+            _outputState.Reset();
+        }
+        catch
+        {
+            // 退出时尽力释放，不能阻止钩子线程结束。
+        }
+        _activeKeyboardMappings.Clear();
+        _activeMouseMappings.Clear();
+    }
+
+    private static void SendMouseState(int mouseButton, bool down)
+    {
+        (uint flags, uint mouseData) = mouseButton switch
+        {
+            1 => (down ? MouseEventLeftDown : MouseEventLeftUp, 0u),
+            2 => (down ? MouseEventRightDown : MouseEventRightUp, 0u),
+            3 => (down ? MouseEventMiddleDown : MouseEventMiddleUp, 0u),
+            4 => (down ? MouseEventXDown : MouseEventXUp, 1u),
+            5 => (down ? MouseEventXDown : MouseEventXUp, 2u),
+            6 when down => (MouseEventWheel, 120u),
+            7 when down => (MouseEventWheel, unchecked((uint)-120)),
+            _ => (0u, 0u),
+        };
+        if (flags == 0) return;
+
+        SendNativeInput(new NativeInput
+        {
+            Type = InputMouse,
+            Data = new NativeInputUnion
+            {
+                Mouse = new NativeMouseInput
+                {
+                    MouseData = mouseData,
+                    Flags = flags,
+                },
+            },
+        });
+    }
+
+    private static void SendKeyboardState(int virtualKey, bool down)
+    {
+        uint flags = down ? 0 : KeyEventKeyUp;
+        if (IsExtendedKey(virtualKey)) flags |= KeyEventExtendedKey;
+
+        SendNativeInput(new NativeInput
+        {
+            Type = InputKeyboard,
+            Data = new NativeInputUnion
+            {
+                Keyboard = new NativeKeyboardInput
+                {
+                    VirtualKey = checked((ushort)virtualKey),
+                    Flags = flags,
+                },
+            },
+        });
+    }
+
+    private static void SendNativeInput(NativeInput input)
+    {
+        NativeInput[] inputs = [input];
+        uint sent = SendInput(1, inputs, Marshal.SizeOf<NativeInput>());
+        if (sent != 1)
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "SendInput 未能发送按键映射输入。");
+    }
+
+    private static bool IsExtendedKey(int virtualKey) => virtualKey is
+        0x21 or 0x22 or 0x23 or 0x24 or 0x25 or 0x26 or 0x27 or 0x28 or
+        0x2D or 0x2E or 0x5B or 0x5C or 0x6F or 0x90 or 0xA3 or 0xA5;
+
+    private void LogCallbackError(Exception exception)
+    {
+        if (Interlocked.Exchange(ref _callbackErrorLogged, 1) != 0) return;
+        App.GetService<IInfoService>().DeveloperEvent(
+            msg: "键位映射处理输入事件时发生错误。",
+            e: exception);
+    }
+
+    private static bool IsMouseButtonCode(int code) => code is >= 1 and <= 7;
+
+    private static bool IsKeyDown(int key) => (GetAsyncKeyState(key) & 0x8000) != 0;
+
+    private static bool IsMouseButtonUp(int message) =>
+        message is WmLButtonUp or WmRButtonUp or WmMButtonUp or WmXButtonUp;
+
+    private static int GetMouseButton(int message, uint mouseData) => message switch
+    {
+        WmLButtonDown or WmLButtonUp => 1,
+        WmRButtonDown or WmRButtonUp => 2,
+        WmMButtonDown or WmMButtonUp => 3,
+        WmXButtonDown or WmXButtonUp => (ushort)(mouseData >> 16) == 1 ? 4 : 5,
+        WmMouseWheel => unchecked((short)(mouseData >> 16)) > 0 ? 6 : 7,
+        _ => 0,
     };
 
-    private static int GetMouseButtonFromWParam(nint wParam, nint lParam) => wParam switch
+    private static VirtualKey NormalizeExactModifier(VirtualKey key) => key switch
     {
-        WM_LBUTTONDOWN => 1,
-        WM_RBUTTONDOWN => 2,
-        WM_MBUTTONDOWN => 3,
-        WM_XBUTTONDOWN => GetXButtonFromLParam(lParam), // 读取额外数据确定X1/X2
-        WM_MOUSEWHEEL => GetWheelDirectionFromLParam(lParam), // 确定滚轮方向
-        _ => 0
+        VirtualKey.RightWindows => VirtualKey.LeftWindows,
+        _ => key,
     };
 
-    private static int GetXButtonFromLParam(nint lParam)
+    private static VirtualKey ResolvePhysicalModifier(KbdLlHookStruct data)
     {
-        // 高位字表示X按钮编号
-        var hiWord = (ushort)((uint)Marshal.ReadInt32(lParam) >> 16);
-        return hiWord == 1 ? 4 : 5; // X1=4, X2=5
+        VirtualKey key = (VirtualKey)data.VkCode;
+        return key switch
+        {
+            VirtualKey.Shift => data.ScanCode == 0x36
+                ? VirtualKey.RightShift
+                : VirtualKey.LeftShift,
+            VirtualKey.Control => (data.Flags & LlkhfExtended) != 0
+                ? VirtualKey.RightControl
+                : VirtualKey.LeftControl,
+            VirtualKey.Menu => (data.Flags & LlkhfExtended) != 0
+                ? VirtualKey.RightMenu
+                : VirtualKey.LeftMenu,
+            _ => key,
+        };
     }
 
-    private static int GetWheelDirectionFromLParam(nint lParam)
-    {
-        // 高位字表示滚轮方向
-        var hiWord = (short)((uint)Marshal.ReadInt32(lParam) >> 16);
-        return hiWord > 0 ? 6 : 7; // 向上=6, 向下=7
-    }
-    
-    private bool IsKeyDown(VirtualKey key) => (GetKeyState((int)key) & 0x8000) != 0;
-
-    private static bool IsModifierKey(VirtualKey key) => key is VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl
-        or VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift or VirtualKey.Menu or VirtualKey.LeftMenu 
-        or VirtualKey.RightMenu or VirtualKey.LeftWindows or VirtualKey.RightWindows;
-
-    private static int GetKeyOrder(VirtualKey key)
-    {
-        if (key is VirtualKey.LeftWindows or VirtualKey.RightWindows) return 1;
-        if (key is VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl) return 2;
-        if (key is VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu) return 3;
-        if (key is VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift) return 4;
-        return 5;
-    }
-    
     private static string GetKeyDisplayName(VirtualKey key) => key switch
     {
         VirtualKey.LeftWindows or VirtualKey.RightWindows => "Win",
-        VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl => "Ctrl",
-        VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu => "Alt",
-        VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift => "Shift",
-        _ => key.ToString()
+        VirtualKey.Control => "Ctrl",
+        VirtualKey.LeftControl => "左 Ctrl",
+        VirtualKey.RightControl => "右 Ctrl",
+        VirtualKey.Menu => "Alt",
+        VirtualKey.LeftMenu => "左 Alt",
+        VirtualKey.RightMenu => "右 Alt",
+        VirtualKey.Shift => "Shift",
+        VirtualKey.LeftShift => "左 Shift",
+        VirtualKey.RightShift => "右 Shift",
+        _ => key.ToString(),
     };
 
+
     public override string Title { get; } = "KeyMappingTask_Title".GetLocalized();
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeInput
+    {
+        public uint Type;
+        public NativeInputUnion Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct NativeInputUnion
+    {
+        [FieldOffset(0)] public NativeMouseInput Mouse;
+        [FieldOffset(0)] public NativeKeyboardInput Keyboard;
+        [FieldOffset(0)] public NativeHardwareInput Hardware;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeMouseInput
+    {
+        public int X;
+        public int Y;
+        public uint MouseData;
+        public uint Flags;
+        public uint Time;
+        public nuint ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeKeyboardInput
+    {
+        public ushort VirtualKey;
+        public ushort ScanCode;
+        public uint Flags;
+        public uint Time;
+        public nuint ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeHardwareInput
+    {
+        public uint Message;
+        public ushort ParameterLow;
+        public ushort ParameterHigh;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeMessage
+    {
+        public nint Window;
+        public uint Message;
+        public nuint WParam;
+        public nint LParam;
+        public uint Time;
+        public NativePoint Point;
+        public uint Private;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct KbdLlHookStruct
+    {
+        public uint VkCode;
+        public uint ScanCode;
+        public uint Flags;
+        public uint Time;
+        public nuint ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MsllHookStruct
+    {
+        public NativePoint Point;
+        public uint MouseData;
+        public uint Flags;
+        public uint Time;
+        public nuint ExtraInfo;
+    }
 }

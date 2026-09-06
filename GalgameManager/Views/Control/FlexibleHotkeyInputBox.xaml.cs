@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using CommunityToolkit.WinUI;
+using GalgameManager.Helpers;
 
 namespace GalgameManager.Views.Control;
 
@@ -20,7 +20,8 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
     private readonly HashSet<VirtualKey> _pressedKeys = new();
     private readonly HashSet<int> _mouseButtons = new();
     private bool _isCapturing;
-    private int _clickCount = 0;
+    private bool _leftPointerClickPending;
+    private bool _leftPointerCompletedCapture;
     private string _buttonText = "";
     private string _hotkeyDisplayText = "";
     private Visibility _showPlaceholder = Visibility.Visible;
@@ -31,6 +32,14 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
     public FlexibleHotkeyInputBox()
     {
         InitializeComponent();
+        // Button 会把 Enter/Space 当成 Click 并在类处理器中标记按键事件为已处理。
+        // handledEventsToo=true 能让捕获器仍然收到真实键盘事件。
+        InputButton.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(InputButton_KeyDown), true);
+        InputButton.AddHandler(UIElement.KeyUpEvent, new KeyEventHandler(InputButton_KeyUp), true);
+        // Button 同样会在类处理器中吞掉 PointerPressed；必须监听已处理事件，
+        // 否则普通左键点击无法留下“来自鼠标”的标记，捕获模式就无法启动。
+        InputButton.AddHandler(UIElement.PointerPressedEvent,
+            new PointerEventHandler(InputButton_PointerPressed), true);
         UpdateButtonText();
 
         // 延迟初始化模式显示，确保控件完全加载
@@ -177,51 +186,78 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
     
     private void InputButton_Click(object sender, RoutedEventArgs e)
     {
-        _clickCount++;
+        // Button.Click 既可能来自鼠标，也可能来自 Enter/Space。只有前面确实收到左键
+        // PointerPressed 时才把它当作鼠标交互，避免 Enter 被误录成 MOUSE_LEFT。
+        if (!_leftPointerClickPending) return;
 
-        if (!_isCapturing)
+        _leftPointerClickPending = false;
+        if (_leftPointerCompletedCapture)
         {
-            // 奇数次点击：开始捕获
-            if (_clickCount % 2 == 1)
-            {
-                StartCapturing();
-            }
+            _leftPointerCompletedCapture = false;
+            return;
         }
-        else
-        {
-            // 偶数次点击：捕获鼠标左键
-            if (_clickCount % 2 == 0)
-            {
-                _mouseButtons.Add(1);
-                CompleteCapture();
-            }
-        }
+
+        if (!_isCapturing) StartCapturing();
     }
 
     private void InputButton_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (!_isCapturing) return;
+        if (!_isCapturing)
+        {
+            // 保留键盘可访问性：第一次 Enter/Space 进入捕获，第二次才把该键录入。
+            if (e.Key is VirtualKey.Enter or VirtualKey.Space)
+            {
+                e.Handled = true;
+                StartCapturing();
+            }
+            return;
+        }
 
         e.Handled = true;
+        VirtualKey key = ResolvePhysicalModifier(e);
 
-        // 添加任何按键
-        _pressedKeys.Add(e.Key);
-
-        // 任何按键都完成捕获，不需要修饰键
-        CompleteCapture();
-
+        // 修饰键先保留，等到普通键按下时一起完成捕获；这样可以录入 Ctrl+K 一类组合键。
+        _pressedKeys.Add(key);
         UpdateCaptureDisplay();
+
+        if (!IsModifierKey(key))
+        {
+            CompleteCapture();
+        }
+    }
+
+    private void InputButton_KeyUp(object sender, KeyRoutedEventArgs e)
+    {
+        VirtualKey key = ResolvePhysicalModifier(e);
+        if (!_isCapturing || !IsModifierKey(key)) return;
+
+        e.Handled = true;
+        // 允许单独映射修饰键：若用户只按了一个或多个修饰键，在第一个松开事件到来时完成。
+        if (_pressedKeys.Count > 0 && _pressedKeys.All(IsModifierKey))
+        {
+            CompleteCapture();
+        }
     }
 
     private void InputButton_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
-        // 在捕获状态下处理其他鼠标按键（除了左键）
-        if (!_isCapturing) return;
-
         var pointerPoint = e.GetCurrentPoint(InputButton);
         var properties = pointerPoint.Properties;
 
-        // 检测其他鼠标按键（不包括左键，左键通过点击计数处理）
+        if (properties.IsLeftButtonPressed)
+        {
+            _leftPointerClickPending = true;
+            _leftPointerCompletedCapture = _isCapturing;
+            if (_isCapturing)
+            {
+                _mouseButtons.Add(1);
+                CompleteCapture();
+            }
+            return;
+        }
+
+        if (!_isCapturing) return;
+
         if (properties.IsRightButtonPressed)
         {
             _mouseButtons.Add(2);
@@ -302,7 +338,6 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
         }
 
         HotkeyKeys = keys;
-        _clickCount = 0; // 重置点击计数
 
         UpdateDisplay();
         OnHotkeyChanged();
@@ -311,8 +346,26 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
     private void CancelCapture()
     {
         _isCapturing = false;
-        _clickCount = 0; // 重置点击计数
         UpdateDisplay();
+    }
+
+    private static VirtualKey ResolvePhysicalModifier(KeyRoutedEventArgs e)
+    {
+        // 某些 WinUI 键盘事件只给出通用 Shift/Ctrl，需要通过扫描码和扩展位还原左右键。
+        // 已经给出左右键时原样保留，以兼容不同 Windows App SDK 版本。
+        return e.Key switch
+        {
+            VirtualKey.Shift => e.KeyStatus.ScanCode == 0x36
+                ? VirtualKey.RightShift
+                : VirtualKey.LeftShift,
+            VirtualKey.Control => e.KeyStatus.IsExtendedKey
+                ? VirtualKey.RightControl
+                : VirtualKey.LeftControl,
+            VirtualKey.Menu => e.KeyStatus.IsExtendedKey
+                ? VirtualKey.RightMenu
+                : VirtualKey.LeftMenu,
+            _ => e.Key,
+        };
     }
 
     private void UpdateCaptureDisplay()
@@ -485,10 +538,16 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
         return key switch
         {
             VirtualKey.LeftWindows or VirtualKey.RightWindows => "Win",
-            VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl => "Ctrl",
-            VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu => "Alt",
-            VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift => "Shift",
-            VirtualKey.Space => "Space",
+            VirtualKey.Control => Localized("KeyMapping_Key_AnyCtrl", "Ctrl（任意）"),
+            VirtualKey.LeftControl => Localized("KeyMapping_Key_LeftCtrl", "左 Ctrl"),
+            VirtualKey.RightControl => Localized("KeyMapping_Key_RightCtrl", "右 Ctrl"),
+            VirtualKey.Menu => Localized("KeyMapping_Key_AnyAlt", "Alt（任意）"),
+            VirtualKey.LeftMenu => Localized("KeyMapping_Key_LeftAlt", "左 Alt"),
+            VirtualKey.RightMenu => Localized("KeyMapping_Key_RightAlt", "右 Alt"),
+            VirtualKey.Shift => Localized("KeyMapping_Key_AnyShift", "Shift（任意）"),
+            VirtualKey.LeftShift => Localized("KeyMapping_Key_LeftShift", "左 Shift"),
+            VirtualKey.RightShift => Localized("KeyMapping_Key_RightShift", "右 Shift"),
+            VirtualKey.Space => Localized("KeyMapping_Key_Space", "空格键"),
             VirtualKey.Tab => "Tab",
             VirtualKey.Enter => "Enter",
             VirtualKey.Escape => "Esc",
@@ -503,7 +562,14 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
             VirtualKey.Down => "↓",
             VirtualKey.Left => "←",
             VirtualKey.Right => "→",
-            // 数字键（主键盘）
+            VirtualKey.Clear => Localized("KeyMapping_Key_Clear", "清除键"),
+            VirtualKey.CapitalLock => "Caps Lock",
+            VirtualKey.NumberKeyLock => "Num Lock",
+            VirtualKey.Scroll => "Scroll Lock",
+            VirtualKey.Snapshot => "Print Screen",
+            VirtualKey.Pause => "Pause",
+            VirtualKey.Application => Localized("KeyMapping_Key_Menu", "菜单键"),
+            VirtualKey.Sleep => Localized("KeyMapping_Key_Sleep", "休眠键"),
             VirtualKey.Number0 => "0",
             VirtualKey.Number1 => "1",
             VirtualKey.Number2 => "2",
@@ -514,34 +580,63 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
             VirtualKey.Number7 => "7",
             VirtualKey.Number8 => "8",
             VirtualKey.Number9 => "9",
-            // 数字小键盘
-            VirtualKey.NumberPad0 => "NumPad 0",
-            VirtualKey.NumberPad1 => "NumPad 1",
-            VirtualKey.NumberPad2 => "NumPad 2",
-            VirtualKey.NumberPad3 => "NumPad 3",
-            VirtualKey.NumberPad4 => "NumPad 4",
-            VirtualKey.NumberPad5 => "NumPad 5",
-            VirtualKey.NumberPad6 => "NumPad 6",
-            VirtualKey.NumberPad7 => "NumPad 7",
-            VirtualKey.NumberPad8 => "NumPad 8",
-            VirtualKey.NumberPad9 => "NumPad 9",
-            // 功能键
-            VirtualKey.F1 => "F1",
-            VirtualKey.F2 => "F2",
-            VirtualKey.F3 => "F3",
-            VirtualKey.F4 => "F4",
-            VirtualKey.F5 => "F5",
-            VirtualKey.F6 => "F6",
-            VirtualKey.F7 => "F7",
-            VirtualKey.F8 => "F8",
-            VirtualKey.F9 => "F9",
-            VirtualKey.F10 => "F10",
-            VirtualKey.F11 => "F11",
-            VirtualKey.F12 => "F12",
-            // 字母键 - 单独处理以确保正确显示
+            >= VirtualKey.NumberPad0 and <= VirtualKey.NumberPad9 =>
+                LocalizedFormat("KeyMapping_Key_NumberPad_Format", "小键盘 {0}", (int)key - (int)VirtualKey.NumberPad0),
+            VirtualKey.Multiply => LocalizedFormat("KeyMapping_Key_NumberPad_Format", "小键盘 {0}", "*"),
+            VirtualKey.Add => LocalizedFormat("KeyMapping_Key_NumberPad_Format", "小键盘 {0}", "+"),
+            VirtualKey.Separator => Localized("KeyMapping_Key_NumberPadSeparator", "小键盘分隔符"),
+            VirtualKey.Subtract => LocalizedFormat("KeyMapping_Key_NumberPad_Format", "小键盘 {0}", "-"),
+            VirtualKey.Decimal => LocalizedFormat("KeyMapping_Key_NumberPad_Format", "小键盘 {0}", "."),
+            VirtualKey.Divide => LocalizedFormat("KeyMapping_Key_NumberPad_Format", "小键盘 {0}", "/"),
+            >= VirtualKey.F1 and <= VirtualKey.F24 => $"F{(int)key - (int)VirtualKey.F1 + 1}",
             >= VirtualKey.A and <= VirtualKey.Z => ((char)key).ToString(),
-            _ => key.ToString()
+            _ => GetFallbackKeyDisplayName(key)
         };
+    }
+
+    private static string GetFallbackKeyDisplayName(VirtualKey key)
+    {
+        string? oemName = (int)key switch
+        {
+            0xBA => "; / :",
+            0xBB => "= / +",
+            0xBC => ", / <",
+            0xBD => "- / _",
+            0xBE => ". / >",
+            0xBF => "/ / ?",
+            0xC0 => "` / ~",
+            0xDB => "[ / {",
+            0xDC => "\\ / |",
+            0xDD => "] / }",
+            0xDE => "' / \"",
+            0xE2 => "\\ / |",
+            _ => null,
+        };
+        if (oemName is not null) return oemName;
+
+        string enumName = key.ToString();
+        return int.TryParse(enumName, out _)
+            ? LocalizedFormat("KeyMapping_Key_Unknown_Format", "按键 {0}", (int)key)
+            : enumName;
+    }
+
+    private static string Localized(string resourceKey, string fallback)
+    {
+        string localized = resourceKey.GetLocalized();
+        return string.IsNullOrWhiteSpace(localized) || localized == resourceKey ? fallback : localized;
+    }
+
+    private static string LocalizedFormat(string resourceKey, string fallback, object value)
+    {
+        string format = Localized(resourceKey, fallback);
+        try
+        {
+            return string.Format(format, value);
+        }
+        catch (FormatException)
+        {
+            return string.Format(fallback, value);
+        }
     }
 
     public event EventHandler? HotkeyChanged;
@@ -557,12 +652,19 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
     private List<HotkeyOption> GetDropdownOptions()
     {
         var options = new List<HotkeyOption>();
+        void AddKeyboard(VirtualKey key) => options.Add(new HotkeyOption(GetKeyDisplayName(key), (int)key));
 
         // 修饰键
-        options.Add(new HotkeyOption("Win", (int)VirtualKey.LeftWindows));
-        options.Add(new HotkeyOption("Ctrl", (int)VirtualKey.Control));
-        options.Add(new HotkeyOption("Alt", (int)VirtualKey.Menu));
-        options.Add(new HotkeyOption("Shift", (int)VirtualKey.Shift));
+        AddKeyboard(VirtualKey.LeftWindows);
+        AddKeyboard(VirtualKey.Control);
+        AddKeyboard(VirtualKey.LeftControl);
+        AddKeyboard(VirtualKey.RightControl);
+        AddKeyboard(VirtualKey.Menu);
+        AddKeyboard(VirtualKey.LeftMenu);
+        AddKeyboard(VirtualKey.RightMenu);
+        AddKeyboard(VirtualKey.Shift);
+        AddKeyboard(VirtualKey.LeftShift);
+        AddKeyboard(VirtualKey.RightShift);
 
         // 功能键
         for (var i = 1; i <= 12; i++) // 只到F12，更常见的功能键
@@ -570,7 +672,7 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
             var key = (VirtualKey)(111 + i); // F1-F12
             if (Enum.IsDefined(typeof(VirtualKey), key))
             {
-                options.Add(new HotkeyOption($"F{i}", (int)key));
+                AddKeyboard(key);
             }
         }
 
@@ -578,53 +680,46 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
         for (var i = 0; i < 10; i++)
         {
             var key = (VirtualKey)('0' + i);
-            options.Add(new HotkeyOption(((char)('0' + i)).ToString(), (int)key));
+            AddKeyboard(key);
         }
 
         // 字母键
         for (var i = 0; i < 26; i++)
         {
             var key = (VirtualKey)('A' + i);
-            options.Add(new HotkeyOption(((char)('A' + i)).ToString(), (int)key));
+            AddKeyboard(key);
         }
 
         // 特殊键
-        options.Add(new HotkeyOption("Space", (int)VirtualKey.Space));
-        options.Add(new HotkeyOption("Tab", (int)VirtualKey.Tab));
-        options.Add(new HotkeyOption("Enter", (int)VirtualKey.Enter));
-        options.Add(new HotkeyOption("Esc", (int)VirtualKey.Escape));
-        options.Add(new HotkeyOption("Backspace", (int)VirtualKey.Back));
-        options.Add(new HotkeyOption("Delete", (int)VirtualKey.Delete));
-        options.Add(new HotkeyOption("Insert", (int)VirtualKey.Insert));
-        options.Add(new HotkeyOption("Home", (int)VirtualKey.Home));
-        options.Add(new HotkeyOption("End", (int)VirtualKey.End));
-        options.Add(new HotkeyOption("Page Up", (int)VirtualKey.PageUp));
-        options.Add(new HotkeyOption("Page Down", (int)VirtualKey.PageDown));
-        options.Add(new HotkeyOption("↑", (int)VirtualKey.Up));
-        options.Add(new HotkeyOption("↓", (int)VirtualKey.Down));
-        options.Add(new HotkeyOption("←", (int)VirtualKey.Left));
-        options.Add(new HotkeyOption("→", (int)VirtualKey.Right));
+        foreach (VirtualKey key in new[]
+                 {
+                     VirtualKey.Space, VirtualKey.Tab, VirtualKey.Enter, VirtualKey.Escape,
+                     VirtualKey.Back, VirtualKey.Delete, VirtualKey.Insert, VirtualKey.Home,
+                     VirtualKey.End, VirtualKey.PageUp, VirtualKey.PageDown, VirtualKey.Up,
+                     VirtualKey.Down, VirtualKey.Left, VirtualKey.Right, VirtualKey.Clear,
+                     VirtualKey.CapitalLock, VirtualKey.NumberKeyLock, VirtualKey.Scroll,
+                     VirtualKey.Snapshot, VirtualKey.Pause, VirtualKey.Application, VirtualKey.Sleep,
+                 })
+        {
+            AddKeyboard(key);
+        }
 
         // 数字小键盘 - 优先级较低
-        options.Add(new HotkeyOption("NumPad 0", (int)VirtualKey.NumberPad0));
-        options.Add(new HotkeyOption("NumPad 1", (int)VirtualKey.NumberPad1));
-        options.Add(new HotkeyOption("NumPad 2", (int)VirtualKey.NumberPad2));
-        options.Add(new HotkeyOption("NumPad 3", (int)VirtualKey.NumberPad3));
-        options.Add(new HotkeyOption("NumPad 4", (int)VirtualKey.NumberPad4));
-        options.Add(new HotkeyOption("NumPad 5", (int)VirtualKey.NumberPad5));
-        options.Add(new HotkeyOption("NumPad 6", (int)VirtualKey.NumberPad6));
-        options.Add(new HotkeyOption("NumPad 7", (int)VirtualKey.NumberPad7));
-        options.Add(new HotkeyOption("NumPad 8", (int)VirtualKey.NumberPad8));
-        options.Add(new HotkeyOption("NumPad 9", (int)VirtualKey.NumberPad9));
+        for (var i = 0; i < 10; i++) AddKeyboard((VirtualKey)((int)VirtualKey.NumberPad0 + i));
+        AddKeyboard(VirtualKey.Multiply);
+        AddKeyboard(VirtualKey.Add);
+        AddKeyboard(VirtualKey.Separator);
+        AddKeyboard(VirtualKey.Subtract);
+        AddKeyboard(VirtualKey.Decimal);
+        AddKeyboard(VirtualKey.Divide);
+
+        // 主键盘标点符号（WinRT VirtualKey 未为这些 OEM 键提供名称）。
+        foreach (int keyCode in new[] { 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF, 0xC0, 0xDB, 0xDC, 0xDD, 0xDE, 0xE2 })
+            AddKeyboard((VirtualKey)keyCode);
 
         // 鼠标按键
-        options.Add(new HotkeyOption("MOUSE_LEFT", 1));
-        options.Add(new HotkeyOption("MOUSE_RIGHT", 2));
-        options.Add(new HotkeyOption("MOUSE_MIDDLE", 3));
-        options.Add(new HotkeyOption("MOUSE_X1", 4));
-        options.Add(new HotkeyOption("MOUSE_X2", 5));
-        options.Add(new HotkeyOption("WHEEL_UP", 6));
-        options.Add(new HotkeyOption("WHEEL_DOWN", 7));
+        for (int mouseCode = 1; mouseCode <= 7; mouseCode++)
+            options.Add(new HotkeyOption(GetMouseDisplayName(mouseCode), mouseCode));
 
         return options;
     }
@@ -738,15 +833,7 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
             return GetMouseDisplayName(keyCode);
         }
 
-        // 然后检查是否是键盘按键
-        if (Enum.IsDefined(typeof(VirtualKey), keyCode))
-        {
-            var virtualKey = (VirtualKey)keyCode;
-            return GetKeyDisplayName(virtualKey);
-        }
-
-        // 如果都不匹配，返回未知
-        return $"Unknown Key ({keyCode})";
+        return GetKeyDisplayName((VirtualKey)keyCode);
     }
 
     private void EnsureDropdownInitialized()
@@ -800,14 +887,14 @@ public sealed partial class FlexibleHotkeyInputBox : INotifyPropertyChanged
 
     private static string GetMouseDisplayName(int mouseCode) => mouseCode switch
     {
-        1 => "MOUSE_LEFT",
-        2 => "MOUSE_RIGHT",
-        3 => "MOUSE_MIDDLE",
-        4 => "MOUSE_X1",
-        5 => "MOUSE_X2",
-        6 => "WHEEL_UP",
-        7 => "WHEEL_DOWN",
-        _ => "MOUSE_UNKNOWN"
+        1 => Localized("KeyMapping_Mouse_Left", "鼠标左键"),
+        2 => Localized("KeyMapping_Mouse_Right", "鼠标右键"),
+        3 => Localized("KeyMapping_Mouse_Middle", "鼠标中键"),
+        4 => Localized("KeyMapping_Mouse_X1", "鼠标侧键 1"),
+        5 => Localized("KeyMapping_Mouse_X2", "鼠标侧键 2"),
+        6 => Localized("KeyMapping_Mouse_WheelUp", "滚轮向上"),
+        7 => Localized("KeyMapping_Mouse_WheelDown", "滚轮向下"),
+        _ => LocalizedFormat("KeyMapping_Mouse_Unknown_Format", "鼠标按键 {0}", mouseCode),
     };
 }
 

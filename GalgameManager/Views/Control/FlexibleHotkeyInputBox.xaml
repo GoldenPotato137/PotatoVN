@@ -41,8 +41,6 @@
                         VerticalContentAlignment="Center"
                         Padding="0"
                         Click="InputButton_Click"
-                        KeyDown="InputButton_KeyDown"
-                        PointerPressed="InputButton_PointerPressed"
                         PointerWheelChanged="InputButton_PointerWheelChanged"
                         LostFocus="InputButton_LostFocus"
                         Content="{x:Bind ButtonText, Mode=OneWay}"

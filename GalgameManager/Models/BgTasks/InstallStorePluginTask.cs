@@ -27,6 +27,9 @@ public class InstallStorePluginTask : BgTaskBase
     public string PluginName { get; set; } = string.Empty;
     private Guid _pluginId = Guid.Empty;
     private Version _version = new();
+    /// 发起这个任务的商店插件条目，安装成功后需要回写其状态，让界面上的角标/过滤立即更新。<br/>
+    /// 仅在内存中传递（本任务未注册进BgTaskService的启动串恢复），从Json恢复时为null。
+    private readonly StorePlugin? _storePlugin;
 
     public InstallStorePluginTask()
     {
@@ -34,6 +37,7 @@ public class InstallStorePluginTask : BgTaskBase
 
     public InstallStorePluginTask(StorePlugin plugin, StorePluginVersion version)
     {
+        _storePlugin = plugin;
         PluginName = plugin.Name;
         DownloadUrl = version.DownloadUrl;
 
@@ -72,6 +76,10 @@ public class InstallStorePluginTask : BgTaskBase
             if (!pluginService.PluginInDb(_pluginId))
                 await pluginService.AddPluginAsync(PluginFolderPath, false);
             pluginService.SetPluginVersion(_pluginId, _version); //插件版本由商店提供
+
+            // 回写商店条目的状态，否则插件商店页面要重新进入才能看到"已安装"
+            if (_storePlugin is not null)
+                await UiThreadInvokeHelper.InvokeAsync(() => _storePlugin.UpdateStatus(_version));
 
             ChangeProgress(1, 1, "InstallStorePluginTask_Installed".GetLocalized(PluginName));
         }

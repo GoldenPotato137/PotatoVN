@@ -76,6 +76,11 @@ dotnet user-secrets set "Key" "Value"
 如果填写为`true`则必须设置AppId和AppSecret
 * `AppSettings:Bangumi:AppId` Bangumi第三方应用的AppId
 * `AppSettings:Bangumi:AppSecret` Bangumi第三方应用的AppSecret
+* `AppSettings:Hikarinagi:Enable` 是否作为Hikarinagi开放API的透传代理（客户端可经由本服务器使用Hikarinagi数据源），默认为`false`
+* `AppSettings:Hikarinagi:OAuth2Enable` 是否承担Hikarinagi用户OAuth认证，默认为`false`；启用后必须设置ClientId、ClientSecret和RedirectUri，并在Hikarinagi开发者控制台授予`status:write`、`offline_access`权限
+* `AppSettings:Hikarinagi:ClientId` Hikarinagi开发者平台创建的OAuth应用的ClientId
+* `AppSettings:Hikarinagi:ClientSecret` Hikarinagi开发者平台创建的OAuth应用的ClientSecret
+* `AppSettings:Hikarinagi:RedirectUri` Hikarinagi用户授权回调地址，客户端默认使用`potato-vn://oauth-hikarinagi`，必须与开发者控制台登记值完全一致
 * `AppSettings:User:Default` 是否允许用户以用户名密码注册与登录，默认为`true`
 * `AppSettings:User:Bangumi` 是否允许用户使用Bangumi账号注册与登录，默认为`false`
 * `AppSettings:User:OssSize` OSS上每位用户的存储空间大小，单位为byte，默认为`104857600`（100MB），此数值最大为2^63-1 (8388608TB)

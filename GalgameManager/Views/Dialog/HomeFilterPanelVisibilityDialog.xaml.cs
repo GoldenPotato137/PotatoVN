@@ -8,9 +8,10 @@ public sealed partial class HomeFilterPanelVisibilityDialog
     public bool ShowEnginePanel { get; private set; }
     public bool ShowDeveloperPanel { get; private set; }
     public bool ShowTagPanel { get; private set; }
+    public bool ShowCategoryPanel { get; private set; }
 
     public HomeFilterPanelVisibilityDialog(bool showPlayStatusAndSourcePanel, bool showEnginePanel,
-        bool showDeveloperPanel, bool showTagPanel)
+        bool showDeveloperPanel, bool showTagPanel, bool showCategoryPanel)
     {
         InitializeComponent();
         XamlRoot = App.MainWindow!.Content.XamlRoot;
@@ -19,11 +20,13 @@ public sealed partial class HomeFilterPanelVisibilityDialog
         ShowEnginePanel = showEnginePanel;
         ShowDeveloperPanel = showDeveloperPanel;
         ShowTagPanel = showTagPanel;
+        ShowCategoryPanel = showCategoryPanel;
 
         PlayStatusAndSourcePanelCheckBox.IsChecked = showPlayStatusAndSourcePanel;
         EnginePanelCheckBox.IsChecked = showEnginePanel;
         DeveloperPanelCheckBox.IsChecked = showDeveloperPanel;
         TagPanelCheckBox.IsChecked = showTagPanel;
+        CategoryPanelCheckBox.IsChecked = showCategoryPanel;
 
         PrimaryButtonClick += OnPrimaryButtonClick;
     }
@@ -34,5 +37,6 @@ public sealed partial class HomeFilterPanelVisibilityDialog
         ShowEnginePanel = EnginePanelCheckBox.IsChecked ?? false;
         ShowDeveloperPanel = DeveloperPanelCheckBox.IsChecked ?? false;
         ShowTagPanel = TagPanelCheckBox.IsChecked ?? false;
+        ShowCategoryPanel = CategoryPanelCheckBox.IsChecked ?? false;
     }
 }

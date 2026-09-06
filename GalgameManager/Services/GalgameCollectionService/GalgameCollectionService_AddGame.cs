@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -61,16 +61,9 @@ public partial class GalgameCollectionService
                     throw new PvnException("Canceled".GetLocalized());
             }
             Galgame tmp = await DealWithExistGameAsync(sourceType, path, existGame, meta);
-            try
-            {
-                GalgameChangedEvent?.Invoke(tmp);
-            }
-            catch (Exception e)
-            {
-                _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning,
-                    "Failed On Calling GalgameChangedEvent", e);
-            }
             await SaveGalgameAsync(tmp);
+            await RaiseGalgameMutatedAsync(new GalgameMutationEventArgs(tmp, GalgameChangeKind.SourceEntries,
+                GalgameChangeOrigin.LocalOperation));
             return tmp;
         }
         
@@ -80,30 +73,23 @@ public partial class GalgameCollectionService
 
         // 添加游戏并移入对应的源
         meta.AddTime = DateTime.Now; // 游戏添加时间
-        await UiThreadInvokeHelper.InvokeAsync(()=>
+        await UiThreadInvokeHelper.InvokeAsync(() =>
         {
             try
             {
-                _galgames.Add(meta);
+                lock (_gamePersistenceLock)
+                    _galgames.Add(meta);
             }
             catch (COMException e)
             {
                 _infoService.DeveloperEvent(e:e);
             }
-            
-            try
-            {
-                PhrasedEvent2?.Invoke(meta);
-                GalgameChangedEvent?.Invoke(meta);
-            }
-            catch (Exception e)
-            {
-                _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "Failed On Calling GalgameAddEvent", e);
-            }
         });
         GameParseType parseType = GameParseType.HeaderImage | GameParseType.Character;
         if (meta.ImagePath.Value == Galgame.DefaultImagePath) parseType |= GameParseType.Image;
-        await ParseGalInfoAsync(meta, type: parseType);
+        await ParseGalInfoInternalAsync(meta, RssType.None, requireConfirm: false, parseType, notify: false);
+        if (!IsCurrentGameInstance(meta))
+            throw new PvnException("Canceled".GetLocalized());
         
         meta.ErrorOccurred += e =>
             _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "GalgameEvent", e);
@@ -112,49 +98,54 @@ public partial class GalgameCollectionService
             source is ILocalGalgameSource
                 ? meta.CreateLegacyLocalConfiguration(path)
                 : null;
-        _galSrcService.MoveInNoOperate(source, meta, path, localConfig);
+        GalgameAndPath? addedEntry = _galSrcService.MoveInNoOperate(source, meta, path, localConfig);
+        if (!IsCurrentGameInstance(meta))
+        {
+            if (addedEntry?.Source?.Galgames.Contains(addedEntry) is true)
+                await _galSrcService.MoveOutNoOperate(addedEntry);
+            throw new PvnException("Canceled".GetLocalized());
+        }
         
         await SaveGalgameAsync(meta);
+        if (!IsCurrentGameInstance(meta))
+        {
+            if (addedEntry?.Source?.Galgames.Contains(addedEntry) is true)
+                await _galSrcService.MoveOutNoOperate(addedEntry);
+            throw new PvnException("Canceled".GetLocalized());
+        }
+        GalgameChangeKind changes = GalgameChangeKind.Added | GalgameChangeKind.Metadata |
+                                    GalgameChangeKind.SourceEntries | GalgameChangeKind.Images |
+                                    GalgameChangeKind.Characters;
+        await RaiseGalgameMutatedAsync(new GalgameMutationEventArgs(meta, changes,
+            GalgameChangeOrigin.LocalOperation));
         return meta;
     }
     
-    public void AddVirtualGalgame(Galgame game)
+    public async Task AddVirtualGalgameAsync(Galgame game,
+        GalgameChangeOrigin origin = GalgameChangeOrigin.LocalOperation)
     {
-        UiThreadInvokeHelper.Invoke(() =>
+        await UiThreadInvokeHelper.InvokeAsync(() =>
         {
             try
             {
-                _galgames.Add(game);
+                lock (_gamePersistenceLock)
+                    _galgames.Add(game);
             }
             catch (COMException e)
             {
                 _infoService.DeveloperEvent(e:e);
             }
-            try
-            {
-                GalgameAddedEvent?.Invoke(game);
-            }
-            catch (Exception e)
-            {
-                _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "Failed On Calling GalgameAddEvent", e);
-            }
         });
-        _ = SaveGalgameAsync(game);
+        await SaveGalgameAsync(game);
+        await RaiseGalgameMutatedAsync(new GalgameMutationEventArgs(game, GalgameChangeKind.Added, origin));
     }
 
     public async Task<Galgame> SetLocalPathAsync(Galgame galgame, string path)
     {
         Galgame result = await DealWithExistGameAsync(GalgameSourceType.LocalFolder, path, galgame, null);
-        try
-        {
-            GalgameChangedEvent?.Invoke(result);
-        }
-        catch (Exception e)
-        {
-            _infoService.Event(EventType.GalgameEvent, InfoBarSeverity.Warning, "Failed On Calling GalgameChangedEvent", e);
-        }
-        
         await SaveGalgameAsync(result);
+        await RaiseGalgameMutatedAsync(new GalgameMutationEventArgs(result, GalgameChangeKind.SourceEntries,
+            GalgameChangeOrigin.LocalOperation));
         return result;
     }
 
@@ -162,10 +153,18 @@ public partial class GalgameCollectionService
     {
         switch (sourceType)
         {
-            case GalgameSourceType.Virtual: 
+            case GalgameSourceType.Virtual:
                 return path;
-            case GalgameSourceType.LocalFolder:
             case GalgameSourceType.LocalZip:
+            {
+                // 压缩包：从文件名提取包名（去掉 .part1.zip 等后缀）
+                var zipName = GalgameZipSource.GetPackName(path);
+                var zipPattern = await LocalSettingsService.ReadSettingAsync<string>(KeyValues.RegexPattern) ?? ".+";
+                var zipRegexIndex = await LocalSettingsService.ReadSettingAsync<int>(KeyValues.RegexIndex);
+                var zipRemoveBorder = await LocalSettingsService.ReadSettingAsync<bool>(KeyValues.RegexRemoveBorder);
+                return NameRegex.GetName(zipName, zipPattern, zipRemoveBorder, zipRegexIndex);
+            }
+            case GalgameSourceType.LocalFolder:
             case GalgameSourceType.Steam:
                 var name = Path.GetFileName(Path.GetDirectoryName(path + Path.DirectorySeparatorChar)) ??
                            throw new Exception("GalgameCollectionService_GetNameFromPathFailed".GetLocalized());

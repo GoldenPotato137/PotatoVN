@@ -12,7 +12,8 @@ namespace GalgameManager.Services;
 
 internal static class PluginXamlHost
 {
-    public static string HotReloadRoot => Path.Combine(AppContext.BaseDirectory, "_PluginXamlHotReload");
+    // MSIX 的安装目录是只读的，热重载暂存目录必须放在可写的应用数据目录下（见 issue #693）
+    public static string HotReloadRoot => Path.Combine(AppStoragePaths.LocalDataPath, "_PluginXamlHotReload");
     private static readonly object SyncRoot = new();
     private static readonly ConcurrentDictionary<string, PluginAssemblyRegistration> Registrations = new();
 

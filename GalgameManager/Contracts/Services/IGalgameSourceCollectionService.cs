@@ -73,6 +73,13 @@ public interface IGalgameSourceCollectionService
     public Task DeleteGalgameFolderAsync(GalgameSourceBase source);
 
     /// <summary>
+    /// 不显示确认界面地删除游戏库。
+    /// </summary>
+    /// <param name="source">要删除的游戏库</param>
+    /// <param name="removeGames">是否删除失去最后一个来源的逻辑游戏</param>
+    public Task DeleteGalgameFolderAsync(GalgameSourceBase source, bool removeGames);
+
+    /// <summary>
     /// 扫描所有库
     /// </summary>
     public void ScanAll();
@@ -101,11 +108,11 @@ public interface IGalgameSourceCollectionService
         LocalInstallationConfig? localConfig = null);
 
     /// <summary>
-    /// 将一个安装实例移出所属库，并可选择同时删除该实例的磁盘文件。
-    /// 该操作不会删除逻辑游戏。
+    /// 将一个安装实例移出所属库，并可选择同时删除磁盘上的实体。
+    /// 本地库为游戏文件夹，压缩库为对应的压缩包；该操作不会删除逻辑游戏。
     /// </summary>
     /// <param name="installation">要移除的安装实例</param>
-    /// <param name="deleteFiles">是否同时删除磁盘文件</param>
+    /// <param name="deleteFiles">是否同时删除磁盘上的文件（游戏文件夹/压缩包）</param>
     public Task MoveOutNoOperate(GalgameAndPath installation, bool deleteFiles = false);
 
     /// <summary>
@@ -117,9 +124,10 @@ public interface IGalgameSourceCollectionService
     /// <param name="moveInPath">要移入的路径，若设置为null则表示让service自行决定路径</param>
     /// <param name="moveOutSrc">要移出的库</param>
     /// <param name="game">游戏</param>
+    /// <param name="deleteFiles">移出源库时是否物理删除该实例对应的文件/文件夹（默认false）</param>
     /// <returns>一个已经启动的BgTask</returns>
     public BgTaskBase MoveAsync(GalgameSourceBase? moveInSrc, string? moveInPath, GalgameSourceBase? moveOutSrc,
-        Galgame game);
+        Galgame game, bool deleteFiles = false);
 
     /// <summary>
     /// 从游戏路径获取其源应该在的路径

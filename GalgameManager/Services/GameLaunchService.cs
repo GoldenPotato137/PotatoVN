@@ -68,7 +68,6 @@ public sealed class GameLaunchService(
         {
             if (isSteam)
             {
-                if (string.IsNullOrEmpty(config.ProcessName) && !await DisplaySteamMessageAsync()) return;
                 Uri steamUri = new($"steam://run/{game.Ids[(int)RssType.Steam]}");
                 infoService.Info(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
                     msg: "GalgamePage_Play_StartingSteam".GetLocalized());
@@ -81,10 +80,18 @@ public sealed class GameLaunchService(
 
                 if (string.IsNullOrEmpty(config.ProcessName))
                 {
-                    await Task.Delay(2000);
-                    if (!await SelectProcessAsync(config)) return;
+                    // 优先在游戏安装目录内自动探测游戏进程，失败再回退到手动选择
+                    process = await GameProcessDetector.WaitForProcessInDirectoryAsync(installation.Path,
+                        ProcessWaitTimeout);
+                    if (process is null)
+                    {
+                        if (!await DisplaySteamMessageAsync()) return;
+                        if (!await SelectProcessAsync(config)) return;
+                        process = await WaitForProcessStartAsync(config.ProcessName!);
+                    }
                 }
-                process = await WaitForProcessStartAsync(config.ProcessName!);
+                else
+                    process = await WaitForProcessStartAsync(config.ProcessName);
             }
             else
             {
@@ -122,20 +129,8 @@ public sealed class GameLaunchService(
                     await Task.Delay(2000);
                     process = await WaitForProcessStartAsync(config.ProcessName) ?? process;
                 }
-                else if (!string.IsNullOrEmpty(config.ExeArguments))
-                {
-                    await Task.Delay(2000);
-                    Process? actualProcess = TryGetProcessFromExecutable(config.ExePath);
-                    if (actualProcess is not null)
-                    {
-                        process = actualProcess;
-                        config.ProcessName = actualProcess.ProcessName;
-                    }
-                    else if (await SelectProcessAsync(config))
-                    {
-                        process = await WaitForProcessStartAsync(config.ProcessName!) ?? process;
-                    }
-                }
+                // 未指定进程名时直接跟踪启动的进程；若是启动器，
+                // RecordPlayTimeTask会在其退出后探测安装目录内新出现的进程并重新附着
             }
 
             if (process is null)
@@ -152,6 +147,9 @@ public sealed class GameLaunchService(
             await _gameService.SaveGalgameAsync(game);
 
             _ = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId));
+            // 即使当前没有生效规则，也保留轻量运行时任务，
+            // 确保游戏运行期间首次启用或新增映射时可以立即生效。
+            _ = bgTaskService.AddBgTask(new KeyMappingTask(game, process));
             await jumpListService.AddToJumpListAsync(game);
             messenger.Send(new GalgamePlayedMessage(game));
 
@@ -161,9 +159,6 @@ public sealed class GameLaunchService(
             if (await localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysMuteInBackground) ||
                 game.MuteInBackground)
                 _ = bgTaskService.AddBgTask(new GameMuteTask(game, process));
-            if ((await localSettingsService.ReadSettingAsync<bool>(KeyValues.GameReMapEnabled) || game.KeyReMap) &&
-                game.KeyMappings.Any(m => m.IsEnabled))
-                _ = bgTaskService.AddBgTask(new KeyMappingTask(game, process));
             if (await localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoDetectSavePath) &&
                 config.DetectedSavePath is null)
                 _ = bgTaskService.AddBgTask(new GameSaveDetectorTask(game, installation));
@@ -195,13 +190,6 @@ public sealed class GameLaunchService(
             await Task.Delay(250);
         } while (DateTime.UtcNow < deadline);
         return null;
-    }
-
-    private static Process? TryGetProcessFromExecutable(string? executable)
-    {
-        if (string.IsNullOrEmpty(executable)) return null;
-        string name = Path.GetFileNameWithoutExtension(executable);
-        return Process.GetProcesses().FirstOrDefault(p => p.ProcessName == name);
     }
 
     private static async Task<bool> SelectProcessAsync(LocalInstallationConfig config)

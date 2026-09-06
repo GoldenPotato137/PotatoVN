@@ -1,7 +1,9 @@
-﻿using GalgameManager.Contracts.Services;
+using GalgameManager.Contracts.Services;
+using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models.BgTasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json;
 
@@ -18,26 +20,36 @@ public class BgTaskService : IBgTaskService
     private readonly object _bgTasksLock = new();
     private readonly Dictionary<Type,string> _bgTasksString = new();
     private readonly IInfoService _infoService;
+    private readonly IFileService _fileService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly List<JsonConverter> _converters = new();
 
-    public BgTaskService(IInfoService infoService)
+    public BgTaskService(IInfoService infoService, IFileService fileService, IServiceProvider serviceProvider)
     {
         _infoService = infoService;
+        _fileService = fileService;
+        _serviceProvider = serviceProvider;
 
-        _bgTasksString[typeof(RecordPlayTimeTask)] = "-record";
-        _bgTasksString[typeof(GetGalgameInSourceTask)] = "-getGalInSource";
-        _bgTasksString[typeof(UnpackGameTask)] = "-unpack";
-        _bgTasksString[typeof(SourceMoveTask)] = "-sourceMove";
-        _bgTasksString[typeof(GetGalgameCharactersFromRssTask)] = "-getGalChar";
-        _bgTasksString[typeof(DownloadCategoryImageTask)] = "-getCategoryImg";
-        _bgTasksString[typeof(CallMagpieTask)] = "-callMagpie";
-        _bgTasksString[typeof(GameMuteTask)] = "-gameMute";
-        _bgTasksString[typeof(KeyMappingTask)] = "-keyMap";
-        _bgTasksString[typeof(GameSaveDetectorTask)] = "-saveDetector";
+        RegisterBgTaskType(typeof(RecordPlayTimeTask), "-record");
+        RegisterBgTaskType(typeof(GetGalgameInSourceTask), "-getGalInSource");
+        RegisterBgTaskType(typeof(UnpackGameTask), "-unpack");
+        RegisterBgTaskType(typeof(PackGameTask), "-pack");
+        RegisterBgTaskType(typeof(SourceMoveTask), "-sourceMove");
+        RegisterBgTaskType(typeof(GetGalgameCharactersFromRssTask), "-getGalChar");
+        RegisterBgTaskType(typeof(DownloadCategoryImageTask), "-getCategoryImg");
+        RegisterBgTaskType(typeof(CallMagpieTask), "-callMagpie");
+        RegisterBgTaskType(typeof(GameMuteTask), "-gameMute");
+        RegisterBgTaskType(typeof(KeyMappingTask), "-keyMap");
+        RegisterBgTaskType(typeof(GameSaveDetectorTask), "-saveDetector");
 
         _converters.Add(new GalgameAndUidConverter());
         _converters.Add(new CategoryAndUuidConverter());
     }
+
+    /// <summary>
+    /// 注册某个BgTask类型对应的启动串前缀，使其可以随启动恢复（托盘重启恢复/测试场景）
+    /// </summary>
+    public void RegisterBgTaskType(Type type, string token) => _bgTasksString[type] = token;
 
     public void SaveBgTasksString()
     {
@@ -54,24 +66,46 @@ public class BgTaskService : IBgTaskService
             if (_bgTasksString.TryGetValue(bgTask.GetType(), out var str))
                 result += str + $" {JsonConvert.SerializeObject(bgTask, _converters.ToArray()).ToBase64()} ";
         }
-        FileHelper.Save(FileName, result);
+        _fileService.Save(AppStoragePaths.LocalDataPath, FileName, result);
     }
 
     public async Task ResolvedBgTasksAsync()
     {
-        var argStrings = FileHelper.Load<string>(FileName)?.Split() ?? Array.Empty<string>();
+        var argStrings = _fileService.Read<string>(AppStoragePaths.LocalDataPath, FileName)?.Split() ?? Array.Empty<string>();
         for (var i = 0; i < argStrings.Length; i++)
         {
             if(argStrings[i].StartsWith("-") == false) continue;
             Type? bgTaskType = _bgTasksString.FirstOrDefault(x => x.Value == argStrings[i]).Key;
             if (bgTaskType == null) continue;
-            if (JsonConvert.DeserializeObject(Utils.FromBase64(argStrings[++i]), bgTaskType, _converters.ToArray()) is not BgTaskBase bgTask)
-                continue;
+            BgTaskBase? bgTask = CreateBgTaskShell(bgTaskType, Utils.FromBase64(argStrings[++i]));
+            if (bgTask is null) continue;
             await bgTask.RecoverFromJson();
             _ = AddTaskInternal(bgTask);
         }
-        FileHelper.Delete(FileName);
+        _fileService.Delete(AppStoragePaths.LocalDataPath, FileName);
     }
+
+    /// 为恢复创建任务实例并填充序列化状态：有无参构造则直接创建（兼容原有可序列化类型），
+    /// 否则经DI容器解析构造函数的服务依赖（如DownloadCategoryImageTask等DI化任务）
+    private BgTaskBase? CreateBgTaskShell(Type bgTaskType, string json)
+    {
+        try
+        {
+            BgTaskBase bgTask = bgTaskType.GetConstructor(Type.EmptyTypes) is not null
+                ? (BgTaskBase)Activator.CreateInstance(bgTaskType)!
+                : (BgTaskBase)ActivatorUtilities.CreateInstance(_serviceProvider, bgTaskType);
+            JsonConvert.PopulateObject(json, bgTask, new JsonSerializerSettings { Converters = _converters });
+            return bgTask;
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(msg: $"Failed to restore bg task {bgTaskType.Name}", e: e);
+            return null;
+        }
+    }
+
+    public T CreateBgTask<T>(params object[] args) where T : BgTaskBase
+        => ActivatorUtilities.CreateInstance<T>(_serviceProvider, args);
 
     public Task AddBgTask(BgTaskBase bgTask) => AddTaskInternal(bgTask);
 

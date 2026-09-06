@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Authentication;
 using GalgameManager.Contracts.Services;
@@ -25,7 +25,7 @@ public class PvnService : IPvnService
     private readonly IConfiguration _config;
     private readonly IBgTaskService _bgTaskService;
     private readonly HttpClient _httpClient;
-    private readonly GalgameCollectionService _gameService;
+    private readonly IGalgameCollectionService _gameService;
     private readonly IStaffService _staffService;
     private readonly IInfoService _infoService;
     public Uri BaseUri { get; private set; }
@@ -44,7 +44,7 @@ public class PvnService : IPvnService
         _config = config;
         BaseUri = GetBaseUri();
         _bgTaskService = bgTaskService;
-        _gameService = (GalgameCollectionService)gameService;
+        _gameService = gameService;
         _staffService = staffService;
         _httpClient = Utils.GetDefaultHttpClient();
         _infoService = infoService;
@@ -58,7 +58,12 @@ public class PvnService : IPvnService
                 await LogOutAsync();
             }
         };
-        _gameService.GalgameAddedEvent += _ => SyncGames();
+        _gameService.GalgameMutated += (_, args) =>
+        {
+            if (!args.Changes.HasFlag(GalgameChangeKind.Added) || args.Origin == GalgameChangeOrigin.PvnSync)
+                return;
+            SyncGames();
+        };
         _gameService.GalgameDeletedEvent += async galgame =>
         {
             List<int> list = await _settingsService.ReadSettingAsync<List<int>>(KeyValues.ToDeleteGames) ?? new();

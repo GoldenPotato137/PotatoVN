@@ -6,6 +6,7 @@ using GalgameManager.Models;
 using GalgameManager.Views.Prefab;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Input;
+using Microsoft.UI.Xaml.Automation;
 using Windows.System;
 using Windows.UI.Core;
 
@@ -25,6 +26,7 @@ public sealed partial class HomePage : Page
         ViewModel = App.GetService<HomeViewModel>();
         DataContext = ViewModel;
         InitializeComponent();
+        AutomationProperties.SetAutomationId(GridView, "HomeGameGrid");
         ViewModel.PropertyChanged += ViewModel_OnPropertyChanged;
         _gridViewItemPointerPressedHandler = GridViewItem_PointerPressed;
     }
@@ -61,6 +63,11 @@ public sealed partial class HomePage : Page
     {
         if (args.ItemContainer is GridViewItem container)
         {
+            if (args.Item is Galgame galgame)
+            {
+                AutomationProperties.SetAutomationId(container, $"HomeGame_{galgame.Uuid:N}");
+                AutomationProperties.SetName(container, galgame.Name.Value ?? string.Empty);
+            }
             container.RemoveHandler(UIElement.PointerPressedEvent, _gridViewItemPointerPressedHandler);
             container.AddHandler(UIElement.PointerPressedEvent, _gridViewItemPointerPressedHandler, true);
             ApplyBatchVisualState(container, updateFlyout: true);

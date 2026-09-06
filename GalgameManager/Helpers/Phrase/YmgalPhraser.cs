@@ -9,6 +9,7 @@ using Refit;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Web;
+using PotatoDBMapper.Models;
 
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -35,31 +36,30 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
             // 确保先初始化API
             await EnsureApiInitialized();
 
-            var name = galgame.Name.Value ?? "";
-            var id = await GetId(galgame); 
-            var gameResponse = await ExecuteWithTokenRefreshAsync(async api => 
+            var id = await GetId(galgame);
+            var gameResponse = await ExecuteWithTokenRefreshAsync(async api =>
                 await api.GetGameAsync(id ?? throw new InvalidOperationException("ID cannot be null")));
-                
+
             if (!gameResponse.Success || gameResponse.Data?.Game == null)
                 return null;
-                
+
             var g = gameResponse.Data.Game;
             Galgame result = new()
             {
                 Name = g.Name,
                 CnName = g.ChineseName ?? "",
                 Description = g.Introduction,
-                ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue, 
+                ReleaseDate = IGalInfoPhraser.GetDateTimeFromString(g.ReleaseDate) ?? DateTime.MinValue,
                 ImageUrl = g.MainImg,
                 Id = g.Gid != 0 ? g.Gid.ToString() : g.Id.ToString()
             };
 
-            // 获取开发商信息        
+            // 获取开发商信息
             try
             {
-                var developerResponse = await ExecuteWithTokenRefreshAsync(async api => 
+                var developerResponse = await ExecuteWithTokenRefreshAsync(async api =>
                     await api.GetOrganizationAsync(g.DeveloperId));
-                    
+
                 if (developerResponse.Success && developerResponse.Data?.Org != null)
                 {
                     result.Developer = developerResponse.Data.Org.Name;
@@ -80,8 +80,8 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
             foreach (var c in g.Characters)
             {
                 GalgameCharacter character = new()
-                {                  
-                    Ids = 
+                {
+                    Ids =
                     {
                         [(int)RssType.Ymgal] = c.Cid.ToString()
                     },
@@ -110,20 +110,19 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
         int? id;
         try
         {
-            // if (galgame.RssType != RssType.Ymgal) throw new Exception();
-            // id = Convert.ToInt32(galgame.Id ?? "");
-            // return id;
-            if (galgame.RssType == RssType.Ymgal)
+            if (galgame.RssType == RssType.Ymgal && !string.IsNullOrEmpty(galgame.Id))
                 return Convert.ToInt32(galgame.Id ?? "");
-            else if (galgame.RssType == RssType.Mixed)
+            if (galgame.RssType == RssType.Mixed && !string.IsNullOrEmpty(galgame.Ids[(int)RssType.Ymgal]))
             {
                 id = Convert.ToInt32(galgame.Ids[(int)RssType.Ymgal]);
                 if (id == 0 || id == null)
                     throw new Exception();
                 return id;
             }
-            else
-                throw new Exception();
+            MapModel? map = await PhraseHelper.TryGetMapAsync(galgame);
+            if (map is not null && map.YmgalId > 0 && map.YmgalSimilarity >= 0.95)
+                return map.YmgalId;
+            throw new Exception();
         }
         catch (Exception)
         {
@@ -140,21 +139,21 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
                 var target = 0;
                 if (searchResponse.Data?.Result == null)
                     return null;
-                    
+
                 foreach (var g in searchResponse.Data.Result)
                 {
                     if (g == null) continue;
-                    
+
                     var nameSimlarity = g.Name != null ? IGalInfoPhraser.Similarity(name, g.Name) : 0;
                     var cnNameSimilarity = g.ChineseName != null ? IGalInfoPhraser.Similarity(name, g.ChineseName) : 0;
-                    
+
                     if (nameSimlarity > maxSimilarity || cnNameSimilarity > maxSimilarity)
                     {
                         maxSimilarity = Math.Max(nameSimlarity, cnNameSimilarity);
                         target = searchResponse.Data.Result.IndexOf(g);
                     }
                 }
-                
+
                 id = searchResponse.Data.Result.Count > target ? searchResponse.Data.Result[target]?.Id : null;
                 return id;
             }
@@ -164,7 +163,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
             }
         }
     }
-    
+
     /// <summary>
     /// 获取封面图片
     /// </summary>
@@ -225,7 +224,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
             // 创建GalgameCharacter对象
             GalgameCharacter character = new GalgameCharacter
             {
-                Ids = 
+                Ids =
                 {
                     [(int)GetPhraseType()] = cid.ToString()
                 },
@@ -239,7 +238,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
             // 处理生日信息
             if (!string.IsNullOrEmpty(c.Birthday) && c.Birthday != "0000-00-00")
             {
-            
+
                 // 尝试解析年月日
                 var parts = c.Birthday.Split('-');
                 if (parts.Length == 3)
@@ -247,11 +246,11 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
                     // 年份处理：如果年份 >= 3000，视为未知年份，不设置BirthYear
                     if (int.TryParse(parts[0], out var year) && year > 0 && year < 3000)
                         character.BirthYear = year;
-            
+
                     // 月份处理：确保月份在有效范围(1-12)内
                     if (int.TryParse(parts[1], out var month) && month >= 1 && month <= 12)
                         character.BirthMon = month;
-            
+
                     // 日期处理：确保日期在有效范围(1-31)内
                     if (int.TryParse(parts[2], out var day) && day >= 1 && day <= 31)
                         character.BirthDay = day;
@@ -320,7 +319,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
                     StaffRelation staffRelation = new()
                     {
                         JapaneseName = s.EmpName == "None" ? null : s.EmpName,
-                        Ids = 
+                        Ids =
                         {
                             [(int)GetPhraseType()] = s.Pid is not null ? s.Pid.ToString() : s.Sid.ToString()
                         },
@@ -342,7 +341,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
                     {
                         StaffRelation staffRelation = new()
                         {
-                            Ids = 
+                            Ids =
                             {
                                 [(int)GetPhraseType()] = c.CvId.ToString()
                             },
@@ -370,7 +369,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
     private Career[] DetermineCareerByJobName(string jobName)
     {
         List<Career> result = new ();
-    
+
 
         if (string.IsNullOrWhiteSpace(jobName))
             return [Career.Unknown];
@@ -415,7 +414,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
         return result.ToArray();
     }
 
-    
+
     private async Task<Staff?> GetStaffById(string pid)
     {
         try
@@ -448,7 +447,7 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
             // 处理生日信息
             if (!string.IsNullOrEmpty(p.Birthday) && p.Birthday != "0000-00-00")
             {
-                
+
                 if (DateTime.TryParse(p.Birthday, out DateTime birthDate))
                 {
 
@@ -482,22 +481,22 @@ public class YmgalPhraser: IGalInfoPhraser, IGalCharacterPhraser, IGalStaffParse
     {
         // 最大重试次数为2，防止死循环
         const int maxRetries = 2;
-        
+
         try
         {
             // 确保API已初始化
             await EnsureApiInitialized();
-            
+
             // 执行API调用，传入当前的API实例
             return await apiCall(_ymgalApi);
         }
-        catch (ApiException ex) when ((ex.StatusCode == System.Net.HttpStatusCode.Unauthorized || 
+        catch (ApiException ex) when ((ex.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                                       ex.StatusCode == System.Net.HttpStatusCode.Forbidden) &&
                                       retryCount < maxRetries)
         {
             // 如果是401(Unauthorized)或403(Forbidden)，且未超过最大重试次数，尝试刷新token
             _ymgalApi = await YmgalApi.GetAuthenticatedApiAsync();
-            
+
             // 递增重试计数，并重试API调用
             return await ExecuteWithTokenRefreshAsync(apiCall, retryCount + 1);
         }

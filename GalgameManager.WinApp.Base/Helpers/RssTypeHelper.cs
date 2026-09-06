@@ -5,7 +5,7 @@ namespace GalgameManager.Helpers;
 
 public static class RssTypeHelper
 {
-    public static List<RssType> UsablePhrasers { get; } = [RssType.Bangumi, RssType.Vndb, RssType.Ymgal, RssType.Steam];
+    public static List<RssType> UsablePhrasers { get; } = [RssType.Bangumi, RssType.Vndb, RssType.Ymgal, RssType.Steam, RssType.Hikarinagi];
     
     public static string? GetAbbr(this RssType rssType)
         => rssType switch
@@ -15,6 +15,7 @@ public static class RssTypeHelper
             RssType.PotatoVn => "pvn",
             RssType.Ymgal => "ymgal",
             RssType.Steam => "steam",
+            RssType.Hikarinagi => "hikarinagi",
             _ => null
         };
     
@@ -26,6 +27,7 @@ public static class RssTypeHelper
             "pvn" => RssType.PotatoVn,
             "ymgal" => RssType.Ymgal,
             "steam" => RssType.Steam,
+            "hikarinagi" => RssType.Hikarinagi,
             _ => null
         };
 }

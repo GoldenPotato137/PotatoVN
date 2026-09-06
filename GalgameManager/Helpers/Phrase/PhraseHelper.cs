@@ -11,6 +11,13 @@ namespace GalgameManager.Helpers.Phrase;
 public static class PhraseHelper
 {
     private const string DbFile = @"Assets\Data\vn_mapper.db";
+
+    /// <summary>
+    /// 只采用完全匹配（两边游戏名归一化后一模一样）的映射，低于此相似度的一律不用，
+    /// 宁可查不到也不要给出错误的映射
+    /// </summary>
+    public const double MinSimilarity = 1d;
+
     private static VnDbMapper? _vnDbMapper;
     private static Task? _unloadDbTask;
     private static bool _isUsing;
@@ -41,10 +48,14 @@ public static class PhraseHelper
         await TryGetMapAsync(name) is { } mapModel ? mapModel.VndbId : null;
 
     public static async Task<int?> TryGetBgmIdAsync(string name) =>
-        await TryGetMapAsync(name) is { } mapModel && mapModel.BgmSimilarity > 0.95 ? mapModel.BgmId : null;
+        await TryGetMapAsync(name) is { BgmId: > 0 } mapModel && mapModel.BgmSimilarity >= MinSimilarity
+            ? mapModel.BgmId
+            : null;
 
     public static async Task<int?> TryGetSteamIdAsync(string name) =>
-        await TryGetMapAsync(name) is { } mapModel ? mapModel.SteamId : null;
+        await TryGetMapAsync(name) is { SteamId: > 0 } mapModel && mapModel.SteamSimilarity >= MinSimilarity
+            ? mapModel.SteamId
+            : null;
 
     public static async Task<MapModel?> TryGetMapAsync(Galgame game)
     {
@@ -55,7 +66,7 @@ public static class PhraseHelper
             result ??= await _vnDbMapper!.TryGetMapAsync(VndbPhraser.GetId(game.Ids[(int)RssType.Vndb]!));
         if (!string.IsNullOrEmpty(game.Ids[(int)RssType.Bangumi]))
             result ??= (await _vnDbMapper!.TryGetMapsWithBgmId(Convert.ToInt32(game.Ids[(int)RssType.Bangumi])))
-                .FirstOrDefault(map => map.BgmSimilarity >= 0.95);
+                .FirstOrDefault(map => map.BgmSimilarity >= MinSimilarity);
         if (!string.IsNullOrEmpty(game.Name.Value))
             result ??= await TryGetMapAsync(game.Name.Value);
         _isUsing = false;
@@ -72,7 +83,7 @@ public static class PhraseHelper
         List<string> result = [];
         _isUsing = true;
         Init();
-        List<(MapModel model, double similarity)> tmp = await _vnDbMapper!.TryGetMapsWithName(name, 1);
+        List<(MapModel model, double similarity)> tmp = await _vnDbMapper!.TryGetMapsWithName(name, MinSimilarity);
         if (tmp.Count > 0)
         {
             var vndbId = tmp[0].model.VndbId;
@@ -87,11 +98,11 @@ public static class PhraseHelper
     {
         _isUsing = true;
         Init();
-        List<(MapModel model, double similarity)> result = await _vnDbMapper!.TryGetMapsWithName(name, 0.9);
+        List<(MapModel model, double similarity)> result =
+            await _vnDbMapper!.TryGetMapsWithName(name, MinSimilarity);
         _isUsing = false;
-        result.Sort((x, y) => x.similarity.CompareTo(y.similarity));
-        if (result.Count > 0) return result[^1].model;
-        return null;
+        // 结果由库按相似度从高到低排好序，取第一个即可
+        return result.Count > 0 ? result[0].model : null;
     }
 }
 

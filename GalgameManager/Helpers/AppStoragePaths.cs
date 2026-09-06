@@ -7,6 +7,7 @@ public static class AppStoragePaths
     // 使用环境变量强制指定存储路径，优先级最高
     private const string LocalDataPathOverrideEnvVar = "POTATOVN_LOCALDATA_PATH";
     private const string TempPathOverrideEnvVar = "POTATOVN_TEMP_PATH";
+    private const string UpgradeUiTestEnvVar = "POTATOVN_UPGRADE_UI_TEST";
 
     private const string PortableEnvVar = "POTATOVN_PORTABLE";
     private const string PortableFlagFileName = "portable.flag";
@@ -24,6 +25,18 @@ public static class AppStoragePaths
     public static string LocalDataPath => _localDataPath.Value;
 
     public static string TempPath => _tempPath.Value;
+
+    /// <summary>
+    /// 是否正在运行旧数据升级 UI 端到端测试。
+    /// </summary>
+    public static bool IsUpgradeUiTest
+    {
+        get
+        {
+            var value = Environment.GetEnvironmentVariable(UpgradeUiTestEnvVar);
+            return !string.IsNullOrWhiteSpace(value) && IsTrue(value);
+        }
+    }
 
     private static bool ComputeIsPortable()
     {

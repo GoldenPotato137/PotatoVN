@@ -101,6 +101,7 @@ public partial class App : Application
             services.AddSingleton<LocalFolderSourceService>();
             services.AddSingleton<VirtualSourceService>();
             services.AddSingleton<SteamSourceService>();
+            services.AddSingleton<ZipSourceService>();
             //
             services.AddSingleton<IFaqService, FaqService>();
             services.AddSingleton<IFilterService, FilterService>();

@@ -68,18 +68,19 @@
                         <StackPanel Style="{StaticResource KeyValue}">
                             <TextBlock x:Uid="GalgamePage_Developers"
                                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <ItemsRepeater x:Name="DeveloperList">
-                                <ItemsRepeater.ItemTemplate>
+                            <ItemsControl x:Name="DeveloperList">
+                                <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="local:GameHeaderPanelDeveloperList">
                                         <HyperlinkButton Content="{x:Bind Name, Mode=OneWay}"
-                                                         DataContext="{x:Bind}" Margin="0 0 0 1"
-                                                         Padding="0" Click="ClickDeveloper" />
+                                                         Margin="0 0 0 1" Padding="0" Click="ClickDeveloper" />
                                     </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                                <ItemsRepeater.Layout>
-                                    <cmtkControls:WrapLayout Orientation="Horizontal" HorizontalSpacing="5" />
-                                </ItemsRepeater.Layout>
-                            </ItemsRepeater>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <cmtkControls:WrapPanel Orientation="Horizontal" HorizontalSpacing="5" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
                         </StackPanel>
                         <!-- 游戏引擎 -->
                         <StackPanel Style="{StaticResource KeyValue}"
@@ -106,28 +107,29 @@
                                        Text="{x:Bind Game.ExpectedPlayTime.Value, Mode=OneWay, FallbackValue={x:Null}}" />
                         </StackPanel>
                         <!-- Staff列表 -->
-                        <ItemsRepeater x:Name="StaffList">
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl x:Name="StaffList">
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:GameHeaderPanelStaffList">
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="20" Margin="0 1 0 0">
                                         <TextBlock Grid.Column="0" Text="{x:Bind Career}"
                                                    Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                        <ItemsRepeater ItemsSource="{x:Bind StaffsList}" Grid.Column="1">
-                                            <ItemsRepeater.ItemTemplate>
+                                        <ItemsControl ItemsSource="{x:Bind StaffsList}" Grid.Column="1">
+                                            <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="models:Staff">
                                                     <HyperlinkButton Content="{x:Bind Name, Mode=OneWay}"
-                                                                     DataContext="{x:Bind}" Margin="0 0 0 1"
-                                                                     Padding="0" Click="ClickStaff" />
+                                                                     Margin="0 0 0 1" Padding="0" Click="ClickStaff" />
                                                 </DataTemplate>
-                                            </ItemsRepeater.ItemTemplate>
-                                            <ItemsRepeater.Layout>
-                                                <cmtkControls:WrapLayout Orientation="Horizontal" HorizontalSpacing="5" />
-                                            </ItemsRepeater.Layout>
-                                        </ItemsRepeater>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <cmtkControls:WrapPanel Orientation="Horizontal" HorizontalSpacing="5" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
                                     </Grid>
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Grid>
             </Grid>

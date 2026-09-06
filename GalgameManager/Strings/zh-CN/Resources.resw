@@ -3655,9 +3655,7 @@
     <value>保存元数据备份</value>
   </data>
   <data name="GalgameSourcePage_Setting_SaveMetaBackup.Description" xml:space="preserve">
-    <value>选择是否在游戏文件夹内备份游戏信息数据：
-启用：在游戏文件夹内创建备份文件（.PotatoVN文件夹），后续重新搜刮这个库时能快速读取这些数据。
-禁用：数据仅保存在软件内部，可以通过数据导入导出功能手动备份</value>
+    <value>是否为该库保存游戏元数据备份（.PotatoVN 文件夹）。本地库保存在各游戏文件夹内；压缩库保存在压缩库根目录下（以压缩包名命名的子文件夹）。</value>
   </data>
   <data name="GalgameSourcePage_SavingMeta" xml:space="preserve">
     <value>正在保存{0}的Meta信息</value>
@@ -4003,11 +4001,74 @@
   <data name="KeyMappingDialog_InputModeToggle.OnContent" xml:space="preserve">
     <value>选择模式</value>
   </data>
+  <data name="KeyMappingDialog_Activation_Disabled_Title" xml:space="preserve">
+    <value>按键映射尚未启用</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Disabled_Message" xml:space="preserve">
+    <value>当前游戏开关和“所有游戏映射”总开关均处于关闭状态，已保存的规则不会生效。你可以启用本游戏映射，或为所有游戏启用映射。映射规则在游戏启动时载入；游戏运行期间的新增、删除或修改，需退出并重新启动游戏后生效。若游戏以管理员身份运行，PotatoVN 也需要以管理员身份运行。</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Title" xml:space="preserve">
+    <value>按键映射已启用</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Game_Message" xml:space="preserve">
+    <value>当前游戏已单独启用按键映射。映射规则在游戏启动时载入；游戏运行期间的新增、删除或修改，需退出并重新启动游戏后生效。若游戏以管理员身份运行，PotatoVN 也需要以管理员身份运行。</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Global_Message" xml:space="preserve">
+    <value>“为所有游戏启用按键映射”总开关已开启，本游戏的有效规则会在启动游戏时应用。游戏运行期间的新增、删除或修改，需退出并重新启动游戏后生效。若游戏以管理员身份运行，PotatoVN 也需要以管理员身份运行。</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Both_Message" xml:space="preserve">
+    <value>当前游戏开关和“为所有游戏启用按键映射”总开关均已开启。本游戏的有效规则会在启动游戏时应用。游戏运行期间的新增、删除或修改，需退出并重新启动游戏后生效。若游戏以管理员身份运行，PotatoVN 也需要以管理员身份运行。</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGame.Content" xml:space="preserve">
+    <value>启用本游戏映射</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGame.Content" xml:space="preserve">
+    <value>停用本游戏映射</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGlobal.Content" xml:space="preserve">
+    <value>为所有游戏启用</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGlobal.Content" xml:space="preserve">
+    <value>停止为所有游戏启用</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGame_Label" xml:space="preserve">
+    <value>启用本游戏映射</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGame_Label" xml:space="preserve">
+    <value>停用本游戏映射</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGlobal_Label" xml:space="preserve">
+    <value>为所有游戏启用</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGlobal_Label" xml:space="preserve">
+    <value>停止为所有游戏启用</value>
+  </data>
   <data name="GlobalKeyMappingDialog_Title" xml:space="preserve">
-    <value>全局按键映射设置</value>
+    <value>全局映射规则</value>
   </data>
   <data name="GlobalKeyMappingDialog_Description" xml:space="preserve">
-    <value>设置全局按键映射，这些映射将在所有游戏中生效</value>
+    <value>请填写来源键和目标键。规则用于所有已启用映射的游戏，并按列表顺序生效；旧规则补齐目标键前不会生效。</value>
+  </data>
+  <data name="GlobalKeyMappingDialog_DuplicateSource" xml:space="preserve">
+    <value>存在多条已启用规则使用相同的来源键。请关闭或删除重复规则后再保存。</value>
+  </data>
+  <data name="KeyMappingDialog_DuplicateSource_Title" xml:space="preserve">
+    <value>来源键重复</value>
+  </data>
+  <data name="KeyMappingDialog_DuplicateSource_Message" xml:space="preserve">
+    <value>本游戏存在会匹配同一按键的多条规则。请关闭或删除重复规则后再保存；规则意外重复时只会执行第一条。</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Title" xml:space="preserve">
+    <value>与全局映射规则冲突</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Message" xml:space="preserve">
+    <value>有 {0} 条本游戏规则与全局规则使用相同的来源键。你可以让本游戏规则覆盖全局规则，或者不保留这些冲突规则。</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Override" xml:space="preserve">
+    <value>在本游戏中覆盖</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Discard" xml:space="preserve">
+    <value>不保留冲突规则</value>
   </data>
   <data name="GlobalKeyMappingDialog_Button_Save" xml:space="preserve">
     <value>保存</value>
@@ -4025,13 +4086,13 @@
     <value>按键映射已保存</value>
   </data>
   <data name="SettingsPage_Game_GlobalKeyMapping.Title" xml:space="preserve">
-    <value>全局按键映射</value>
+    <value>全局映射规则</value>
   </data>
   <data name="SettingsPage_Game_GlobalKeyMapping.Description" xml:space="preserve">
-    <value>设置全局按键映射，这些映射将在所有游戏中生效</value>
+    <value>设置所有游戏共用的“来源键 → 目标键”规则；游戏专属的同来源规则优先。</value>
   </data>
   <data name="SettingsPage_Game_GlobalKeyMapping_Button" xml:space="preserve">
-    <value>编辑全局映射</value>
+    <value>编辑全局规则</value>
   </data>
   <data name="GalgameSettingPage_KeyMappings.Title" xml:space="preserve">
     <value>按键映射</value>
@@ -4043,7 +4104,7 @@
     <value>编辑按键映射</value>
   </data>
   <data name="KeyMapping_Info_GlobalMappingIndicator" xml:space="preserve">
-    <value>红色角标表示全局快捷键，无法在此界面删除</value>
+    <value>红色角标表示继承的全局规则。来源键和目标键请到全局规则中编辑；可在此关闭该规则，或添加同来源的游戏专属规则进行覆盖。</value>
   </data>
   <data name="KeyMapping_Info_MouseCapturing" xml:space="preserve">
     <value>鼠标按键捕获已启用，请在输入框内点击鼠标按键</value>
@@ -4088,13 +4149,13 @@
     <value>按键映射任务已结束</value>
   </data>
   <data name="Settings_Game_ReMapEnabled.Title" xml:space="preserve">
-    <value>启动游戏快捷键映射</value>
+    <value>为所有游戏启用按键映射</value>
   </data>
   <data name="Settings_Game_ReMapEnabled.Description" xml:space="preserve">
-    <value>游戏快捷键映射总开关。</value>
+    <value>开启后，所有游戏都会使用各自规则和已启用的全局规则；单个游戏仍可独立启用。</value>
   </data>
   <data name="Settings_Game_EditKeyMapping.Text" xml:space="preserve">
-    <value>编辑按键映射</value>
+    <value>编辑全局映射规则</value>
   </data>
   <data name="Settings_Game_AutoDetectSavePath.Title" xml:space="preserve">
     <value>自动探测游戏存档位置</value>
@@ -4850,5 +4911,152 @@
   </data>
   <data name="SettingsPage_Rss_Mixed_Timeout.Description" xml:space="preserve">
     <value>所有源共用的最长等待秒数。0 表示不限制。</value>
+  </data>
+  <data name="RecordPlayTimeTask_WaitingForProcess" xml:space="preserve">
+    <value>进程已退出，正在等待 {0} 的游戏进程出现…（剩余 {1} 秒）</value>
+  </data>
+  <data name="HomePage_CategoryFilter.Text" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="HomeFilterPanelVisibilityDialog_CategoryPanelCheckBox.Content" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="RssType_Hikarinagi" xml:space="preserve">
+    <value>Hikarinagi</value>
+  </data>
+  <data name="SettingsPage_Rss_Hikarinagi.Content" xml:space="preserve">
+    <value>Hikarinagi</value>
+  </data>
+  <data name="SettingsPage_Rss_Hikarinagi.NavigateUri" xml:space="preserve">
+    <value>https://www.hikarinagi.org</value>
+  </data>
+  <data name="SettingsPage_Rss_Hikarinagi_Description.Text" xml:space="preserve">
+    <value>Hikarinagi是一个中文ACGN社区与条目数据库，提供Galgame、轻小说、漫画等条目信息。该数据源经由PotatoVN同步服务器代理访问，无需登录即可使用（未登录限速360次/分钟）。</value>
+  </data>
+  <data name="HikarinagiPhraser_RateLimitWaiting" xml:space="preserve">
+    <value>请求过于频繁，{0} 秒后重试（第 {1}/{2} 次）</value>
+  </data>
+  <data name="MixedPhraserEnabledDialog_HikarinagiCheckBox.Content" xml:space="preserve">
+    <value>启用 Hikarinagi 搜刮器</value>
+  </data>
+  <data name="Shell_Staff.Content" xml:space="preserve">
+    <value>制作人员</value>
+  </data>
+  <data name="GalgamePage_OpenInHikarinagi.Label" xml:space="preserve">
+    <value>在Hikarinagi中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInExternalWebsite.Label" xml:space="preserve">
+    <value>在外部网站中打开</value>
+  </data>
+
+  <data name="GalgamePage_OpenInBgmMenu.Text" xml:space="preserve">
+    <value>在Bangumi中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInVndbMenu.Text" xml:space="preserve">
+    <value>在Vndb中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInYmgalMenu.Text" xml:space="preserve">
+    <value>在月幕Galgame中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInCngalMenu.Text" xml:space="preserve">
+    <value>在CNGal中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInHikarinagiMenu.Text" xml:space="preserve">
+    <value>在Hikarinagi中打开</value>
+  </data>
+  <data name="GalgamePage_OpenInSteamMenu.Text" xml:space="preserve">
+    <value>在Steam中打开</value>
+  </data>
+  <data name="KeyMapping_Key_AnyCtrl" xml:space="preserve"><value>Ctrl（任意）</value></data>
+  <data name="KeyMapping_Key_LeftCtrl" xml:space="preserve"><value>左 Ctrl</value></data>
+  <data name="KeyMapping_Key_RightCtrl" xml:space="preserve"><value>右 Ctrl</value></data>
+  <data name="KeyMapping_Key_AnyAlt" xml:space="preserve"><value>Alt（任意）</value></data>
+  <data name="KeyMapping_Key_LeftAlt" xml:space="preserve"><value>左 Alt</value></data>
+  <data name="KeyMapping_Key_RightAlt" xml:space="preserve"><value>右 Alt</value></data>
+  <data name="KeyMapping_Key_AnyShift" xml:space="preserve"><value>Shift（任意）</value></data>
+  <data name="KeyMapping_Key_LeftShift" xml:space="preserve"><value>左 Shift</value></data>
+  <data name="KeyMapping_Key_RightShift" xml:space="preserve"><value>右 Shift</value></data>
+  <data name="KeyMapping_Key_Space" xml:space="preserve"><value>空格键</value></data>
+  <data name="KeyMapping_Key_Clear" xml:space="preserve"><value>清除键</value></data>
+  <data name="KeyMapping_Key_Menu" xml:space="preserve"><value>菜单键</value></data>
+  <data name="KeyMapping_Key_Sleep" xml:space="preserve"><value>休眠键</value></data>
+  <data name="KeyMapping_Key_NumberPad_Format" xml:space="preserve"><value>小键盘 {0}</value></data>
+  <data name="KeyMapping_Key_NumberPadSeparator" xml:space="preserve"><value>小键盘分隔符</value></data>
+  <data name="KeyMapping_Key_Unknown_Format" xml:space="preserve"><value>按键 {0}</value></data>
+  <data name="KeyMapping_Mouse_Left" xml:space="preserve"><value>鼠标左键</value></data>
+  <data name="KeyMapping_Mouse_Right" xml:space="preserve"><value>鼠标右键</value></data>
+  <data name="KeyMapping_Mouse_Middle" xml:space="preserve"><value>鼠标中键</value></data>
+  <data name="KeyMapping_Mouse_X1" xml:space="preserve"><value>鼠标侧键 1</value></data>
+  <data name="KeyMapping_Mouse_X2" xml:space="preserve"><value>鼠标侧键 2</value></data>
+  <data name="KeyMapping_Mouse_WheelUp" xml:space="preserve"><value>滚轮向上</value></data>
+  <data name="KeyMapping_Mouse_WheelDown" xml:space="preserve"><value>滚轮向下</value></data>
+  <data name="KeyMapping_Mouse_Unknown_Format" xml:space="preserve"><value>鼠标按键 {0}</value></data>
+  <data name="KeyMappingDialog_Activation_EditGlobal.Content" xml:space="preserve">
+    <value>编辑全局规则</value>
+  </data>
+  <data name="KeyMapping_Info_KeyMappingAppliedNow" xml:space="preserve">
+    <value>按键映射已保存，并已应用到正在运行的游戏。</value>
+  </data>
+  <data name="KeyMapping_Info_KeyMappingSavedForNextLaunch" xml:space="preserve">
+    <value>按键映射已保存，将在下次启动游戏时应用。</value>
+  </data>
+  <data name="KeyMapping_Info_KeyMappingSavedButDisabled" xml:space="preserve">
+    <value>按键映射已保存，但全局开关和本游戏单独启用均已关闭；启用任一开关后即可应用。</value>
+  </data>
+  <data name="KeyMapping_Info_GlobalKeyMappingAppliedNow" xml:space="preserve">
+    <value>全局按键映射已保存，并已同步到正在运行的游戏。</value>
+  </data>
+  <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
+    <value>全局按键映射已保存，将在游戏下次启动时应用。</value>
+  </data>
+
+  <data name="StorePluginFilter_All" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="StorePluginFilter_Installed" xml:space="preserve">
+    <value>已安装</value>
+  </data>
+  <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
+    <value>有更新</value>
+  </data>
+
+  <data name="PluginStorePage_NoPluginMatched.Text" xml:space="preserve">
+    <value>没有符合条件的插件</value>
+  </data>
+  <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
+    <value>重置过滤条件</value>
+  </data>
+  <data name="AddSourceDialog_ZipInfo" xml:space="preserve">
+    <value>压缩库以压缩包（zip/rar/7z）的形式保存游戏。把游戏移入压缩库时会压缩游戏文件夹；压缩包不能直接游玩，目前暂不支持移出游玩。</value>
+  </data>
+  <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
+    <value>游戏将被压缩为压缩包并存到 {0}</value>
+  </data>
+  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
+    <value>暂不支持从压缩库移出游戏，请改用目标本地库的从压缩包添加游戏。</value>
+  </data>
+  <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
+    <value>该游戏没有可压缩的本地文件夹安装</value>
+  </data>
+  <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
+    <value>同时删除磁盘上的文件（游戏文件夹/压缩包）</value>
+  </data>
+  <data name="PackGameTask_Compressing" xml:space="preserve">
+    <value>正在压缩 {0}...</value>
+  </data>
+  <data name="PackGameTask_Registering" xml:space="preserve">
+    <value>正在登记到压缩库...</value>
+  </data>
+  <data name="PackGameTask_Done" xml:space="preserve">
+    <value>已压缩到 {0}</value>
+  </data>
+  <data name="PackGameTask_Failed" xml:space="preserve">
+    <value>压缩游戏失败：{0}</value>
+  </data>
+  <data name="PackGameTask_Recovered_RequiredInfoLost" xml:space="preserve">
+    <value>因必要信息丢失，无法恢复压缩任务</value>
+  </data>
+  <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
+    <value>没有可移动到的目标库，请先添加另一个库。</value>
   </data>
 </root>

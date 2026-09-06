@@ -1,4 +1,4 @@
-﻿using GalgameManager.Contracts.BgTasks;
+using GalgameManager.Contracts.BgTasks;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Helpers;
 using GalgameManager.Enums;
@@ -9,11 +9,21 @@ namespace GalgameManager.Models.BgTasks;
 
 public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
 {
-    private static readonly IGalgameCollectionService GameService = App.GetService<IGalgameCollectionService>();
-    private readonly VndbPhraser _vndbParser = (GameService.PhraserList[(int)RssType.Vndb] as VndbPhraser)!;
-    private readonly SteamParser _steamParser = (GameService.PhraserList[(int)RssType.Steam] as SteamParser)!;
-    private readonly IPvnService _pvnService = App.GetService<IPvnService>();
-    private readonly ILocalSettingsService _settingsService = App.GetService<ILocalSettingsService>();
+    private readonly IGalgameCollectionService _gameService;
+    private readonly VndbPhraser _vndbParser;
+    private readonly SteamParser _steamParser;
+    private readonly IPvnService _pvnService;
+    private readonly ILocalSettingsService _settingsService;
+
+    public GetHeaderFromRssTask(IGalgameCollectionService gameService, IPvnService pvnService,
+        ILocalSettingsService settingsService)
+    {
+        _gameService = gameService;
+        _vndbParser = (gameService.PhraserList[(int)RssType.Vndb] as VndbPhraser)!;
+        _steamParser = (gameService.PhraserList[(int)RssType.Steam] as SteamParser)!;
+        _pvnService = pvnService;
+        _settingsService = settingsService;
+    }
 
     public void AddGalgame(Galgame? game)
     {
@@ -28,7 +38,7 @@ public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
     {
         if (item.HeaderImagePath.IsLock) return;
         item.AutoFetchStatus.HeaderImage = true;
-        await GameService.SaveGalgameAsync(item);
+        await _gameService.SaveGalgameAsync(item);
         var fromSteam = !string.IsNullOrEmpty(item.Ids[(int)RssType.Steam]) && item.Ids[(int)RssType.Steam] != "-1";
         var url =  fromSteam?
             await _steamParser.GetGalHeaderAsync(item):
@@ -49,7 +59,7 @@ public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
             item.RaisePropertyChanged(nameof(item.HeaderImagePath));
         });
         if (Utils.IsImageValid(oldImg)) File.Delete(oldImg!);
-        await GameService.SaveGalgameAsync(item);
+        await _gameService.SaveGalgameAsync(item);
         if (File.Exists(rawImage)) File.Delete(rawImage);
         if (await _settingsService.ReadSettingAsync<bool>(KeyValues.SyncGames) &&
             await _settingsService.ReadSettingAsync<bool>(KeyValues.SyncHeaderImage))

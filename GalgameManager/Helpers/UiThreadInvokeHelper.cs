@@ -1,35 +1,78 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using CommunityToolkit.WinUI;
+using Microsoft.UI.Dispatching;
 
 namespace GalgameManager.Helpers;
 
 public static class UiThreadInvokeHelper
 {
+    private static DispatcherQueue? _dispatcherQueue;
+    private static bool _dispatcherQueueResolved;
+
+    /// 非App上下文（如单元测试，App静态构造因缺少WinAppSDK运行时失败）时返回null
+    private static DispatcherQueue? DispatcherQueue
+    {
+        get
+        {
+            if (_dispatcherQueueResolved) return _dispatcherQueue;
+            try
+            {
+                _dispatcherQueue = App.DispatcherQueue;
+            }
+            catch (TypeInitializationException)
+            {
+                _dispatcherQueue = null;
+            }
+            _dispatcherQueueResolved = true;
+            return _dispatcherQueue;
+        }
+    }
+
     public static async Task InvokeAsync(Action? action)
     {
         if(action is null) return;
-        await App.DispatcherQueue.EnqueueAsync(action);
+        if (DispatcherQueue is { } queue)
+        {
+            await queue.EnqueueAsync(action);
+            return;
+        }
+        action(); // 无UI线程上下文（如单元测试）时降级为同步执行
     }
 
     public static async Task InvokeAsync(Func<Task> action)
     {
-        await App.DispatcherQueue.EnqueueAsync(async () =>
+        if (DispatcherQueue is { } queue)
         {
-            await action();
-        });
+            await queue.EnqueueAsync(async () =>
+            {
+                await action();
+            });
+            return;
+        }
+        await action();
     }
-    
+
     public static void Invoke(Func<Task> action)
     {
-        App.DispatcherQueue.EnqueueAsync(async () =>
+        if (DispatcherQueue is { } queue)
         {
-            await action();
-        });
+            queue.EnqueueAsync(async () =>
+            {
+                await action();
+            });
+            return;
+        }
+        _ = action();
     }
-    
+
     public static void Invoke(Action action)
     {
-        App.DispatcherQueue.EnqueueAsync(action);
+        if (DispatcherQueue is { } queue)
+        {
+            queue.EnqueueAsync(action);
+            return;
+        }
+        action();
     }
 
     public static void IgnoreComException(Action action)

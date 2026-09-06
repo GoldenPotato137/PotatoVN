@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -22,7 +22,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
 
     public const string DefaultString = "——";
     public const string MetaPath = ".PotatoVN";
-    public static readonly int PhraserNumber = 8;
+    public static readonly int PhraserNumber = 9;
 
     public event Action<Galgame, string, object>? GalPropertyChanged;
     [JsonIgnore] public Action<Exception>? ErrorOccurred; //非致命异常产生时触发
@@ -313,6 +313,10 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
         SourceEntries = new ReadOnlyObservableCollection<GalgameAndPath>(_sourceEntries);
         Sources.CollectionChanged += (_, _) => OnPropertyChanged(nameof(LocalPath));
         _sourceEntries.CollectionChanged += (_, _) => RaiseInstallationPropertiesChanged();
+        // 绑定初始LockableProperty实例，否则未经整体替换的对象修改.Value不会触发GalPropertyChanged
+        // （整体替换属性时由OnDeveloperChanging/OnEngineChanging解绑旧实例并绑定新实例）
+        _developer.OnValueChanged += HandleDeveloperValueChanged;
+        _engine.OnValueChanged += HandleEngineValueChanged;
     }
 
     /// <summary>
@@ -651,10 +655,18 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
     #region HOOKS
 
     partial void OnDeveloperChanging(LockableProperty<string>? oldValue, LockableProperty<string> newValue) =>
-        RebindLockableProperty(oldValue, newValue, _ => GalPropertyChanged?.Invoke(this, nameof(Developer), Developer));
+        RebindLockableProperty(oldValue, newValue, HandleDeveloperValueChanged);
 
     partial void OnEngineChanging(LockableProperty<string>? oldValue, LockableProperty<string> newValue) =>
-        RebindLockableProperty(oldValue, newValue, _ => GalPropertyChanged?.Invoke(this, nameof(Engine), Engine));
+        RebindLockableProperty(oldValue, newValue, HandleEngineValueChanged);
+
+    // 提取为具名方法（而非lambda）以保证事件解绑按委托相等性命中：
+    // 构造函数绑定初始实例与RebindLockableProperty解绑旧实例必须使用同一方法
+    private void HandleDeveloperValueChanged(string? _) =>
+        GalPropertyChanged?.Invoke(this, nameof(Developer), Developer);
+
+    private void HandleEngineValueChanged(string? _) =>
+        GalPropertyChanged?.Invoke(this, nameof(Engine), Engine);
 
     private static void RebindLockableProperty<T>(LockableProperty<T>? oldValue, LockableProperty<T> newValue, Action<T?> handler)
     {

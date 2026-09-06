@@ -288,7 +288,8 @@
         </BreadcrumbBar>
 
         <Grid Grid.Row="2" PointerPressed="UIElement_OnPointerPressed">
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
+            <ScrollViewer x:Name="LibraryContentScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <!-- Sources（支持手动拖拽排序，保留 ItemsRepeater 虚拟化与淡入动画） -->
@@ -311,6 +312,8 @@
                                       Background="Transparent"
                                       CornerRadius="10"
                                       DataContext="{x:Bind}"
+                                      Loaded="SourceItem_Loaded"
+                                      DataContextChanged="SourceItem_DataContextChanged"
                                       ContextFlyout="{StaticResource FolderFlyout}"
                                       CanDrag="True"
                                       DragStarting="SourceItem_DragStarting"

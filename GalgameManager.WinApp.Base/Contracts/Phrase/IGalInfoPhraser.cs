@@ -3,13 +3,14 @@ using System.Globalization;
 using System.Threading.Tasks;
 using GalgameManager.Enums;
 using GalgameManager.Models;
+using HalfFullWidth;
 
 namespace GalgameManager.Contracts.Phrase;
 
 /// <summary>
 /// 如果这个搜刮器需要使用自定义HttpClient，请实现IHttpClientProvider这个接口
 /// </summary>
-public interface IGalInfoPhraser
+public partial interface IGalInfoPhraser
 {
     /// <summary>
     /// 从rss中获取galgame信息
@@ -17,7 +18,7 @@ public interface IGalInfoPhraser
     /// <param name="galgame">galgame</param>
     /// <returns>获取到的galgame信息（放到一个空的galgame里），如果获取不到信息则返回null</returns>
     public Task<Galgame?> GetGalgameInfo(Galgame galgame);
-    
+
     public RssType GetPhraseType();
 
     /// <summary>
@@ -27,17 +28,27 @@ public interface IGalInfoPhraser
     /// <param name="data">数据包</param>
     public void UpdateData(IGalInfoPhraserData data)
     {
-        
+
     }
 
+    // ---------- 归一化：先转半角，再统一小写（可选），再去除空白字符（可选） ----------
+    public static string Normalize(string input, bool toLower = true, bool removeWhitespace = true)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        var half = input.ToHalfwidthString();
+        var strip = removeWhitespace ? WhiteSpaceRegex().Replace(half, "") : half;
+        return toLower ? strip.ToLowerInvariant() : strip;
+    }
+
+
     /// <summary>
-    /// 计算两个字符串的相似度
+    /// 计算两个字符串的相似度，字符默认预处理，加强鲁棒性
     /// </summary>
     /// <returns>jaro-winkler距离: [0,1]</returns>
-    public static double Similarity(string s1, string s2)
+    public static double Similarity(string s1, string s2, bool toLower = true, bool removeWhitespace = true)
     {
-        s1 = s1.ToLower();
-        s2 = s2.ToLower();
+        s1 = Normalize(s1, toLower, removeWhitespace);
+        s2 = Normalize(s2, toLower, removeWhitespace);
         if(s1.Length > s2.Length)
             (s1, s2) = (s2, s1);
         int n = s1.Length, m = s2.Length, range = Math.Max(m / 2 - 1, 0);
@@ -77,4 +88,7 @@ public interface IGalInfoPhraser
 
         return null;
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\s+")]
+    private static partial System.Text.RegularExpressions.Regex WhiteSpaceRegex();
 }

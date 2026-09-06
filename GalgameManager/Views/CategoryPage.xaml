@@ -79,17 +79,21 @@
             </NavigationView.Resources>
             <NavigationView.MenuItemTemplate>
                 <DataTemplate x:DataType="models:CategoryGroup">
-                    <TextBlock Text="{x:Bind Name}"/>
+                    <TextBlock Text="{x:Bind Name}"
+                               Tag="{x:Bind}"
+                               Loaded="CategoryGroupItem_Loaded"/>
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
             
-            <ScrollViewer>
+            <ScrollViewer x:Name="CategoryItemsScrollViewer">
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="models:Category">
                             <Button
                                 Style="{StaticResource TransparentButtonWithHover}"
                                 DataContext="{x:Bind}"
+                                Loaded="CategoryItem_Loaded"
+                                DataContextChanged="CategoryItem_DataContextChanged"
                                 Command="{Binding ElementName=Page, Path=ViewModel.ItemClickCommand}"
                                 CommandParameter="{x:Bind}"
                                 MinWidth="220" MinHeight="145"

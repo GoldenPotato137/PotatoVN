@@ -15,6 +15,7 @@ public sealed partial class AddSourceDialog : ContentDialog
     private static readonly GalgameSourceType[] SourceTypes =
     [
         GalgameSourceType.LocalFolder,
+        GalgameSourceType.LocalZip,
         GalgameSourceType.Steam,
     ];
     

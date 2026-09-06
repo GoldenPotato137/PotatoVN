@@ -8,12 +8,19 @@ namespace GalgameManager.Models.BgTasks;
 
 public class DownloadCategoryImageTask : QueueTaskBase<Category>
 {
-    private static readonly IGalgameCollectionService GameService = App.GetService<IGalgameCollectionService>();
-    private static readonly ICategoryService CategoryService = App.GetService<ICategoryService>();
-    private static readonly IInfoService InfoService = App.GetService<IInfoService>();
+    private readonly ICategoryService _categoryService;
+    private readonly IInfoService _infoService;
+    private readonly BgmPhraser _bgmPhraser;
 
     private readonly ConcurrentDictionary<Guid, byte> _queuedCategoryIds = new();
-    private readonly BgmPhraser _bgmPhraser = (BgmPhraser)GameService.PhraserList[(int)RssType.Bangumi];
+
+    public DownloadCategoryImageTask(IGalgameCollectionService gameService, ICategoryService categoryService,
+        IInfoService infoService)
+    {
+        _categoryService = categoryService;
+        _infoService = infoService;
+        _bgmPhraser = (BgmPhraser)gameService.PhraserList[(int)RssType.Bangumi];
+    }
 
     public override string Title => "DownloadCategoryImageTask_Title".GetLocalized();
 
@@ -40,22 +47,22 @@ public class DownloadCategoryImageTask : QueueTaskBase<Category>
         try
         {
             if (string.IsNullOrWhiteSpace(item.Name)) return;
-            if (CategoryService.GetCategory(item.Id) is null) return;
+            if (_categoryService.GetCategory(item.Id) is null) return;
 
             var imageUrl = await _bgmPhraser.GetDeveloperImageUrlAsync(item.Name);
             if (imageUrl is null) return;
 
             var imagePath = await DownloadHelper.DownloadAndSaveImageWithDiffThread(imageUrl);
             if (imagePath is null) return;
-            if (CategoryService.GetCategory(item.Id) is null) return;
+            if (_categoryService.GetCategory(item.Id) is null) return;
 
             await UiThreadInvokeHelper.InvokeAsync(() => item.ImagePath = imagePath);
-            if (CategoryService.GetCategory(item.Id) is not null)
-                CategoryService.Save(category: item);
+            if (_categoryService.GetCategory(item.Id) is not null)
+                _categoryService.Save(category: item);
         }
         catch (Exception e)
         {
-            InfoService.DeveloperEvent(msg: $"failed to download category image: {item.Name}", e: e);
+            _infoService.DeveloperEvent(msg: $"failed to download category image: {item.Name}", e: e);
         }
         finally
         {

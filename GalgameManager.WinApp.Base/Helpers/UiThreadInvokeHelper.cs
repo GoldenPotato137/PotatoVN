@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -17,6 +17,11 @@ public static class UiThreadInvokeHelper
     
     internal static void Invoke(Func<Task> action)
     {
+        if (_dispatcherQueue is null) // 未初始化（如单元测试等非App上下文）时降级为内联执行
+        {
+            _ = action();
+            return;
+        }
         _dispatcherQueue.EnqueueAsync(async () =>
         {
             await action();
@@ -25,6 +30,11 @@ public static class UiThreadInvokeHelper
     
     internal static void Invoke(Action action)
     {
+        if (_dispatcherQueue is null)
+        {
+            action();
+            return;
+        }
         _dispatcherQueue.EnqueueAsync(action);
     }
 }

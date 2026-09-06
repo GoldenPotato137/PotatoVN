@@ -3128,7 +3128,7 @@ If play time can record correctly, just cancel this popup.
     <value>Save metadata backup</value>
   </data>
   <data name="GalgameSourcePage_Setting_SaveMetaBackup.Description" xml:space="preserve">
-    <value>Save game metadata within the game folder for this library (.PotatoVN folder)</value>
+    <value>Save game metadata backup for this library (.PotatoVN folder). For folder libraries it is stored inside each game folder; for archive libraries it is stored under the archive library root (named after the archive file).</value>
   </data>
   <data name="SelectGameInfoToFetchDialog_Description.Text" xml:space="preserve">
     <value>Select the types of game information you want to fetch:</value>
@@ -3347,11 +3347,74 @@ If play time can record correctly, just cancel this popup.
   <data name="KeyMappingDialog_InputModeToggle.OnContent" xml:space="preserve">
     <value>Selection Mode</value>
   </data>
+  <data name="KeyMappingDialog_Activation_Disabled_Title" xml:space="preserve">
+    <value>Key mapping is not enabled</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Disabled_Message" xml:space="preserve">
+    <value>Both the per-game switch and the “all games” master switch are off, so saved rules will not run. Enable mapping for this game or for all games. Rules are loaded when the game starts; additions, deletions, or edits made while the game is running require the game to be exited and restarted. If the game runs as administrator, PotatoVN must run as administrator too.</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Title" xml:space="preserve">
+    <value>Key mapping is enabled</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Game_Message" xml:space="preserve">
+    <value>Key mapping is enabled specifically for this game. Rules are loaded when the game starts; additions, deletions, or edits made while the game is running require the game to be exited and restarted. If the game runs as administrator, PotatoVN must run as administrator too.</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Global_Message" xml:space="preserve">
+    <value>The “enable key mapping for all games” master switch is on, so valid rules for this game will be applied when it starts. Additions, deletions, or edits made while the game is running require the game to be exited and restarted. If the game runs as administrator, PotatoVN must run as administrator too.</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_Enabled_Both_Message" xml:space="preserve">
+    <value>Both the per-game switch and the “enable key mapping for all games” master switch are on. Valid rules for this game will be applied when it starts. Additions, deletions, or edits made while the game is running require the game to be exited and restarted. If the game runs as administrator, PotatoVN must run as administrator too.</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGame.Content" xml:space="preserve">
+    <value>Enable for this game</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGame.Content" xml:space="preserve">
+    <value>Disable for this game</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGlobal.Content" xml:space="preserve">
+    <value>Enable for all games</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGlobal.Content" xml:space="preserve">
+    <value>Stop enabling for all games</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGame_Label" xml:space="preserve">
+    <value>Enable for this game</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGame_Label" xml:space="preserve">
+    <value>Disable for this game</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_EnableGlobal_Label" xml:space="preserve">
+    <value>Enable for all games</value>
+  </data>
+  <data name="KeyMappingDialog_Activation_DisableGlobal_Label" xml:space="preserve">
+    <value>Stop enabling for all games</value>
+  </data>
   <data name="GlobalKeyMappingDialog_Title" xml:space="preserve">
-    <value>Global Key Mapping Settings</value>
+    <value>Global Mapping Rules</value>
   </data>
   <data name="GlobalKeyMappingDialog_Description" xml:space="preserve">
-    <value>Set global key mappings that will work in all games</value>
+    <value>Enter source and target keys. Rules apply to all mapping-enabled games in list order; legacy rules remain inactive until a target is added.</value>
+  </data>
+  <data name="GlobalKeyMappingDialog_DuplicateSource" xml:space="preserve">
+    <value>Multiple enabled rules use the same source key. Disable or remove the duplicate rules before saving.</value>
+  </data>
+  <data name="KeyMappingDialog_DuplicateSource_Title" xml:space="preserve">
+    <value>Duplicate source keys</value>
+  </data>
+  <data name="KeyMappingDialog_DuplicateSource_Message" xml:space="preserve">
+    <value>Multiple game rules can match the same input. Disable or remove duplicates before saving; if legacy rules overlap, only the first one runs.</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Title" xml:space="preserve">
+    <value>Conflict with global mappings</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Message" xml:space="preserve">
+    <value>{0} game rule(s) use the same source as a global rule. Keep them as per-game overrides or discard the conflicting rules.</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Override" xml:space="preserve">
+    <value>Override for this game</value>
+  </data>
+  <data name="KeyMappingDialog_GlobalConflict_Discard" xml:space="preserve">
+    <value>Discard conflicts</value>
   </data>
   <data name="GlobalKeyMappingDialog_Button_Save" xml:space="preserve">
     <value>Save</value>
@@ -3369,13 +3432,13 @@ If play time can record correctly, just cancel this popup.
     <value>Key mapping saved</value>
   </data>
   <data name="SettingsPage_Game_GlobalKeyMapping.Title" xml:space="preserve">
-    <value>Global Key Mapping</value>
+    <value>Global Mapping Rules</value>
   </data>
   <data name="SettingsPage_Game_GlobalKeyMapping.Description" xml:space="preserve">
-    <value>Set global key mappings that will work in all games</value>
+    <value>Define shared source-to-target rules for all games; per-game rules with the same source take priority.</value>
   </data>
   <data name="SettingsPage_Game_GlobalKeyMapping_Button" xml:space="preserve">
-    <value>Edit Global Mappings</value>
+    <value>Edit Global Rules</value>
   </data>
   <data name="GalgameSettingPage_KeyMappings.Title" xml:space="preserve">
     <value>Key Mapping</value>
@@ -3387,7 +3450,7 @@ If play time can record correctly, just cancel this popup.
     <value>Edit Key Mapping</value>
   </data>
   <data name="KeyMapping_Info_GlobalMappingIndicator" xml:space="preserve">
-    <value>Red corner indicates global shortcut, cannot be deleted here</value>
+    <value>A red corner marks an inherited global rule. Edit its source and target in Global Rules; disable it here or add a per-game rule with the same source to override it.</value>
   </data>
   <data name="KeyMapping_Info_MouseCapturing" xml:space="preserve">
     <value>Mouse button capture is enabled, click mouse button in input box</value>
@@ -3432,13 +3495,13 @@ If play time can record correctly, just cancel this popup.
     <value>Key mapping task finished</value>
   </data>
   <data name="Settings_Game_ReMapEnabled.Title" xml:space="preserve">
-    <value>Enable Game Key Mapping</value>
+    <value>Enable Key Mapping for All Games</value>
   </data>
   <data name="Settings_Game_ReMapEnabled.Description" xml:space="preserve">
-    <value>Global switch for game key mapping.</value>
+    <value>When enabled, every game uses its own rules and enabled global rules; an individual game can still enable mapping separately.</value>
   </data>
   <data name="Settings_Game_EditKeyMapping.Text" xml:space="preserve">
-    <value>Edit Key Mapping</value>
+    <value>Edit Global Mapping Rules</value>
   </data>
   <data name="Settings_Game_AutoDetectSavePath.Title" xml:space="preserve">
     <value>Auto-detect game save locations</value>
@@ -3642,7 +3705,7 @@ If play time can record correctly, just cancel this popup.
     <value>Character deleted successfully</value>
   </data>
   <data name="Shell_PluginStore.Content" xml:space="preserve">
-    <value>PluginStore</value>
+    <value>Plugin Store</value>
   </data>
   <data name="SettingsViewModel_SelectRemoteFolder_Title" xml:space="preserve">
     <value>Choose cloud save root folder</value>
@@ -3933,5 +3996,155 @@ If play time can record correctly, just cancel this popup.
   </data>
   <data name="SettingsPage_Rss_Mixed_Timeout.Description" xml:space="preserve">
     <value>Maximum wait time in seconds for all sources combined. 0 means no limit.</value>
+  </data>
+  <data name="RecordPlayTimeTask_WaitingForProcess" xml:space="preserve">
+    <value>Process exited. Waiting for the game process of {0} to appear... ({1}s)</value>
+  </data>
+  <data name="HomePage_CategoryFilter.Text" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="HomeFilterPanelVisibilityDialog_CategoryPanelCheckBox.Content" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="RssType_Hikarinagi" xml:space="preserve">
+    <value>Hikarinagi</value>
+  </data>
+  <data name="SettingsPage_Rss_Hikarinagi.Content" xml:space="preserve">
+    <value>Hikarinagi</value>
+  </data>
+  <data name="SettingsPage_Rss_Hikarinagi.NavigateUri" xml:space="preserve">
+    <value>https://www.hikarinagi.org</value>
+  </data>
+  <data name="SettingsPage_Rss_Hikarinagi_Description.Text" xml:space="preserve">
+    <value>Hikarinagi is a Chinese ACGN community and database providing galgame, light novel, manga and other entry information. This source is proxied through the PotatoVN sync server and requires no login (rate limited to 360 requests/minute when not logged in).</value>
+  </data>
+  <data name="HikarinagiPhraser_RateLimitWaiting" xml:space="preserve">
+    <value>Too many requests, retrying in {0}s (attempt {1}/{2})</value>
+  </data>
+  <data name="MixedPhraserEnabledDialog_HikarinagiCheckBox.Content" xml:space="preserve">
+    <value>Enable Hikarinagi Scraper</value>
+  </data>
+  <data name="Shell_Staff.Content" xml:space="preserve">
+    <value>Staff</value>
+  </data>
+  <data name="Shell_SourceScanResult.Content" xml:space="preserve">
+    <value>Scan history</value>
+  </data>
+  <data name="GalgamePage_OpenInHikarinagi.Label" xml:space="preserve">
+    <value>Open in Hikarinagi</value>
+  </data>
+  <data name="GalgamePage_OpenInExternalWebsite.Label" xml:space="preserve">
+    <value>Open on external website</value>
+  </data>
+
+  <data name="GalgamePage_OpenInBgmMenu.Text" xml:space="preserve">
+    <value>Open in Bangumi</value>
+  </data>
+  <data name="GalgamePage_OpenInVndbMenu.Text" xml:space="preserve">
+    <value>Open in VNDB</value>
+  </data>
+  <data name="GalgamePage_OpenInYmgalMenu.Text" xml:space="preserve">
+    <value>Open in Ymgal</value>
+  </data>
+  <data name="GalgamePage_OpenInCngalMenu.Text" xml:space="preserve">
+    <value>Open in CNGal</value>
+  </data>
+  <data name="GalgamePage_OpenInHikarinagiMenu.Text" xml:space="preserve">
+    <value>Open in Hikarinagi</value>
+  </data>
+  <data name="GalgamePage_OpenInSteamMenu.Text" xml:space="preserve">
+    <value>Open in Steam</value>
+  </data>
+  <data name="KeyMapping_Key_AnyCtrl" xml:space="preserve"><value>Any Ctrl</value></data>
+  <data name="KeyMapping_Key_LeftCtrl" xml:space="preserve"><value>Left Ctrl</value></data>
+  <data name="KeyMapping_Key_RightCtrl" xml:space="preserve"><value>Right Ctrl</value></data>
+  <data name="KeyMapping_Key_AnyAlt" xml:space="preserve"><value>Any Alt</value></data>
+  <data name="KeyMapping_Key_LeftAlt" xml:space="preserve"><value>Left Alt</value></data>
+  <data name="KeyMapping_Key_RightAlt" xml:space="preserve"><value>Right Alt</value></data>
+  <data name="KeyMapping_Key_AnyShift" xml:space="preserve"><value>Any Shift</value></data>
+  <data name="KeyMapping_Key_LeftShift" xml:space="preserve"><value>Left Shift</value></data>
+  <data name="KeyMapping_Key_RightShift" xml:space="preserve"><value>Right Shift</value></data>
+  <data name="KeyMapping_Key_Space" xml:space="preserve"><value>Space</value></data>
+  <data name="KeyMapping_Key_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="KeyMapping_Key_Menu" xml:space="preserve"><value>Menu key</value></data>
+  <data name="KeyMapping_Key_Sleep" xml:space="preserve"><value>Sleep</value></data>
+  <data name="KeyMapping_Key_NumberPad_Format" xml:space="preserve"><value>Numpad {0}</value></data>
+  <data name="KeyMapping_Key_NumberPadSeparator" xml:space="preserve"><value>Numpad separator</value></data>
+  <data name="KeyMapping_Key_Unknown_Format" xml:space="preserve"><value>Key {0}</value></data>
+  <data name="KeyMapping_Mouse_Left" xml:space="preserve"><value>Left mouse button</value></data>
+  <data name="KeyMapping_Mouse_Right" xml:space="preserve"><value>Right mouse button</value></data>
+  <data name="KeyMapping_Mouse_Middle" xml:space="preserve"><value>Middle mouse button</value></data>
+  <data name="KeyMapping_Mouse_X1" xml:space="preserve"><value>Mouse side button 1</value></data>
+  <data name="KeyMapping_Mouse_X2" xml:space="preserve"><value>Mouse side button 2</value></data>
+  <data name="KeyMapping_Mouse_WheelUp" xml:space="preserve"><value>Wheel up</value></data>
+  <data name="KeyMapping_Mouse_WheelDown" xml:space="preserve"><value>Wheel down</value></data>
+  <data name="KeyMapping_Mouse_Unknown_Format" xml:space="preserve"><value>Mouse button {0}</value></data>
+  <data name="KeyMappingDialog_Activation_EditGlobal.Content" xml:space="preserve">
+    <value>Edit global rules</value>
+  </data>
+  <data name="KeyMapping_Info_KeyMappingAppliedNow" xml:space="preserve">
+    <value>Key mappings saved and applied to the running game.</value>
+  </data>
+  <data name="KeyMapping_Info_KeyMappingSavedForNextLaunch" xml:space="preserve">
+    <value>Key mappings saved. They will apply the next time the game starts.</value>
+  </data>
+  <data name="KeyMapping_Info_KeyMappingSavedButDisabled" xml:space="preserve">
+    <value>Key mappings saved, but both the global switch and this game's opt-in are off. Enable either switch to apply them.</value>
+  </data>
+  <data name="KeyMapping_Info_GlobalKeyMappingAppliedNow" xml:space="preserve">
+    <value>Global key mappings saved and sent to running games.</value>
+  </data>
+  <data name="KeyMapping_Info_GlobalKeyMappingSavedForNextLaunch" xml:space="preserve">
+    <value>Global key mappings saved. They will apply when a game starts.</value>
+  </data>
+
+  <data name="StorePluginFilter_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="StorePluginFilter_Installed" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="StorePluginFilter_UpdateAvailable" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+
+  <data name="PluginStorePage_NoPluginMatched.Text" xml:space="preserve">
+    <value>No plugin matches the current filter</value>
+  </data>
+  <data name="PluginStorePage_ResetFilter.Content" xml:space="preserve">
+    <value>Reset filters</value>
+  </data>
+  <data name="AddSourceDialog_ZipInfo" xml:space="preserve">
+    <value>An archive library stores games as compressed archives (zip/rar/7z). When you move a game into it the game folder is compressed into an archive; the archive itself is not playable directly.'move out to play' is not supported yet.</value>
+  </data>
+  <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
+    <value>The game will be compressed into an archive in {0}</value>
+  </data>
+  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
+    <value>Moving a game out of an archive library is not supported yet. Use 'Add game from archive' on the target local library instead.</value>
+  </data>
+  <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
+    <value>The game has no local folder installation to pack</value>
+  </data>
+  <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
+    <value>Also delete the files on disk (game folder / archive)</value>
+  </data>
+  <data name="PackGameTask_Compressing" xml:space="preserve">
+    <value>Compressing {0}...</value>
+  </data>
+  <data name="PackGameTask_Registering" xml:space="preserve">
+    <value>Registering into the archive library...</value>
+  </data>
+  <data name="PackGameTask_Done" xml:space="preserve">
+    <value>Packed to {0}</value>
+  </data>
+  <data name="PackGameTask_Failed" xml:space="preserve">
+    <value>Failed to pack the game: {0}</value>
+  </data>
+  <data name="PackGameTask_Recovered_RequiredInfoLost" xml:space="preserve">
+    <value>Cannot resume the packing task because required information was lost</value>
+  </data>
+  <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
+    <value>No target library available. Add another library first.</value>
   </data>
 </root>

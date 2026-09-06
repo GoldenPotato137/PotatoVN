@@ -73,7 +73,9 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _canOpenInVndb;
     [ObservableProperty] private bool _canOpenInYmgal;
     [ObservableProperty] private bool _canOpenInCngal;
+    [ObservableProperty] private bool _canOpenInHikarinagi;
     [ObservableProperty] private bool _canOpenInSteam;
+    [ObservableProperty] private bool _canOpenInExternalWebsite;
     [ObservableProperty] private Visibility _showBackgroundImage = Visibility.Collapsed;
     [ObservableProperty] private Visibility _showTagPanel = Visibility.Collapsed;
     [ObservableProperty] private Visibility _showCharacterPanel = Visibility.Collapsed;
@@ -126,7 +128,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
             Item = param.Galgame;
             IsLocalGame = Item.IsLocalGame;
-            _galgameService.PhrasedEvent2 += Update;
+            _galgameService.GalgameMutated += OnGalgameMutated;
             _staffService.OnGameStaffChanged += Update;
             // 初始化面板
             Update(Item);
@@ -174,7 +176,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedFrom()
     {
-        _galgameService.PhrasedEvent2 -= Update;
+        _galgameService.GalgameMutated -= OnGalgameMutated;
         _staffService.OnGameStaffChanged -= Update;
     }
 
@@ -210,14 +212,16 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private void Update(Galgame? game)
     {
         if (game is null || game != Item) return;
-        IsPhrasing = false;
         try
         {
             CanOpenInBgm = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Bangumi]);
             CanOpenInVndb = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Vndb]);
             CanOpenInYmgal = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Ymgal]);
             CanOpenInCngal = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Cngal]);
+            CanOpenInHikarinagi = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Hikarinagi]);
             CanOpenInSteam = !string.IsNullOrEmpty(Item?.Ids[(int)RssType.Steam]);
+            CanOpenInExternalWebsite = CanOpenInBgm || CanOpenInVndb || CanOpenInYmgal || CanOpenInCngal ||
+                                       CanOpenInHikarinagi || CanOpenInSteam;
         }
         catch (Exception ex)
         {
@@ -252,6 +256,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         OnPropertyChanged(nameof(CurrentInstallationConfig));
         OnPropertyChanged(nameof(HasMultipleInstallations));
     }
+
+    private void OnGalgameMutated(object? sender, GalgameMutationEventArgs args) => Update(args.Game);
 
     #region INFOBAR_CTRL
 
@@ -289,6 +295,13 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     {
         if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Cngal])) return;
         await Launcher.LaunchUriAsync(new Uri("https://www.cngal.org/entries/index/"+Item!.Ids[(int)RssType.Cngal]));
+    }
+
+    [RelayCommand]
+    private async Task OpenInHikarinagi()
+    {
+        if(string.IsNullOrEmpty(Item!.Ids[(int)RssType.Hikarinagi])) return;
+        await Launcher.LaunchUriAsync(new Uri("https://www.hikarinagi.org/galgames/"+Item!.Ids[(int)RssType.Hikarinagi]));
     }
 
     [RelayCommand]
@@ -363,7 +376,14 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     {
         if (Item == null) return;
         IsPhrasing = true;
-        await _galgameService.ParseGalInfoAsync(Item);
+        try
+        {
+            await _galgameService.ParseGalInfoAsync(Item);
+        }
+        finally
+        {
+            IsPhrasing = false;
+        }
     }
 
     [RelayCommand]
@@ -765,12 +785,22 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         await SaveAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLocalGame))]
     private async Task MoveToSource()
     {
         if (Item is null) return;
         ChangeSourceDialog dialog = new(Item);
         await dialog.ShowAsync();
+        if (!dialog.Ok) return;
+        try
+        {
+            _sourceService.MoveAsync(dialog.MoveInSource, dialog.MoveInSource.Path,
+                dialog.MoveOutSource, Item, dialog.DeleteFiles);
+        }
+        catch (Exception e)
+        {
+            _infoService.Info(InfoBarSeverity.Error, msg: e.Message);
+        }
     }
 
     private async Task<bool> CheckLocaleEmulator()

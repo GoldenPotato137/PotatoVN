@@ -247,6 +247,18 @@
                                                                 IsOn="{x:Bind ViewModel.VndbRemoveSpoilerTags, Mode=TwoWay}"/>
                                  </StackPanel>
                              </control:Panel>
+                            <!-- Hikarinagi -->
+                            <control:Panel
+                                Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Hikarinagi}">
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="SettingsPage_Rss_Hikarinagi"
+                                            Padding="0"/>
+                                    <TextBlock x:Uid="SettingsPage_Rss_Hikarinagi_Description"
+                                            TextWrapping="Wrap"
+                                               Style="{StaticResource DescriptionTextStyle}"
+                                               Margin="{StaticResource XSmallBottomMargin}"/>
+                                </StackPanel>
+                            </control:Panel>
                             <!-- Mixed -->
                             <control:Panel
                                 Visibility="{x:Bind ViewModel.RssType, Mode=OneWay, Converter={StaticResource RssTypeToVisibilityConverter}, ConverterParameter=Mixed}">
@@ -442,7 +454,7 @@
                                     <local:SettingToggleSwitch
                                         x:Uid="Settings_Game_ReMapEnabled"
                                         IsOn="{x:Bind ViewModel.GameReMapEnabled, Mode=TwoWay}"/>
-                                    <StackPanel Style="{StaticResource SettingStackPanelStyle}" Visibility="{x:Bind ViewModel.GameReMapEnabled, Mode=OneWay}">
+                                    <StackPanel Style="{StaticResource SettingStackPanelStyle}">
                                         <Button Command="{x:Bind ViewModel.OpenGlobalKeyMappingDialogCommand}" HorizontalAlignment="Stretch">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <SymbolIcon Symbol="Edit"/>

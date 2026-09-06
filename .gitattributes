@@ -17,6 +17,7 @@
 *.manifest text eol=crlf
 *.appxmanifest text eol=crlf
 *.py      text eol=crlf
+*.sh      text eol=lf
 *.svg     text eol=crlf
 
 # Binary files: no line-ending conversion

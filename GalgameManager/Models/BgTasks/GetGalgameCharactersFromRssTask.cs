@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using GalgameManager.Contracts.BgTasks;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -15,8 +15,17 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
     private readonly object _runningTasksLock = new();
     private readonly ConcurrentDictionary<Galgame, string> _runningTasksMsg = new();
     private readonly object _changeMsgLock = new();
-    private static readonly ILocalSettingsService Settings = App.GetService<ILocalSettingsService>();
-    private static readonly IPvnService PvnService = App.GetService<IPvnService>();
+    private readonly ILocalSettingsService _settings;
+    private readonly IPvnService _pvnService;
+    private readonly IGalgameCollectionService _gameService;
+
+    public GetGalgameCharactersFromRssTask(ILocalSettingsService settings, IPvnService pvnService,
+        IGalgameCollectionService gameService)
+    {
+        _settings = settings;
+        _pvnService = pvnService;
+        _gameService = gameService;
+    }
     
     /// 添加一个galgame到解析队列中
     public void AddGalgame(Galgame? game)
@@ -29,7 +38,6 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
 
     protected override Task RunInternal()
     {
-        IGalgameCollectionService gameService = App.GetService<IGalgameCollectionService>();
         return Task.Run((async Task () =>
         {
             while (true)
@@ -40,7 +48,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
                     _runningTasks.RemoveAll(t => t.IsCompleted);
                     while (_runningTasks.Count < MaxRunning && GetCharactersQueue.TryDequeue(out Galgame? game))
                     {
-                        Task t = GetCharacterAsync(game, gameService, progress =>
+                        Task t = GetCharacterAsync(game, progress =>
                         {
                             if (game is null) return;
                             lock (_changeMsgLock)
@@ -81,8 +89,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
     }
 
     /// 获取角色信息，注意捕获异常，若game为null则什么都不做
-    private static async Task GetCharacterAsync(Galgame? game, IGalgameCollectionService galgameService,
-        Action<Progress> onProgress)
+    private async Task GetCharacterAsync(Galgame? game, Action<Progress> onProgress)
     {
         if (game is null) return;
         var log = string.Empty;
@@ -103,7 +110,7 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
                 {
                     try
                     {
-                        character = await galgameService.PhraseGalCharacterAsync(character, game.RssType);
+                        character = await _gameService.PhraseGalCharacterAsync(character, game.RssType, game.Uuid);
                         break;
                     }
                     catch (ThrottledException)
@@ -122,16 +129,16 @@ public class GetGalgameCharactersFromRssTask : BgTaskBase, IGameProcessQueue
                 }
             });
             log += $"{game.Name.Value}->{character.Name} Done\n";
-            await galgameService.SaveGalgameAsync(game);
+            await _gameService.SaveGalgameAsync(game);
         }
         onProgress.Invoke(new Progress
         {
             Current = total, Total = total,
             Message = "Galgame_GetCharacterInfo_Saving".GetLocalized(),
         });
-        await galgameService.SaveGalgameAsync(game);
-        if (await Settings.ReadSettingAsync<bool>(KeyValues.SyncGames))
-            PvnService.Upload(game, PvnUploadProperties.Character);
+        await _gameService.SaveGalgameAsync(game);
+        if (await _settings.ReadSettingAsync<bool>(KeyValues.SyncGames))
+            _pvnService.Upload(game, PvnUploadProperties.Character);
         
         FileHelper.SaveWithoutJson(game.GetLogName(), log, "Logs");
         await Task.Delay(1000); //等待文件保存

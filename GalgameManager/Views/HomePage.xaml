@@ -146,6 +146,8 @@
                                         <ColumnDefinition Width="{x:Bind ViewModel.HomeFilterDeveloperPanelColumnWidth, Mode=OneWay}" />
                                         <ColumnDefinition Width="{x:Bind ViewModel.HomeFilterDeveloperPanelGapColumnWidth, Mode=OneWay}" />
                                         <ColumnDefinition Width="{x:Bind ViewModel.HomeFilterTagPanelColumnWidth, Mode=OneWay}" />
+                                        <ColumnDefinition Width="{x:Bind ViewModel.HomeFilterTagPanelGapColumnWidth, Mode=OneWay}" />
+                                        <ColumnDefinition Width="{x:Bind ViewModel.HomeFilterCategoryPanelColumnWidth, Mode=OneWay}" />
                                     </Grid.ColumnDefinitions>
                                     <Grid Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*"
                                           Visibility="{x:Bind ViewModel.HomeFilterShowPlayStatusAndSourcePanel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -220,6 +222,23 @@
                                                                       MinWidth="0" Grid.Row="1"/>
                                         <ScrollViewer Grid.Row="2">
                                             <ItemsRepeater ItemsSource="{x:Bind ViewModel.TagFilters}">
+                                                <DataTemplate x:DataType="viewModels:HomeViewModelFilter">
+                                                    <CheckBox IsThreeState="True"
+                                                              IsChecked="{x:Bind IsChecked, Mode=TwoWay}"
+                                                              Content="{x:Bind Title}"/>
+                                                </DataTemplate>
+                                            </ItemsRepeater>
+                                        </ScrollViewer>
+                                    </Grid>
+                                    <Grid Grid.Column="8" RowDefinitions="Auto,Auto,*"
+                                          Visibility="{x:Bind ViewModel.HomeFilterCategoryPanelVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBlock Grid.Row="0" x:Uid="HomePage_CategoryFilter"
+                                                   FontWeight="SemiBold" Margin="{StaticResource XXSmallBottomMargin}"/>
+                                        <control:SearchAutoSuggestBox SearchKey="{x:Bind ViewModel.CategoryFilterSearchKey, Mode=TwoWay}"
+                                                                      SearchCommand="{x:Bind ViewModel.SearchCategoryFilterCommand}"
+                                                                      MinWidth="0" Grid.Row="1"/>
+                                        <ScrollViewer Grid.Row="2">
+                                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.CategoryFilters}">
                                                 <DataTemplate x:DataType="viewModels:HomeViewModelFilter">
                                                     <CheckBox IsThreeState="True"
                                                               IsChecked="{x:Bind IsChecked, Mode=TwoWay}"

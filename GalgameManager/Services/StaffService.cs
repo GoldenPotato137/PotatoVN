@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using GalgameManager.Contracts.Phrase;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -31,7 +31,7 @@ public class StaffService : IStaffService
         _bgTaskService = bgTaskService;
         _infoService = infoService;
 
-        galgameService.PhrasedEvent2 += OnGalgamePhrasedEvent;
+        galgameService.GalgameMutated += OnGalgameMutated;
         galgameService.GalgameDeletedEvent += OnGalgameDeletedEvent;
     }
 
@@ -129,12 +129,12 @@ public class StaffService : IStaffService
         return staff;
     }
 
-    public Task ParseStaffAsync(Galgame game) => Task.Run(() =>
+    public async Task ParseStaffAsync(Galgame game)
     {
-        OnGalgamePhrasedEvent(game);
+        await RefreshGameStaffAsync(game);
         game.AutoFetchStatus.Staff = true;
-        _galgameService.SaveGalgameAsync(game);
-    });
+        await _galgameService.SaveGalgameAsync(game);
+    }
 
     public void Save(Staff staff, bool sync = true)
     {
@@ -166,7 +166,16 @@ public class StaffService : IStaffService
         });
     }
 
-    private async void OnGalgamePhrasedEvent(Galgame galgame)
+    private void OnGalgameMutated(object? sender, GalgameMutationEventArgs args)
+    {
+        var parsedGameInfo = args.ParsedTypes.HasFlag(GameParseType.GameInfo);
+        var addedWithMetadata = args.Changes.HasFlag(GalgameChangeKind.Added) &&
+                                args.Changes.HasFlag(GalgameChangeKind.Metadata);
+        if (!parsedGameInfo && !addedWithMetadata) return;
+        _ = RefreshGameStaffAsync(args.Game);
+    }
+
+    private async Task RefreshGameStaffAsync(Galgame galgame)
     {
         try
         {

@@ -53,19 +53,21 @@ public class UnpackGameTask : BgTaskBase
         }
     }
 
-    protected override Task RunInternal()
+    /// 注意：必须为async方法，前置检查的异常才会被捕获进返回的Task（BgTaskBase.Task），
+    /// 否则同步抛出的异常会导致Task属性停留在默认的CompletedTask，调用方无法感知失败
+    protected override async Task RunInternal()
     {
-        if(_pack is null || GameName == string.Empty) return Task.CompletedTask;
+        if(_pack is null || GameName == string.Empty) return;
         if (!Directory.Exists(TargetPath))
             throw new PvnException("GalgameFolder_UnpackGame_PathNotExist".GetLocalized(TargetPath));
         var saveDirectory = Path.Combine(TargetPath, GameName); // 游戏保存路径
         if (Directory.Exists(saveDirectory))
             throw new PvnException("GalgameFolder_UnpackGame_PathNotEmpty".GetLocalized(saveDirectory));
-        
+
         var tmpDir = Path.Combine(TargetPath, TmpDirName);
         Directory.CreateDirectory(tmpDir); // 临时解压路径，若没有权限则在此步抛异常报错
 
-        return Task.Run((async Task() =>
+        await Task.Run((async Task() =>
         {
             try
             {
@@ -84,6 +86,7 @@ public class UnpackGameTask : BgTaskBase
                 ChangeProgress(0, 1, "GalgameFolder_UnpackGame_Done".GetLocalized());
                 await UiThreadInvokeHelper.InvokeAsync(async Task () =>
                 {
+                    // AddGameAsync内部会优先尝试从本地meta备份（含压缩库sidecar）读取游戏信息，无需联网解析
                     await App.GetService<IGalgameCollectionService>()
                         .AddGameAsync(GalgameSourceType.LocalFolder, saveDirectory, true);
                 });
@@ -108,7 +111,6 @@ public class UnpackGameTask : BgTaskBase
             }
         })!);
     }
-    
     private async Task Unzip7Z(string tmpDir)
     {
         Init();

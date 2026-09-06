@@ -1,4 +1,4 @@
-﻿using GalgameManager.Models.BgTasks;
+using GalgameManager.Models.BgTasks;
 
 namespace GalgameManager.Contracts.Services;
 
@@ -33,4 +33,10 @@ public interface IBgTaskService
     /// </summary>
     /// <param name="key">关键字</param>
     public T? GetBgTask<T>(string key) where T : BgTaskBase;
+
+    /// <summary>
+    /// 通过DI容器创建一个后台任务（构造函数的服务依赖由容器解析）
+    /// </summary>
+    /// <param name="args">额外的非服务构造参数，按构造函数声明顺序匹配</param>
+    public T CreateBgTask<T>(params object[] args) where T : BgTaskBase;
 }

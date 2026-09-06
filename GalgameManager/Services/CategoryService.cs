@@ -13,7 +13,7 @@ namespace GalgameManager.Services;
 public class CategoryService : ICategoryService
 {
     private ObservableCollection<CategoryGroup> _categoryGroups = new();
-    private readonly GalgameCollectionService _galgameService;
+    private readonly IGalgameCollectionService _galgameService;
     private readonly IBgTaskService _bgTaskService;
     private readonly IInfoService _infoService;
     private CategoryGroup? _developerGroup, _statusGroup, _engineGroup;
@@ -35,7 +35,8 @@ public class CategoryService : ICategoryService
     {
         _localSettings = localSettings;
         _infoService = infoService;
-        _galgameService = (galgameService as GalgameCollectionService)!;
+        // 只依赖接口成员，不再向下转型为具体类，便于单元测试注入mock
+        _galgameService = galgameService;
         _bus = bus;
         _bgTaskService = bgTaskService;
     }
@@ -57,19 +58,24 @@ public class CategoryService : ICategoryService
 
         foreach (Galgame g in _galgameService.Galgames)
             g.GalPropertyChanged += HandleGalPropertyChanged;
-        _galgameService.GalgameAddedEvent += galgame =>
+        _galgameService.GalgameMutated += (_, args) =>
         {
             if (_isInit == false) return;
-            galgame.GalPropertyChanged += HandleGalPropertyChanged;
-            HandleGalPropertyChanged(galgame, nameof(Galgame.Developer), galgame.Developer.Value);
-            HandleGalPropertyChanged(galgame, nameof(Galgame.Engine), galgame.Engine.Value);
-            HandleGalPropertyChanged(galgame, nameof(Galgame.PlayType), galgame.PlayType);
-            HandleGalPropertyChanged(galgame, nameof(Galgame.LastPlayTime), galgame.LastPlayTime);
-        };
-        _galgameService.GalgameChangedEvent += galgame =>
-        {
-            HandleGalPropertyChanged(galgame, nameof(Galgame.Developer), galgame.Developer.Value);
-            HandleGalPropertyChanged(galgame, nameof(Galgame.Engine), galgame.Engine.Value);
+            Galgame galgame = args.Game;
+            if (args.Changes.HasFlag(GalgameChangeKind.Added))
+            {
+                galgame.GalPropertyChanged += HandleGalPropertyChanged;
+                HandleGalPropertyChanged(galgame, nameof(Galgame.Developer), galgame.Developer.Value);
+                HandleGalPropertyChanged(galgame, nameof(Galgame.Engine), galgame.Engine.Value);
+                HandleGalPropertyChanged(galgame, nameof(Galgame.PlayType), galgame.PlayType);
+                HandleGalPropertyChanged(galgame, nameof(Galgame.LastPlayTime), galgame.LastPlayTime);
+                return;
+            }
+            if (args.Changes.HasFlag(GalgameChangeKind.Metadata))
+            {
+                HandleGalPropertyChanged(galgame, nameof(Galgame.Developer), galgame.Developer.Value);
+                HandleGalPropertyChanged(galgame, nameof(Galgame.Engine), galgame.Engine.Value);
+            }
         };
         _galgameService.GalgameDeletedEvent += galgame =>
         {
@@ -260,7 +266,16 @@ public class CategoryService : ICategoryService
     {
         IList<Galgame> games = _galgameService.Galgames;
         foreach (Galgame game in games)
-            await UpdateCategory(game, updateDeveloper: true, updateStatus: true, updateEngine: true);
+        {
+            try
+            {
+                await UpdateCategory(game, updateDeveloper: true, updateStatus: true, updateEngine: true);
+            }
+            catch (Exception e)
+            {
+                _infoService.DeveloperEvent(msg: $"failed to update category for game {game.Name.Value}", e: e);
+            }
+        }
         //todo:空Category删除
     }
 
@@ -275,7 +290,7 @@ public class CategoryService : ICategoryService
         if (_isInit == false) await Init();
         // 更新开发商分类组
         if (updateDeveloper && await _localSettings.ReadSettingAsync<bool>(KeyValues.AutoCategory)
-            && galgame.Developer.Value != Galgame.DefaultString && galgame.Developer.Value != string.Empty)
+            && !string.IsNullOrWhiteSpace(galgame.Developer?.Value) && galgame.Developer.Value != Galgame.DefaultString)
         {
             //移除旧的开发商分类
             Category? old = GetDeveloperCategory(galgame);
@@ -318,7 +333,7 @@ public class CategoryService : ICategoryService
         }
         // 更新引擎分类组
         if (updateEngine && await _localSettings.ReadSettingAsync<bool>(KeyValues.AutoCategory)
-            && !string.IsNullOrWhiteSpace(galgame.Engine.Value) && galgame.Engine.Value != Galgame.DefaultString)
+            && !string.IsNullOrWhiteSpace(galgame.Engine?.Value) && galgame.Engine.Value != Galgame.DefaultString)
         {
             //移除旧的引擎分类
             Category? old = GetEngineCategory(galgame);
@@ -354,7 +369,7 @@ public class CategoryService : ICategoryService
             var isNew = false;
             if (task is null)
             {
-                task = new DownloadCategoryImageTask();
+                task = _bgTaskService.CreateBgTask<DownloadCategoryImageTask>();
                 isNew = true;
             }
             task.AddCategory(category);
@@ -694,6 +709,8 @@ public class CategoryService : ICategoryService
             _categoryGroups = await _localSettings.ReadSettingAsync<ObservableCollection<CategoryGroup>>
                                   (KeyValues.CategoryGroups, true, converters: new() { new GalgameAndUidConverter() })
                               ?? new ObservableCollection<CategoryGroup>();
+            // 旧路径索引依赖 data.categoryGroups.json，必须在删除旧 JSON 前完成迁移。
+            await UpdateGameIndexFormat(status);
             foreach (CategoryGroup group in _categoryGroups)
                 group.Categories.ForEach(c => c.GalgamesX.RemoveNull());
             //升级为LiteDB保存
@@ -702,8 +719,8 @@ public class CategoryService : ICategoryService
                 _groupDbSet.Upsert(_categoryGroups);
                 foreach (CategoryGroup group in _categoryGroups)
                     _categoryDbSet.Upsert(group.Categories);
-                _localSettings.RemoveSettingAsync(KeyValues.CategoryGroups, true);
             });
+            await _localSettings.RemoveSettingAsync(KeyValues.CategoryGroups, true);
         }
         catch (Exception e)
         {

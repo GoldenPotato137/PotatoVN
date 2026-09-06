@@ -44,25 +44,15 @@ public class GetStorePluginTask(AdvancedCollectionView pluginList) : QueueTaskBa
             GetPluginInfo(item),
             GetPluginVersionsInfo(item),
         ];
+        Version? installedVersion;
         try
         {
             await Task.WhenAll(tasks);
             if (item.Versions.Count > 0)
                 item.ReleaseDate = item.Versions[0].ReleaseDate;
 
-            PluginX? installedPlugin = (await _pluginService.GetAllPluginsAsync()).FirstOrDefault(p => p.Info.Id == item.Id);
-            if (installedPlugin != null)
-            {
-                item.InstalledVersion = installedPlugin.Version;
-                if (item.Versions.Count > 0 && item.Versions[0].Version > item.InstalledVersion)
-                    item.Status = StorePluginStatus.UpdateAvailable;
-                else
-                    item.Status = StorePluginStatus.Installed;
-            }
-            else
-            {
-                item.Status = StorePluginStatus.NotInstalled;
-            }
+            installedVersion = (await _pluginService.GetAllPluginsAsync())
+                .FirstOrDefault(p => p.Info.Id == item.Id)?.Version;
         }
         catch (Exception e)
         {
@@ -72,6 +62,7 @@ public class GetStorePluginTask(AdvancedCollectionView pluginList) : QueueTaskBa
 
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
+            item.UpdateStatus(installedVersion);
             pluginList.Add(item);
             pluginList.RefreshFilter();
         });

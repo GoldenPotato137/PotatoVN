@@ -1,6 +1,13 @@
 ﻿name: Server Build and Push to Docker Hub
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'GalgameManager.Server/**'
+      - 'GalgameManager.Core/**'
+      - '.github/workflows/server-build-push.yml'
 
 env:
   REGISTRY: docker.io

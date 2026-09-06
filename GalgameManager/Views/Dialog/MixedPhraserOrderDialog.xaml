@@ -15,7 +15,9 @@
             <Button x:Uid="MixedPhraserOrderDialog_ResetButton" Click="ResetButton_Click" HorizontalAlignment="Right" Margin="0,0,50,0" />
         </Grid>
         <ListView ItemsSource="{x:Bind Items}" SelectionMode="None" IsItemClickEnabled="False" MinWidth="400"
-                  MaxHeight="200">
+                  MaxHeight="200"
+                  ScrollViewer.HorizontalScrollMode="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:MixedPhraserOrderDialogItem">
                     <StackPanel Orientation="Horizontal">

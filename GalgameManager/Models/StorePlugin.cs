@@ -35,6 +35,25 @@ public partial class StorePlugin : ObservableObject
 
     [ObservableProperty] private StorePluginStatus _status = StorePluginStatus.NotInstalled;
     [ObservableProperty] private Version? _installedVersion;
+
+    /// <summary>
+    /// 根据已安装的版本刷新<see cref="InstalledVersion"/>与<see cref="Status"/>。<br/>
+    /// 注意：会改动ObservableProperty，若插件已经在界面上显示则需要在UI线程调用。
+    /// </summary>
+    /// <param name="installedVersion">已安装的版本，为null表示未安装</param>
+    public void UpdateStatus(Version? installedVersion)
+    {
+        InstalledVersion = installedVersion;
+        if (installedVersion is null)
+        {
+            Status = StorePluginStatus.NotInstalled;
+            return;
+        }
+        // 装的不是最新版（用户可以在详情对话框里选旧版本安装）时仍然算作有更新
+        Status = Versions.Count > 0 && Versions[0].Version > installedVersion
+            ? StorePluginStatus.UpdateAvailable
+            : StorePluginStatus.Installed;
+    }
 }
 
 public enum StorePluginStatus

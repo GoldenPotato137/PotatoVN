@@ -36,6 +36,12 @@ services:
       "AppSettings:Bangumi:OAuth2Enable": false #如果此项为true，必须填写AppId和AppSecret
       "AppSettings:Bangumi:AppId": "Change this to your Bangumi AppId if you want to use this server as OAuth2 server"
       "AppSettings:Bangumi:AppSecret": "Change this to your Bangumi AppSecret if you want to use this server as OAuth2 server"
+      # 作为Hikarinagi开放API透传代理及用户OAuth2认证服务器
+      "AppSettings:Hikarinagi:Enable": false #是否启用条目数据透传代理
+      "AppSettings:Hikarinagi:OAuth2Enable": false #是否启用用户OAuth登录；需在Hikarinagi控制台登记下方RedirectUri
+      "AppSettings:Hikarinagi:ClientId": "Change this to your Hikarinagi OAuth ClientId"
+      "AppSettings:Hikarinagi:ClientSecret": "Change this to your Hikarinagi OAuth ClientSecret"
+      "AppSettings:Hikarinagi:RedirectUri": "potato-vn://oauth-hikarinagi"
   
   
   postgresql:

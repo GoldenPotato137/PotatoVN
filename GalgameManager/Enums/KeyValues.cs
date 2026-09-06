@@ -140,6 +140,7 @@ public static class KeyValues
     public const string HomeFilterShowEnginePanel = "homeFilterShowEnginePanel"; //bool, 主页过滤面板是否显示引擎过滤器
     public const string HomeFilterShowDeveloperPanel = "homeFilterShowDeveloperPanel"; //bool, 主页过滤面板是否显示开发者过滤器
     public const string HomeFilterShowTagPanel = "homeFilterShowTagPanel"; //bool, 主页过滤面板是否显示标签过滤器
+    public const string HomeFilterShowCategoryPanel = "homeFilterShowCategoryPanel"; //bool, 主页过滤面板是否显示分类过滤器（默认不显示）
 
     //库页面
     public const string LibraryNavBar = "libraryNavBar"; //bool, 是否显示库页面的导航栏

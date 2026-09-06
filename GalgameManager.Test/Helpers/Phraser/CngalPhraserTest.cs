@@ -27,12 +27,12 @@ public class CngalPhraserTest
             Assert.Fail();
             return;
         }
-        
-        if(game.Name != "三色绘恋S") Assert.Fail();
-        if(game.Id != "81") Assert.Fail();
+
+        if(game.Name != "三色△绘恋") Assert.Fail();
+        if(game.Id != "80") Assert.Fail();
         if(game.Developer != "绘恋制作组") Assert.Fail();
-        if(game.ReleaseDate != new DateTime(2020, 5, 20)) Assert.Fail();
-        if(game.Characters.Count != 6) Assert.Fail();
+        if(game.ReleaseDate != new DateTime(2017, 9, 21)) Assert.Fail();
+        if(game.Characters.Count != 9) Assert.Fail();
         Assert.Pass();
     }
 }

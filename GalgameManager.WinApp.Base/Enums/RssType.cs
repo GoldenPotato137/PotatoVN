@@ -10,4 +10,5 @@ public enum RssType
     Ymgal,
     Cngal,
     Steam,
+    Hikarinagi,
 }

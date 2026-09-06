@@ -94,3 +94,25 @@
     </StackPanel>
 </control:Panel>
 ```
+
+---
+
+## 已知问题：ItemsRepeater + WrapLayout 滚动后重叠
+
+CommunityToolkit 的 `WrapLayout` 有已知 bug（[CommunityToolkit/Windows#707](https://github.com/CommunityToolkit/Windows/issues/707)）：当 `ItemsRepeater` 滚出屏幕后更新其数据源，元素会堆叠在 (0,0)，滚动回来时表现为多行内容重叠。对集合做 `InvalidateMeasure()` / `UpdateLayout()` 不能可靠修复。
+
+**结论：** 位于 `ScrollViewer` 内、且本身不享受虚拟化的小列表（如详情页头部字段、几十项以内），不要使用 `ItemsRepeater` + `WrapLayout`，改用 `ItemsControl` + `WrapPanel`（同一命名空间 `CommunityToolkit.WinUI.Controls`，无新依赖）：
+
+```xml
+<ItemsControl ItemsSource="{x:Bind Items}">
+    <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+            <cmtkControls:WrapPanel Orientation="Horizontal" HorizontalSpacing="5" />
+        </ItemsPanelTemplate>
+    </ItemsControl.ItemsPanel>
+</ItemsControl>
+```
+
+`GameHeaderPanel.xaml` 已按此方案修复。仓库中其余 `WrapLayout` 使用点（`GameTagPanel.xaml`、`GalgameSourcePage.xaml`、`CategorySettingPage.xaml`、`Views/Control/ObservableList.xaml`）如遇同类症状可同样替换。
+
+**注意：** 模板根元素上的 `DataContext="{x:Bind}"` 在 `ItemsRepeater` 下无害（其管线会调用 `ProcessBindings` 移除内部 `DataContextChanged` 监听），但在 `ItemsControl`/`ContentPresenter` 下会形成"设置 DataContext → 触发 DataContextChanged → 绑定刷新 → 再次设置 DataContext"的无限递归，直接栈溢出。把 `ItemsRepeater` 模板改造成 `ItemsControl` 时必须删掉这个冗余属性——`ItemsControl` 会自动把数据项设为模板根的 DataContext，事件处理器里读 `button.DataContext` 不受影响。

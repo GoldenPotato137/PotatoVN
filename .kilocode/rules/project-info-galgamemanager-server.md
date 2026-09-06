@@ -120,4 +120,11 @@ This `InformationalVersion` is then retrieved in C# using:
 *   **Database Migrations:** Changes to server-side entities (like adding `PlayCount` to `Galgame.cs`) require new EF Core migrations to be created and applied to the database.
 *   **DTO vs. Entity:** Understand the distinction between DTOs (for API communication, e.g., `GalgameUpdateDto`) and Entities (for database representation, e.g., `Galgame.cs`). AutoMapper is often used for mapping between them, but in this service, it's done manually for updates.
 
+## 7. Hikarinagi OAuth Proxy
+
+*   `HikarinagiController` and `HikarinagiService` provide the confidential-server portion of Hikarinagi's Authorization Code flow with PKCE. The desktop client owns and verifies `state` and retains the PKCE verifier; the server stores the Hikarinagi client secret and exchanges authorization codes and refresh tokens.
+*   Configure `AppSettings:Hikarinagi:OAuth2Enable`, `ClientId`, `ClientSecret`, and `RedirectUri`. Enabling either the Hikarinagi catalog proxy or OAuth requires the client credentials; enabling OAuth also requires the redirect URI, normally `potato-vn://oauth-hikarinagi`.
+*   The authorization request uses scopes `status:write offline_access`, `prompt=consent`, and PKCE S256. Hikarinagi refresh tokens rotate, so every successful refresh response must be returned to the client and persisted in place of the previous token.
+*   `/server/info` advertises OAuth availability through `HikarinagiOAuth2Enable`. This flag is independent from the anonymous Hikarinagi catalog proxy setting.
+
 This document provides a foundational knowledge base for the `GalgameManager.Server`. For specific implementation details, direct code analysis of the mentioned files and directories will be necessary.

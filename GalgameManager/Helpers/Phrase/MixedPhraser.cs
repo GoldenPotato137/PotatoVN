@@ -54,17 +54,19 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser, IGalStaffPars
             RssType.Vndb => _data.Enabled.VndbEnabled,
             RssType.Ymgal => _data.Enabled.YmgalEnabled,
             RssType.Steam => _data.Enabled.SteamEnabled,
+            RssType.Hikarinagi => _data.Enabled.HikarinagiEnabled,
             _ => true
         };
     }
 
     public MixedPhraser(IGalInfoPhraser bgmPhraser, IGalInfoPhraser vndbPhraser, IGalInfoPhraser ymgalPhraser,
-        IGalInfoPhraser steamParser, MixedPhraserData data, IMessenger? bus = null)
+        IGalInfoPhraser steamParser, IGalInfoPhraser hikarinagiPhraser, MixedPhraserData data, IMessenger? bus = null)
     {
         _phrasers[RssType.Bangumi] = bgmPhraser;
         _phrasers[RssType.Vndb] = vndbPhraser;
         _phrasers[RssType.Ymgal] = ymgalPhraser;
         _phrasers[RssType.Steam] = steamParser;
+        _phrasers[RssType.Hikarinagi] = hikarinagiPhraser;
         _data = data;
         _developerList = new List<string>();
         _bus = bus;
@@ -126,7 +128,7 @@ public class MixedPhraser : IGalInfoPhraser, IGalCharacterPhraser, IGalStaffPars
                     phraserTasks[rssType] = null;
             }
         }
-        
+
         Dictionary<RssType, Galgame> metas = new();
         Galgame result = new();
         foreach (var (rssType, task) in phraserTasks)
@@ -400,8 +402,8 @@ public class MixedPhraserOrder
 {
     // 版本号，每次添加新搜刮器/添加新字段的时候都应该把这个数字+1，以便galgameCollectionService能够更新配置中已有的顺序配置
     // 更新配置不需要手动编写，已经在GalgameCollectionService中使用反射实现，会自动添加新的默认配置
-    public const int Version = 13;
-    
+    public const int Version = 14;
+
     // 为什么使用ObservableCollection：为了能够在MixedPhraserOrderDialog中使顺序能够drag&drop
     // 所有变量都应该命名为：{字段名}Order，此处字段名应该与Galgame中对应的字段名一致（为了让GetValue中的反射能够找到对应的字段）
     public ObservableCollection<RssType> NameOrder { get; set; } = new();
@@ -420,36 +422,37 @@ public class MixedPhraserOrder
     public MixedPhraserOrder SetToDefault(bool isChineseCulture = true)
     {
 
+        // Hikarinagi不提供评分与Staff信息（且评分合并不做空值检查），故RatingOrder/StaffOrder中不加入Hikarinagi
         if (isChineseCulture)
         {
             // 中文用户偏好的顺序设置
-            NameOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb, RssType.Steam };
-            DescriptionOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb, RssType.Steam };
+            NameOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal, RssType.Vndb, RssType.Steam };
+            DescriptionOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal, RssType.Vndb, RssType.Steam };
             ExpectedPlayTimeOrder = new() { RssType.Vndb };
             RatingOrder = new() { RssType.Bangumi, RssType.Vndb };
-            ImageUrlOrder = new() { RssType.Steam, RssType.Vndb, RssType.Bangumi, RssType.Ymgal,  };
-            ReleaseDateOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
-            CharactersOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
-            CnNameOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
-            DeveloperOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb, RssType.Steam };
+            ImageUrlOrder = new() { RssType.Steam, RssType.Vndb, RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal,  };
+            ReleaseDateOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
+            CharactersOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
+            CnNameOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
+            DeveloperOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Ymgal, RssType.Vndb, RssType.Steam };
             EngineOrder = new() { RssType.Vndb };
-            TagsOrder = new() { RssType.Bangumi, RssType.Vndb, RssType.Steam };
+            TagsOrder = new() { RssType.Hikarinagi, RssType.Bangumi, RssType.Vndb, RssType.Steam };
             StaffOrder = new() { RssType.Bangumi, RssType.Ymgal, RssType.Vndb };
         }
         else
         {
             // 非中文用户偏好的顺序设置
-            NameOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Bangumi, RssType.Steam };
-            DescriptionOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Steam, RssType.Bangumi };
+            NameOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Hikarinagi, RssType.Bangumi, RssType.Steam };
+            DescriptionOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Steam, RssType.Hikarinagi, RssType.Bangumi };
             ExpectedPlayTimeOrder = new() { RssType.Vndb };
             RatingOrder = new() { RssType.Vndb, RssType.Bangumi };
-            ImageUrlOrder = new() { RssType.Steam, RssType.Vndb, RssType.Ymgal, RssType.Bangumi };
-            ReleaseDateOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Bangumi };
-            CharactersOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Bangumi };
-            CnNameOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Bangumi };
-            DeveloperOrder = new() { RssType.Vndb, RssType.Steam, RssType.Ymgal, RssType.Bangumi };
+            ImageUrlOrder = new() { RssType.Steam, RssType.Vndb, RssType.Ymgal, RssType.Hikarinagi, RssType.Bangumi };
+            ReleaseDateOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Hikarinagi, RssType.Bangumi };
+            CharactersOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Hikarinagi, RssType.Bangumi };
+            CnNameOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Hikarinagi, RssType.Bangumi };
+            DeveloperOrder = new() { RssType.Vndb, RssType.Steam, RssType.Ymgal, RssType.Hikarinagi, RssType.Bangumi };
             EngineOrder = new() { RssType.Vndb };
-            TagsOrder = new() { RssType.Vndb, RssType.Steam, RssType.Bangumi };
+            TagsOrder = new() { RssType.Vndb, RssType.Steam, RssType.Hikarinagi, RssType.Bangumi };
             StaffOrder = new() { RssType.Vndb, RssType.Ymgal, RssType.Bangumi };
         }
 
@@ -467,10 +470,11 @@ public class MixedPhraserData : IGalInfoPhraserData
 
 public class MixedPhraserEnabled
 {
-    public bool BangumiEnabled { get; set; } = true;
+    public bool BangumiEnabled { get; set; } = false;
     public bool VndbEnabled { get; set; } = true;
     public bool YmgalEnabled { get; set; } = true;
     public bool SteamEnabled { get; set; } = true;
+    public bool HikarinagiEnabled { get; set; } = true;
 
     // Information type scraping toggles
     public bool NameEnabled { get; set; } = true;

@@ -5,10 +5,21 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class UploadAllPlayStatusTask(bool uploadBangumi, bool uploadVndb) : QueueTaskBase<Galgame>
+public class UploadAllPlayStatusTask : QueueTaskBase<Galgame>
 {
-    private static readonly IGalgameCollectionService GameService = App.GetService<IGalgameCollectionService>();
-    private readonly IInfoService _infoService = App.GetService<IInfoService>();
+    private readonly bool _uploadBangumi;
+    private readonly bool _uploadVndb;
+    private readonly IGalgameCollectionService _gameService;
+    private readonly IInfoService _infoService;
+
+    public UploadAllPlayStatusTask(bool uploadBangumi, bool uploadVndb,
+        IGalgameCollectionService gameService, IInfoService infoService)
+    {
+        _uploadBangumi = uploadBangumi;
+        _uploadVndb = uploadVndb;
+        _gameService = gameService;
+        _infoService = infoService;
+    }
 
     public void AddGalgame(Galgame? game)
     {
@@ -22,7 +33,7 @@ public class UploadAllPlayStatusTask(bool uploadBangumi, bool uploadVndb) : Queu
     protected async override Task InitializeAsync()
     {
         // Enqueue all games that have play status != None
-        foreach (Galgame g in GameService.Galgames)
+        foreach (Galgame g in _gameService.Galgames)
         {
             if (g.PlayType != PlayType.None)
                 Queue.Enqueue(g);
@@ -35,11 +46,11 @@ public class UploadAllPlayStatusTask(bool uploadBangumi, bool uploadVndb) : Queu
     {
         try
         {
-            if (uploadBangumi)
+            if (_uploadBangumi)
             {
                 try
                 {
-                    await GameService.UploadPlayStatusAsync(item, RssType.Bangumi);
+                    await _gameService.UploadPlayStatusAsync(item, RssType.Bangumi);
                 }
                 catch (Exception e)
                 {
@@ -48,11 +59,11 @@ public class UploadAllPlayStatusTask(bool uploadBangumi, bool uploadVndb) : Queu
                 }
             }
 
-            if (uploadVndb)
+            if (_uploadVndb)
             {
                 try
                 {
-                    await GameService.UploadPlayStatusAsync(item, RssType.Vndb);
+                    await _gameService.UploadPlayStatusAsync(item, RssType.Vndb);
                 }
                 catch (Exception e)
                 {

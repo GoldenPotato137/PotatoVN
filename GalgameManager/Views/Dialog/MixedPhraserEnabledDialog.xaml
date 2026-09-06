@@ -14,6 +14,7 @@
                 <CheckBox x:Name="VndbCheckBox" x:Uid="MixedPhraserEnabledDialog_VndbCheckBox" />
                 <CheckBox x:Name="YmgalCheckBox" x:Uid="MixedPhraserEnabledDialog_YmgalCheckBox" />
                 <CheckBox x:Name="SteamCheckBox" x:Uid="MixedPhraserEnabledDialog_SteamCheckBox" />
+                <CheckBox x:Name="HikarinagiCheckBox" x:Uid="MixedPhraserEnabledDialog_HikarinagiCheckBox" />
             </StackPanel>
             
             <!-- Information type toggles -->

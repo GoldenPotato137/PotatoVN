@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
 using GalgameManager.Activation;
@@ -83,7 +83,7 @@ public class ActivationService : IActivationService
         // Execute tasks before activation.
         await InitializeAsync();
 
-        if (IsRestart() == false && !IsHealthCheckMode())
+        if (IsRestart() == false)
         {
             var result = await _authenticationService.StartAuthentication();
             if (!result)
@@ -158,8 +158,6 @@ public class ActivationService : IActivationService
         // Execute tasks after activation.
         await StartupAsync(activationArgs);
 
-        //健康检查模式：完成所有初始化后直接退出，用于端到端测试
-        if (IsHealthCheckMode()) Application.Current.Exit();
     }
 
     public async Task HandleActivationAsync(object activationArgs)
@@ -180,7 +178,6 @@ public class ActivationService : IActivationService
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
         UiDefaultValues.Init();
-        if (IsHealthCheckMode()) return;
 
         // 初始化窗口
         if (IsRestart() == false)
@@ -189,6 +186,8 @@ public class ActivationService : IActivationService
             //防止有人手快按到页面内容
             App.MainWindow!.Content.Visibility = Visibility.Collapsed;
         }
+
+        if (AppStoragePaths.IsUpgradeUiTest) return;
 
         //系统托盘
         App.GetResource<XamlUICommand>("SetWindowNormalCommand").ExecuteRequested += (_, _) =>
@@ -205,22 +204,22 @@ public class ActivationService : IActivationService
 
     private async Task StartupAsync(object activationArgs)
     {
-        var isHealthCheck = IsHealthCheckMode();
+        var isUpgradeUiTest = AppStoragePaths.IsUpgradeUiTest;
         await _sidebarService.InitAsync();
         await _galgameCollectionService.StartAsync();
         await _galgameFolderCollectionService.StartAsync();
-        var activateWindow = !IsRestart() && !isHealthCheck;
-        if (activationArgs is AppActivationArguments { Kind: ExtendedActivationKind.StartupTask } && !isHealthCheck)
+        var activateWindow = !IsRestart();
+        if (activationArgs is AppActivationArguments { Kind: ExtendedActivationKind.StartupTask })
             activateWindow = !await _localSettingsService.ReadSettingAsync<bool>(KeyValues.MinToTrayWhenAutoStart);
         if (activateWindow) App.SetWindowMode(WindowMode.Normal);
         await _pluginService.InitAsync();
-        if (IsRestart() == false && !isHealthCheck)
+        if (IsRestart() == false && !isUpgradeUiTest)
         {
             _pvnService.Startup();
             await _localSettingsService.StartupAsync();
             await _updateService.UpdateSettingsBadgeAsync();
         }
-        if (!isHealthCheck)
+        if (!isUpgradeUiTest)
         {
             await _appCenterService.StartAsync();
             if (IsRestart() == false) await _bgmOAuthService.Init();
@@ -325,16 +324,6 @@ public class ActivationService : IActivationService
             }
         }
         return false;
-    }
-
-    /// <summary>
-    /// 健康检查模式：完成所有初始化后直接退出，用于端到端测试
-    /// </summary>
-    /// <returns></returns>
-    private static bool IsHealthCheckMode()
-    {
-        var args = Environment.GetCommandLineArgs();
-        return args.Any(a => string.Equals(a, "--healthcheck", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

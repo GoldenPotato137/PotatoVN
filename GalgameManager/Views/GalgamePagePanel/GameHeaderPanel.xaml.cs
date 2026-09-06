@@ -270,9 +270,6 @@ public partial class GameHeaderPanel
             if (tmp.Count == 0) continue;
             _staffListSource.Add(new GameHeaderPanelStaffList(career, tmp));
         }
-        // 强制重新计算布局以解决重叠和顺序问题
-        StaffList.InvalidateMeasure();
-        StaffList.UpdateLayout();
     }
 
     private void UpdateDevelopers()

@@ -30,6 +30,16 @@ public interface ICategoryService
     public Task<ObservableCollection<CategoryGroup>> GetCategoryGroupsAsync();
 
     /// <summary>
+    /// 新增自定义分类组。
+    /// </summary>
+    public CategoryGroup AddCategoryGroup(string name);
+
+    /// <summary>
+    /// 删除分类组及不再被其他分类组引用的分类。
+    /// </summary>
+    public void DeleteCategoryGroup(CategoryGroup categoryGroup);
+
+    /// <summary>
     /// 更新所有Galgame的分类
     /// </summary>
     public Task UpdateAllGames();

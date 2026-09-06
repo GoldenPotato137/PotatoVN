@@ -9,7 +9,9 @@ public class GameToOpacityConverter : IValueConverter
     
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is Galgame game)
+        if (value is bool isLocalGame)
+            return SpecialDisplayVirtualGame && !isLocalGame ? 0.5 : 1;
+        if (value is Galgame game) // Compatibility with other existing bindings.
             return SpecialDisplayVirtualGame && !game.IsLocalGame ? 0.5 : 1;
         return 1.0;
     }

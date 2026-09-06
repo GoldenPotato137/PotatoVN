@@ -2,6 +2,7 @@
 using GalgameManager.ViewModels;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -23,12 +24,30 @@ public sealed partial class LibraryPage : Page
         ViewModel = App.GetService<LibraryViewModel>();
         DataContext = ViewModel;
         InitializeComponent();
+        AutomationProperties.SetAutomationId(LibraryContentScrollViewer, "LibraryContent");
     }
 
     private void SourceItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: GalgameSourceBase source })
             ViewModel.NavigateToCommand.Execute(source);
+    }
+
+    private void SourceItem_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element) UpdateSourceAutomationProperties(element, element.DataContext);
+    }
+
+    private void SourceItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+    {
+        UpdateSourceAutomationProperties(sender, args.NewValue);
+    }
+
+    private static void UpdateSourceAutomationProperties(FrameworkElement element, object? dataContext)
+    {
+        if (dataContext is not GalgameSourceBase source) return;
+        AutomationProperties.SetAutomationId(element, $"LibrarySource_{source.Id:N}");
+        AutomationProperties.SetName(element, source.Name);
     }
 
     private void SourceItem_PointerEntered(object sender, PointerRoutedEventArgs e)

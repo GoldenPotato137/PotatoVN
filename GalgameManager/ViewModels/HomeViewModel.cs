@@ -128,6 +128,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             HomeFilterShowEnginePanel = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.HomeFilterShowEnginePanel);
             HomeFilterShowDeveloperPanel = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.HomeFilterShowDeveloperPanel);
             HomeFilterShowTagPanel = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.HomeFilterShowTagPanel);
+            HomeFilterShowCategoryPanel = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.HomeFilterShowCategoryPanel);
             GameToOpacityConverter.SpecialDisplayVirtualGame = SpecialDisplayVirtualGame;
 
             PrimaryKey = (SortKeys)_localSettingsService.ReadSettingAsync<int>(KeyValues.PrimarySortKey).Result;
@@ -144,8 +145,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
 
             //Add Event
             _galgameService.GalgameLoadedEvent += OnGalgameLoadedEvent;
-            _galgameService.GalgameChangedEvent += UpdateGalgame;
-            _galgameService.PhrasedEvent += OnGalgameServicePhrased;
+            _galgameService.GalgameMutated += UpdateGalgame;
             _localSettingsService.OnSettingChanged += OnSettingChanged;
             _galgameService.Galgames.CollectionChanged += OnGalgamesCollectionChanged;
             _sourceService.OnSourceChanged += HandleSourceChanged;
@@ -184,8 +184,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             await Task.Delay(200); //等待动画结束
             if (await _localSettingsService.ReadSettingAsync<bool>(KeyValues.KeepFilters) == false)
                 _filterService.ClearFilters();
-            _galgameService.PhrasedEvent -= OnGalgameServicePhrased;
-            _galgameService.GalgameChangedEvent -= UpdateGalgame;
+            _galgameService.GalgameMutated -= UpdateGalgame;
             _galgameService.GalgameLoadedEvent -= OnGalgameLoadedEvent;
             _galgameService.Galgames.CollectionChanged -= OnGalgamesCollectionChanged;
             _sourceService.OnSourceChanged -= HandleSourceChanged;
@@ -317,35 +316,61 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     [NotifyPropertyChangedFor(nameof(HomeFilterPlayStatusAndSourcePanelGapColumnWidth))]
     [NotifyPropertyChangedFor(nameof(HomeFilterEnginePanelGapColumnWidth))]
     [NotifyPropertyChangedFor(nameof(HomeFilterDeveloperPanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterTagPanelGapColumnWidth))]
     private bool _homeFilterShowTagPanel;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HomeFilterCategoryPanelVisible))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterCategoryPanelColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterPlayStatusAndSourcePanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterEnginePanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterDeveloperPanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterTagPanelGapColumnWidth))]
+    private bool _homeFilterShowCategoryPanel;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HomeFilterCategoryPanelVisible))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterCategoryPanelColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterPlayStatusAndSourcePanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterEnginePanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterDeveloperPanelGapColumnWidth))]
+    [NotifyPropertyChangedFor(nameof(HomeFilterTagPanelGapColumnWidth))]
+    private bool _forceShowCategoryPanel; //当前过滤器中有无法在其他面板移除的分类过滤器时，强制显示分类面板
+    public bool HomeFilterCategoryPanelVisible => HomeFilterShowCategoryPanel || ForceShowCategoryPanel;
     public GridLength HomeFilterPlayStatusAndSourcePanelColumnWidth => GetHomeFilterPanelColumnWidth(HomeFilterShowPlayStatusAndSourcePanel);
     public GridLength HomeFilterEnginePanelColumnWidth => GetHomeFilterPanelColumnWidth(HomeFilterShowEnginePanel);
     public GridLength HomeFilterDeveloperPanelColumnWidth => GetHomeFilterPanelColumnWidth(HomeFilterShowDeveloperPanel);
     public GridLength HomeFilterTagPanelColumnWidth => GetHomeFilterPanelColumnWidth(HomeFilterShowTagPanel);
+    public GridLength HomeFilterCategoryPanelColumnWidth => GetHomeFilterPanelColumnWidth(HomeFilterCategoryPanelVisible);
     public GridLength HomeFilterPlayStatusAndSourcePanelGapColumnWidth =>
         GetHomeFilterPanelGapColumnWidth(HomeFilterShowPlayStatusAndSourcePanel,
-            HomeFilterShowEnginePanel || HomeFilterShowDeveloperPanel || HomeFilterShowTagPanel);
+            HomeFilterShowEnginePanel || HomeFilterShowDeveloperPanel || HomeFilterShowTagPanel ||
+            HomeFilterCategoryPanelVisible);
     public GridLength HomeFilterEnginePanelGapColumnWidth =>
         GetHomeFilterPanelGapColumnWidth(HomeFilterShowEnginePanel,
-            HomeFilterShowDeveloperPanel || HomeFilterShowTagPanel);
+            HomeFilterShowDeveloperPanel || HomeFilterShowTagPanel || HomeFilterCategoryPanelVisible);
     public GridLength HomeFilterDeveloperPanelGapColumnWidth =>
-        GetHomeFilterPanelGapColumnWidth(HomeFilterShowDeveloperPanel, HomeFilterShowTagPanel);
+        GetHomeFilterPanelGapColumnWidth(HomeFilterShowDeveloperPanel,
+            HomeFilterShowTagPanel || HomeFilterCategoryPanelVisible);
+    public GridLength HomeFilterTagPanelGapColumnWidth =>
+        GetHomeFilterPanelGapColumnWidth(HomeFilterShowTagPanel, HomeFilterCategoryPanelVisible);
     private static GridLength GetHomeFilterPanelColumnWidth(bool isVisible) =>
         isVisible ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
     private static GridLength GetHomeFilterPanelGapColumnWidth(bool hasLeftPanel, bool hasRightPanel) =>
         hasLeftPanel && hasRightPanel ? new GridLength(10) : new GridLength(0);
     [ObservableProperty] private string _filterInputText = string.Empty; //过滤器输入框的文本
-    public AdvancedCollectionView TagFilters = [], DeveloperFilters = [], EngineFilters = [], SourceFilters = [], PlayStatusFilters = [];
+    public AdvancedCollectionView TagFilters = [], DeveloperFilters = [], EngineFilters = [], SourceFilters = [], PlayStatusFilters = [],
+        CategoryFilters = [];
     private readonly ObservableCollection<HomeViewModelFilter> _tagFiltersC = [], _developerFiltersC = [],
-        _engineFiltersC = [], _sourceFiltersC = [], _playStatusFiltersC = [];
+        _engineFiltersC = [], _sourceFiltersC = [], _playStatusFiltersC = [], _categoryFiltersC = [];
     [ObservableProperty] private string _tagFilterSearchKey = string.Empty;
     [ObservableProperty] private string _developerFilterSearchKey = string.Empty;
     [ObservableProperty] private string _engineFilterSearchKey = string.Empty;
+    [ObservableProperty] private string _categoryFilterSearchKey = string.Empty;
     [ObservableProperty] private HomeViewModelFilter? _selectedPlayStatus;
 
     private bool _tagFilterCalc;
     private bool _developerFilterCalc;
     private bool _engineFilterCalc;
+    private bool _categoryFilterCalc;
     private bool _sourceFilterCalc;
     private bool _playStatusInit;
     private bool _playStatusSelectedInit;
@@ -357,9 +382,13 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         EngineFilters.Source = _engineFiltersC;
         SourceFilters.Source = _sourceFiltersC;
         PlayStatusFilters.Source = _playStatusFiltersC;
+        CategoryFilters.Source = _categoryFiltersC;
         _tagFilterCalc = false;
         _playStatusSelectedInit = false;
+        _developerFilterCalc = false;
         _engineFilterCalc = false;
+        _categoryFilterCalc = false;
+        UpdateCategoryPanelForceVisibility();
         UpdateFilterMsg();
     }
 
@@ -412,8 +441,24 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
                 await SetFilterList(EngineFilters, allEngines, category => new CategoryFilter(category),
                     (filter, category) => filter is CategoryFilter c && c.Category.Id == category.Id);
                 EngineFilters.Filter = f => f is HomeViewModelFilter filter &&
-                                           filter.Title.ContainX(EngineFilterSearchKey);
+                                            filter.Title.ContainX(EngineFilterSearchKey);
                 _engineFilterCalc = true;
+            }
+            if (!_categoryFilterCalc)
+            {
+                Dictionary<Category, int> allCategories = []; //value为包含该分类的游戏数量
+                foreach (Category category in (await _categoryService.GetCategoryGroupsAsync())
+                             .Where(group => group.Type == CategoryGroupType.Custom)
+                             .SelectMany(group => group.Categories))
+                {
+                    allCategories.TryAdd(category, 0);
+                    allCategories[category] = category.GalgamesX.Count;
+                }
+                await SetFilterList(CategoryFilters, allCategories, category => new CategoryFilter(category),
+                    (filter, category) => filter is CategoryFilter c && c.Category.Id == category.Id);
+                CategoryFilters.Filter = f => f is HomeViewModelFilter filter &&
+                                              filter.Title.ContainX(CategoryFilterSearchKey);
+                _categoryFilterCalc = true;
             }
             if (!_sourceFilterCalc)
             {
@@ -522,6 +567,19 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand]
+    private void SearchCategoryFilter()
+    {
+        try
+        {
+            CategoryFilters.RefreshFilter();
+        }
+        catch (Exception e)
+        {
+            _infoService.DeveloperEvent(e: e);
+        }
+    }
+
+    [RelayCommand]
     private void ClearPlayStatus() => SelectedPlayStatus = null;
 
     [RelayCommand]
@@ -532,6 +590,7 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         ClearFilterSelection(DeveloperFilters);
         ClearFilterSelection(EngineFilters);
         ClearFilterSelection(SourceFilters);
+        ClearFilterSelection(CategoryFilters);
         return;
 
         static void ClearFilterSelection(AdvancedCollectionView filters)
@@ -547,24 +606,27 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     private async Task ShowHomeFilterPanelVisibilityDialog()
     {
         HomeFilterPanelVisibilityDialog dialog = new(HomeFilterShowPlayStatusAndSourcePanel, HomeFilterShowEnginePanel,
-            HomeFilterShowDeveloperPanel, HomeFilterShowTagPanel);
+            HomeFilterShowDeveloperPanel, HomeFilterShowTagPanel, HomeFilterShowCategoryPanel);
         if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
         HomeFilterShowPlayStatusAndSourcePanel = dialog.ShowPlayStatusAndSourcePanel;
         HomeFilterShowEnginePanel = dialog.ShowEnginePanel;
         HomeFilterShowDeveloperPanel = dialog.ShowDeveloperPanel;
         HomeFilterShowTagPanel = dialog.ShowTagPanel;
+        HomeFilterShowCategoryPanel = dialog.ShowCategoryPanel;
 
         await _localSettingsService.SaveSettingAsync(KeyValues.HomeFilterShowPlayStatusAndSourcePanel,
             HomeFilterShowPlayStatusAndSourcePanel);
         await _localSettingsService.SaveSettingAsync(KeyValues.HomeFilterShowEnginePanel, HomeFilterShowEnginePanel);
         await _localSettingsService.SaveSettingAsync(KeyValues.HomeFilterShowDeveloperPanel, HomeFilterShowDeveloperPanel);
         await _localSettingsService.SaveSettingAsync(KeyValues.HomeFilterShowTagPanel, HomeFilterShowTagPanel);
+        await _localSettingsService.SaveSettingAsync(KeyValues.HomeFilterShowCategoryPanel, HomeFilterShowCategoryPanel);
     }
 
     private void HandleFilterChanged()
     {
         UpdateFilterMsg();
+        UpdateCategoryPanelForceVisibility();
         Source.Refresh();
     }
 
@@ -581,7 +643,24 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
             _developerFilterCalc = false;
         else if (message.Group.Type == CategoryGroupType.Engine)
             _engineFilterCalc = false;
+        else if (message.Group.Type == CategoryGroupType.Custom)
+            _categoryFilterCalc = false;
+        UpdateCategoryPanelForceVisibility();
     }
+
+    /// <summary>
+    /// 若当前过滤器中有不属于游玩状态/开发商/引擎组的分类过滤器（在其他面板中无法移除），则强制显示分类过滤面板
+    /// </summary>
+    private void UpdateCategoryPanelForceVisibility()
+    {
+        ForceShowCategoryPanel = _filterService.GetFilters()
+            .Any(f => f is CategoryFilter cf && !IsBuiltInCategory(cf.Category));
+    }
+
+    private bool IsBuiltInCategory(Category category) =>
+        _categoryService.StatusGroup.Categories.Any(c => c.Id == category.Id) ||
+        _categoryService.DeveloperGroup.Categories.Any(c => c.Id == category.Id) ||
+        _categoryService.EngineGroup.Categories.Any(c => c.Id == category.Id);
 
     private void HandleSourceChanged() => _sourceFilterCalc = false;
 
@@ -990,8 +1069,6 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         _infoService.Info(infoBarSeverity, msg: msg);
     }
 
-    private void OnGalgameServicePhrased() => IsPhrasing = false;
-
     // private void OnGalgameLoadedEvent() => Source.Source = _galgameService.Galgames;
     private void OnGalgameLoadedEvent()
     {
@@ -1000,14 +1077,15 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
         NotifyBatchSelectionStateChanged();
     }
 
-    private void UpdateGalgame(Galgame game)
+    private void UpdateGalgame(object? sender, GalgameMutationEventArgs args)
     {
         _tagFilterCalc = false;
+        if (args.Changes.HasFlag(GalgameChangeKind.Added)) return;
         //通过Remove和Add来刷新某个具体的Item
         UiThreadInvokeHelper.Invoke(() =>
         {
-            Source.Remove(game);
-            Source.Add(game);
+            Source.Remove(args.Game);
+            Source.Add(args.Game);
         });
     }
 
@@ -1084,8 +1162,14 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         if (galgame == null) return;
         IsPhrasing = true;
-        await _galgameService.ParseGalInfoAsync(galgame);
-        IsPhrasing = false;
+        try
+        {
+            await _galgameService.ParseGalInfoAsync(galgame);
+        }
+        finally
+        {
+            IsPhrasing = false;
+        }
     }
 
     [RelayCommand]
@@ -1209,7 +1293,8 @@ public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         _localSettingsService.SaveSettingAsync(KeyValues.SpecialDisplayVirtualGame, value);
         GameToOpacityConverter.SpecialDisplayVirtualGame = value;
-        Source.Refresh();
+        foreach (Galgame game in _galgameService.Galgames)
+            game.RaisePropertyChanged(nameof(Galgame.IsLocalGame));
     }
 }
 

@@ -17,6 +17,7 @@ public sealed partial class MixedPhraserEnabledDialog
             VndbEnabled = enabled.VndbEnabled,
             YmgalEnabled = enabled.YmgalEnabled,
             SteamEnabled = enabled.SteamEnabled,
+            HikarinagiEnabled = enabled.HikarinagiEnabled,
             NameEnabled = enabled.NameEnabled,
             DescriptionEnabled = enabled.DescriptionEnabled,
             DeveloperEnabled = enabled.DeveloperEnabled,
@@ -35,6 +36,7 @@ public sealed partial class MixedPhraserEnabledDialog
         VndbCheckBox.IsChecked = enabled.VndbEnabled;
         YmgalCheckBox.IsChecked = enabled.YmgalEnabled;
         SteamCheckBox.IsChecked = enabled.SteamEnabled;
+        HikarinagiCheckBox.IsChecked = enabled.HikarinagiEnabled;
         
         // 初始化 CheckBox 状态 - Information types
         NameCheckBox.IsChecked = enabled.NameEnabled;
@@ -59,6 +61,7 @@ public sealed partial class MixedPhraserEnabledDialog
         Result.VndbEnabled = VndbCheckBox.IsChecked ?? false;
         Result.YmgalEnabled = YmgalCheckBox.IsChecked ?? false;
         Result.SteamEnabled = SteamCheckBox.IsChecked ?? false;
+        Result.HikarinagiEnabled = HikarinagiCheckBox.IsChecked ?? false;
         
         // Update information types
         Result.NameEnabled = NameCheckBox.IsChecked ?? false;

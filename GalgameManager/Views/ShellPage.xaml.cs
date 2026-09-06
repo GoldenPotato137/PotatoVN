@@ -10,6 +10,7 @@ using GalgameManager.WinApp.Base.Models.Msgs;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -40,6 +41,10 @@ public sealed partial class ShellPage : Page
         _localSettingsService = localSettingsService;
         _sidebarService = sidebarService;
         InitializeComponent();
+        AutomationProperties.SetAutomationId(NavigationViewControl, "AppNavigation");
+        AutomationProperties.SetAutomationId(HomeNavItem, "HomeNavItem");
+        AutomationProperties.SetAutomationId(LibraryNavItem, "LibraryNavItem");
+        AutomationProperties.SetAutomationId(CategoryNavItem, "CategoryNavItem");
 
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
@@ -77,6 +82,11 @@ public sealed partial class ShellPage : Page
     private void MainWindowOnClosed(AppWindow appWindow, AppWindowClosingEventArgs appWindowClosingEventArgs)
     {
         if (App.Status == WindowMode.Close) return;
+        if (AppStoragePaths.IsUpgradeUiTest)
+        {
+            App.SetWindowMode(WindowMode.Close);
+            return;
+        }
         WindowMode closeMode = _localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.CloseMode).Result;
         if (closeMode == WindowMode.Normal)
         {

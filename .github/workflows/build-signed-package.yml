@@ -1,4 +1,4 @@
-﻿name: Build And Sign Package
+name: Build And Sign Package
 
 on:
   push:
@@ -6,9 +6,16 @@ on:
       - flight-released
       - released
   workflow_dispatch:
+    inputs:
+      store_only:
+        description: Only build and publish the Microsoft Store package
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
+    if: github.event_name != 'workflow_dispatch' || inputs.store_only != true
     runs-on: windows-latest
 
     strategy:
@@ -190,3 +197,265 @@ jobs:
             --key "$S3_FOLDER/$REMOTE_FILENAME" \
             --body "$SIGNED_FILE" \
             --cli-read-timeout 0
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+      models: read
+    env:
+      BRANCH_NAME: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install xmlstarlet
+        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
+
+      - name: Resolve version and release tag
+        id: meta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(xmlstarlet sel \
+            -N x="http://schemas.microsoft.com/appx/manifest/foundation/windows10" \
+            -t -v "/x:Package/x:Identity/@Version" \
+            GalgameManager/Package.appxmanifest)
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not extract version number."
+            exit 1
+          fi
+          if [[ "$BRANCH_NAME" == "released" ]]; then
+            TAG="v$VERSION"
+            CHANNEL="stable"
+          else
+            TAG="v$VERSION-flight"
+            CHANNEL="flight"
+          fi
+          # 同名 release 已存在时（例如同版本重复推送），追加 run number 防止冲突
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            TAG="$TAG-${{ github.run_number }}"
+          fi
+          echo "Resolved tag: $TAG (channel: $CHANNEL, version: $VERSION)"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+
+      - name: Determine base commit of previous release
+        id: base
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+        run: |
+          BASE=""
+          # 1) 上一个同通道 GitHub Release 的 tag
+          if [[ "$CHANNEL" == "flight" ]]; then
+            JQ_FILTER='[.[] | select(.tag_name | test("-flight"))] | .[0].tag_name'
+          else
+            JQ_FILTER='[.[] | select(.tag_name | test("-flight") | not)] | .[0].tag_name'
+          fi
+          PREV_TAG=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=30" --jq "$JQ_FILTER" 2>/dev/null || true)
+          if [[ -n "$PREV_TAG" && "$PREV_TAG" != "null" ]] && git rev-parse -q --verify "refs/tags/$PREV_TAG" >/dev/null 2>&1; then
+            BASE=$(git rev-list -n 1 "$PREV_TAG")
+            echo "Base commit from previous release tag: $PREV_TAG"
+          fi
+          # 2) push 事件记录的分支旧 HEAD
+          if [[ -z "$BASE" && -n "$EVENT_BEFORE" && "$EVENT_BEFORE" != "0000000000000000000000000000000000000000" ]] && git cat-file -e "$EVENT_BEFORE^{commit}" 2>/dev/null; then
+            BASE="$EVENT_BEFORE"
+            echo "Base commit from event.before"
+          fi
+          # 3) 分支上最近一条版本号提交
+          if [[ -z "$BASE" ]]; then
+            BASE=$(git log -i -E --grep='^v ?[0-9]+\.[0-9]+' -n 1 --format='%H' || true)
+            echo "Base commit from latest version-bump commit"
+          fi
+          # 4) 兜底，保证区间永远有效
+          if [[ -z "$BASE" ]]; then
+            BASE="HEAD~30"
+            echo "Base commit fallback: HEAD~30"
+          fi
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+
+      - name: Build filtered commit list
+        run: |
+          # fix(<scope>-dev) 是开发过程中产生的问题，用户从未遇到，不进入发布日志
+          git log --no-merges --format='%s' "${{ steps.base.outputs.base }}..HEAD" \
+            | grep -viE '^fix\([^)]*-dev\)\s*:' \
+            | sed 's/^/* /' > commits.txt || true
+          if [[ ! -s commits.txt ]]; then
+            echo "* 常规维护与内部改进" > commits.txt
+          fi
+          cat commits.txt
+
+      - name: Generate release notes with GitHub Models
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "你是 PotatoVN（一款 Windows 上的 Galgame 管理工具）的发布经理。以下是本次发布区间内的 git commit 列表（conventional commits 格式，描述为中文）："
+            echo
+            cat commits.txt
+            echo
+            echo "请将其整理为面向普通用户的中文 GitHub Release 更新日志，要求："
+            echo "1. 按以下分组输出（没有内容的分组直接省略）：✨ 新功能 / 🛠 改进优化 / 🐛 问题修复 / 🖥 同步服务器（scope 为 server 或 service 的改动归入此组）"
+            echo "2. 用通俗的语言改写每条 commit，突出用户能感受到的变化，略去技术实现细节；相关联的 commit 合并为一条"
+            echo "3. 以下内容一律忽略，不得出现在日志中：版本号提交（如 v1.10.0.5）、Update data、翻译同步（l10n/crowdin）、文档、测试、构建/CI 等内部杂项"
+            echo "4. 列表中若仍有 fix(xxx-dev) 形式的提交：这些是开发过程中产生、用户从未遇到的问题，一律不得出现"
+            echo "5. 分组标题用三级标题（###），条目用无序列表；只输出 markdown 正文，不要一级标题，不要任何解释性前后缀"
+            echo "6. 直接输出正文本身，绝对不要使用 \`\`\` 代码块包裹输出"
+          } > prompt.txt
+          jq -n --rawfile prompt prompt.txt \
+            '{model: "openai/gpt-4o", messages: [{role: "user", content: $prompt}], temperature: 0.3}' > payload.json
+          HTTP_CODE=$(curl -sS -w '%{http_code}' -o response.json \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Content-Type: application/json" \
+            "https://models.github.ai/inference/chat/completions" -d @payload.json)
+          if [[ "$HTTP_CODE" == "200" ]] && jq -e '.choices[0].message.content | length > 0' response.json >/dev/null 2>&1; then
+            jq -r '.choices[0].message.content' response.json > notes.md
+            echo "Release notes generated by GitHub Models (openai/gpt-4o)."
+          else
+            echo "::warning::AI generation failed (HTTP $HTTP_CODE), falling back to filtered commit list."
+            head -c 500 response.json || true
+            { echo "### 更新内容"; echo; cat commits.txt; } > notes.md
+          fi
+          echo "----- notes.md -----"
+          cat notes.md
+
+      - name: Download signed artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: PotatoVN-*-${{ env.BRANCH_NAME }}-signed
+          path: signed
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+        run: |
+          mapfile -t FILES < <(find signed -type f -name "*.msix")
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "Error: No signed msix found in downloaded artifacts."
+            exit 1
+          fi
+          echo "Attaching ${#FILES[@]} package(s):"
+          printf '%s\n' "${FILES[@]}"
+          ARGS=(create "$TAG" "${FILES[@]}" --target "$GITHUB_SHA" --title "$TAG" --notes-file notes.md)
+          if [[ "$CHANNEL" == "flight" ]]; then
+            ARGS+=(--prerelease)
+          else
+            ARGS+=(--latest)
+          fi
+          gh release "${ARGS[@]}"
+
+  # 发布商店包(Microsoft Store Developer CLI)
+  # 与 sideload 产物不同:商店包使用仓库中签入的商店身份,不执行 Set PUBLISHER / 图标替换,
+  # 也不需要 SignPath 签名(商店审核通过后由微软重新签名)
+  # msstore publish 会提交并启动认证;workflow_dispatch 的 store_only 输入可只重跑此 job,
+  # 避免重复生成 GitHub Release 或再次上传 R2 产物
+  publish_store:
+    if: github.ref_name == 'released' || github.ref_name == 'flight-released'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Add WindowsAppSDKSelfContained
+        shell: pwsh
+        run: |
+          $csprojPath = "GalgameManager/GalgameManager.csproj"
+          # 读取 csproj 文件
+          [xml]$xml = Get-Content $csprojPath
+          # 筛选出包含 <TargetFramework> 的 PropertyGroup(主 PropertyGroup)
+          $propertyGroup = $xml.Project.PropertyGroup | Where-Object { $_.TargetFramework }
+          if (!$propertyGroup) {
+            Write-Host "未找到包含 <TargetFramework> 的 PropertyGroup,改为使用第一个 PropertyGroup。"
+            $propertyGroup = $xml.Project.PropertyGroup | Select-Object -First 1
+            if (!$propertyGroup) {
+              Write-Error "没有可用的 PropertyGroup。"
+              exit 1
+            }
+          }
+          # 如果当前没有 WindowsAppSDKSelfContained,则创建该节点并追加
+          if (!$propertyGroup.WindowsAppSDKSelfContained) {
+            $newElement = $xml.CreateElement("WindowsAppSDKSelfContained")
+            $newElement.InnerText = "true"
+            $propertyGroup.AppendChild($newElement) | Out-Null
+          }
+          # 保存
+          $xml.Save($csprojPath)
+
+      # 商店提交需要 .msixupload;AppxBundle 打包三架构为一个 bundle。
+      # bundle 路径会强制走一次性证书签名,命令行构建没有证书会报 MSB4044,
+      # 因此生成一个主体与商店发布者匹配的临时自签证书(每次运行即弃,商店审核后由微软重签)
+      - name: Generate temporary signing certificate
+        id: cert
+        shell: pwsh
+        run: |
+          $cert = New-SelfSignedCertificate -Type Custom `
+            -Subject "CN=AB6A9A1A-DC58-4454-A578-33528FD22B56" `
+            -KeyUsage DigitalSignature `
+            -FriendlyName "PotatoVNStoreBuildTemp" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+          echo "thumbprint=$($cert.Thumbprint)" >> $env:GITHUB_OUTPUT
+
+      - name: Create the store package
+        run: |
+          msbuild GalgameManager\GalgameManager.csproj /restore `
+            /p:Platform=x64 `
+            /p:Configuration=Release `
+            /p:UapAppxPackageBuildMode=StoreUpload `
+            /p:AppxBundle=Always `
+            /p:AppxBundlePlatforms="x86|x64|arm64" `
+            /p:AppxPackageDir=..\publish-store\ `
+            /p:GenerateAppxPackageOnBuild=true `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateThumbprint="${{ steps.cert.outputs.thumbprint }}"
+
+      - name: Locate msixupload
+        id: package
+        shell: pwsh
+        run: |
+          $file = Get-ChildItem -Path publish-store -Filter "*.msixupload" -Recurse -File | Select-Object -First 1
+          if (!$file) {
+            Write-Host "::error::未找到 .msixupload 产物"
+            exit 1
+          }
+          Write-Host "Store package: $($file.FullName)"
+          echo "path=$($file.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Configure Microsoft Store CLI
+        uses: microsoft/microsoft-store-apppublisher@v1.1
+
+      - name: Reconfigure store credentials
+        run: msstore reconfigure `
+              --tenantId ${{ secrets.PARTNER_CENTER_TENANT_ID }} `
+              --sellerId ${{ secrets.PARTNER_CENTER_SELLER_ID }} `
+              --clientId ${{ secrets.PARTNER_CENTER_CLIENT_ID }} `
+              --clientSecret ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+
+      - name: Publish to Microsoft Store (stable channel)
+        if: github.ref_name == 'released'
+        run: msstore publish "${{ steps.package.outputs.path }}" -id ${{ vars.STORE_PRODUCT_ID }}
+
+      - name: Publish to Microsoft Store (flight channel)
+        if: github.ref_name == 'flight-released'
+        shell: pwsh
+        run: |
+          $flightId = "${{ vars.STORE_FLIGHT_ID }}"
+          if ([string]::IsNullOrWhiteSpace($flightId)) {
+            Write-Host "::error::未配置 STORE_FLIGHT_ID 仓库变量:请先在 Partner Center 创建 Package Flight,再将其 flightId 设为仓库变量 STORE_FLIGHT_ID"
+            exit 1
+          }
+          msstore publish "${{ steps.package.outputs.path }}" -id ${{ vars.STORE_PRODUCT_ID }} -f $flightId
