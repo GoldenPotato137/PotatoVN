@@ -548,7 +548,20 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
             Galgame!.PlayTimeSessions.Add(session);
             ActiveMinuteSessionId = session.Id;
         });
-        await _gameService.SaveGalgameAsync(Galgame!);
+        try
+        {
+            await _gameService.SaveGalgameAsync(Galgame!);
+        }
+        catch
+        {
+            await UiThreadInvokeHelper.InvokeAsync(() =>
+            {
+                Galgame!.PlayTimeSessions.RemoveAll(item => item.Id == session.Id);
+                if (ActiveMinuteSessionId == session.Id) ActiveMinuteSessionId = null;
+                PlayTimeSessionHelper.RefreshDerivedState(Galgame);
+            });
+            throw;
+        }
         return session;
     }
 
@@ -584,7 +597,20 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
             Galgame!.PlayTimeSessions.Add(session);
             ActiveSessionId = session.Id;
         });
-        await _gameService.SaveGalgameAsync(Galgame!);
+        try
+        {
+            await _gameService.SaveGalgameAsync(Galgame!);
+        }
+        catch
+        {
+            await UiThreadInvokeHelper.InvokeAsync(() =>
+            {
+                Galgame!.PlayTimeSessions.RemoveAll(item => item.Id == session.Id);
+                if (ActiveSessionId == session.Id) ActiveSessionId = null;
+                PlayTimeSessionHelper.RefreshDerivedState(Galgame);
+            });
+            throw;
+        }
         return session;
     }
 

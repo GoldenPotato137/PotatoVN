@@ -656,6 +656,7 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
             if (PlayTimeSessions.All(existing => existing.Id != session.Id))
                 PlayTimeSessions.Add(session.Clone());
         }
+        EnsurePlayTimeSessionMinimums();
         // 排序PlayedTime
         PlayedTime = PlayedTime.OrderBy(pair => Utils.TryParseDateGuessCulture(pair.Key))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -674,6 +675,76 @@ public partial class Galgame : ObservableObject, IDisplayableGameObject
             .Max();
         LastPlayTime = new[] { LastPlayTime, other.LastPlayTime, latestLegacy, latestSession }.Max();
         ReleaseDate.Value = other.ReleaseDate.Value > ReleaseDate.Value ? other.ReleaseDate.Value : ReleaseDate.Value;
+    }
+
+    private void EnsurePlayTimeSessionMinimums()
+    {
+        Dictionary<DateTime, long> minimums = [];
+        foreach (PlayTimeSession session in PlayTimeSessions)
+        {
+            if (session.Kind == PlayTimeSessionKind.MinuteSampled)
+            {
+                foreach ((string key, int minutes) in session.SampledMinutesByDay ?? [])
+                {
+                    DateTime date = Utils.TryParseDateGuessCulture(key);
+                    if (date.Year > 1900 && minutes > 0) AddMinimum(date.Date, minutes * 60L);
+                }
+                continue;
+            }
+
+            if (!session.CountsTowardPlayTime) continue;
+            IEnumerable<PlayTimeActivityInterval> intervals = session.ActivityIntervals is null
+                ? session.EndedAt > session.StartedAt
+                    ? [new PlayTimeActivityInterval { StartedAt = session.StartedAt, EndedAt = session.EndedAt }]
+                    : []
+                : session.ActivityIntervals.Where(interval => interval.EndedAt > interval.StartedAt);
+            foreach (PlayTimeActivityInterval interval in intervals)
+            {
+                DateTime cursor = interval.StartedAt;
+                while (cursor < interval.EndedAt)
+                {
+                    DateTime dayEnd = cursor.Date == DateTime.MaxValue.Date
+                        ? DateTime.MaxValue
+                        : cursor.Date.AddDays(1);
+                    DateTime segmentEnd = interval.EndedAt < dayEnd ? interval.EndedAt : dayEnd;
+                    long seconds = Math.Max(0, (long)Math.Round(
+                        (segmentEnd - cursor).TotalSeconds,
+                        MidpointRounding.AwayFromZero));
+                    AddMinimum(cursor.Date, seconds);
+                    if (segmentEnd <= cursor) break;
+                    cursor = segmentEnd;
+                }
+            }
+        }
+
+        foreach ((DateTime date, long minimumSeconds) in minimums)
+        {
+            string normalizedKey = date.ToString("yyyy/M/d", System.Globalization.CultureInfo.InvariantCulture);
+            string key = PlayedTimeSeconds.Keys.FirstOrDefault(existingKey =>
+                             string.Equals(existingKey, normalizedKey, StringComparison.Ordinal))
+                         ?? PlayedTimeSeconds.Keys.FirstOrDefault(existingKey =>
+                             Utils.TryParseDateGuessCulture(existingKey).Date == date)
+                         ?? PlayedTime.Keys.FirstOrDefault(existingKey =>
+                             Utils.TryParseDateGuessCulture(existingKey).Date == date)
+                         ?? normalizedKey;
+            long currentSeconds = PlayedTimeSeconds.TryGetValue(key, out long value) ? Math.Max(0, value) : 0;
+            long mergedSeconds = Math.Max(currentSeconds, minimumSeconds);
+            if (currentSeconds != mergedSeconds || !PlayedTimeSeconds.ContainsKey(key))
+                PlayedTimeSeconds[key] = mergedSeconds;
+
+            int compatibleMinutes = checked((int)Math.Min(int.MaxValue, mergedSeconds / 60));
+            if (compatibleMinutes > 0 &&
+                (!PlayedTime.TryGetValue(key, out int currentMinutes) || currentMinutes < compatibleMinutes))
+                PlayedTime[key] = compatibleMinutes;
+        }
+        return;
+
+        void AddMinimum(DateTime date, long seconds)
+        {
+            if (seconds <= 0) return;
+            minimums.TryGetValue(date, out long current);
+            minimums[date] = current > long.MaxValue - seconds ? long.MaxValue : current + seconds;
+        }
     }
 
     public string GetLogName() => $"Galgame_{(Name.Value ?? string.Empty).RemoveInvalidChars()}.txt";

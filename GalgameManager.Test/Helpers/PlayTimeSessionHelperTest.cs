@@ -792,6 +792,46 @@ public class PlayTimeSessionHelperTest
     }
 
     [Test]
+    public void MergeTime_ReconcilesDistinctCountedSessionsOnTheSameDay()
+    {
+        DateTime date = new(2026, 8, 24, 10, 0, 0);
+        Galgame game = new()
+        {
+            PlayedTimeSeconds = new Dictionary<string, long> { ["2026/8/24"] = 40 },
+            PlayTimeSessions =
+            [
+                new PlayTimeSession
+                {
+                    StartedAt = date,
+                    EndedAt = date.AddSeconds(40),
+                },
+            ],
+        };
+        Galgame other = new()
+        {
+            PlayedTimeSeconds = new Dictionary<string, long> { ["2026/8/24"] = 40 },
+            PlayTimeSessions =
+            [
+                new PlayTimeSession
+                {
+                    StartedAt = date.AddMinutes(1),
+                    EndedAt = date.AddMinutes(1).AddSeconds(40),
+                },
+            ],
+        };
+
+        game.MergeTime(other);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(game.PlayedTimeSeconds["2026/8/24"], Is.EqualTo(80));
+            Assert.That(game.PlayedTime["2026/8/24"], Is.EqualTo(1));
+            Assert.That(game.TotalPlayTime, Is.EqualTo(1));
+            Assert.That(game.PlayTimeSessions, Has.Count.EqualTo(2));
+        });
+    }
+
+    [Test]
     public void GalgameSerialization_PreservesPreciseSessions()
     {
         PlayTimeSession session = new()
