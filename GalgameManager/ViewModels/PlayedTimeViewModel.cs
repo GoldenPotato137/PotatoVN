@@ -734,7 +734,7 @@ public partial class PlayTimeDayViewModelItem : ObservableObject
         TotalText = precise && showSecondPrecision
             ? TimeToDisplayTimeConverter.ConvertSeconds(TotalSeconds, timeAsHour)
             : precise
-                ? TimeToDisplayTimeConverter.ConvertWholeMinutesWithUnits(TotalSeconds / 60, timeAsHour)
+                ? TimeToDisplayTimeConverter.ConvertWholeMinuteSecondsWithUnits(TotalSeconds, timeAsHour)
                 : TimeToDisplayTimeConverter.ConvertMinuteModeSeconds(TotalSeconds, timeAsHour);
         LegacyText = LegacySeconds > 0
             ? "PlayedTimePage_LegacySummary".GetLocalized(

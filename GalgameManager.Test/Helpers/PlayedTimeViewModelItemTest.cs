@@ -28,6 +28,26 @@ public class PlayedTimeViewModelItemTest
     }
 
     [Test]
+    public void PreciseModeSubMinuteAggregateWithoutCountedSession_RemainsVisibleWithoutRoundingUp()
+    {
+        PlayTimeDayViewModelItem item = new(
+            new DateTime(2026, 8, 26),
+            31,
+            31,
+            [],
+            [],
+            true,
+            false,
+            true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.TotalSeconds, Is.EqualTo(31));
+            Assert.That(item.TotalText, Is.EqualTo("LessThanOneMinute"));
+        });
+    }
+
+    [Test]
     public void ApplySnapshot_PreservesExpandedObjectsAndUpdatesDisplayedValues()
     {
         DateTime date = new(2026, 8, 26);
