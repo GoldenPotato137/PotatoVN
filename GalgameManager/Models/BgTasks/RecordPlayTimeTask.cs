@@ -287,7 +287,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
                     continue;
                 }
                 if (next is null) break;
-                AttachProcess(next, "previous process exited");
+                if (!TryAttachProcess(next, "previous process exited")) continue;
             }
             _stopped = true;
         });
@@ -709,8 +709,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
                 confirmedProcess.Dispose();
                 return false;
             }
-            AttachProcess(confirmedProcess, "gameplay window confirmed from launch history");
-            return true;
+            return TryAttachProcess(confirmedProcess, "gameplay window confirmed from launch history");
         }
         catch
         {
@@ -755,24 +754,47 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
             return;
         }
 
-        AttachProcess(foreground, "stable foreground process in installation directory");
+        _ = TryAttachProcess(foreground, "stable foreground process in installation directory");
     }
 
-    private void AttachProcess(Process process, string reason)
+    private bool TryAttachProcess(Process process, string reason)
     {
+        int processId = GameProcessDetector.SafeGetId(process);
+        string processName;
+        try
+        {
+            processName = process.ProcessName;
+        }
+        catch
+        {
+            lock (_knownProcessIdsLock)
+                if (processId > 0) _knownProcessIds?.Add(processId);
+            process.Dispose();
+            return false;
+        }
+        if (processId <= 0 || !GameProcessDetector.IsAlive(process))
+        {
+            lock (_knownProcessIdsLock)
+                if (processId > 0) _knownProcessIds?.Add(processId);
+            process.Dispose();
+            return false;
+        }
+
         int previousProcessId = _process is null ? -1 : GameProcessDetector.SafeGetId(_process);
         _process = process;
-        ProcessName = process.ProcessName;
         _confirmedGameplayProcessId = 0;
         _directWindowGate.Reset();
+        ProcessName = processName;
         lock (_knownProcessIdsLock)
-            _knownProcessIds?.Add(process.Id);
+            _knownProcessIds?.Add(processId);
         ChangeProgress(0, 1, _recordingStarted
             ? "RecordPlayTimeTask_ProgressMsg".GetLocalized(Galgame!.Name.Value!)
             : "RecordPlayTimeTask_WaitingForMainWindow".GetLocalized(Galgame!.Name.Value ?? string.Empty));
         App.GetService<IInfoService>().Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
             $"Play-time process attached: gameUuid={Galgame.Uuid:D}, installationId={InstallationId:D}, " +
-            $"previousPid={previousProcessId}, pid={process.Id}, process={ProcessName}, reason={reason}");
+            $"previousPid={previousProcessId}, pid={processId}, " +
+            $"process={ProcessName}, reason={reason}");
+        return true;
     }
 
     private void LogWindowObservation(GameWindowSnapshot snapshot)

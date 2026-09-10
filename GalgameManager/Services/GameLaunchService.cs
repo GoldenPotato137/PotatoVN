@@ -257,23 +257,42 @@ public sealed class GameLaunchService(
     private static async Task WaitForGameSessionEndAsync(Process initialProcess,
         GameRuntimeProcessRelay processRelay)
     {
-        Task initialProcessExit = GameProcessDetector.WaitForExitSafelyAsync(initialProcess);
-        Task<Process?> gameplayProcessConfirmation = processRelay.WaitForConfirmationAsync();
-        Task completed = await Task.WhenAny(initialProcessExit, gameplayProcessConfirmation);
-        if (completed == initialProcessExit)
+        using CancellationTokenSource initialProcessExitCancellation = new();
+        Task initialProcessExit = GameProcessDetector.WaitForExitSafelyAsync(initialProcess,
+            initialProcessExitCancellation.Token);
+        try
         {
-            await initialProcessExit;
-            return;
-        }
+            Task<Process?> gameplayProcessConfirmation = processRelay.WaitForConfirmationAsync();
+            Task completed = await Task.WhenAny(initialProcessExit, gameplayProcessConfirmation);
+            if (completed == initialProcessExit)
+            {
+                await initialProcessExit;
+                return;
+            }
 
-        Process? gameplayProcess = await gameplayProcessConfirmation;
-        if (gameplayProcess is null) return;
-        if (GameProcessDetector.SafeGetId(gameplayProcess) == GameProcessDetector.SafeGetId(initialProcess))
-        {
-            await initialProcessExit;
-            return;
+            Process? gameplayProcess = await gameplayProcessConfirmation;
+            if (gameplayProcess is null) return;
+            if (GameProcessDetector.SafeGetId(gameplayProcess) == GameProcessDetector.SafeGetId(initialProcess))
+            {
+                await initialProcessExit;
+                return;
+            }
+
+            initialProcessExitCancellation.Cancel();
+            await GameProcessDetector.WaitForExitSafelyAsync(gameplayProcess);
         }
-        await GameProcessDetector.WaitForExitSafelyAsync(gameplayProcess);
+        finally
+        {
+            initialProcessExitCancellation.Cancel();
+            try
+            {
+                await initialProcessExit;
+            }
+            catch (OperationCanceledException) when (initialProcessExitCancellation.IsCancellationRequested)
+            {
+                // 进程接力后不再等待启动器退出，但仍观察已取消的等待任务。
+            }
+        }
     }
 
     private static async Task<Process?> WaitForProcessStartAsync(string processName,
@@ -284,9 +303,19 @@ public sealed class GameLaunchService(
         DateTime deadline = DateTime.UtcNow + ProcessWaitTimeout;
         do
         {
-            Process? process = Process.GetProcessesByName(normalizedProcessName)
-                .FirstOrDefault(candidate => !excluded.Contains(GameProcessDetector.SafeGetId(candidate)));
-            if (process is not null) return process;
+            Process[] candidates = Process.GetProcessesByName(normalizedProcessName);
+            Process? selected = null;
+            try
+            {
+                selected = candidates
+                    .FirstOrDefault(candidate => !excluded.Contains(GameProcessDetector.SafeGetId(candidate)));
+                if (selected is not null) return selected;
+            }
+            finally
+            {
+                foreach (Process candidate in candidates)
+                    if (!ReferenceEquals(candidate, selected)) candidate.Dispose();
+            }
             await Task.Delay(250);
         } while (DateTime.UtcNow < deadline);
         return null;
