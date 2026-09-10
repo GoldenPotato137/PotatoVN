@@ -4147,4 +4147,7 @@ If play time can record correctly, just cancel this popup.
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>No target library available. Add another library first.</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>“{0}” is already running or its play time is being recorded.</value>
+  </data>
 </root>

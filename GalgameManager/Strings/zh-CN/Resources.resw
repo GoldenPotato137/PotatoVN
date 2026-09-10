@@ -5059,4 +5059,7 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>没有可移动到的目标库，请先添加另一个库。</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>“{0}”已在运行或正在记录游玩时间。</value>
+  </data>
 </root>
