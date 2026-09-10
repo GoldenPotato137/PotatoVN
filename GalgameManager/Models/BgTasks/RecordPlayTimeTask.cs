@@ -12,7 +12,7 @@ using GalgameManager.WinApp.Base.Models.Msgs;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class RecordPlayTimeTask : BgTaskBase
+public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
 {
     private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
 
@@ -21,6 +21,7 @@ public class RecordPlayTimeTask : BgTaskBase
     public int CurrentPlayTime { get; set; } //本次游玩时间
     public Guid? InstallationId { get; set; } // 本次游玩使用的安装实例Id
     public override bool ProgressOnTrayIcon => true;
+    public string? DeduplicationKey => Galgame?.Uuid.ToString("D");
 
     public Galgame? Galgame;
     private Process? _process;
@@ -206,6 +207,9 @@ public class RecordPlayTimeTask : BgTaskBase
             }
         });
     }
+
+    public override bool OnSearch(string key) =>
+        Galgame is not null && string.Equals(Galgame.Uuid.ToString("D"), key, StringComparison.OrdinalIgnoreCase);
 
     public override string Title { get; } = "RecordPlayTimeTask_Title".GetLocalized();
 }

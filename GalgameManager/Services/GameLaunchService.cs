@@ -26,6 +26,8 @@ public sealed class GameLaunchService(
     : IGameLaunchService
 {
     private static readonly TimeSpan ProcessWaitTimeout = TimeSpan.FromSeconds(60); // 等待目标游戏进程出现的最长时间
+    private readonly object _launchStateLock = new();
+    private readonly HashSet<Guid> _launchesInProgress = [];
     private readonly GalgameCollectionService _gameService =
         (GalgameCollectionService)gameCollectionService; // 逻辑游戏持久化与可执行文件选择服务
 
@@ -34,6 +36,35 @@ public sealed class GameLaunchService(
     {
         if (installation.Galgame != game || !installation.IsLocalInstallation)
             throw new ArgumentException("The installation does not belong to the game.", nameof(installation));
+
+        if (!TryEnterLaunch(game.Uuid))
+        {
+            ReportDuplicateLaunch(game, "launch request already in progress");
+            return;
+        }
+
+        try
+        {
+            await LaunchCoreAsync(game, installation);
+        }
+        finally
+        {
+            lock (_launchStateLock)
+            {
+                _launchesInProgress.Remove(game.Uuid);
+            }
+        }
+    }
+
+    private async Task LaunchCoreAsync(Galgame game, GalgameAndPath installation)
+    {
+        string gameKey = game.Uuid.ToString("D");
+        if (bgTaskService.GetBgTask<RecordPlayTimeTask>(gameKey) is not null)
+        {
+            ReportDuplicateLaunch(game, "play-time task already active");
+            return;
+        }
+
         if (!Directory.Exists(installation.Path))
         {
             infoService.Info(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error,
@@ -178,6 +209,22 @@ public sealed class GameLaunchService(
             infoService.Event(EventType.GalgameEvent, Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error,
                 "GalgamePage_Play_Error".GetLocalized() + e.Message, e);
         }
+    }
+
+    private bool TryEnterLaunch(Guid gameId)
+    {
+        lock (_launchStateLock)
+        {
+            return _launchesInProgress.Add(gameId);
+        }
+    }
+
+    private void ReportDuplicateLaunch(Galgame game, string reason)
+    {
+        infoService.Info(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+            msg: "GalgamePage_Play_AlreadyRunning".GetLocalized(game.Name.Value ?? string.Empty));
+        infoService.Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+            $"Game launch ignored: reason={reason}, gameUuid={game.Uuid:D}");
     }
 
     private static async Task<Process?> WaitForProcessStartAsync(string processName)

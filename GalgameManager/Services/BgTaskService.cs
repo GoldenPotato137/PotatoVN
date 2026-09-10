@@ -132,9 +132,29 @@ public class BgTaskService : IBgTaskService
     {
         try
         {
+            string? rejectedDuplicateKey = null;
             lock (_bgTasksLock)
             {
-                _bgTasks.Add(bgTask);
+                if (bgTask is IDeduplicatedBgTask { DeduplicationKey: { Length: > 0 } key } &&
+                    _bgTasks.Any(existing => existing.GetType() == bgTask.GetType() &&
+                                             existing is IDeduplicatedBgTask deduplicated &&
+                                             string.Equals(deduplicated.DeduplicationKey, key,
+                                                 StringComparison.Ordinal)))
+                {
+                    rejectedDuplicateKey = key;
+                }
+                else
+                {
+                    _bgTasks.Add(bgTask);
+                }
+            }
+
+            if (rejectedDuplicateKey is not null)
+            {
+                _infoService.DeveloperEvent(
+                    msg: $"Ignored duplicate background task: type={bgTask.GetType().Name}, " +
+                         $"key={rejectedDuplicateKey}");
+                return Task.CompletedTask;
             }
 
             if (bgTask.ProgressOnTrayIcon)

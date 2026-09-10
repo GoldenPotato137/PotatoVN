@@ -4076,4 +4076,7 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>移動先のライブラリがありません。先に別のライブラリを追加してください。</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>「{0}」はすでに実行中か、プレイ時間を記録中です。</value>
+  </data>
 </root>
