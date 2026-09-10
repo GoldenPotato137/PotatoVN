@@ -111,11 +111,9 @@ public class FakeLocalSettingsService : ILocalSettingsService
         TemporaryFolder = new DirectoryInfo(Path.Combine(rootDir, "Temp"));
     }
 
-    public event ILocalSettingsService.Delegate? OnSettingChanged
-    {
-        add { }
-        remove { }
-    }
+    public event ILocalSettingsService.Delegate? OnSettingChanged;
+
+    public void RaiseSettingChanged(string key, object? value) => OnSettingChanged?.Invoke(key, value);
 
     public DirectoryInfo LocalFolder { get; }
 
@@ -176,8 +174,6 @@ public class FakeLocalSettingsService : ILocalSettingsService
     public Task<StorageFolder> GetTmpExportFolder() => throw new NotImplementedException();
 
     public Task<string> BackupFailedDataAsync(bool removeAfterBackup = true) => throw new NotImplementedException();
-
-    public Task StartupAsync() => Task.CompletedTask;
 
     public Task ImportPageSettingsAsync() => Task.CompletedTask;
 

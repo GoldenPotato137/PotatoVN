@@ -90,6 +90,8 @@ public partial class App : Application
             services.AddTransient<INavigationViewService, NavigationViewService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+            services.AddSingleton<IAutoExportService, AutoExportService>();
+            services.AddSingleton(TimeProvider.System);
             services.AddTransient<IJumpListService, JumpListService>();
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddSingleton<IPageService, PageService>();
@@ -249,6 +251,7 @@ public partial class App : Application
                 MainWindow!.Minimize();
                 break;
             case WindowMode.SystemTray:
+                GetService<IAutoExportService>().Stop();
                 OnAppClosing?.Invoke();
                 GetService<IBgTaskService>().SaveBgTasksString();
                 MainWindow?.Close();
@@ -257,6 +260,7 @@ public partial class App : Application
                 break;
             case WindowMode.Close:
                 Status = WindowMode.Close;
+                GetService<IAutoExportService>().Stop();
                 OnAppClosing?.Invoke();
                 SystemTray?.Dispose();
                 _instance.Exit();
