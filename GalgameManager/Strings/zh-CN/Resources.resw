@@ -5059,4 +5059,16 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>没有可移动到的目标库，请先添加另一个库。</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>“{0}”已在运行或正在记录游玩时间。</value>
+  </data>
+  <data name="RecordPlayTimeTask_WaitingForMainWindow" xml:space="preserve">
+    <value>正在等待游戏主窗口：{0}（声明或启动器窗口期间暂不计时）</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Title" xml:space="preserve">
+    <value>启动弹窗期间暂不计时</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Description" xml:space="preserve">
+    <value>适用于先显示声明、补丁说明或启动器的安装实例。开启后会等到窗口发生稳定切换再开始计时；直接进入游戏的实例请保持关闭。</value>
+  </data>
 </root>

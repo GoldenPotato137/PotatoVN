@@ -4076,4 +4076,16 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>移動先のライブラリがありません。先に別のライブラリを追加してください。</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>「{0}」はすでに実行中か、プレイ時間を記録中です。</value>
+  </data>
+  <data name="RecordPlayTimeTask_WaitingForMainWindow" xml:space="preserve">
+    <value>ゲーム画面を待機中: {0}（起動時のダイアログは記録しません）</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Title" xml:space="preserve">
+    <value>起動ダイアログをプレイ時間に含めない</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Description" xml:space="preserve">
+    <value>最初に免責事項、パッチ案内、ランチャーを表示するインストール向けです。安定したウィンドウ切り替え後に記録を開始します。直接ゲームを開く場合はオフのままにしてください。</value>
+  </data>
 </root>
