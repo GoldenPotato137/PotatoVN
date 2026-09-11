@@ -26,6 +26,8 @@ public sealed class GameLaunchService(
     : IGameLaunchService
 {
     private static readonly TimeSpan ProcessWaitTimeout = TimeSpan.FromSeconds(60); // 等待目标游戏进程出现的最长时间
+    private readonly object _launchStateLock = new();
+    private readonly HashSet<Guid> _launchesInProgress = [];
     private readonly GalgameCollectionService _gameService =
         (GalgameCollectionService)gameCollectionService; // 逻辑游戏持久化与可执行文件选择服务
 
@@ -34,6 +36,35 @@ public sealed class GameLaunchService(
     {
         if (installation.Galgame != game || !installation.IsLocalInstallation)
             throw new ArgumentException("The installation does not belong to the game.", nameof(installation));
+
+        if (!TryEnterLaunch(game.Uuid))
+        {
+            ReportDuplicateLaunch(game, "launch request already in progress");
+            return;
+        }
+
+        try
+        {
+            await LaunchCoreAsync(game, installation);
+        }
+        finally
+        {
+            lock (_launchStateLock)
+            {
+                _launchesInProgress.Remove(game.Uuid);
+            }
+        }
+    }
+
+    private async Task LaunchCoreAsync(Galgame game, GalgameAndPath installation)
+    {
+        string gameKey = game.Uuid.ToString("D");
+        if (bgTaskService.GetBgTask<RecordPlayTimeTask>(gameKey) is not null)
+        {
+            ReportDuplicateLaunch(game, "play-time task already active");
+            return;
+        }
+
         if (!Directory.Exists(installation.Path))
         {
             infoService.Info(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error,
@@ -63,11 +94,17 @@ public sealed class GameLaunchService(
             if (string.IsNullOrEmpty(config.ExePath)) return;
         }
 
+        GameRuntimeProcessRelay processRelay = new();
         Process? process = null;
+        IReadOnlyCollection<int> preExistingProcessIds = [];
+        GameLaunchWindowTracker? launchWindowTracker = null;
         try
         {
             if (isSteam)
             {
+                preExistingProcessIds = GameProcessDetector.GetProcessIdsInDirectory(
+                    GameProcessDetector.GetDirectoryPrefix(installation.Path));
+                launchWindowTracker = StartLaunchWindowTracker(config, installation.Path, preExistingProcessIds);
                 Uri steamUri = new($"steam://run/{game.Ids[(int)RssType.Steam]}");
                 infoService.Info(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
                     msg: "GalgamePage_Play_StartingSteam".GetLocalized());
@@ -87,11 +124,11 @@ public sealed class GameLaunchService(
                     {
                         if (!await DisplaySteamMessageAsync()) return;
                         if (!await SelectProcessAsync(config)) return;
-                        process = await WaitForProcessStartAsync(config.ProcessName!);
+                        process = await WaitForProcessStartAsync(config.ProcessName!, preExistingProcessIds);
                     }
                 }
                 else
-                    process = await WaitForProcessStartAsync(config.ProcessName);
+                    process = await WaitForProcessStartAsync(config.ProcessName, preExistingProcessIds);
             }
             else
             {
@@ -121,13 +158,16 @@ public sealed class GameLaunchService(
                     Verb = config.RunAsAdmin ? "runas" : null,
                 };
                 if (arguments is not null) startInfo.ArgumentList.Add(arguments);
+                preExistingProcessIds = GameProcessDetector.GetProcessIdsInDirectory(
+                    GameProcessDetector.GetDirectoryPrefix(installation.Path));
+                launchWindowTracker = StartLaunchWindowTracker(config, installation.Path, preExistingProcessIds);
                 process = new Process { StartInfo = startInfo };
                 process.Start();
 
-                if (!string.IsNullOrEmpty(config.ProcessName))
+                if (!string.IsNullOrEmpty(config.ProcessName) &&
+                    !ProcessMatchesConfiguredName(process, config.ProcessName))
                 {
-                    await Task.Delay(2000);
-                    process = await WaitForProcessStartAsync(config.ProcessName) ?? process;
+                    process = await WaitForProcessStartAsync(config.ProcessName, preExistingProcessIds) ?? process;
                 }
                 // 未指定进程名时直接跟踪启动的进程；若是启动器，
                 // RecordPlayTimeTask会在其退出后探测安装目录内新出现的进程并重新附着
@@ -146,27 +186,32 @@ public sealed class GameLaunchService(
             if (installation.Source is not null) sourceCollectionService.Save(installation.Source);
             await _gameService.SaveGalgameAsync(game);
 
-            _ = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId));
+            GameWindowSnapshot? initialWindowSnapshot = GameProcessDetector.TryGetPrimaryWindowSnapshot(process);
+            _ = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId,
+                preExistingProcessIds, processRelay, initialWindowSnapshot, launchWindowTracker));
+            // 计时任务接管启动窗口追踪器；启动服务提前结束时不能停止仍在等待接力的观察。
+            launchWindowTracker = null;
             // 即使当前没有生效规则，也保留轻量运行时任务，
             // 确保游戏运行期间首次启用或新增映射时可以立即生效。
-            _ = bgTaskService.AddBgTask(new KeyMappingTask(game, process));
+            _ = bgTaskService.AddBgTask(new KeyMappingTask(game, process, game.KeyMappings,
+                preExistingProcessIds, processRelay));
             await jumpListService.AddToJumpListAsync(game);
             messenger.Send(new GalgamePlayedMessage(game));
 
             await Task.Delay(1000);
             if (await localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysEnableMagpie) || game.EnableMagpie)
-                _ = bgTaskService.AddBgTask(new CallMagpieTask(game, process));
+                _ = bgTaskService.AddBgTask(new CallMagpieTask(game, process, processRelay));
             if (await localSettingsService.ReadSettingAsync<bool>(KeyValues.AlwaysMuteInBackground) ||
                 game.MuteInBackground)
-                _ = bgTaskService.AddBgTask(new GameMuteTask(game, process));
+                _ = bgTaskService.AddBgTask(new GameMuteTask(game, process, processRelay));
             if (await localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoDetectSavePath) &&
                 config.DetectedSavePath is null)
                 _ = bgTaskService.AddBgTask(new GameSaveDetectorTask(game, installation));
-            if (!process.HasExited)
+            if (GameProcessDetector.IsAlive(process))
                 App.SetWindowMode(
                     await localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
 
-            await process.WaitForExitAsync();
+            await WaitForGameSessionEndAsync(process, processRelay);
         }
         catch (Win32Exception e) when (e.NativeErrorCode == 1223)
         {
@@ -178,18 +223,117 @@ public sealed class GameLaunchService(
             infoService.Event(EventType.GalgameEvent, Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error,
                 "GalgamePage_Play_Error".GetLocalized() + e.Message, e);
         }
+        finally
+        {
+            launchWindowTracker?.Stop();
+        }
     }
 
-    private static async Task<Process?> WaitForProcessStartAsync(string processName)
+    private static GameLaunchWindowTracker? StartLaunchWindowTracker(LocalInstallationConfig config,
+        string installationPath, IReadOnlyCollection<int> preExistingProcessIds)
     {
+        if (!config.DelayPlayTimeUntilMainWindow) return null;
+        GameLaunchWindowTracker tracker = new();
+        tracker.Start(GameProcessDetector.GetDirectoryPrefix(installationPath), preExistingProcessIds);
+        return tracker;
+    }
+
+    private bool TryEnterLaunch(Guid gameId)
+    {
+        lock (_launchStateLock)
+        {
+            return _launchesInProgress.Add(gameId);
+        }
+    }
+
+    private void ReportDuplicateLaunch(Galgame game, string reason)
+    {
+        infoService.Info(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+            msg: "GalgamePage_Play_AlreadyRunning".GetLocalized(game.Name.Value ?? string.Empty));
+        infoService.Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+            $"Game launch ignored: reason={reason}, gameUuid={game.Uuid:D}");
+    }
+
+    private static async Task WaitForGameSessionEndAsync(Process initialProcess,
+        GameRuntimeProcessRelay processRelay)
+    {
+        using CancellationTokenSource initialProcessExitCancellation = new();
+        Task initialProcessExit = GameProcessDetector.WaitForExitSafelyAsync(initialProcess,
+            initialProcessExitCancellation.Token);
+        try
+        {
+            Task<Process?> gameplayProcessConfirmation = processRelay.WaitForConfirmationAsync();
+            Task completed = await Task.WhenAny(initialProcessExit, gameplayProcessConfirmation);
+            if (completed == initialProcessExit)
+            {
+                await initialProcessExit;
+                return;
+            }
+
+            Process? gameplayProcess = await gameplayProcessConfirmation;
+            if (gameplayProcess is null) return;
+            if (GameProcessDetector.SafeGetId(gameplayProcess) == GameProcessDetector.SafeGetId(initialProcess))
+            {
+                await initialProcessExit;
+                return;
+            }
+
+            initialProcessExitCancellation.Cancel();
+            await GameProcessDetector.WaitForExitSafelyAsync(gameplayProcess);
+        }
+        finally
+        {
+            initialProcessExitCancellation.Cancel();
+            try
+            {
+                await initialProcessExit;
+            }
+            catch (OperationCanceledException) when (initialProcessExitCancellation.IsCancellationRequested)
+            {
+                // 进程接力后不再等待启动器退出，但仍观察已取消的等待任务。
+            }
+        }
+    }
+
+    private static async Task<Process?> WaitForProcessStartAsync(string processName,
+        IReadOnlyCollection<int>? excludedProcessIds = null)
+    {
+        HashSet<int> excluded = excludedProcessIds is null ? [] : new HashSet<int>(excludedProcessIds);
+        string normalizedProcessName = Path.GetFileNameWithoutExtension(processName);
         DateTime deadline = DateTime.UtcNow + ProcessWaitTimeout;
         do
         {
-            Process? process = Process.GetProcessesByName(processName).FirstOrDefault();
-            if (process is not null) return process;
+            Process[] candidates = Process.GetProcessesByName(normalizedProcessName);
+            Process? selected = null;
+            try
+            {
+                selected = candidates
+                    .FirstOrDefault(candidate => !excluded.Contains(GameProcessDetector.SafeGetId(candidate)));
+                if (selected is not null) return selected;
+            }
+            finally
+            {
+                foreach (Process candidate in candidates)
+                    if (!ReferenceEquals(candidate, selected)) candidate.Dispose();
+            }
             await Task.Delay(250);
         } while (DateTime.UtcNow < deadline);
         return null;
+    }
+
+    private static bool ProcessMatchesConfiguredName(Process process, string configuredProcessName)
+    {
+        try
+        {
+            return string.Equals(
+                process.ProcessName,
+                Path.GetFileNameWithoutExtension(configuredProcessName),
+                StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static async Task<bool> SelectProcessAsync(LocalInstallationConfig config)

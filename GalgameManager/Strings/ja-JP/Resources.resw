@@ -4076,4 +4076,244 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>移動先のライブラリがありません。先に別のライブラリを追加してください。</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>「{0}」はすでに実行中か、プレイ時間を記録中です。</value>
+  </data>
+  <data name="RecordPlayTimeTask_WaitingForMainWindow" xml:space="preserve">
+    <value>ゲーム画面を待機中: {0}（起動時のダイアログは記録しません）</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Title" xml:space="preserve">
+    <value>起動ダイアログをプレイ時間に含めない</value>
+  </data>
+  <data name="GalgameSettingPage_DelayPlayTimeUntilMainWindow.Description" xml:space="preserve">
+    <value>最初に免責事項、パッチ案内、ランチャーを表示するインストール向けです。安定したウィンドウ切り替え後に記録を開始します。直接ゲームを開く場合はオフのままにしてください。</value>
+  </data>
+  <data name="EditPlayTimeDialog_DateColumn.Text" xml:space="preserve">
+    <value>日付</value>
+  </data>
+  <data name="EditPlayTimeDialog_Description.Text" xml:space="preserve">
+    <value>日別合計には、記録済みセッションと、起止時刻のない履歴・手動追加分が含まれます。合計をセッションより短くすることはできません。正確な開始・終了時刻を追加する場合は、プレイ時間ページの「セッションを追加」を使用してください。</value>
+  </data>
+  <data name="EditPlayTimeDialog_HourColumn.Text" xml:space="preserve">
+    <value>時間</value>
+  </data>
+  <data name="EditPlayTimeDialog_MinuteColumn.Text" xml:space="preserve">
+    <value>分</value>
+  </data>
+  <data name="EditPlayTimeDialog_MinuteDescription" xml:space="preserve">
+    <value>日ごとの合計を分単位で編集します。詳細ページの棒グラフにある起動区間をクリックすると、その区間を編集または削除できます。このダイアログは起動記録に属さない履歴または手動追加分だけを変更し、日ごとの合計を起動記録の合計より短くすることはできません。</value>
+  </data>
+  <data name="EditPlayTimeDialog_PreciseDescription" xml:space="preserve">
+    <value>日別合計には、記録済みセッションと、開始・終了時刻のない履歴または手動補正分が含まれます。合計をセッション合計より短くすることはできません。正確な開始・終了時刻が必要な場合は、プレイ時間ページの「セッションを追加」を使用してください。</value>
+  </data>
+  <data name="EditPlayTimeDialog_SecondColumn.Text" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="EditPlayTimeDialog_SessionDateCannotDelete" xml:space="preserve">
+    <value>{0} には記録済みセッションがあるため、ここでは日別合計を削除できません。先に各セッションを削除してください。</value>
+  </data>
+  <data name="EditPlayTimeDialog_SessionMinimum" xml:space="preserve">
+    <value>{0} の合計時間は、記録済みセッションの合計（{1}）より短くできません。先に各セッションを編集または削除してください。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_AddTitle" xml:space="preserve">
+    <value>プレイセッションを追加</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_DateRequired" xml:space="preserve">
+    <value>開始日と終了日の両方を選択してください。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Description.Text" xml:space="preserve">
+    <value>開始・終了時刻を編集すると、この起動は指定した区間全体として再計算され、日別の秒単位集計と互換用の分単位値も更新されます。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndBeforeStart" xml:space="preserve">
+    <value>終了時刻は開始時刻より後にしてください。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndDate.Header" xml:space="preserve">
+    <value>終了日</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_EndTime.Text" xml:space="preserve">
+    <value>終了時刻</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Hour.Header" xml:space="preserve">
+    <value>时</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Minute.Header" xml:space="preserve">
+    <value>分</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Overlap" xml:space="preserve">
+    <value>選択した時間帯は既存の記録と重複しています。開始時刻または終了時刻を調整してください。</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Second.Header" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_StartDate.Header" xml:space="preserve">
+    <value>開始日</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_StartTime.Text" xml:space="preserve">
+    <value>開始時刻</value>
+  </data>
+  <data name="EditPlayTimeSessionDialog_Title" xml:space="preserve">
+    <value>プレイ区間を編集</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>時間</value>
+  </data>
+  <data name="LessThanOneMinute" xml:space="preserve">
+    <value>1分未満</value>
+  </data>
+  <data name="PlayedTimePage_ActiveSessionCannotClose" xml:space="preserve">
+    <value>この区間は現在記録中です。変更する前にゲームを通常終了してください。</value>
+  </data>
+  <data name="PlayedTimePage_ActivityIntervals.Text" xml:space="preserve">
+    <value>有効な計測区間</value>
+  </data>
+  <data name="PlayedTimePage_AddSession.Label" xml:space="preserve">
+    <value>セッションを追加</value>
+  </data>
+  <data name="PlayedTimePage_AddSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>開始・終了時刻を指定してプレイセッションを追加</value>
+  </data>
+  <data name="PlayedTimePage_CloseSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>未完了の区間を終了</value>
+  </data>
+  <data name="PlayedTimePage_CloseSessionMessage" xml:space="preserve">
+    <value>最後に記録された時刻（{0}）でこの区間を終了しますか？</value>
+  </data>
+  <data name="PlayedTimePage_CloseSessionTitle" xml:space="preserve">
+    <value>未完了の区間を終了</value>
+  </data>
+  <data name="PlayedTimePage_CrossDayMinuteSegmentOpenToolTip" xml:space="preserve">
+    <value>記録中または中断された日付をまたぐ起動のうち {0} に記録された部分・{1}。クリックすると記録全体を終了できます。</value>
+  </data>
+  <data name="PlayedTimePage_CrossDayMinuteSegmentToolTip" xml:space="preserve">
+    <value>日付をまたぐ起動のうち {0} に記録された部分・{1}。クリックするとこの日の部分だけを編集できます。</value>
+  </data>
+  <data name="PlayedTimePage_DateSort.ToolTipService.ToolTip" xml:space="preserve">
+    <value>日付の並び順を切り替え</value>
+  </data>
+  <data name="PlayedTimePage_DateSortNewestFirst" xml:space="preserve">
+    <value>新しい順</value>
+  </data>
+  <data name="PlayedTimePage_DateSortOldestFirst" xml:space="preserve">
+    <value>古い順</value>
+  </data>
+  <data name="PlayedTimePage_DeleteCrossDayMinuteSessionMessage" xml:space="preserve">
+    <value>これは日付をまたぐ起動記録です。{0} に記録された部分（{1}）だけを削除しますか？ほかの日付の部分は残り、対応する時間が日別合計から差し引かれます。</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionButton" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionMessage" xml:space="preserve">
+    <value>{0} のこの起動記録（{1}）を削除しますか？対応する時間も日別合計から差し引かれます。</value>
+  </data>
+  <data name="PlayedTimePage_DeleteMinuteSessionTitle" xml:space="preserve">
+    <value>起動記録を削除</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>区間を削除</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSessionMessage" xml:space="preserve">
+    <value>{0} から {1} までの区間（{2}）を削除しますか？ネイティブの合計時間からも差し引かれます。</value>
+  </data>
+  <data name="PlayedTimePage_DeleteSessionTitle" xml:space="preserve">
+    <value>プレイ区間を削除</value>
+  </data>
+  <data name="PlayedTimePage_EditCrossDayMinuteSessionDescription" xml:space="preserve">
+    <value>これは日付をまたぐ起動記録です。{0} に記録された分数だけを変更し、ほかの日付の部分は変更しません。日別合計も同じ差分だけ調整されます。</value>
+  </data>
+  <data name="PlayedTimePage_EditMinuteSessionDescription" xml:space="preserve">
+    <value>{0} のこの起動で記録した分数を変更します。日別合計も同じ差分だけ調整されます。</value>
+  </data>
+  <data name="PlayedTimePage_EditMinuteSessionTitle" xml:space="preserve">
+    <value>起動時間を編集</value>
+  </data>
+  <data name="PlayedTimePage_EditSession.ToolTipService.ToolTip" xml:space="preserve">
+    <value>区間を編集</value>
+  </data>
+  <data name="PlayedTimePage_LegacySummary" xml:space="preserve">
+    <value>開始・終了時刻のない過去の分単位集計：{0}</value>
+  </data>
+  <data name="PlayedTimePage_MinuteLegacySummary" xml:space="preserve">
+    <value>起動記録に紐づかない履歴または手動補正時間：{0}。クリックして日別合計を編集できます。</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSegmentOpenToolTip" xml:space="preserve">
+    <value>記録中または中断された分単位モードの起動・{0}。クリックしてこの記録を終了できます。</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSegmentToolTip" xml:space="preserve">
+    <value>分単位モードの第{0}回起動・{1}。クリックして編集できます。</value>
+  </data>
+  <data name="PlayedTimePage_MinuteSummary" xml:space="preserve">
+    <value>{0} 日 · 分単位計測</value>
+  </data>
+  <data name="PlayedTimePage_NoActivityIntervals.Text" xml:space="preserve">
+    <value>この起動では有効な計測区間が記録されていません。</value>
+  </data>
+  <data name="PlayedTimePage_NoSessions" xml:space="preserve">
+    <value>プレイ時間の記録はまだありません。</value>
+  </data>
+  <data name="PlayedTimePage_OpenSessionCannotEdit" xml:space="preserve">
+    <value>記録中の区間は編集または削除できません。先に明示的に終了してください。</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSegmentMinuteOpenToolTip" xml:space="preserve">
+    <value>記録中または中断された秒単位モードの起動・{0}。クリックしてこの記録を終了できます。</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSegmentMinuteToolTip" xml:space="preserve">
+    <value>秒単位モードの起動記録・{0}。クリックすると起動記録全体を編集できます。</value>
+  </data>
+  <data name="PlayedTimePage_PreciseSummary" xml:space="preserve">
+    <value>{0} 日 · {1} 件のプレイ記録 · 秒単位合計 {2}</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelp.AutomationProperties.Name" xml:space="preserve">
+    <value>秒単位合計と合計分数の差について</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelp.ToolTipService.ToolTip" xml:space="preserve">
+    <value>秒単位合計は各日の秒数を保持したまま集計します。一方、ほかの画面に表示される合計分数は日ごとに秒数を切り捨ててから加算するため、両者は一致しない場合があります。</value>
+  </data>
+  <data name="PlayedTimePage_PreciseTotalHelpFlyout.Text" xml:space="preserve">
+    <value>秒単位合計は各日の秒数を保持したまま合計します。他の画面に表示される合計分数は、日ごとに秒数を切り捨ててから加算するため、両者に差が生じる場合があります。</value>
+  </data>
+  <data name="PlayedTimePage_RecordingMode.ToolTipService.ToolTip" xml:space="preserve">
+    <value>分単位計測と秒単位計測を切り替えます。設定画面の「正確なプレイ時間」と連動し、起動中のゲームには次回起動時から適用されます。</value>
+  </data>
+  <data name="PlayedTimePage_RecordingModeMinute" xml:space="preserve">
+    <value>分単位計測</value>
+  </data>
+  <data name="PlayedTimePage_RecordingModePrecise" xml:space="preserve">
+    <value>秒単位計測</value>
+  </data>
+  <data name="PlayedTimePage_Refresh.AutomationProperties.Name" xml:space="preserve">
+    <value>プレイ時間の詳細を更新</value>
+  </data>
+  <data name="PlayedTimePage_Refresh.ToolTipService.ToolTip" xml:space="preserve">
+    <value>プレイ時間の詳細を更新</value>
+  </data>
+  <data name="PlayedTimePage_SaveFailed" xml:space="preserve">
+    <value>プレイ区間を保存できませんでした</value>
+  </data>
+  <data name="PlayedTimePage_SessionDescription.Text" xml:space="preserve">
+    <value>「起動記録」は、ゲーム開始から終了までの1回の起動全体を表します。展開すると有効な計測区間を確認できます。</value>
+  </data>
+  <data name="PlayedTimePage_SessionImported" xml:space="preserve">
+    <value>インポートした過去の区間</value>
+  </data>
+  <data name="PlayedTimePage_SessionManual" xml:space="preserve">
+    <value>手動追加セッション</value>
+  </data>
+  <data name="PlayedTimePage_SessionNative" xml:space="preserve">
+    <value>起動記録</value>
+  </data>
+  <data name="PlayedTimePage_SessionOpen" xml:space="preserve">
+    <value>ネイティブ区間 · 記録中または異常中断</value>
+  </data>
+  <data name="PlayedTimePage_Summary" xml:space="preserve">
+    <value>{0} 日 · {1} 件のプレイ記録</value>
+  </data>
+  <data name="Second" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="SettingsPage_Game_PrecisePlayTime.Description" xml:space="preserve">
+    <value>有効にすると、プレイ時間を秒単位で記録し、起動ごとのセッションとフォアグラウンド計測区間を保存します。無効にすると、従来の1分単位のサンプリングを使用します。モードはゲーム起動時に固定され、変更は次回起動から反映されます。</value>
+  </data>
+  <data name="SettingsPage_Game_PrecisePlayTime.Title" xml:space="preserve">
+    <value>正確なプレイ時間を有効にする</value>
+  </data>
 </root>

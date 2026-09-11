@@ -44,6 +44,8 @@ public static class KeyValues
 
     //游玩相关
     public const string RecordOnlyWhenForeground = "recordOnlyWhenForeground"; //bool, 是否只在游戏窗口在前台时记录游玩时间
+    public const string PrecisePlayTime = "precisePlayTime"; //bool, 是否启用秒级采集、单次启动记录及精确显示编辑
+    public const string PlayedTimeDateDescending = "playedTimeDateDescending"; //bool, 游玩时间详情是否按日期倒序排列
     public const string PlayingWindowMode = "playingWindowMode"; // WindowMode,游玩时窗口模式
     public const string LocaleEmulatorPath = "localeEmulatorPath"; //string?, 本地模拟器路径
     public const string MagpieTotalSwitch = "magpieTotalSwitch"; //bool, 是否启用Magpie总开关
