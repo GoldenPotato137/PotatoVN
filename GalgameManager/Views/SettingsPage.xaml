@@ -368,6 +368,12 @@
                                     x:Uid="SettingsPage_Game_RecordOnlyForeground"
                                     IsOn="{x:Bind ViewModel.RecordOnlyForeground, Mode=TwoWay}"/>
                             </control:Panel>
+                            <!-- 秒级游玩计时 -->
+                            <control:Panel>
+                                <local:SettingToggleSwitch
+                                    x:Uid="SettingsPage_Game_PrecisePlayTime"
+                                    IsOn="{x:Bind ViewModel.PrecisePlayTime, Mode=TwoWay}"/>
+                            </control:Panel>
                             <!-- 游玩时窗口状态 -->
                             <control:Panel>
                                 <control:Setting x:Uid="SettingsPage_Game_PlayingWindowMode">

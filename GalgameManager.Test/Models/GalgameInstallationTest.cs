@@ -174,6 +174,25 @@ public class GalgameInstallationTest
     }
 
     [Test]
+    public void LocalInstallationConfig_ClonePreservesLaunchDialogSetting()
+    {
+        LocalInstallationConfig config = new()
+        {
+            ExePath = @"D:\Library\Example\game.exe",
+            DelayPlayTimeUntilMainWindow = true,
+        };
+
+        LocalInstallationConfig clone = config.Clone();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(clone, Is.Not.SameAs(config));
+            Assert.That(clone.ExePath, Is.EqualTo(config.ExePath));
+            Assert.That(clone.DelayPlayTimeUntilMainWindow, Is.True);
+        });
+    }
+
+    [Test]
     public void VersionTwoMeta_PreservesOnlyItsInstallationConfiguration()
     {
         GameMetaBackup backup = new()
