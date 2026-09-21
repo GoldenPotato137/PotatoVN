@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -147,34 +147,33 @@ public partial class PluginService(
 
     public async Task InitAsync()
     {
-        await Task.CompletedTask; //预留异步
         _pluginsDb = settingService.Database.GetCollection<PluginX>("plugin");
         _pluginDataDb = settingService.Database.GetCollection<PluginData>("plugin_data");
         PluginDir = new DirectoryInfo((await FileHelper.GetFolderAsync(FileHelper.FolderType.Plugins)).Path);
         if (!PluginDir.Exists) PluginDir.Create();
-        _ = Task.Run(async () =>
+
+        // 先完成插件升级再加载插件
+        try
         {
-            // 先完成插件升级再加载插件
-            try
-            {
-                List<ToInstallStorePlugin> list =
-                    await settingService.ReadSettingAsync<List<ToInstallStorePlugin>>(KeyValues.ToUpgradePlugin) ?? [];
-                List<Task> tasks = [];
-                foreach (ToInstallStorePlugin item in list)
-                    tasks.Add(bgTaskService.AddBgTask(new InstallStorePluginTask(item.Plugin, item.Version)));
-                await Task.WhenAll(tasks);
-            }
-            catch (Exception e)
-            {
-                infoService.Event(EventType.PluginError, InfoBarSeverity.Warning,
-                    "PluginService_UpgradePluginFailed".GetLocalized(), exception: e);
-            }
-            finally
-            {
-                await settingService.RemoveSettingAsync(KeyValues.ToUpgradePlugin);
-            }
-            _ = bgTaskService.AddBgTask(new LoadPluginTask());
-        });
+            List<ToInstallStorePlugin> list =
+                await settingService.ReadSettingAsync<List<ToInstallStorePlugin>>(KeyValues.ToUpgradePlugin) ?? [];
+            List<Task> tasks = [];
+            foreach (ToInstallStorePlugin item in list)
+                tasks.Add(bgTaskService.AddBgTask(new InstallStorePluginTask(item.Plugin, item.Version)));
+            await Task.WhenAll(tasks);
+        }
+        catch (Exception e)
+        {
+            infoService.Event(EventType.PluginError, InfoBarSeverity.Warning,
+                "PluginService_UpgradePluginFailed".GetLocalized(), exception: e);
+        }
+        finally
+        {
+            await settingService.RemoveSettingAsync(KeyValues.ToUpgradePlugin);
+        }
+
+        // 确保启动阶段所有已启用的插件（如网络代理/拦截插件）完成加载与初始化，避免后续服务在未就绪状态下发起请求
+        await bgTaskService.AddBgTask(new LoadPluginTask());
     }
 
     public async Task LoadPluginAsync(PluginX plugin, bool load)

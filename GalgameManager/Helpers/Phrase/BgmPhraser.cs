@@ -21,6 +21,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
     private string _userId = string.Empty;
     private string _userName = string.Empty;
     private Task? _checkAuthTask;
+    private string _token = string.Empty;
 
     public BgmPhraser(BgmPhraserData data)
     {
@@ -37,20 +38,20 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
     private void GetHttpClient(BgmPhraserData data)
     {
         _authed = false;
-        var bgmToken = data.Token;
+        _token = data.Token ?? string.Empty;
         _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
-        _bgmApi = BgmApi.GetApi(bgmToken);
-        if (!string.IsNullOrEmpty(bgmToken))
+        _bgmApi = BgmApi.GetApi(_token);
+        if (!string.IsNullOrEmpty(_token))
         {
-            _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + bgmToken);
-            _checkAuthTask = Task.Run(() =>
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + _token);
+            _checkAuthTask = Task.Run(async () =>
             {
                 try
                 {
-                    HttpResponseMessage response = _httpClient.GetAsync("https://api.bgm.tv/v0/me").Result;
+                    HttpResponseMessage response = await _httpClient.GetAsync("https://api.bgm.tv/v0/me");
                     _authed = response.IsSuccessStatusCode;
                     if (!_authed) return;
-                    JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
                     _userId = json["id"]!.ToString();
                     _userName = json["username"]!.ToString();
                 }
@@ -59,6 +60,36 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
                     //ignore
                 }
             });
+        }
+    }
+
+    private async Task<bool> EnsureAuthAsync()
+    {
+        if (_checkAuthTask != null)
+        {
+            try { await _checkAuthTask; } catch { /* ignore */ }
+        }
+        if (_authed && !string.IsNullOrEmpty(_userId)) return true;
+        if (string.IsNullOrEmpty(_token)) return false;
+
+        try
+        {
+            _httpClient = Utils.GetDefaultHttpClient().WithApplicationJson();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + _token);
+            _bgmApi = BgmApi.GetApi(_token);
+
+            HttpResponseMessage response = await _httpClient.GetAsync("https://api.bgm.tv/v0/me");
+            _authed = response.IsSuccessStatusCode;
+            if (!_authed) return false;
+            JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            _userId = json["id"]!.ToString();
+            _userName = json["username"]!.ToString();
+            return true;
+        }
+        catch (Exception)
+        {
+            _authed = false;
+            return false;
         }
     }
     
@@ -371,8 +402,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
 
     public async Task<(GalStatusSyncResult, string)> UploadAsync(Galgame galgame)
     {
-        if (_checkAuthTask != null) await _checkAuthTask;
-        if (_authed == false)
+        if (await EnsureAuthAsync() == false)
             return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
             return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
@@ -392,7 +422,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
             response = await _httpClient.PostAsync($"https://api.bgm.tv/v0/users/-/collections/{galgame.Ids[(int)RssType.Bangumi]}", content);
             if (response.IsSuccessStatusCode == false)
             {
-                JObject json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
                 error = json["description"]!.ToString();
             }
         }
@@ -408,8 +438,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
 
     public async Task<(GalStatusSyncResult, string)> DownloadAsync(Galgame galgame)
     {
-        if (_checkAuthTask != null) await _checkAuthTask;
-        if (_authed == false) 
+        if (await EnsureAuthAsync() == false) 
             return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
         if (string.IsNullOrEmpty(galgame.Ids[(int)RssType.Bangumi]))
             return (GalStatusSyncResult.NoId, "BgmPhraser_UploadAsync_NoId".GetLocalized());
@@ -433,8 +462,7 @@ public class BgmPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser,
 
     public async Task<(GalStatusSyncResult, string)> DownloadAllAsync(IList<Galgame> galgames)
     {
-        if (_checkAuthTask is not null) await _checkAuthTask;
-        if (_authed == false) return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
+        if (await EnsureAuthAsync() == false) return (GalStatusSyncResult.UnAuthorized, "BgmPhraser_UploadAsync_UnAuthorized".GetLocalized());
         int offset = 0, total = -1, cnt = 0;
         GalStatusSyncResult result = GalStatusSyncResult.Ok;
         var msg = string.Empty;
