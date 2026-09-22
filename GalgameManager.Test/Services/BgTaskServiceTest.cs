@@ -84,6 +84,66 @@ public class BgTaskServiceTest : ServiceTestBase
         await addTask;
     }
 
+    [Test]
+    public async Task AddBgTask_ConcurrentDuplicates_OnlyOneRuns()
+    {
+        BgTaskService service = CreateService();
+        TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        DeduplicatedTestBgTask[] tasks = Enumerable.Range(0, 32)
+            .Select(_ => new DeduplicatedTestBgTask("same", gate))
+            .ToArray();
+        var addedCount = 0;
+        service.BgTaskAdded += _ => Interlocked.Increment(ref addedCount);
+
+        Task[] additions = tasks.Select(service.AddBgTask).ToArray();
+        await Task.Delay(100);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(service.GetBgTasks().Count(), Is.EqualTo(1));
+            Assert.That(tasks.Count(task => task.Ran), Is.EqualTo(1));
+            Assert.That(addedCount, Is.EqualTo(1));
+        });
+
+        gate.SetResult();
+        await Task.WhenAll(additions);
+    }
+
+    [Test]
+    public async Task AddBgTask_DuplicateAfterCompletion_RunsAgain()
+    {
+        BgTaskService service = CreateService();
+        DeduplicatedTestBgTask first = new("same");
+        DeduplicatedTestBgTask second = new("same");
+
+        await service.AddBgTask(first);
+        await service.AddBgTask(second);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.Ran, Is.True);
+            Assert.That(second.Ran, Is.True);
+            Assert.That(service.GetBgTasks(), Is.Empty);
+        });
+    }
+
+    [Test]
+    public async Task AddBgTask_DifferentDeduplicationKeys_RunTogether()
+    {
+        BgTaskService service = CreateService();
+        TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        DeduplicatedTestBgTask first = new("first", gate);
+        DeduplicatedTestBgTask second = new("second", gate);
+
+        Task[] additions = [service.AddBgTask(first), service.AddBgTask(second)];
+        await Task.Delay(100);
+
+        Assert.That(service.GetBgTasks().Count(), Is.EqualTo(2));
+
+        gate.SetResult();
+        await Task.WhenAll(additions);
+    }
+
     // 验证后台任务的持久化与恢复闭环：SaveBgTasksString把运行中的任务写入文件，
     // 新实例ResolvedBgTasksAsync读回、反序列化、RecoverFromJson并重新运行，最后删除文件
     [Test]
@@ -118,6 +178,34 @@ public class BgTaskServiceTest : ServiceTestBase
         // 等恢复的任务跑完并从列表移除，避免残留状态影响后续用例
         await Task.Delay(800);
         Assert.That(service2.GetBgTasks(), Is.Empty);
+    }
+
+    [Test]
+    public async Task Resolve_DuplicatePersistedTasks_OnlyOneIsRestored()
+    {
+        RecoverableDeduplicatedTestBgTask.Reset();
+        BgTaskService service = CreateService();
+        service.RegisterBgTaskType(typeof(RecoverableDeduplicatedTestBgTask), "-dedupe");
+        string json = JsonConvert.SerializeObject(new RecoverableDeduplicatedTestBgTask
+        {
+            Key = "same",
+        });
+        string persisted = $"-dedupe {json.ToBase64()} -dedupe {json.ToBase64()} ";
+        _fileService.Save(AppStoragePaths.LocalDataPath, BgTaskFileName, persisted);
+        string file = Path.Combine(AppStoragePaths.LocalDataPath, BgTaskFileName);
+        for (var i = 0; i < 50 && !File.Exists(file); i++) await Task.Delay(100);
+
+        await service.ResolvedBgTasksAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(RecoverableDeduplicatedTestBgTask.RunCount, Is.EqualTo(1));
+            Assert.That(service.GetBgTasks().OfType<RecoverableDeduplicatedTestBgTask>().Count(), Is.EqualTo(1));
+        });
+
+        RecoverableDeduplicatedTestBgTask.Gate.SetResult();
+        await Task.Delay(800);
+        Assert.That(service.GetBgTasks(), Is.Empty);
     }
 
     public class TestBgTask : BgTaskBase
@@ -160,5 +248,55 @@ public class BgTaskServiceTest : ServiceTestBase
         protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
 
         protected override Task RunInternal() => Task.CompletedTask;
+    }
+
+    public class DeduplicatedTestBgTask : BgTaskBase, IDeduplicatedBgTask
+    {
+        private readonly TaskCompletionSource? _gate;
+
+        public DeduplicatedTestBgTask(string key, TaskCompletionSource? gate = null)
+        {
+            DeduplicationKey = key;
+            _gate = gate;
+        }
+
+        public string? DeduplicationKey { get; }
+        public bool Ran { get; private set; }
+        public override string Title => "DeduplicatedTestBgTask";
+
+        protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
+
+        protected override async Task RunInternal()
+        {
+            Ran = true;
+            if (_gate is not null) await _gate.Task;
+        }
+    }
+
+    public class RecoverableDeduplicatedTestBgTask : BgTaskBase, IDeduplicatedBgTask
+    {
+        public static TaskCompletionSource Gate { get; private set; } = NewGate();
+        public static int RunCount;
+
+        public string? Key { get; set; }
+        public string? DeduplicationKey => Key;
+        public override string Title => "RecoverableDeduplicatedTestBgTask";
+
+        public static void Reset()
+        {
+            Gate = NewGate();
+            RunCount = 0;
+        }
+
+        protected override Task RecoverFromJsonInternal() => Task.CompletedTask;
+
+        protected override async Task RunInternal()
+        {
+            Interlocked.Increment(ref RunCount);
+            await Gate.Task;
+        }
+
+        private static TaskCompletionSource NewGate() =>
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }
