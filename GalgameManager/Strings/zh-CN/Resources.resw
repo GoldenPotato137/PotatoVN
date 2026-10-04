@@ -5062,4 +5062,7 @@
   <data name="AutoExportService_Paused" xml:space="preserve">
     <value>自动导出失败，下次启动软件前不再自动导出</value>
   </data>
+  <data name="PluginStorePage_Downloads.ToolTipService.ToolTip" xml:space="preserve">
+    <value>下载次数</value>
+  </data>
 </root>

@@ -110,6 +110,7 @@ public class GetStorePluginTask(AdvancedCollectionView pluginList) : QueueTaskBa
                 Version = version.Version,
                 DownloadUrl = downloadUrl,
                 ReleaseDate = version.CreatedAt,
+                Downloads = version.Downloads,
             });
             plugin.Versions.Sort((a, b) => b.Version.CompareTo(a.Version));
         }

@@ -3723,7 +3723,7 @@ If play time can record correctly, just cancel this popup.
     <value>Installed</value>
   </data>
   <data name="StorePlugin_UpdateAvailable" xml:space="preserve">
-    <value>Update Available</value>
+    <value>Updatable</value>
   </data>
   <data name="StorePluginDialog_Update" xml:space="preserve">
     <value>Update</value>
@@ -4149,5 +4149,119 @@ If play time can record correctly, just cancel this popup.
   </data>
   <data name="AutoExportService_Paused" xml:space="preserve">
     <value>Auto export failed and is paused until PotatoVN restarts</value>
+  </data>
+  <data name="PluginStorePage_Downloads.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Downloads</value>
+  </data>
+  <data name="GetStorePluginTask_ProgressTitle" xml:space="preserve">
+    <value>Fetching info for {0} plugin(s)</value>
+  </data>
+  <data name="GetStorePluginTask_ProgressWaitingMsg" xml:space="preserve">
+    <value>{0} plugin(s) waiting for info</value>
+  </data>
+  <data name="GetStorePluginTask_Title" xml:space="preserve">
+    <value>Fetch plugin list</value>
+  </data>
+  <data name="InstallStorePluginTask_Downloading" xml:space="preserve">
+    <value>Downloading plugin {0}...</value>
+  </data>
+  <data name="InstallStorePluginTask_Downloading_NoLength" xml:space="preserve">
+    <value>Downloading plugin, {0} kB/s</value>
+  </data>
+  <data name="InstallStorePluginTask_Installed" xml:space="preserve">
+    <value>Plugin {0} has been installed and enabled</value>
+  </data>
+  <data name="InstallStorePluginTask_Title" xml:space="preserve">
+    <value>Install plugin {0}</value>
+  </data>
+  <data name="PluginPage_Add.Label" xml:space="preserve">
+    <value>Add plugin</value>
+  </data>
+  <data name="PluginPage_Add_Dev.Label" xml:space="preserve">
+    <value>Add plugin (developer)</value>
+  </data>
+  <data name="PluginPage_Add_Failed" xml:space="preserve">
+    <value>Failed to add plugin</value>
+  </data>
+  <data name="PluginPage_DeleteDialog_DeleteData" xml:space="preserve">
+    <value>Also delete plugin data</value>
+  </data>
+  <data name="PluginPage_DeleteDialog_Title" xml:space="preserve">
+    <value>Delete plugin</value>
+  </data>
+  <data name="PluginPage_DeleteDialog_Yes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PluginPage_HotReloadDialog_DeleteData" xml:space="preserve">
+    <value>Also delete plugin data</value>
+  </data>
+  <data name="PluginPage_HotReloadDialog_Title" xml:space="preserve">
+    <value>Hot reload plugin</value>
+  </data>
+  <data name="PluginPage_HotReloadDialog_Yes" xml:space="preserve">
+    <value>Hot reload</value>
+  </data>
+  <data name="PluginPage_PluginStatus.OffContent" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="PluginPage_PluginStatus.OnContent" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin.Description" xml:space="preserve">
+    <value>After clicking Uninstall, you can choose whether to keep the plugin data</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin.Title" xml:space="preserve">
+    <value>Uninstall plugin</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin_Button.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin_HotReloadButton.Content" xml:space="preserve">
+    <value>Hot reload</value>
+  </data>
+  <data name="PluginStorePage_UpgradeQueued" xml:space="preserve">
+    <value>The new version will be installed and enabled on next launch~</value>
+  </data>
+  <data name="PluginType_All" xml:space="preserve">
+    <value>All plugins</value>
+  </data>
+  <data name="PluginType_Huge" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="PluginType_Library" xml:space="preserve">
+    <value>Libraries</value>
+  </data>
+  <data name="PluginType_Official" xml:space="preserve">
+    <value>Official</value>
+  </data>
+  <data name="PluginType_Parser" xml:space="preserve">
+    <value>Scrapers</value>
+  </data>
+  <data name="PluginType_Theme" xml:space="preserve">
+    <value>Themes</value>
+  </data>
+  <data name="PluginType_Utility" xml:space="preserve">
+    <value>Utilities</value>
+  </data>
+  <data name="PluginType_View" xml:space="preserve">
+    <value>UI tweaks</value>
+  </data>
+  <data name="StorePluginDialog_DownloadLatest" xml:space="preserve">
+    <value>Install latest version</value>
+  </data>
+  <data name="StorePluginDialog_DownloadSelected" xml:space="preserve">
+    <value>Install v{0}</value>
+  </data>
+  <data name="StorePluginDialog_LatestVersionDate" xml:space="preserve">
+    <value>Latest version date: </value>
+  </data>
+  <data name="StorePluginDialog_PluginVersion.Text" xml:space="preserve">
+    <value>Plugin version</value>
+  </data>
+  <data name="StorePluginDialog_ProjectLink.Content" xml:space="preserve">
+    <value>Project homepage</value>
+  </data>
+  <data name="StorePluginDialog_WaitingOffload" xml:space="preserve">
+    <value>Please restart the app before adding plugins</value>
   </data>
 </root>
