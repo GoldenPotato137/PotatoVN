@@ -3,7 +3,8 @@ namespace GalgameManager.Contracts.Services;
 public interface IAutoExportService
 {
     /// <summary>
-    /// 启动自动导出调度。重复调用不会创建多个调度循环。
+    /// 启动自动导出调度。重复调用不会创建多个调度循环。<br/>
+    /// 自动导出失败后调度会停止并通知用户，直到再次调用（即下次启动软件）才会恢复。
     /// </summary>
     void Start();
 

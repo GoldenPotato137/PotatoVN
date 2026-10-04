@@ -167,6 +167,7 @@ This section highlights important files and directories specific to the client a
     *   Interaction with external APIs.
     *   `ScanResultService.cs`: Manages saving and retrieving `GalgameScanResult` objects to/from LiteDB. Implements `IScanResultService.cs`. The LiteDB collection name is "scan_results".
     *   `LocalSettingsService.cs`: Manages the storage and retrieval of local application settings, including the LiteDB database instance.
+    *   `AutoExportService.cs`: Singleton started by `ActivationService` (skipped in upgrade-UI-test mode) and stopped on tray/close. It runs a plain async loop (not a `BgTask`) that checks once a minute, or immediately when an auto-export setting changes, and enqueues the existing `ExportTask` when due. Any failure (an exception, or `LastExportTime` not advancing after the export) stops the loop for the rest of the process and raises a `BgTaskFailEvent` warning. The next `Start()` (app launch, including the tray-mode `/r` restart) resumes it.
     *   `InfoService.cs`: Handles in-app notifications and event logging. Its `OnEvent` delegate and `Event` method now support an optional callback action and button text, allowing event notifications to include a custom action button. This is handled in `ShellViewModel.cs` and displayed in `ShellPage.xaml`.
     *   **`Services/SourceService/`**: Contains source-specific service implementations that handle different types of game libraries:
         *   `LocalFolderSourceService.cs`: Handles local folder-based game libraries, including meta backup/restore functionality, file system monitoring, and game move operations.
@@ -247,6 +248,11 @@ This document provides a foundational knowledge base. For specific implementatio
 - `GalgameSourceCollectionService` exclusively owns source-entry/installation add, unlink, remove-files, and move operations. `GalgameCollectionService` owns logical-game identity, metadata, and whole-game lifecycle, delegating relationship changes to the source collection service.
 - PVN server sync intentionally excludes sources, paths, and installation configuration. Full local export and versioned `.PotatoVN/meta.json` backups preserve them.
 - `IPotatoVnApi` directly exposes installation snapshots, explicit installation launch, and `AddGameInstallation`; the old `AddGame` API is obsolete.
+
+## Archive Library Workflow Boundaries
+
+- Archive-library scanning (`LocalZip`) reads sidecar metadata from `<library root>/.PotatoVN/<pack name>`. The separate local-library extraction command (`GalgameSourceViewModel.AddGalFromZip`) calls `AddGameAsync(LocalFolder, extractedPath, ...)`, whose loader reads only `<extractedPath>/.PotatoVN`; it does not load the original archive sidecar. These are different recovery paths despite the comment in `UnpackGameTask`.
+- Source moves perform the source service's physical `MoveOutAsync` before `MoveOutNoOperate(entry, deleteFiles)`. Currently `LocalFolderSourceMoveOutTask` already deletes the folder unconditionally, so the later `deleteFiles` flag cannot preserve files when removal from the original library is selected. Archive `MoveOutAsync` remains unsupported.
 
 ## 8. Service Unit Testing Pattern
 

@@ -2,6 +2,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Models.BgTasks;
 using GalgameManager.Services;
+using Microsoft.UI.Xaml.Controls;
 using Moq;
 
 namespace GalgameManager.Test.Services;
@@ -139,17 +140,19 @@ public class AutoExportServiceTest : ServiceTestBase
         });
     }
 
-    // 验证自动导出失败后进入冷却时间，设置事件不会造成连续重试和通知刷屏
+    // 验证导出任务失败（导出时间未更新）后停止调度并提示，本次运行内不再重试；下次启动时恢复
     [Test]
-    public async Task Start_ExportFails_DoesNotRetryBeforeCooldown()
+    public async Task Start_ExportFails_StopsUntilNextStart()
     {
         await ConfigureAsync(enabled: true, lastExportTime: Now.AddHours(-2));
         var addedCount = 0;
+        var exportSucceeds = false;
         BgTaskService.Setup(x => x.AddBgTask(It.IsAny<BgTaskBase>()))
-            .Returns(() =>
+            .Returns(async () =>
             {
                 Interlocked.Increment(ref addedCount);
-                return Task.CompletedTask;
+                if (Volatile.Read(ref exportSucceeds))
+                    await Settings.SaveSettingAsync(KeyValues.LastExportTime, Now);
             });
         TestAutoExportService service = CreateService();
 
@@ -157,9 +160,34 @@ public class AutoExportServiceTest : ServiceTestBase
         await WaitUntilAsync(() => Volatile.Read(ref addedCount) == 1, "第一次自动导出未触发");
         Settings.RaiseSettingChanged(KeyValues.AutoExportInterval, 1d);
         await Task.Delay(200);
+        int addedCountAfterFailure = Volatile.Read(ref addedCount);
+
+        Volatile.Write(ref exportSucceeds, true);
+        service.Start(); // 模拟下次启动软件
+        await WaitUntilAsync(() => Volatile.Read(ref addedCount) == 2, "重新启动后未恢复自动导出");
         service.Stop();
 
-        Assert.That(addedCount, Is.EqualTo(1));
+        Assert.That(addedCountAfterFailure, Is.EqualTo(1));
+        VerifyPausedNotified(Times.Once());
+    }
+
+    // 验证调度过程中抛出异常时同样停止调度并提示
+    [Test]
+    public async Task Start_ExportThrows_StopsAndNotifies()
+    {
+        await ConfigureAsync(enabled: true, lastExportTime: Now.AddHours(-2));
+        BgTaskService.Setup(x => x.AddBgTask(It.IsAny<BgTaskBase>()))
+            .ThrowsAsync(new IOException("测试异常"));
+        TestAutoExportService service = CreateService();
+
+        service.Start();
+        await WaitUntilAsync(() => InfoService.Invocations.Count > 0, "导出异常后未提示");
+        Settings.RaiseSettingChanged(KeyValues.AutoExportInterval, 1d);
+        await Task.Delay(200);
+        service.Stop();
+
+        BgTaskService.Verify(x => x.AddBgTask(It.IsAny<BgTaskBase>()), Times.Once);
+        VerifyPausedNotified(Times.Once(), withException: true);
     }
 
     // 验证达到备份数量上限时，会在新导出开始前删除最旧的文件并保留较新的备份
@@ -200,6 +228,11 @@ public class AutoExportServiceTest : ServiceTestBase
 
     private TestAutoExportService CreateService() =>
         new(Settings, BgTaskService.Object, InfoService.Object, _timeProvider);
+
+    private void VerifyPausedNotified(Times times, bool withException = false) =>
+        InfoService.Verify(x => x.Event(EventType.BgTaskFailEvent, InfoBarSeverity.Warning,
+            It.IsAny<string>(), It.Is<Exception?>(e => (e != null) == withException), It.IsAny<string?>(),
+            It.IsAny<Action?>(), It.IsAny<string?>()), times);
 
     private async Task<string> ConfigureAsync(bool enabled, DateTime lastExportTime)
     {

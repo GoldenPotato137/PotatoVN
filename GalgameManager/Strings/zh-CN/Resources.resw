@@ -5059,4 +5059,7 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>没有可移动到的目标库，请先添加另一个库。</value>
   </data>
+  <data name="AutoExportService_Paused" xml:space="preserve">
+    <value>自动导出失败，下次启动软件前不再自动导出</value>
+  </data>
 </root>

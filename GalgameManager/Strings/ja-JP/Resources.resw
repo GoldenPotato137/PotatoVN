@@ -4076,4 +4076,7 @@
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>移動先のライブラリがありません。先に別のライブラリを追加してください。</value>
   </data>
+  <data name="AutoExportService_Paused" xml:space="preserve">
+    <value>自動エクスポートに失敗しました。次回起動まで自動エクスポートを停止します</value>
+  </data>
 </root>

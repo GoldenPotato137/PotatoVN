@@ -1,13 +1,14 @@
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
+using GalgameManager.Helpers;
 using GalgameManager.Models.BgTasks;
+using Microsoft.UI.Xaml.Controls;
 
 namespace GalgameManager.Services;
 
 public class AutoExportService : IAutoExportService
 {
     private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan FailureRetryInterval = TimeSpan.FromMinutes(5);
     private static readonly HashSet<string> RelevantSettingKeys =
     [
         KeyValues.AutoExport,
@@ -26,7 +27,6 @@ public class AutoExportService : IAutoExportService
     private readonly object _lifecycleLock = new();
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _runTask;
-    private DateTime _retryNotBefore = DateTime.MinValue;
 
     public AutoExportService(ILocalSettingsService localSettingsService, IBgTaskService bgTaskService,
         IInfoService infoService, TimeProvider timeProvider)
@@ -82,9 +82,14 @@ public class AutoExportService : IAutoExportService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            // 失败后本次运行内不再自动导出，避免持续失败时反复弹通知；下次启动软件时重新开始调度
             try
             {
-                await CheckAndExportAsync(cancellationToken);
+                if (!await CheckAndExportAsync(cancellationToken))
+                {
+                    NotifyPaused();
+                    return;
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -92,8 +97,8 @@ public class AutoExportService : IAutoExportService
             }
             catch (Exception e)
             {
-                _retryNotBefore = Now.Add(FailureRetryInterval);
-                _infoService.DeveloperEvent(e: e);
+                NotifyPaused(e);
+                return;
             }
 
             try
@@ -107,35 +112,32 @@ public class AutoExportService : IAutoExportService
         }
     }
 
-    private async Task CheckAndExportAsync(CancellationToken cancellationToken)
+    /// <returns>自动导出失败时返回 false；未到期、无需导出或导出成功时返回 true。</returns>
+    private async Task<bool> CheckAndExportAsync(CancellationToken cancellationToken)
     {
-        if (!await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoExport))
-        {
-            _retryNotBefore = DateTime.MinValue;
-            return;
-        }
-
-        DateTime now = Now;
-        if (now < _retryNotBefore) return;
+        if (!await _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoExport)) return true;
 
         DateTime lastExportTime = await _localSettingsService.ReadSettingAsync<DateTime>(KeyValues.LastExportTime);
         double intervalHours = await _localSettingsService.ReadSettingAsync<double>(KeyValues.AutoExportInterval);
         TimeSpan interval = double.IsFinite(intervalHours) && intervalHours > 0
             ? TimeSpan.FromHours(intervalHours)
             : TimeSpan.FromHours(1);
-        if (now < lastExportTime.Add(interval)) return;
+        if (Now < lastExportTime.Add(interval)) return true;
 
         string? path = await _localSettingsService.ReadSettingAsync<string>(KeyValues.AutoExportPath);
-        if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return;
+        if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return true;
 
         bool started = await ExportInternalAsync(path, pruneOldBackups: true, cancellationToken);
-        if (!started) return;
+        if (!started) return true;
 
+        // ExportTask 的异常由 BgTaskService 捕获并通知，这里只能通过导出时间是否更新来判断成败
         DateTime updatedExportTime = await _localSettingsService.ReadSettingAsync<DateTime>(KeyValues.LastExportTime);
-        _retryNotBefore = updatedExportTime > lastExportTime
-            ? DateTime.MinValue
-            : now.Add(FailureRetryInterval);
+        return updatedExportTime > lastExportTime;
     }
+
+    private void NotifyPaused(Exception? exception = null) =>
+        _infoService.Event(EventType.BgTaskFailEvent, InfoBarSeverity.Warning,
+            "AutoExportService_Paused".GetLocalized(), exception);
 
     private async Task<bool> ExportInternalAsync(string targetPath, bool pruneOldBackups,
         CancellationToken cancellationToken)
