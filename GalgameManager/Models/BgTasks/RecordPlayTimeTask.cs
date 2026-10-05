@@ -12,7 +12,7 @@ using GalgameManager.WinApp.Base.Models.Msgs;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
+public class RecordPlayTimeTask : BgTaskBase
 {
     private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
 
@@ -21,7 +21,6 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     public int CurrentPlayTime { get; set; } //本次游玩时间
     public Guid? InstallationId { get; set; } // 本次游玩使用的安装实例Id
     public override bool ProgressOnTrayIcon => true;
-    public string? DeduplicationKey => Galgame?.Uuid.ToString("D");
 
     public Galgame? Galgame;
     private Process? _process;
@@ -29,11 +28,23 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     private HashSet<int>? _knownProcessIds; // 开始跟踪时已存在于安装目录的进程，复查时只附着新出现的进程
     private volatile bool _stopped;
 
-    private readonly ILocalSettingsService _localSettingsService = App.GetService<ILocalSettingsService>();
-    private readonly IGalgameCollectionService _gameService = App.GetService<IGalgameCollectionService>();
+    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IGalgameCollectionService _gameService;
     private int _minPlayTimeRecordThreshold;
 
-    public RecordPlayTimeTask(){}
+    public RecordPlayTimeTask()
+        : this(App.GetService<ILocalSettingsService>(), App.GetService<IGalgameCollectionService>())
+    {
+    }
+
+    /// <summary>
+    /// 使用明确的服务依赖创建计时任务。
+    /// </summary>
+    public RecordPlayTimeTask(ILocalSettingsService localSettingsService, IGalgameCollectionService gameService)
+    {
+        _localSettingsService = localSettingsService;
+        _gameService = gameService;
+    }
 
     /// <summary>
     /// 使用游戏的首选安装实例创建游玩时间记录任务。
@@ -52,6 +63,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     /// <param name="process">要跟踪的游戏进程</param>
     /// <param name="installationId">本次游玩使用的安装实例Id</param>
     public RecordPlayTimeTask(Galgame game, Process process, Guid? installationId)
+        : this()
     {
         Debug.Assert(game.IsLocalGame);
         try
