@@ -28,7 +28,6 @@ public class KeyMappingTask : BgTaskBase
     private bool _runtimeGameMappingOptInEnabled;
     private KeyMappingRuntimeSnapshot _snapshot = KeyMappingRuntimeSnapshot.Empty;
     private KeyMappingRuntimeSnapshot? _pendingSnapshot;
-    private volatile int _confirmedGameplayProcessId;
     private readonly Dictionary<int, KeyMappingOutput> _activeKeyboardMappings = new();
     private readonly Dictionary<int, KeyMappingOutput> _activeMouseMappings = new();
     private readonly HashSet<int> _pressedPhysicalKeyboardKeys = [];
@@ -192,6 +191,11 @@ public class KeyMappingTask : BgTaskBase
 
     protected override Task RecoverFromJsonInternal()
     {
+        if (_processRelay is not null)
+        {
+            _process = _processRelay.CurrentProcess;
+            return Task.CompletedTask;
+        }
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         HasPreLaunchProcessSnapshot = false;
         PreExistingProcessIds = [];
@@ -202,7 +206,7 @@ public class KeyMappingTask : BgTaskBase
 
     protected override async Task RunInternal()
     {
-        if (_process is null || Galgame is null) return;
+        if (Galgame is null || (_process is null && _processRelay is null)) return;
 
         _localSettingsService = App.GetService<ILocalSettingsService>();
         _messenger = App.GetService<IMessenger>();
@@ -386,23 +390,30 @@ public class KeyMappingTask : BgTaskBase
 
     private async Task FollowGameProcessAsync()
     {
+        if (_processRelay is not null)
+        {
+            while (!_processRelay.IsCompleted)
+            {
+                Process? current = _processRelay.CurrentProcess;
+                if (current is not null && !ReferenceEquals(current, _process)) AttachProcess(current);
+                await Task.WhenAny(_processRelay.Completion, Task.Delay(200));
+            }
+            return;
+        }
+
+        // 单独恢复的旧任务仍保留原有兜底；正常启动和成组恢复不再独立搜索接力进程。
         while (_process is not null)
         {
-            TryFollowConfirmedProcess();
             Process? tracked = _process;
             if (tracked is null) break;
             while (ReferenceEquals(_process, tracked) && GameProcessDetector.IsAlive(tracked))
             {
-                TryFollowConfirmedProcess();
                 await Task.Delay(200);
             }
             if (!ReferenceEquals(_process, tracked)) continue;
 
             int exitedProcessId = GameProcessDetector.SafeGetId(tracked);
             if (exitedProcessId > 0) _trackedProcessIds.Add(exitedProcessId);
-            if (!GameSessionExitPolicy.ShouldWaitForReplacement(
-                    _confirmedGameplayProcessId > 0, _confirmedGameplayProcessId, exitedProcessId))
-                break;
             Process? replacement = await WaitForReplacementProcessAsync();
             if (replacement is null) break;
 
@@ -410,17 +421,7 @@ public class KeyMappingTask : BgTaskBase
         }
     }
 
-    private void TryFollowConfirmedProcess()
-    {
-        Process? confirmed = _processRelay?.ConfirmedProcess;
-        if (confirmed is null || !GameProcessDetector.IsAlive(confirmed)) return;
-        int confirmedProcessId = GameProcessDetector.SafeGetId(confirmed);
-        if (confirmedProcessId <= 0) return;
-
-        _confirmedGameplayProcessId = confirmedProcessId;
-        if (_process is not null && GameProcessDetector.SafeGetId(_process) == confirmedProcessId) return;
-        AttachProcess(confirmed);
-    }
+    internal void FollowProcessRelay(GameRuntimeProcessRelay? relay) => _processRelay ??= relay;
 
     private void AttachProcess(Process process)
     {

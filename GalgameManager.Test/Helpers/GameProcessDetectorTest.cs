@@ -24,13 +24,4 @@ public class GameProcessDetectorTest
         });
     }
 
-    [Test]
-    public void WaitForExitSafelyAsync_StillHonorsCancellationForRunningProcess()
-    {
-        using Process current = Process.GetCurrentProcess();
-        using CancellationTokenSource cancellation = new(TimeSpan.FromMilliseconds(100));
-
-        Assert.That(async () => await GameProcessDetector.WaitForExitSafelyAsync(current, cancellation.Token),
-            Throws.InstanceOf<OperationCanceledException>());
-    }
 }

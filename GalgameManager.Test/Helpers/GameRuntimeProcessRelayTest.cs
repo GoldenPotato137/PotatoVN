@@ -51,4 +51,72 @@ public class GameRuntimeProcessRelayTest
         Assert.That(await relay.WaitForConfirmationAsync(), Is.Null);
         Assert.That(relay.ConfirmedProcess, Is.Null);
     }
+
+    [Test]
+    public async Task Track_OnlyChangesTarget_DoesNotStartGameplay()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process process = Process.GetCurrentProcess();
+        relay.Track(process);
+        Task<Process?> confirmation = relay.WaitForConfirmationAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(relay.CurrentProcess, Is.SameAs(process));
+            Assert.That(relay.ConfirmedProcess, Is.Null);
+            Assert.That(confirmation.IsCompleted, Is.False);
+            Assert.That(relay.Completion.IsCompleted, Is.False);
+        });
+        relay.Complete();
+        Assert.That(await confirmation, Is.Null);
+        Assert.That(relay.Completion.IsCompletedSuccessfully, Is.True);
+    }
+
+    [Test]
+    public async Task Track_AfterConfirmation_WaitsForNewTargetConfirmation()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process first = Process.GetCurrentProcess();
+        using Process second = Process.GetCurrentProcess();
+        relay.Confirm(first);
+        relay.Track(second);
+        Task<Process?> confirmation = relay.WaitForConfirmationAsync();
+        Assert.That(confirmation.IsCompleted, Is.False);
+        relay.Confirm(second);
+        Assert.That(await confirmation, Is.SameAs(second));
+    }
+
+    [Test]
+    public async Task Complete_AfterConfirmation_ReleasesAllConsumersAndClearsTarget()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process process = Process.GetCurrentProcess();
+        relay.Confirm(process);
+        Task[] consumers = Enumerable.Range(0, 16).Select(_ => relay.Completion).ToArray();
+        relay.Complete();
+        relay.Track(process);
+        relay.Confirm(process);
+        await Task.WhenAll(consumers).WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Multiple(() =>
+        {
+            Assert.That(relay.CurrentProcess, Is.Null);
+            Assert.That(relay.ConfirmedProcess, Is.Null);
+            Assert.That(relay.IsCompleted, Is.True);
+        });
+        Assert.That(await relay.WaitForConfirmationAsync(), Is.Null);
+    }
+
+    [Test]
+    public async Task Complete_ConcurrentWithTrackAndConfirm_RemainsTerminal()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process process = Process.GetCurrentProcess();
+        await Task.WhenAll(Task.Run(() => relay.Track(process)), Task.Run(() => relay.Confirm(process)),
+            Task.Run(relay.Complete));
+        Assert.Multiple(() =>
+        {
+            Assert.That(relay.IsCompleted, Is.True);
+            Assert.That(relay.CurrentProcess, Is.Null);
+            Assert.That(relay.ConfirmedProcess, Is.Null);
+        });
+    }
 }

@@ -30,6 +30,12 @@ public class GameMuteTask : BgTaskBase
 
     protected override Task RecoverFromJsonInternal()
     {
+        if (_processRelay is not null)
+        {
+            _process = _processRelay.CurrentProcess;
+            if (_process is not null) UpdateProcessIdentity(_process);
+            return Task.CompletedTask;
+        }
         try
         {
             _process = Process.GetProcessById(ProcessId);
@@ -44,7 +50,7 @@ public class GameMuteTask : BgTaskBase
 
     protected async override Task RunInternal()
     {
-        if (Galgame is null || _process is null) return;
+        if (Galgame is null || (_process is null && _processRelay is null)) return;
         ChangeProgress(0, 1, "GameMuteTask_Starting".GetLocalized(Galgame.Name.Value!));
         
         // 确保开始时取消静音，防止上次异常退出导致的残留
@@ -52,6 +58,7 @@ public class GameMuteTask : BgTaskBase
 
         while (true)
         {
+            if (_processRelay?.IsCompleted == true) break;
             TryFollowConfirmedProcess();
             Process? current = _process;
             if (current is null || !GameProcessDetector.IsAlive(current))
@@ -91,13 +98,13 @@ public class GameMuteTask : BgTaskBase
                 }
 
                 // 每秒检查一次
-                await Task.Delay(1000);
+                await DelayOrCompletionAsync(1000);
             }
             catch (Exception ex)
             {
                 // 记录错误但继续运行
                 ChangeProgress(0, 1, $"GameMuteTask_MonitorError".GetLocalized() + ": " + ex.Message);
-                await Task.Delay(5000); // 出错时等待更长时间
+                await DelayOrCompletionAsync(5000); // 出错时等待更长时间
             }
         }
         
@@ -115,7 +122,7 @@ public class GameMuteTask : BgTaskBase
 
     private void TryFollowConfirmedProcess()
     {
-        Process? confirmed = _processRelay?.ConfirmedProcess;
+        Process? confirmed = _processRelay?.CurrentProcess;
         if (confirmed is null || !GameProcessDetector.IsAlive(confirmed)) return;
         int confirmedProcessId = GameProcessDetector.SafeGetId(confirmed);
         if (confirmedProcessId <= 0 || confirmedProcessId == ProcessId) return;
@@ -147,6 +154,12 @@ public class GameMuteTask : BgTaskBase
             // 短命启动器可能在任务创建前退出，稍后仍可接力到正式游戏进程。
         }
     }
+
+    internal void FollowProcessRelay(GameRuntimeProcessRelay? relay) => _processRelay ??= relay;
+
+    private Task DelayOrCompletionAsync(int milliseconds) => _processRelay is null
+        ? Task.Delay(milliseconds)
+        : Task.WhenAny(_processRelay.Completion, Task.Delay(milliseconds));
 
     public override string Title => "GameMuteTask_Title".GetLocalized();
 }

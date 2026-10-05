@@ -119,7 +119,7 @@ public sealed class GameLaunchService(
                 {
                     // 优先在游戏安装目录内自动探测游戏进程，失败再回退到手动选择
                     process = await GameProcessDetector.WaitForProcessInDirectoryAsync(installation.Path,
-                        ProcessWaitTimeout);
+                        ProcessWaitTimeout, preExistingProcessIds);
                     if (process is null)
                     {
                         if (!await DisplaySteamMessageAsync()) return;
@@ -186,9 +186,8 @@ public sealed class GameLaunchService(
             if (installation.Source is not null) sourceCollectionService.Save(installation.Source);
             await _gameService.SaveGalgameAsync(game);
 
-            GameWindowSnapshot? initialWindowSnapshot = GameProcessDetector.TryGetPrimaryWindowSnapshot(process);
-            _ = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId,
-                preExistingProcessIds, processRelay, initialWindowSnapshot, launchWindowTracker));
+            Task playTimeTask = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId,
+                preExistingProcessIds, processRelay, launchWindowTracker));
             // 计时任务接管启动窗口追踪器；启动服务提前结束时不能停止仍在等待接力的观察。
             launchWindowTracker = null;
             // 即使当前没有生效规则，也保留轻量运行时任务，
@@ -211,7 +210,8 @@ public sealed class GameLaunchService(
                 App.SetWindowMode(
                     await localSettingsService.ReadSettingAsync<WindowMode>(KeyValues.PlayingWindowMode));
 
-            await WaitForGameSessionEndAsync(process, processRelay);
+            // 启动中标记随整次计时任务结束，不再另行等待启动器或首个确认进程。
+            await playTimeTask;
         }
         catch (Win32Exception e) when (e.NativeErrorCode == 1223)
         {
@@ -225,7 +225,7 @@ public sealed class GameLaunchService(
         }
         finally
         {
-            launchWindowTracker?.Stop();
+            if (launchWindowTracker is not null) await launchWindowTracker.DisposeAsync();
         }
     }
 
@@ -252,47 +252,6 @@ public sealed class GameLaunchService(
             msg: "GalgamePage_Play_AlreadyRunning".GetLocalized(game.Name.Value ?? string.Empty));
         infoService.Log(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
             $"Game launch ignored: reason={reason}, gameUuid={game.Uuid:D}");
-    }
-
-    private static async Task WaitForGameSessionEndAsync(Process initialProcess,
-        GameRuntimeProcessRelay processRelay)
-    {
-        using CancellationTokenSource initialProcessExitCancellation = new();
-        Task initialProcessExit = GameProcessDetector.WaitForExitSafelyAsync(initialProcess,
-            initialProcessExitCancellation.Token);
-        try
-        {
-            Task<Process?> gameplayProcessConfirmation = processRelay.WaitForConfirmationAsync();
-            Task completed = await Task.WhenAny(initialProcessExit, gameplayProcessConfirmation);
-            if (completed == initialProcessExit)
-            {
-                await initialProcessExit;
-                return;
-            }
-
-            Process? gameplayProcess = await gameplayProcessConfirmation;
-            if (gameplayProcess is null) return;
-            if (GameProcessDetector.SafeGetId(gameplayProcess) == GameProcessDetector.SafeGetId(initialProcess))
-            {
-                await initialProcessExit;
-                return;
-            }
-
-            initialProcessExitCancellation.Cancel();
-            await GameProcessDetector.WaitForExitSafelyAsync(gameplayProcess);
-        }
-        finally
-        {
-            initialProcessExitCancellation.Cancel();
-            try
-            {
-                await initialProcessExit;
-            }
-            catch (OperationCanceledException) when (initialProcessExitCancellation.IsCancellationRequested)
-            {
-                // 进程接力后不再等待启动器退出，但仍观察已取消的等待任务。
-            }
-        }
     }
 
     private static async Task<Process?> WaitForProcessStartAsync(string processName,

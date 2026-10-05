@@ -5,7 +5,7 @@ namespace GalgameManager.Helpers;
 /// </summary>
 public readonly record struct GameWindowSnapshot(
     int ProcessId,
-    nint WindowHandle,
+    long WindowHandle,
     string ClassName,
     string Title,
     int Width,
@@ -41,6 +41,19 @@ public sealed class GameWindowTransitionGate
 
     public bool IsReady => Stage == GameWindowTransitionStage.Ready;
 
+    public GameWindowSnapshot? Baseline => _baseline;
+
+    /// <summary>
+    /// 恢复此前已经观察到的启动窗口，重启后继续等待同一窗口的有效切换。
+    /// </summary>
+    public void RestoreBaseline(GameWindowSnapshot? snapshot)
+    {
+        if (snapshot is not { IsUsable: true }) return;
+        _baseline = snapshot;
+        _baselineSamples = RequiredStableSamples;
+        ResetCandidate();
+    }
+
     public bool Observe(GameWindowSnapshot? snapshot)
     {
         if (IsReady) return true;
@@ -54,8 +67,11 @@ public sealed class GameWindowTransitionGate
         if (!_baseline.HasValue)
         {
             _baseline = current;
-            _baselineSamples = 1;
-            Stage = GameWindowTransitionStage.WaitingForBaseline;
+            // 已识别的标准启动对话框无需重复采样才能成为基线，保留快速确认弹窗的历史。
+            _baselineSamples = IsStandardDialog(current) ? RequiredStableSamples : 1;
+            Stage = _baselineSamples >= RequiredStableSamples
+                ? GameWindowTransitionStage.WaitingForTransition
+                : GameWindowTransitionStage.WaitingForBaseline;
             return false;
         }
 
@@ -145,6 +161,8 @@ public sealed class StableProcessHandoffGate
     private int _candidateProcessId;
     private int _candidateSamples;
 
+    public bool HasPendingCandidate => _candidateProcessId > 0;
+
     public bool Observe(int trackedProcessId, int? foregroundProcessId)
     {
         if (!foregroundProcessId.HasValue || foregroundProcessId.Value <= 0 ||
@@ -221,9 +239,10 @@ public sealed class StableGameWindowGate
 public static class GameSessionExitPolicy
 {
     /// <summary>
-    /// 只有尚未确认的启动阶段进程需要等待替代进程；已经确认的正式游戏 PID 退出后应立即结束。
+    /// 尚未确认的启动阶段或已经观察到接力候选时等待替代进程，否则正式游戏 PID 退出后立即结束。
     /// </summary>
     public static bool ShouldWaitForReplacement(bool recordingStarted, int confirmedGameplayProcessId,
-        int exitedProcessId) =>
-        !recordingStarted || confirmedGameplayProcessId <= 0 || confirmedGameplayProcessId != exitedProcessId;
+        int exitedProcessId, bool pendingHandoff = false) =>
+        pendingHandoff || !recordingStarted || confirmedGameplayProcessId <= 0 ||
+        confirmedGameplayProcessId != exitedProcessId;
 }

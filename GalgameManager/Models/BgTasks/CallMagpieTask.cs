@@ -42,13 +42,15 @@ public class CallMagpieTask : BgTaskBase
     protected async override Task RecoverFromJsonInternal()
     {
         await Task.CompletedTask;
-        _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
+        _process = _processRelay is null
+            ? Process.GetProcessesByName(ProcessName).FirstOrDefault()
+            : _processRelay.CurrentProcess;
     }
 
     protected async override Task RunInternal()
     {
         if (Galgame is null) throw new PvnException("Galgame is null");
-        if (_process is null)
+        if (_process is null && _processRelay is null)
         {
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
             if (_process is null) throw new PvnException("Process not found");
@@ -68,7 +70,7 @@ public class CallMagpieTask : BgTaskBase
         ChangeProgress(0, 1, "CallMagpieTask_LaunchingMagpie".GetLocalized());
         await MagpieHelper.LaunchMagpieAsync(magpiePath);
 
-        if (!GameProcessDetector.IsAlive(_process) || HashFinished) return;
+        if (_process is null || !GameProcessDetector.IsAlive(_process) || HashFinished) return;
         try
         {
             ProcessName = _process.ProcessName;
@@ -79,6 +81,13 @@ public class CallMagpieTask : BgTaskBase
         }
         for (var retry = 0; retry < MaxRetryCount && !HashFinished; retry++)
         {
+            if (_processRelay?.IsCompleted == true) break;
+            if (_processRelay is not null)
+            {
+                Process? current = await _processRelay.WaitForConfirmationAsync();
+                if (current is null || !GameProcessDetector.IsAlive(current)) break;
+                _process = current;
+            }
             try
             {
                 ChangeProgress(0, 1, "CallMagpieTask_Trying".GetLocalized(retry));
@@ -88,13 +97,16 @@ public class CallMagpieTask : BgTaskBase
             catch (MagpieHelper.MagpieNoMainWinException)
             {
                 // 主窗口还没出现，等待一会儿
-                await Task.Delay(1000);
+                if (_processRelay is null) await Task.Delay(1000);
+                else await Task.WhenAny(_processRelay.Completion, Task.Delay(1000));
             }
         }
         ChangeProgress(1 ,1, "CallMagpieTask_ProgressMsg".GetLocalized(Galgame.Name.Value!));
     }
 
     public override string Title => "CallMagpieTask_Title".GetLocalized();
+
+    internal void FollowProcessRelay(GameRuntimeProcessRelay? relay) => _processRelay ??= relay;
 }
 
 public static class MagpieHelper

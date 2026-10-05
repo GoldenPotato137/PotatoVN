@@ -3,7 +3,7 @@ namespace GalgameManager.Helpers;
 /// <summary>
 /// 从游戏启动前开始保存安装目录中新进程的窗口变化，避免后台任务附着较晚时漏掉启动弹窗。
 /// </summary>
-public sealed class GameLaunchWindowTracker
+public sealed class GameLaunchWindowTracker : IAsyncDisposable
 {
     private static readonly TimeSpan InitialObservationInterval = TimeSpan.FromMilliseconds(50);
     private static readonly TimeSpan StableObservationInterval = TimeSpan.FromMilliseconds(100);
@@ -14,6 +14,20 @@ public sealed class GameLaunchWindowTracker
     private GameWindowSnapshot? _lastLoggedSnapshot;
     private GameWindowSnapshot? _confirmedSnapshot;
     private Task? _observationTask;
+    private volatile int _trackedProcessId;
+
+    public GameLaunchWindowTracker(GameWindowSnapshot? baseline = null) => _gate.RestoreBaseline(baseline);
+
+    public GameWindowSnapshot? Baseline
+    {
+        get
+        {
+            lock (_syncRoot)
+                return _gate.Baseline;
+        }
+    }
+
+    public void TrackProcess(int processId) => _trackedProcessId = processId;
 
     public GameWindowTransitionStage Stage
     {
@@ -36,7 +50,7 @@ public sealed class GameLaunchWindowTracker
     /// <summary>
     /// 在启动操作执行前开始观察，确保短命启动进程退出前后的窗口都能进入同一段历史。
     /// </summary>
-    public void Start(string directoryPrefix, IReadOnlyCollection<int> preExistingProcessIds)
+    public void Start(string? directoryPrefix, IReadOnlyCollection<int> preExistingProcessIds)
     {
         lock (_syncRoot)
         {
@@ -48,8 +62,10 @@ public sealed class GameLaunchWindowTracker
                 {
                     while (!_cancellation.IsCancellationRequested && ConfirmedSnapshot is null)
                     {
-                        GameWindowSnapshot? snapshot =
+                        GameWindowSnapshot? snapshot = directoryPrefix is null ? null :
                             GameProcessDetector.TryGetPrimaryWindowSnapshotInDirectory(directoryPrefix, excluded);
+                        // 目录路径不可读取时仍通过已知 PID 观察窗口，所有采样都由本循环执行。
+                        snapshot ??= GameProcessDetector.TryGetPrimaryWindowSnapshot(_trackedProcessId);
                         _ = Observe(snapshot);
                         TimeSpan interval = Stage == GameWindowTransitionStage.WaitingForBaseline
                             ? InitialObservationInterval
@@ -66,7 +82,7 @@ public sealed class GameLaunchWindowTracker
     }
 
     /// <summary>
-    /// 将已经附着进程的窗口也并入同一状态机，补足目录路径不可读取的受保护进程场景。
+    /// 将一次采样并入窗口转换历史；运行时只由观察循环调用。
     /// </summary>
     public bool Observe(GameWindowSnapshot? snapshot)
     {
@@ -98,4 +114,11 @@ public sealed class GameLaunchWindowTracker
     }
 
     public void Stop() => _cancellation.Cancel();
+
+    public async ValueTask DisposeAsync()
+    {
+        Stop();
+        if (_observationTask is not null) await _observationTask;
+        _cancellation.Dispose();
+    }
 }

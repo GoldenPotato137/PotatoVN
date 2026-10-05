@@ -265,31 +265,6 @@ public static class GameProcessDetector
         return false;
     }
 
-    /// <summary>
-    /// 等待进程退出；Windows 拒绝为管理员进程授予等待或查询句柄时，
-    /// 回退到 PID 快照轮询。
-    /// </summary>
-    public static async Task WaitForExitSafelyAsync(Process process, CancellationToken cancellationToken = default)
-    {
-        int processId = SafeGetId(process);
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken);
-            return;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch
-        {
-            // ShellExecute 代理和管理员目标进程可能不提供可等待句柄。
-        }
-
-        while (IsProcessIdPresent(processId))
-            await Task.Delay(1000, cancellationToken);
-    }
-
     public static bool HasWindow(Process process)
     {
         try
@@ -307,8 +282,10 @@ public static class GameProcessDetector
     /// 这里通过 user32 枚举窗口，不打开进程查询句柄，因此仍可观察管理员权限游戏。
     /// </summary>
     public static GameWindowSnapshot? TryGetPrimaryWindowSnapshot(Process process)
+        => TryGetPrimaryWindowSnapshot(SafeGetId(process));
+
+    public static GameWindowSnapshot? TryGetPrimaryWindowSnapshot(int processId)
     {
-        int processId = SafeGetId(process);
         if (processId <= 0) return null;
 
         nint foregroundWindow = GetForegroundWindow();
