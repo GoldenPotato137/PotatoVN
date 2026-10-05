@@ -3640,7 +3640,7 @@
     <value />
   </data>
   <data name="StorePlugin_Installed" xml:space="preserve">
-    <value>インストール済み</value>
+    <value>導入済み</value>
   </data>
   <data name="StorePlugin_UpdateAvailable" xml:space="preserve">
     <value>更新あり</value>
@@ -4075,6 +4075,123 @@
   </data>
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>移動先のライブラリがありません。先に別のライブラリを追加してください。</value>
+  </data>
+  <data name="AutoExportService_Paused" xml:space="preserve">
+    <value>自動エクスポートに失敗しました。次回起動まで自動エクスポートを停止します</value>
+  </data>
+  <data name="PluginStorePage_Downloads.ToolTipService.ToolTip" xml:space="preserve">
+    <value>ダウンロード数</value>
+  </data>
+  <data name="GetStorePluginTask_ProgressTitle" xml:space="preserve">
+    <value>{0}個のプラグイン情報を取得中</value>
+  </data>
+  <data name="GetStorePluginTask_ProgressWaitingMsg" xml:space="preserve">
+    <value>{0}個のプラグインが情報の取得を待っています</value>
+  </data>
+  <data name="GetStorePluginTask_Title" xml:space="preserve">
+    <value>プラグイン一覧の取得</value>
+  </data>
+  <data name="InstallStorePluginTask_Downloading" xml:space="preserve">
+    <value>プラグイン {0} をダウンロード中...</value>
+  </data>
+  <data name="InstallStorePluginTask_Downloading_NoLength" xml:space="preserve">
+    <value>プラグインをダウンロード中、{0} kB/s</value>
+  </data>
+  <data name="InstallStorePluginTask_Installed" xml:space="preserve">
+    <value>プラグイン{0}のインストールが完了し、有効になりました</value>
+  </data>
+  <data name="InstallStorePluginTask_Title" xml:space="preserve">
+    <value>プラグイン{0}のインストール</value>
+  </data>
+  <data name="PluginPage_Add.Label" xml:space="preserve">
+    <value>プラグインを追加</value>
+  </data>
+  <data name="PluginPage_Add_Dev.Label" xml:space="preserve">
+    <value>プラグインを追加（開発者）</value>
+  </data>
+  <data name="PluginPage_Add_Failed" xml:space="preserve">
+    <value>プラグインの追加に失敗しました</value>
+  </data>
+  <data name="PluginPage_DeleteDialog_DeleteData" xml:space="preserve">
+    <value>プラグインデータも削除する</value>
+  </data>
+  <data name="PluginPage_DeleteDialog_Title" xml:space="preserve">
+    <value>プラグインを削除</value>
+  </data>
+  <data name="PluginPage_DeleteDialog_Yes" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="PluginPage_HotReloadDialog_DeleteData" xml:space="preserve">
+    <value>プラグインデータも削除する</value>
+  </data>
+  <data name="PluginPage_HotReloadDialog_Title" xml:space="preserve">
+    <value>プラグインをホットリロード</value>
+  </data>
+  <data name="PluginPage_HotReloadDialog_Yes" xml:space="preserve">
+    <value>ホットリロード</value>
+  </data>
+  <data name="PluginPage_PluginStatus.OffContent" xml:space="preserve">
+    <value>無効</value>
+  </data>
+  <data name="PluginPage_PluginStatus.OnContent" xml:space="preserve">
+    <value>有効</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin.Description" xml:space="preserve">
+    <value>アンインストールボタンを押した後、プラグインデータを残すかどうかを選択できます</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin.Title" xml:space="preserve">
+    <value>プラグインをアンインストール</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin_Button.Content" xml:space="preserve">
+    <value>アンインストール</value>
+  </data>
+  <data name="PluginPage_UninstallPlugin_HotReloadButton.Content" xml:space="preserve">
+    <value>ホットリロード</value>
+  </data>
+  <data name="PluginStorePage_UpgradeQueued" xml:space="preserve">
+    <value>新しいバージョンは次回起動時にインストールされ、有効になります~</value>
+  </data>
+  <data name="PluginType_All" xml:space="preserve">
+    <value>すべて</value>
+  </data>
+  <data name="PluginType_Huge" xml:space="preserve">
+    <value>大型</value>
+  </data>
+  <data name="PluginType_Library" xml:space="preserve">
+    <value>ライブラリ</value>
+  </data>
+  <data name="PluginType_Official" xml:space="preserve">
+    <value>公式</value>
+  </data>
+  <data name="PluginType_Parser" xml:space="preserve">
+    <value>スクレイパー</value>
+  </data>
+  <data name="PluginType_Theme" xml:space="preserve">
+    <value>テーマ</value>
+  </data>
+  <data name="PluginType_Utility" xml:space="preserve">
+    <value>機能改善</value>
+  </data>
+  <data name="PluginType_View" xml:space="preserve">
+    <value>UI改善</value>
+  </data>
+  <data name="StorePluginDialog_DownloadLatest" xml:space="preserve">
+    <value>最新バージョンをインストール</value>
+  </data>
+  <data name="StorePluginDialog_DownloadSelected" xml:space="preserve">
+    <value>v{0}をインストール</value>
+  </data>
+  <data name="StorePluginDialog_LatestVersionDate" xml:space="preserve">
+    <value>最新版の日付：</value>
+  </data>
+  <data name="StorePluginDialog_PluginVersion.Text" xml:space="preserve">
+    <value>プラグインのバージョン</value>
+  </data>
+  <data name="StorePluginDialog_ProjectLink.Content" xml:space="preserve">
+    <value>プロジェクトページ</value>
+  </data>
+  <data name="StorePluginDialog_WaitingOffload" xml:space="preserve">
+    <value>アプリを再起動してからプラグインを追加してください</value>
   </data>
   <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
     <value>「{0}」はすでに実行中か、プレイ時間を記録中です。</value>

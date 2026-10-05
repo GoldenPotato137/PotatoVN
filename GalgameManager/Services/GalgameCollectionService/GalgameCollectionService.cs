@@ -1074,16 +1074,21 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         }
     }
 
-    private void OnPluginLoaded(object recipient, PluginLoadArgs message)
+    private async void OnPluginLoaded(object recipient, PluginLoadArgs message)
     {
         try
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
-            if (message.Plugin is not IParserProvider provider) return;
-            IGalInfoPhraser parser = provider.GetPhraser();
-            RssType type = parser.GetPhraseType();
-            PhraserList[(int)type] = parser;
-            EnumExtension.Register(type.GetType(), (int)type, provider.ParserName);
+            if (message.Plugin is IParserProvider provider)
+            {
+                IGalInfoPhraser parser = provider.GetPhraser();
+                RssType type = parser.GetPhraseType();
+                PhraserList[(int)type] = parser;
+                EnumExtension.Register(type.GetType(), (int)type, provider.ParserName);
+            }
+
+            // 插件加载后（可能包含网络代理插件注册了 DefaultProxy），刷新内置 Bangumi 数据源以应用最新代理
+            PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
         }
         catch (Exception e)
         {
