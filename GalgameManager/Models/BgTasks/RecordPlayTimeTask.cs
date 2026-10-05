@@ -12,7 +12,7 @@ using GalgameManager.WinApp.Base.Models.Msgs;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
+public class RecordPlayTimeTask : BgTaskBase
 {
     private const int ManuallySelectProcessSec = 15; //认定为需要手动选择游戏进程的时间阈值
 
@@ -24,7 +24,6 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     public List<int> PreExistingProcessIds { get; set; } = []; // 启动前已经存在于安装目录的进程Id
     public bool DelayPlayTimeUntilMainWindow { get; set; } // 等待声明/启动器窗口切换后再开始计时
     public override bool ProgressOnTrayIcon => true;
-    public string? DeduplicationKey => Galgame?.Uuid.ToString("D");
 
     public Galgame? Galgame;
     private volatile Process? _process;
@@ -41,11 +40,23 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     private GameWindowSnapshot? _initialWindowSnapshot;
     private GameLaunchWindowTracker? _launchWindowTracker;
 
-    private readonly ILocalSettingsService _localSettingsService = App.GetService<ILocalSettingsService>();
-    private readonly IGalgameCollectionService _gameService = App.GetService<IGalgameCollectionService>();
+    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IGalgameCollectionService _gameService;
     private int _minPlayTimeRecordThreshold;
 
-    public RecordPlayTimeTask(){}
+    public RecordPlayTimeTask()
+        : this(App.GetService<ILocalSettingsService>(), App.GetService<IGalgameCollectionService>())
+    {
+    }
+
+    /// <summary>
+    /// 使用明确的服务依赖创建计时任务。
+    /// </summary>
+    public RecordPlayTimeTask(ILocalSettingsService localSettingsService, IGalgameCollectionService gameService)
+    {
+        _localSettingsService = localSettingsService;
+        _gameService = gameService;
+    }
 
     /// <summary>
     /// 使用游戏的首选安装实例创建游玩时间记录任务。
@@ -111,6 +122,7 @@ public class RecordPlayTimeTask : BgTaskBase, IDeduplicatedBgTask
     public RecordPlayTimeTask(Galgame game, Process process, Guid? installationId,
         IReadOnlyCollection<int>? preExistingProcessIds, GameRuntimeProcessRelay? processRelay,
         GameWindowSnapshot? initialWindowSnapshot, GameLaunchWindowTracker? launchWindowTracker)
+        : this()
     {
         Debug.Assert(game.IsLocalGame);
         Galgame = game;

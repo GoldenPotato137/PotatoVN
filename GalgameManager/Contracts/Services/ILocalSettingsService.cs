@@ -97,11 +97,6 @@ public interface ILocalSettingsService
     Task<string> BackupFailedDataAsync(bool removeAfterBackup = true);
 
     /// <summary>
-    /// App启动时调用
-    /// </summary>
-    public Task StartupAsync();
-
-    /// <summary>
     /// 若当前数据来自导入（<see cref="Models.LocalSettingStatus.ImportPageSettings"/> 为 false），
     /// 把导出包中携带的游戏列表页/库页设置（排序等）写回本机设置，随后标记为已处理。<br/>
     /// 应在导入解压完成、页面读取设置之前调用，且仅生效一次。

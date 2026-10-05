@@ -132,29 +132,14 @@ public class BgTaskService : IBgTaskService
     {
         try
         {
-            string? rejectedDuplicateKey = null;
             lock (_bgTasksLock)
             {
-                if (bgTask is IDeduplicatedBgTask { DeduplicationKey: { Length: > 0 } key } &&
-                    _bgTasks.Any(existing => existing.GetType() == bgTask.GetType() &&
-                                             existing is IDeduplicatedBgTask deduplicated &&
-                                             string.Equals(deduplicated.DeduplicationKey, key,
-                                                 StringComparison.Ordinal)))
-                {
-                    rejectedDuplicateKey = key;
-                }
-                else
-                {
-                    _bgTasks.Add(bgTask);
-                }
-            }
+                // 复用任务的检索规则，并将检查与入队放在同一把锁内，覆盖并发添加和托盘恢复。
+                if (bgTask is RecordPlayTimeTask { Galgame: { } game } &&
+                    GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D")) is not null)
+                    return Task.CompletedTask;
 
-            if (rejectedDuplicateKey is not null)
-            {
-                _infoService.DeveloperEvent(
-                    msg: $"Ignored duplicate background task: type={bgTask.GetType().Name}, " +
-                         $"key={rejectedDuplicateKey}");
-                return Task.CompletedTask;
+                _bgTasks.Add(bgTask);
             }
 
             if (bgTask.ProgressOnTrayIcon)

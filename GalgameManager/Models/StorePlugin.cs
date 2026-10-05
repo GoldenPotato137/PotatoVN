@@ -30,6 +30,8 @@ public partial class StorePlugin : ObservableObject
     [ObservableProperty] private DateTime _releaseDate;
     /// 插件各个版本与下载链接
     public List<StorePluginVersion> Versions { get; set; } = [];
+    /// 插件所有版本的下载次数之和
+    public long Downloads => Versions.Sum(v => v.Downloads);
     /// 插件类别
     public List<PluginType> Types { get; set; } = [];
 
@@ -68,6 +70,7 @@ public class StorePluginVersion
     public Version Version = new();
     public string DownloadUrl = string.Empty;
     public DateTime ReleaseDate;
+    public long Downloads;
 }
 
 public class ToInstallStorePlugin

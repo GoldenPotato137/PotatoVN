@@ -35,6 +35,7 @@ public class ActivationService : IActivationService
     private readonly IPvnService _pvnService;
     private readonly IPluginService _pluginService;
     private readonly IInfoService _infoService;
+    private readonly IAutoExportService _autoExportService;
 
     public ActivationService(
         IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService,
@@ -44,7 +45,8 @@ public class ActivationService : IActivationService
         ICategoryService categoryService,IBgmOAuthService bgmOAuthService,
         IAuthenticationService authenticationService, ILocalSettingsService localSettingsService,
         IFilterService filterService, IPageService pageService, IBgTaskService bgTaskService, IPvnService pvnService,
-        IInfoService infoService, IStaffService staffService, IPluginService pluginService, ISidebarService sidebarService)
+        IInfoService infoService, IStaffService staffService, IPluginService pluginService,
+        ISidebarService sidebarService, IAutoExportService autoExportService)
     {
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
@@ -64,6 +66,7 @@ public class ActivationService : IActivationService
         _staffService = staffService;
         _pluginService = pluginService;
         _sidebarService = sidebarService;
+        _autoExportService = autoExportService;
     }
 
     public async Task LaunchedAsync(object activationArgs)
@@ -213,10 +216,10 @@ public class ActivationService : IActivationService
             activateWindow = !await _localSettingsService.ReadSettingAsync<bool>(KeyValues.MinToTrayWhenAutoStart);
         if (activateWindow) App.SetWindowMode(WindowMode.Normal);
         await _pluginService.InitAsync();
+        if (!isUpgradeUiTest) _autoExportService.Start();
         if (IsRestart() == false && !isUpgradeUiTest)
         {
             _pvnService.Startup();
-            await _localSettingsService.StartupAsync();
             await _updateService.UpdateSettingsBadgeAsync();
         }
         if (!isUpgradeUiTest)
