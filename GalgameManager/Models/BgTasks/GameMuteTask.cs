@@ -12,6 +12,7 @@ public class GameMuteTask : BgTaskBase
     public bool IsMuted { get; set; }
     private Process? _process;
     private GameRuntimeProcessRelay? _processRelay;
+    private readonly HashSet<Process> _ownedProcesses = [];
 
     public GameMuteTask() { } // 仅用于后台任务序列化恢复
 
@@ -23,7 +24,7 @@ public class GameMuteTask : BgTaskBase
     public GameMuteTask(Galgame game, Process process, GameRuntimeProcessRelay? processRelay)
     {
         Galgame = game;
-        _process = process;
+        _process = processRelay is null ? process : null;
         _processRelay = processRelay;
         UpdateProcessIdentity(process);
     }
@@ -32,7 +33,8 @@ public class GameMuteTask : BgTaskBase
     {
         if (_processRelay is not null)
         {
-            _process = _processRelay.CurrentProcess;
+            _process = _processRelay.OpenCurrentProcess();
+            if (_process is not null) _ownedProcesses.Add(_process);
             if (_process is not null) UpdateProcessIdentity(_process);
             return Task.CompletedTask;
         }
@@ -45,10 +47,24 @@ public class GameMuteTask : BgTaskBase
             // 进程可能已经退出，回退到按名称查找。
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         }
+        if (_process is not null) _ownedProcesses.Add(_process);
         return Task.CompletedTask;
     }
 
     protected async override Task RunInternal()
+    {
+        try
+        {
+            await RunCoreAsync();
+        }
+        finally
+        {
+            foreach (Process process in _ownedProcesses) process.Dispose();
+            _ownedProcesses.Clear();
+        }
+    }
+
+    private async Task RunCoreAsync()
     {
         if (Galgame is null || (_process is null && _processRelay is null)) return;
         ChangeProgress(0, 1, "GameMuteTask_Starting".GetLocalized(Galgame.Name.Value!));
@@ -122,10 +138,12 @@ public class GameMuteTask : BgTaskBase
 
     private void TryFollowConfirmedProcess()
     {
-        Process? confirmed = _processRelay?.CurrentProcess;
+        Process? confirmed = _processRelay?.OpenCurrentProcess(
+            _process is not null && _ownedProcesses.Contains(_process) ? ProcessId : 0);
+        if (confirmed is not null) _ownedProcesses.Add(confirmed);
         if (confirmed is null || !GameProcessDetector.IsAlive(confirmed)) return;
         int confirmedProcessId = GameProcessDetector.SafeGetId(confirmed);
-        if (confirmedProcessId <= 0 || confirmedProcessId == ProcessId) return;
+        if (confirmedProcessId <= 0) return;
 
         try
         {

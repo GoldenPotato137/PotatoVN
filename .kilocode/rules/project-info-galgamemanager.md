@@ -257,6 +257,7 @@ This document provides a foundational knowledge base. For specific implementatio
 ## 8. Service Unit Testing Pattern
 
 - 同一次游戏启动的进程接力由 `RecordPlayTimeTask` 统一判断；`GameRuntimeProcessRelay` 共享观察目标、窗口确认及结束信号。辅助任务正常启动或成组恢复时不再各自寻找替代进程；`BgTaskService` 优先恢复计时任务后按游戏 UUID 连接辅助任务。无关联计时任务的旧任务保留独立恢复兜底。
+- 进程共享信号不转交 `Process` 对象的释放责任。计时任务持有原对象，辅助任务通过中继打开同一 PID 的独立对象，并在自身结束时释放；打开过程与中继结束共用锁，避免计时任务收尾释放后辅助任务继续读取已释放对象。
 - 后台计时恢复同时保存 PID、进程创建时间、是否已开始计时及启动窗口基线。窗口句柄以 `long` 保存用于 JSON 往返；恢复前需核对进程身份，避免 PID 复用。旧零分钟任务缺少计时阶段时不能推断已通过弹窗检查，应保守恢复等待，不补算离线时间。
 
 Client services can be unit-tested in the plain NUnit process (no `App`, no WinAppSDK bootstrap) thanks to three production seams plus a shared test base. Use this pattern when making another service testable.

@@ -22,6 +22,7 @@ public class KeyMappingTask : BgTaskBase
 
     private volatile Process? _process;
     private GameRuntimeProcessRelay? _processRelay;
+    private readonly HashSet<Process> _ownedProcesses = [];
     private string[] _directoryPrefixes = [];
     private readonly HashSet<int> _trackedProcessIds = [];
     private List<KeyMapping> _runtimeGameMappings = [];
@@ -161,7 +162,7 @@ public class KeyMappingTask : BgTaskBase
         : this()
     {
         Galgame = game;
-        _process = process;
+        _process = processRelay is null ? process : null;
         _processRelay = processRelay;
         HasPreLaunchProcessSnapshot = preExistingProcessIds is not null;
         PreExistingProcessIds = preExistingProcessIds?.ToList() ?? [];
@@ -193,10 +194,12 @@ public class KeyMappingTask : BgTaskBase
     {
         if (_processRelay is not null)
         {
-            _process = _processRelay.CurrentProcess;
+            _process = _processRelay.OpenCurrentProcess();
+            if (_process is not null) _ownedProcesses.Add(_process);
             return Task.CompletedTask;
         }
         _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
+        if (_process is not null) _ownedProcesses.Add(_process);
         HasPreLaunchProcessSnapshot = false;
         PreExistingProcessIds = [];
         if (_process is not null) _trackedProcessIds.Add(GameProcessDetector.SafeGetId(_process));
@@ -205,6 +208,20 @@ public class KeyMappingTask : BgTaskBase
     }
 
     protected override async Task RunInternal()
+    {
+        try
+        {
+            await RunCoreAsync();
+        }
+        finally
+        {
+            // 钩子线程退出后再释放本任务的对象，不与计时任务共享释放责任。
+            foreach (Process process in _ownedProcesses) process.Dispose();
+            _ownedProcesses.Clear();
+        }
+    }
+
+    private async Task RunCoreAsync()
     {
         if (Galgame is null || (_process is null && _processRelay is null)) return;
 
@@ -394,8 +411,14 @@ public class KeyMappingTask : BgTaskBase
         {
             while (!_processRelay.IsCompleted)
             {
-                Process? current = _processRelay.CurrentProcess;
-                if (current is not null && !ReferenceEquals(current, _process)) AttachProcess(current);
+                Process? current = _processRelay.OpenCurrentProcess(
+                    _process is not null && _ownedProcesses.Contains(_process)
+                        ? GameProcessDetector.SafeGetId(_process) : 0);
+                if (current is not null)
+                {
+                    _ownedProcesses.Add(current);
+                    AttachProcess(current);
+                }
                 await Task.WhenAny(_processRelay.Completion, Task.Delay(200));
             }
             return;
@@ -417,6 +440,7 @@ public class KeyMappingTask : BgTaskBase
             Process? replacement = await WaitForReplacementProcessAsync();
             if (replacement is null) break;
 
+            _ownedProcesses.Add(replacement);
             AttachProcess(replacement);
         }
     }

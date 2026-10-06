@@ -16,6 +16,7 @@ public class CallMagpieTask : BgTaskBase
     public bool HashFinished { get; set; }
     private Process? _process;
     private GameRuntimeProcessRelay? _processRelay;
+    private readonly HashSet<Process> _ownedProcesses = [];
 
     public CallMagpieTask() { } // 仅用于后台任务序列化恢复
 
@@ -27,7 +28,7 @@ public class CallMagpieTask : BgTaskBase
     public CallMagpieTask(Galgame game, Process process, GameRuntimeProcessRelay? processRelay)
     {
         Galgame = game;
-        _process = process;
+        _process = processRelay is null ? process : null;
         _processRelay = processRelay;
         try
         {
@@ -44,20 +45,36 @@ public class CallMagpieTask : BgTaskBase
         await Task.CompletedTask;
         _process = _processRelay is null
             ? Process.GetProcessesByName(ProcessName).FirstOrDefault()
-            : _processRelay.CurrentProcess;
+            : null;
+        if (_process is not null) _ownedProcesses.Add(_process);
     }
 
     protected async override Task RunInternal()
+    {
+        try
+        {
+            await RunCoreAsync();
+        }
+        finally
+        {
+            foreach (Process process in _ownedProcesses) process.Dispose();
+            _ownedProcesses.Clear();
+        }
+    }
+
+    private async Task RunCoreAsync()
     {
         if (Galgame is null) throw new PvnException("Galgame is null");
         if (_process is null && _processRelay is null)
         {
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
             if (_process is null) throw new PvnException("Process not found");
+            _ownedProcesses.Add(_process);
         }
         if (_processRelay is not null)
         {
             Process? confirmed = await _processRelay.WaitForConfirmationAsync();
+            if (confirmed is not null) _ownedProcesses.Add(confirmed);
             if (confirmed is null || !GameProcessDetector.IsAlive(confirmed) || HashFinished)
             {
                 ChangeProgress(1, 1, string.Empty, false);
@@ -85,6 +102,7 @@ public class CallMagpieTask : BgTaskBase
             if (_processRelay is not null)
             {
                 Process? current = await _processRelay.WaitForConfirmationAsync();
+                if (current is not null) _ownedProcesses.Add(current);
                 if (current is null || !GameProcessDetector.IsAlive(current)) break;
                 _process = current;
             }

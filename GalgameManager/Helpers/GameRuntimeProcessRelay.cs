@@ -17,12 +17,16 @@ public sealed class GameRuntimeProcessRelay
 
     public Task Completion => _completion.Task;
 
-    public Process? CurrentProcess
+    /// <summary>
+    /// 打开当前观察目标的独立进程对象，由调用方释放；目标未变化或已经结束时返回空。
+    /// </summary>
+    public Process? OpenCurrentProcess(int knownProcessId = 0)
     {
-        get
+        lock (_syncRoot)
         {
-            lock (_syncRoot)
-                return _currentProcess;
+            if (_completed || _currentProcess is null ||
+                GameProcessDetector.SafeGetId(_currentProcess) == knownProcessId) return null;
+            return OpenProcess(_currentProcess);
         }
     }
 
@@ -38,18 +42,6 @@ public sealed class GameRuntimeProcessRelay
             _confirmedProcess = null;
             if (_confirmation.Task.IsCompleted)
                 _confirmation = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        }
-    }
-
-    /// <summary>
-    /// 当前已经确认的正式游戏进程；尚未确认时返回 <see langword="null"/>。
-    /// </summary>
-    public Process? ConfirmedProcess
-    {
-        get
-        {
-            lock (_syncRoot)
-                return _confirmedProcess;
         }
     }
 
@@ -80,7 +72,7 @@ public sealed class GameRuntimeProcessRelay
     }
 
     /// <summary>
-    /// 等待当前目标被确认为正式游戏；计时任务结束时返回 <see langword="null"/>。
+    /// 等待正式游戏并打开独立进程对象，由调用方释放；计时任务结束时返回空。
     /// </summary>
     public async Task<Process?> WaitForConfirmationAsync()
     {
@@ -90,7 +82,7 @@ public sealed class GameRuntimeProcessRelay
             lock (_syncRoot)
             {
                 if (_completed) return null;
-                if (_confirmedProcess is not null) return _confirmedProcess;
+                if (_confirmedProcess is not null) return OpenProcess(_confirmedProcess);
                 confirmation = _confirmation.Task;
             }
             Process? confirmed = await confirmation.ConfigureAwait(false);
@@ -98,8 +90,28 @@ public sealed class GameRuntimeProcessRelay
             {
                 if (_completed) return null;
                 // 等待者恢复执行前目标可能再次接力，不能把已经失效的确认交给辅助任务。
-                if (confirmed is not null && ReferenceEquals(confirmed, _confirmedProcess)) return confirmed;
+                if (confirmed is not null && ReferenceEquals(confirmed, _confirmedProcess))
+                    return OpenProcess(confirmed);
             }
+        }
+    }
+
+    private static Process? OpenProcess(Process process)
+    {
+        try
+        {
+            // 与结束信号共用同一把锁，保证复制身份前计时任务不会释放原对象。
+            return Process.GetProcessById(process.Id);
+        }
+        catch (ArgumentException)
+        {
+            // 查询期间进程可能已经退出。
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            // 无有效进程身份时不向辅助任务发布对象。
+            return null;
         }
     }
 

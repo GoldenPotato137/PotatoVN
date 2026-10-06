@@ -13,12 +13,12 @@ public class GameRuntimeProcessRelayTest
         using Process process = Process.GetCurrentProcess();
 
         relay.Confirm(process);
-        Process? confirmed = await relay.WaitForConfirmationAsync();
+        using Process? confirmed = await relay.WaitForConfirmationAsync();
 
         Assert.Multiple(() =>
         {
-            Assert.That(confirmed, Is.SameAs(process));
-            Assert.That(relay.ConfirmedProcess, Is.SameAs(process));
+            Assert.That(confirmed, Is.Not.SameAs(process));
+            Assert.That(confirmed?.Id, Is.EqualTo(process.Id));
             Assert.That(relay.IsCompleted, Is.False);
         });
     }
@@ -49,7 +49,7 @@ public class GameRuntimeProcessRelayTest
         relay.Confirm(process);
 
         Assert.That(await relay.WaitForConfirmationAsync(), Is.Null);
-        Assert.That(relay.ConfirmedProcess, Is.Null);
+        Assert.That(relay.OpenCurrentProcess(), Is.Null);
     }
 
     [Test]
@@ -59,10 +59,11 @@ public class GameRuntimeProcessRelayTest
         using Process process = Process.GetCurrentProcess();
         relay.Track(process);
         Task<Process?> confirmation = relay.WaitForConfirmationAsync();
+        using Process? observed = relay.OpenCurrentProcess();
         Assert.Multiple(() =>
         {
-            Assert.That(relay.CurrentProcess, Is.SameAs(process));
-            Assert.That(relay.ConfirmedProcess, Is.Null);
+            Assert.That(observed, Is.Not.SameAs(process));
+            Assert.That(observed?.Id, Is.EqualTo(process.Id));
             Assert.That(confirmation.IsCompleted, Is.False);
             Assert.That(relay.Completion.IsCompleted, Is.False);
         });
@@ -82,7 +83,9 @@ public class GameRuntimeProcessRelayTest
         Task<Process?> confirmation = relay.WaitForConfirmationAsync();
         Assert.That(confirmation.IsCompleted, Is.False);
         relay.Confirm(second);
-        Assert.That(await confirmation, Is.SameAs(second));
+        using Process? confirmed = await confirmation;
+        Assert.That(confirmed?.Id, Is.EqualTo(second.Id));
+        Assert.That(confirmed, Is.Not.SameAs(second));
     }
 
     [Test]
@@ -98,8 +101,7 @@ public class GameRuntimeProcessRelayTest
         await Task.WhenAll(consumers).WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Multiple(() =>
         {
-            Assert.That(relay.CurrentProcess, Is.Null);
-            Assert.That(relay.ConfirmedProcess, Is.Null);
+            Assert.That(relay.OpenCurrentProcess(), Is.Null);
             Assert.That(relay.IsCompleted, Is.True);
         });
         Assert.That(await relay.WaitForConfirmationAsync(), Is.Null);
@@ -115,8 +117,82 @@ public class GameRuntimeProcessRelayTest
         Assert.Multiple(() =>
         {
             Assert.That(relay.IsCompleted, Is.True);
-            Assert.That(relay.CurrentProcess, Is.Null);
-            Assert.That(relay.ConfirmedProcess, Is.Null);
+            Assert.That(relay.OpenCurrentProcess(), Is.Null);
         });
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task ConsumerReadingWindow_AfterOwnerCompletionAndDisposal_RemainsValid(bool waitForConfirmation)
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process source = Process.GetCurrentProcess();
+        int processId = source.Id;
+        relay.Track(source);
+        TaskCompletionSource acquired = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource ownerDisposed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task consumer = Task.Run(async () =>
+        {
+            using Process? owned = waitForConfirmation
+                ? await relay.WaitForConfirmationAsync()
+                : relay.OpenCurrentProcess();
+            Assert.That(owned, Is.Not.Null);
+            acquired.SetResult();
+            await ownerDisposed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.That(owned!.Id, Is.EqualTo(processId));
+            Assert.DoesNotThrow(() => _ = owned.MainWindowHandle);
+        });
+        try
+        {
+            if (waitForConfirmation) relay.Confirm(source);
+            await acquired.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            relay.Complete();
+            source.Dispose();
+        }
+        finally
+        {
+            ownerDisposed.TrySetResult();
+        }
+        await consumer.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.That(relay.OpenCurrentProcess(), Is.Null);
+        Assert.That(await relay.WaitForConfirmationAsync(), Is.Null);
+    }
+
+    [Test]
+    public void OpenCurrentProcess_UnchangedTarget_DoesNotOpenAnotherObject()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process source = Process.GetCurrentProcess();
+        relay.Track(source);
+        using Process? owned = relay.OpenCurrentProcess();
+        Assert.That(owned, Is.Not.Null);
+        Assert.That(relay.OpenCurrentProcess(owned!.Id), Is.Null);
+        Assert.That(source.Id, Is.EqualTo(owned.Id));
+    }
+
+    [Test]
+    public async Task Confirm_MultipleConsumers_OwnSeparateObjects()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process source = Process.GetCurrentProcess();
+        relay.Confirm(source);
+        using Process? first = await relay.WaitForConfirmationAsync();
+        using Process? second = await relay.WaitForConfirmationAsync();
+        Assert.That(first, Is.Not.Null);
+        Assert.That(second, Is.Not.Null.And.Not.SameAs(first));
+        first!.Dispose();
+        Assert.DoesNotThrow(() => _ = second!.MainWindowHandle);
+        Assert.That(second!.Id, Is.EqualTo(source.Id));
+    }
+
+    [Test]
+    public async Task ProcessWithoutIdentity_DoesNotPublishInvalidObject()
+    {
+        GameRuntimeProcessRelay relay = new();
+        using Process source = new();
+        relay.Track(source);
+        Assert.That(relay.OpenCurrentProcess(), Is.Null);
+        relay.Confirm(source);
+        Assert.That(await relay.WaitForConfirmationAsync(), Is.Null);
     }
 }
