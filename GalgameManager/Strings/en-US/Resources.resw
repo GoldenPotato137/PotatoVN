@@ -4387,4 +4387,13 @@ If play time can record correctly, just cancel this popup.
   <data name="SettingsPage_Game_PrecisePlayTime.Title" xml:space="preserve">
     <value>Enable precise play time</value>
   </data>
+  <data name="PlayedTimePage_ShowLaunchSegments.Label" xml:space="preserve">
+    <value>Show launch segments</value>
+  </data>
+  <data name="PlayedTimePage_ShowLaunchSegments.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show a separate bar segment for each launch. Turning this off only changes the display; records and timing precision are preserved.</value>
+  </data>
+  <data name="PlayedTimePage_DaySummaryToolTip" xml:space="preserve">
+    <value>Day total: {0}; click to edit daily totals</value>
+  </data>
 </root>

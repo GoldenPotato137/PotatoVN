@@ -5299,4 +5299,13 @@
   <data name="SettingsPage_Game_PrecisePlayTime.Title" xml:space="preserve">
     <value>启用精确游玩时间</value>
   </data>
+  <data name="PlayedTimePage_ShowLaunchSegments.Label" xml:space="preserve">
+    <value>按启动分段显示</value>
+  </data>
+  <data name="PlayedTimePage_ShowLaunchSegments.ToolTipService.ToolTip" xml:space="preserve">
+    <value>按单次启动分段显示柱状图；关闭仅合并显示，不改变记录和计时精度。</value>
+  </data>
+  <data name="PlayedTimePage_DaySummaryToolTip" xml:space="preserve">
+    <value>当日总时长：{0}；单击可编辑汇总</value>
+  </data>
 </root>

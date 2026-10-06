@@ -80,6 +80,12 @@
                         <SymbolIcon Symbol="Add"/>
                     </AppBarButton.Icon>
                 </AppBarButton>
+                <CommandBar.SecondaryCommands>
+                    <AppBarToggleButton x:Uid="PlayedTimePage_ShowLaunchSegments"
+                                        IsChecked="{x:Bind ViewModel.ShowLaunchSegments, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.ToggleLaunchSegmentsCommand}"
+                                        AllowFocusOnInteraction="True"/>
+                </CommandBar.SecondaryCommands>
             </CommandBar>
         </Grid>
 

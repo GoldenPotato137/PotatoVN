@@ -4316,4 +4316,13 @@
   <data name="SettingsPage_Game_PrecisePlayTime.Title" xml:space="preserve">
     <value>正確なプレイ時間を有効にする</value>
   </data>
+  <data name="PlayedTimePage_ShowLaunchSegments.Label" xml:space="preserve">
+    <value>起動ごとに分割表示</value>
+  </data>
+  <data name="PlayedTimePage_ShowLaunchSegments.ToolTipService.ToolTip" xml:space="preserve">
+    <value>起動ごとに棒グラフを分割します。オフにしても表示だけが変わり、記録と計測精度は保持されます。</value>
+  </data>
+  <data name="PlayedTimePage_DaySummaryToolTip" xml:space="preserve">
+    <value>この日の合計：{0}。クリックして日別の合計を編集</value>
+  </data>
 </root>

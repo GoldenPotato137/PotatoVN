@@ -48,6 +48,79 @@ public class PlayedTimeViewModelItemTest
     }
 
     [Test]
+    public async Task UnsegmentedMinuteBar_PreservesSubMinuteTimeAndEditsDaySummary()
+    {
+        int dayEdits = 0;
+        int sessionEdits = 0;
+        PlayTimeDayViewModelItem item = new(
+            new DateTime(2026, 8, 26),
+            31,
+            0,
+            [new PlayTimeBarSegmentViewModelItem(31, 0.82, activate: () =>
+            {
+                sessionEdits++;
+                return Task.CompletedTask;
+            })],
+            [],
+            false,
+            false,
+            true,
+            showLaunchSegments: false,
+            editDay: () =>
+            {
+                dayEdits++;
+                return Task.CompletedTask;
+            });
+
+        await item.Segments.Single().ActivateCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.TotalSeconds, Is.EqualTo(31));
+            Assert.That(item.TotalText, Is.EqualTo("<1m"));
+            Assert.That(item.Segments.Single().DurationSeconds, Is.EqualTo(31));
+            Assert.That(item.Segments.Single().Opacity, Is.EqualTo(1.0));
+            Assert.That(dayEdits, Is.EqualTo(1));
+            Assert.That(sessionEdits, Is.Zero);
+        });
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void UnsegmentedBar_UsesOriginalOpacityWithoutChangingSegmentedBars(bool precise)
+    {
+        PlayTimeBarSegmentViewModelItem segment = new(120, 0.82);
+        PlayTimeDayViewModelItem unsegmented = new(
+            new DateTime(2026, 8, 26),
+            120,
+            0,
+            [segment],
+            [],
+            precise,
+            precise,
+            false,
+            showLaunchSegments: false);
+        PlayTimeDayViewModelItem segmented = new(
+            new DateTime(2026, 8, 26),
+            120,
+            0,
+            [segment],
+            [],
+            precise,
+            precise,
+            false,
+            showLaunchSegments: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(unsegmented.Segments.Single().Opacity, Is.EqualTo(1.0));
+            Assert.That(unsegmented.Segments.Single().DurationSeconds, Is.EqualTo(120));
+            Assert.That(segmented.Segments.Single(), Is.SameAs(segment));
+            Assert.That(segment.Opacity, Is.EqualTo(0.82));
+        });
+    }
+
+    [Test]
     public void ApplySnapshot_PreservesExpandedObjectsAndUpdatesDisplayedValues()
     {
         DateTime date = new(2026, 8, 26);

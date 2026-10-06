@@ -20,7 +20,7 @@ namespace GalgameManager.ViewModels;
 public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
 {
     private const double HistoricalSegmentOpacity = 0.42;
-    private const double LaunchSegmentOpacity = 0.82;
+    internal const double LaunchSegmentOpacity = 0.82;
 
     public Galgame Game = new();
     public ObservableCollection<PlayTimeDayViewModelItem> Items { get; } = new();
@@ -28,6 +28,7 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private string _dateSortLabel = string.Empty;
     [ObservableProperty] private string _recordingModeLabel = string.Empty;
     [ObservableProperty] private bool _precisePlayTimeEnabled;
+    [ObservableProperty] private bool _showLaunchSegments;
     [ObservableProperty] private Visibility _preciseModeVisibility = Visibility.Collapsed;
 
     private readonly INavigationService _navigationService;
@@ -66,6 +67,7 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
         UpdateRecordingModeUi();
         _timeAsHour = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.TimeAsHour);
         _dateDescending = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.PlayedTimeDateDescending);
+        ShowLaunchSegments = await _localSettingsService.ReadSettingAsync<bool>(KeyValues.PlayedTimeShowLaunchSegments);
         try
         {
             if (_precisePlayTime && PlayTimeSessionHelper.ReconcileCountedSessionTotals(Game))
@@ -184,7 +186,9 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
                 _precisePlayTime,
                 showSecondPrecision,
                 _timeAsHour,
-                expandedDates.Contains(date)));
+                expandedDates.Contains(date),
+                ShowLaunchSegments,
+                Edit));
         }
 
         if (preserveExpandedState)
@@ -352,6 +356,24 @@ public partial class PlayedTimeViewModel : ObservableObject, INavigationAware
         _dateDescending = !_dateDescending;
         await _localSettingsService.SaveSettingAsync(KeyValues.PlayedTimeDateDescending, _dateDescending);
         Update();
+    }
+
+    [RelayCommand]
+    private async Task ToggleLaunchSegments()
+    {
+        bool nextValue = !ShowLaunchSegments;
+        try
+        {
+            await _localSettingsService.SaveSettingAsync(KeyValues.PlayedTimeShowLaunchSegments, nextValue);
+            ShowLaunchSegments = nextValue;
+            Update();
+        }
+        catch (Exception ex)
+        {
+            OnPropertyChanged(nameof(ShowLaunchSegments));
+            _infoService.Info(InfoBarSeverity.Error,
+                "PlayedTimePage_SaveFailed".GetLocalized(), ex.GetBaseException().Message);
+        }
     }
 
     [RelayCommand]
@@ -725,7 +747,9 @@ public partial class PlayTimeDayViewModelItem : ObservableObject
         bool precise,
         bool showSecondPrecision,
         bool timeAsHour,
-        bool isExpanded = false)
+        bool isExpanded = false,
+        bool showLaunchSegments = false,
+        Func<Task>? editDay = null)
     {
         DateValue = date;
         Date = precise ? date.ToString("yyyy/M/d dddd") : date.ToString("yyyy/M/d");
@@ -740,7 +764,20 @@ public partial class PlayTimeDayViewModelItem : ObservableObject
             ? "PlayedTimePage_LegacySummary".GetLocalized(
                 TimeToDisplayTimeConverter.ConvertWholeMinuteSecondsWithUnits(LegacySeconds, timeAsHour))
             : string.Empty;
-        Segments = new ObservableCollection<PlayTimeBarSegmentViewModelItem>(segments);
+        Segments = new ObservableCollection<PlayTimeBarSegmentViewModelItem>();
+        if (showLaunchSegments)
+        {
+            foreach (PlayTimeBarSegmentViewModelItem segment in segments) Segments.Add(segment);
+        }
+        else if (TotalSeconds > 0)
+        {
+            // 仅合并柱状图的显示；启动记录、有效片段和原始秒数保持独立。
+            Segments.Add(new PlayTimeBarSegmentViewModelItem(
+                TotalSeconds,
+                1.0,
+                precise ? TotalText : "PlayedTimePage_DaySummaryToolTip".GetLocalized(TotalText),
+                precise ? null : editDay));
+        }
         Sessions = new ObservableCollection<PlayTimeSessionViewModelItem>(sessions);
         PreciseVisibility = precise ? Visibility.Visible : Visibility.Collapsed;
         MinuteVisibility = precise ? Visibility.Collapsed : Visibility.Visible;
