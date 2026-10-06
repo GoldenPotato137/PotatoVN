@@ -2,6 +2,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
+using GalgameManager.Models;
 using GalgameManager.Models.BgTasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -72,6 +73,7 @@ public class BgTaskService : IBgTaskService
     public async Task ResolvedBgTasksAsync()
     {
         var argStrings = _fileService.Read<string>(AppStoragePaths.LocalDataPath, FileName)?.Split() ?? Array.Empty<string>();
+        List<BgTaskBase> tasks = [];
         for (var i = 0; i < argStrings.Length; i++)
         {
             if(argStrings[i].StartsWith("-") == false) continue;
@@ -79,6 +81,12 @@ public class BgTaskService : IBgTaskService
             if (bgTaskType == null) continue;
             BgTaskBase? bgTask = CreateBgTaskShell(bgTaskType, Utils.FromBase64(argStrings[++i]));
             if (bgTask is null) continue;
+            tasks.Add(bgTask);
+        }
+        // 先恢复计时任务，辅助任务才能连接同一份目标和结束信号，与保存时的排列顺序无关。
+        foreach (BgTaskBase bgTask in tasks.OrderBy(task => task is RecordPlayTimeTask ? 0 : 1))
+        {
+            ConnectProcessRelay(bgTask);
             await bgTask.RecoverFromJson();
             _ = AddTaskInternal(bgTask);
         }
@@ -134,6 +142,12 @@ public class BgTaskService : IBgTaskService
         {
             lock (_bgTasksLock)
             {
+                // 复用任务的检索规则，并将检查与入队放在同一把锁内，覆盖并发添加和托盘恢复。
+                if (bgTask is RecordPlayTimeTask { Galgame: { } game } &&
+                    GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D")) is not null)
+                    return Task.CompletedTask;
+
+                ConnectProcessRelay(bgTask);
                 _bgTasks.Add(bgTask);
             }
 
@@ -152,6 +166,25 @@ public class BgTaskService : IBgTaskService
                 "BgTaskService_TaskFailed".GetLocalized(bgTask.Title), e);
             TryRemoveBgTask(bgTask);
             return Task.CompletedTask;
+        }
+    }
+
+    private void ConnectProcessRelay(BgTaskBase task)
+    {
+        Galgame? game = task switch
+        {
+            KeyMappingTask mapping => mapping.Galgame,
+            GameMuteTask mute => mute.Galgame,
+            CallMagpieTask magpie => magpie.Galgame,
+            _ => null,
+        };
+        if (game is null) return;
+        GameRuntimeProcessRelay? relay = GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D"))?.ProcessRelay;
+        switch (task)
+        {
+            case KeyMappingTask mapping: mapping.FollowProcessRelay(relay); break;
+            case GameMuteTask mute: mute.FollowProcessRelay(relay); break;
+            case CallMagpieTask magpie: magpie.FollowProcessRelay(relay); break;
         }
     }
 

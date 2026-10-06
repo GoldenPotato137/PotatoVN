@@ -324,6 +324,8 @@ public class LocalSettingsService : ILocalSettingsService
             case KeyValues.NotifyWhenUnpackGame:
             case KeyValues.EventPvnSyncNotify:
                 return (T?)(object)true;
+            case KeyValues.PlayedTimeShowLaunchSegments:
+                return (T?)(object)false;
             case KeyValues.DisplayVirtualGame:
             case KeyValues.SpecialDisplayVirtualGame:
             case KeyValues.HomeFilterShowPlayStatusAndSourcePanel:

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.EditPlayTimeSessionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="12" MinWidth="500"
+                Background="Transparent"
+                PointerPressed="DialogContentRoot_OnPointerPressed">
+        <TextBlock x:Uid="EditPlayTimeSessionDialog_Description"
+                   TextWrapping="Wrap"
+                   Style="{ThemeResource DescriptionTextStyle}"/>
+
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <CalendarDatePicker x:Name="StartDatePicker"
+                                x:Uid="EditPlayTimeSessionDialog_StartDate"/>
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock x:Uid="EditPlayTimeSessionDialog_StartTime"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <NumberBox x:Name="StartHourBox" x:Uid="EditPlayTimeSessionDialog_Hour"
+                               Width="96" Minimum="0" Maximum="23" SpinButtonPlacementMode="Compact"/>
+                    <NumberBox x:Name="StartMinuteBox" x:Uid="EditPlayTimeSessionDialog_Minute"
+                               Width="96" Minimum="0" Maximum="59" SpinButtonPlacementMode="Compact"/>
+                    <NumberBox x:Name="StartSecondBox" x:Uid="EditPlayTimeSessionDialog_Second"
+                               Width="96" Minimum="0" Maximum="59" SpinButtonPlacementMode="Compact"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <CalendarDatePicker x:Name="EndDatePicker"
+                                x:Uid="EditPlayTimeSessionDialog_EndDate"/>
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock x:Uid="EditPlayTimeSessionDialog_EndTime"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <NumberBox x:Name="EndHourBox" x:Uid="EditPlayTimeSessionDialog_Hour"
+                               Width="96" Minimum="0" Maximum="23" SpinButtonPlacementMode="Compact"/>
+                    <NumberBox x:Name="EndMinuteBox" x:Uid="EditPlayTimeSessionDialog_Minute"
+                               Width="96" Minimum="0" Maximum="59" SpinButtonPlacementMode="Compact"/>
+                    <NumberBox x:Name="EndSecondBox" x:Uid="EditPlayTimeSessionDialog_Second"
+                               Width="96" Minimum="0" Maximum="59" SpinButtonPlacementMode="Compact"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock x:Name="ValidationMessage"
+                   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed"/>
+    </StackPanel>
+</ContentDialog>
