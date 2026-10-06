@@ -12,6 +12,7 @@ public class GameMuteTask : BgTaskBase
     public bool IsMuted { get; set; }
     private Process? _process;
     private GameRuntimeProcessRelay? _processRelay;
+    private readonly HashSet<Process> _ownedProcesses = [];
 
     public GameMuteTask() { } // 仅用于后台任务序列化恢复
 
@@ -23,13 +24,20 @@ public class GameMuteTask : BgTaskBase
     public GameMuteTask(Galgame game, Process process, GameRuntimeProcessRelay? processRelay)
     {
         Galgame = game;
-        _process = process;
+        _process = processRelay is null ? process : null;
         _processRelay = processRelay;
         UpdateProcessIdentity(process);
     }
 
     protected override Task RecoverFromJsonInternal()
     {
+        if (_processRelay is not null)
+        {
+            _process = _processRelay.OpenCurrentProcess();
+            if (_process is not null) _ownedProcesses.Add(_process);
+            if (_process is not null) UpdateProcessIdentity(_process);
+            return Task.CompletedTask;
+        }
         try
         {
             _process = Process.GetProcessById(ProcessId);
@@ -39,12 +47,26 @@ public class GameMuteTask : BgTaskBase
             // 进程可能已经退出，回退到按名称查找。
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         }
+        if (_process is not null) _ownedProcesses.Add(_process);
         return Task.CompletedTask;
     }
 
     protected async override Task RunInternal()
     {
-        if (Galgame is null || _process is null) return;
+        try
+        {
+            await RunCoreAsync();
+        }
+        finally
+        {
+            foreach (Process process in _ownedProcesses) process.Dispose();
+            _ownedProcesses.Clear();
+        }
+    }
+
+    private async Task RunCoreAsync()
+    {
+        if (Galgame is null || (_process is null && _processRelay is null)) return;
         ChangeProgress(0, 1, "GameMuteTask_Starting".GetLocalized(Galgame.Name.Value!));
         
         // 确保开始时取消静音，防止上次异常退出导致的残留
@@ -52,6 +74,7 @@ public class GameMuteTask : BgTaskBase
 
         while (true)
         {
+            if (_processRelay?.IsCompleted == true) break;
             TryFollowConfirmedProcess();
             Process? current = _process;
             if (current is null || !GameProcessDetector.IsAlive(current))
@@ -91,13 +114,13 @@ public class GameMuteTask : BgTaskBase
                 }
 
                 // 每秒检查一次
-                await Task.Delay(1000);
+                await DelayOrCompletionAsync(1000);
             }
             catch (Exception ex)
             {
                 // 记录错误但继续运行
                 ChangeProgress(0, 1, $"GameMuteTask_MonitorError".GetLocalized() + ": " + ex.Message);
-                await Task.Delay(5000); // 出错时等待更长时间
+                await DelayOrCompletionAsync(5000); // 出错时等待更长时间
             }
         }
         
@@ -115,10 +138,12 @@ public class GameMuteTask : BgTaskBase
 
     private void TryFollowConfirmedProcess()
     {
-        Process? confirmed = _processRelay?.ConfirmedProcess;
+        Process? confirmed = _processRelay?.OpenCurrentProcess(
+            _process is not null && _ownedProcesses.Contains(_process) ? ProcessId : 0);
+        if (confirmed is not null) _ownedProcesses.Add(confirmed);
         if (confirmed is null || !GameProcessDetector.IsAlive(confirmed)) return;
         int confirmedProcessId = GameProcessDetector.SafeGetId(confirmed);
-        if (confirmedProcessId <= 0 || confirmedProcessId == ProcessId) return;
+        if (confirmedProcessId <= 0) return;
 
         try
         {
@@ -147,6 +172,12 @@ public class GameMuteTask : BgTaskBase
             // 短命启动器可能在任务创建前退出，稍后仍可接力到正式游戏进程。
         }
     }
+
+    internal void FollowProcessRelay(GameRuntimeProcessRelay? relay) => _processRelay ??= relay;
+
+    private Task DelayOrCompletionAsync(int milliseconds) => _processRelay is null
+        ? Task.Delay(milliseconds)
+        : Task.WhenAny(_processRelay.Completion, Task.Delay(milliseconds));
 
     public override string Title => "GameMuteTask_Title".GetLocalized();
 }

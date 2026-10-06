@@ -232,6 +232,45 @@ public class GameWindowTransitionGateTest
     }
 
     [Test]
+    public void RestoredBaseline_DialogStillWaits_GameAlreadyOpenedCanConfirm()
+    {
+        GameWindowSnapshot dialog = Snapshot(200, 20, "#32770", "Disclaimer", 417, 235);
+        GameWindowSnapshot game = Snapshot(200, 30, "GameWindow", "Game", 1280, 720);
+        GameLaunchWindowTracker tracker = new(dialog);
+        for (int i = 0; i < 1000; i++) Assert.That(tracker.Observe(dialog), Is.False);
+        Assert.That(tracker.Observe(game), Is.False);
+        Assert.That(tracker.Observe(game), Is.True);
+    }
+
+    [Test]
+    public void Observe_SingleStandardDialogSample_PreservesRapidDismissalHistory()
+    {
+        GameWindowTransitionGate gate = new();
+        GameWindowSnapshot dialog = Snapshot(200, 20, "#32770", "Disclaimer", 417, 235);
+        GameWindowSnapshot game = Snapshot(200, 30, "GameWindow", "Game", 1280, 720);
+        Assert.That(gate.Observe(dialog), Is.False);
+        Assert.That(gate.Observe(game), Is.False);
+        Assert.That(gate.Observe(game), Is.True);
+    }
+
+    [Test]
+    public void WindowSnapshot_JsonRoundTrip_PreservesFullWindowIdentity()
+    {
+        GameWindowSnapshot dialog = new(200, 0x1_0000_0020L, "#32770", "Disclaimer", 417, 235);
+        string json = Newtonsoft.Json.JsonConvert.SerializeObject(dialog);
+        Assert.That(Newtonsoft.Json.JsonConvert.DeserializeObject<GameWindowSnapshot>(json), Is.EqualTo(dialog));
+    }
+
+    [Test]
+    public async Task Tracker_StopBeforeFirstWindow_ObservesCancellationAndDisposes()
+    {
+        GameLaunchWindowTracker tracker = new();
+        tracker.Start(null, []);
+        await tracker.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.That(tracker.ConfirmedSnapshot, Is.Null);
+    }
+
+    [Test]
     public void StableProcessHandoffGate_RequiresTwoSamplesFromSameDifferentProcess()
     {
         StableProcessHandoffGate gate = new();
@@ -298,6 +337,16 @@ public class StableGameWindowGateTest
 [TestFixture]
 public class GameSessionExitPolicyTest
 {
+    [Test]
+    public void ConfirmedProcess_WithPendingForegroundHandoff_StillWaitsForReplacement()
+    {
+        StableProcessHandoffGate gate = new();
+        Assert.That(gate.Observe(42, 99), Is.False);
+        Assert.That(GameSessionExitPolicy.ShouldWaitForReplacement(true, 42, 42, gate.HasPendingCandidate), Is.True);
+        Assert.That(gate.Observe(42, null), Is.False);
+        Assert.That(GameSessionExitPolicy.ShouldWaitForReplacement(true, 42, 42, gate.HasPendingCandidate), Is.False);
+    }
+
     [TestCase(false, 0, 42, true)]
     [TestCase(true, 0, 42, true)]
     [TestCase(true, 99, 42, true)]

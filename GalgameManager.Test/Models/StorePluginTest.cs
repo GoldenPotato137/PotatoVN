@@ -58,6 +58,23 @@ public class StorePluginTest
         Assert.That(plugin.Status, Is.EqualTo(StorePluginStatus.Installed));
     }
 
+    [Test]
+    public void Downloads_SumsAllVersions()
+    {
+        StorePlugin plugin = CreatePlugin("2.0", "1.1", "1.0");
+        plugin.Versions[0].Downloads = 100;
+        plugin.Versions[1].Downloads = 20;
+        plugin.Versions[2].Downloads = 3;
+
+        Assert.That(plugin.Downloads, Is.EqualTo(123));
+    }
+
+    [Test]
+    public void Downloads_WithoutVersions_IsZero()
+    {
+        Assert.That(CreatePlugin().Downloads, Is.Zero);
+    }
+
     /// <param name="versions">仓库里的版本号，按商店的约定从新到旧排列</param>
     private static StorePlugin CreatePlugin(params string[] versions)
     {
