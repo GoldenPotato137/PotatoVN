@@ -11,50 +11,88 @@ public class GameMuteTask : BgTaskBase
     public int ProcessId { get; set; }
     public bool IsMuted { get; set; }
     private Process? _process;
+    private GameRuntimeProcessRelay? _processRelay;
+    private readonly HashSet<Process> _ownedProcesses = [];
 
-    public GameMuteTask() { } // For serialization
+    public GameMuteTask() { } // 仅用于后台任务序列化恢复
 
     public GameMuteTask(Galgame game, Process process)
+        : this(game, process, null)
+    {
+    }
+
+    public GameMuteTask(Galgame game, Process process, GameRuntimeProcessRelay? processRelay)
     {
         Galgame = game;
-        _process = process;
-        ProcessName = process.ProcessName;
-        ProcessId = process.Id;
+        _process = processRelay is null ? process : null;
+        _processRelay = processRelay;
+        UpdateProcessIdentity(process);
     }
 
     protected override Task RecoverFromJsonInternal()
     {
+        if (_processRelay is not null)
+        {
+            _process = _processRelay.OpenCurrentProcess();
+            if (_process is not null) _ownedProcesses.Add(_process);
+            if (_process is not null) UpdateProcessIdentity(_process);
+            return Task.CompletedTask;
+        }
         try
         {
             _process = Process.GetProcessById(ProcessId);
         }
         catch
         {
-            // Process might have exited, try to find by name
+            // 进程可能已经退出，回退到按名称查找。
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
         }
+        if (_process is not null) _ownedProcesses.Add(_process);
         return Task.CompletedTask;
     }
 
     protected async override Task RunInternal()
     {
-        if (Galgame is null || _process is null) return;
+        try
+        {
+            await RunCoreAsync();
+        }
+        finally
+        {
+            foreach (Process process in _ownedProcesses) process.Dispose();
+            _ownedProcesses.Clear();
+        }
+    }
+
+    private async Task RunCoreAsync()
+    {
+        if (Galgame is null || (_process is null && _processRelay is null)) return;
         ChangeProgress(0, 1, "GameMuteTask_Starting".GetLocalized(Galgame.Name.Value!));
         
         // 确保开始时取消静音，防止上次异常退出导致的残留
-        AudioHelper.UnmuteProcess(_process.Id);
-        
-        while (!_process!.HasExited)
+        if (ProcessId > 0) AudioHelper.UnmuteProcess(ProcessId);
+
+        while (true)
         {
+            if (_processRelay?.IsCompleted == true) break;
+            TryFollowConfirmedProcess();
+            Process? current = _process;
+            if (current is null || !GameProcessDetector.IsAlive(current))
+            {
+                if (_processRelay is null || _processRelay.IsCompleted) break;
+                await Task.Delay(200);
+                continue;
+            }
+
             try
             {
-                var shouldMute = !_process.IsMainWindowFocused();
+                bool shouldMute = !current.IsMainWindowFocused();
                 if (shouldMute)
                 {
                     // 需要静音
                     if (!IsMuted)
                     {
-                        if (AudioHelper.MuteProcess(_process.Id))
+                        if (AudioHelper.MuteProcess(current.Id))
                         {
                             IsMuted = true;
                             ChangeProgress(0, 1, "GameMuteTask_Muted".GetLocalized(Galgame.Name.Value!));
@@ -65,9 +103,9 @@ public class GameMuteTask : BgTaskBase
                 {
                     // 需要有声音 (在前台)
                     // 检查 IsMuted 标记或者系统实际状态
-                    if (IsMuted || AudioHelper.IsProcessMuted(_process.Id))
+                    if (IsMuted || AudioHelper.IsProcessMuted(current.Id))
                     {
-                        if (AudioHelper.UnmuteProcess(_process.Id))
+                        if (AudioHelper.UnmuteProcess(current.Id))
                         {
                             IsMuted = false;
                             ChangeProgress(0, 1, "GameMuteTask_Unmuted".GetLocalized(Galgame.Name.Value!));
@@ -76,20 +114,70 @@ public class GameMuteTask : BgTaskBase
                 }
 
                 // 每秒检查一次
-                await Task.Delay(1000);
+                await DelayOrCompletionAsync(1000);
             }
             catch (Exception ex)
             {
                 // 记录错误但继续运行
                 ChangeProgress(0, 1, $"GameMuteTask_MonitorError".GetLocalized() + ": " + ex.Message);
-                await Task.Delay(5000); // 出错时等待更长时间
+                await DelayOrCompletionAsync(5000); // 出错时等待更长时间
             }
         }
         
         // 结束时尝试取消静音
-        try { AudioHelper.UnmuteProcess(_process.Id); } catch { /* ignore */ }
+        try
+        {
+            if (ProcessId > 0) AudioHelper.UnmuteProcess(ProcessId);
+        }
+        catch
+        {
+            // 进程可能已退出，结束清理无需继续抛出异常。
+        }
         ChangeProgress(1, 1, string.Empty, false);
     }
+
+    private void TryFollowConfirmedProcess()
+    {
+        Process? confirmed = _processRelay?.OpenCurrentProcess(
+            _process is not null && _ownedProcesses.Contains(_process) ? ProcessId : 0);
+        if (confirmed is not null) _ownedProcesses.Add(confirmed);
+        if (confirmed is null || !GameProcessDetector.IsAlive(confirmed)) return;
+        int confirmedProcessId = GameProcessDetector.SafeGetId(confirmed);
+        if (confirmedProcessId <= 0) return;
+
+        try
+        {
+            if (ProcessId > 0) AudioHelper.UnmuteProcess(ProcessId);
+        }
+        catch
+        {
+            // 原启动器可能已经退出，切换进程时无需保留其静音状态。
+        }
+
+        _process = confirmed;
+        IsMuted = false;
+        UpdateProcessIdentity(confirmed);
+        AudioHelper.UnmuteProcess(ProcessId);
+    }
+
+    private void UpdateProcessIdentity(Process process)
+    {
+        ProcessId = GameProcessDetector.SafeGetId(process);
+        try
+        {
+            ProcessName = process.ProcessName;
+        }
+        catch
+        {
+            // 短命启动器可能在任务创建前退出，稍后仍可接力到正式游戏进程。
+        }
+    }
+
+    internal void FollowProcessRelay(GameRuntimeProcessRelay? relay) => _processRelay ??= relay;
+
+    private Task DelayOrCompletionAsync(int milliseconds) => _processRelay is null
+        ? Task.Delay(milliseconds)
+        : Task.WhenAny(_processRelay.Completion, Task.Delay(milliseconds));
 
     public override string Title => "GameMuteTask_Title".GetLocalized();
 }
@@ -105,7 +193,7 @@ public static class AudioHelper
     [DllImport("ole32.dll")]
     private static extern void CoUninitialize();
 
-    // Windows Core Audio API interfaces
+    // Windows Core Audio API 接口
     [ComImport]
     [Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
     private class MMDeviceEnumerator

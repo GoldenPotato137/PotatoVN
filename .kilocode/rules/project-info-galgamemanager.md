@@ -256,6 +256,10 @@ This document provides a foundational knowledge base. For specific implementatio
 
 ## 8. Service Unit Testing Pattern
 
+- 同一次游戏启动的进程接力由 `RecordPlayTimeTask` 统一判断；`GameRuntimeProcessRelay` 共享观察目标、窗口确认及结束信号。辅助任务正常启动或成组恢复时不再各自寻找替代进程；`BgTaskService` 优先恢复计时任务后按游戏 UUID 连接辅助任务。无关联计时任务的旧任务保留独立恢复兜底。
+- 进程共享信号不转交 `Process` 对象的释放责任。计时任务持有原对象，辅助任务通过中继打开同一 PID 的独立对象，并在自身结束时释放；打开过程与中继结束共用锁，避免计时任务收尾释放后辅助任务继续读取已释放对象。
+- 后台计时恢复同时保存 PID、进程创建时间、是否已开始计时及启动窗口基线。窗口句柄以 `long` 保存用于 JSON 往返；恢复前需核对进程身份，避免 PID 复用。旧零分钟任务缺少计时阶段时不能推断已通过弹窗检查，应保守恢复等待，不补算离线时间。
+
 Client services can be unit-tested in the plain NUnit process (no `App`, no WinAppSDK bootstrap) thanks to three production seams plus a shared test base. Use this pattern when making another service testable.
 
 **Production seams:**
@@ -265,6 +269,7 @@ Client services can be unit-tested in the plain NUnit process (no `App`, no WinA
 - `SourceServiceFactory.SetResolverForTest(Func<GalgameSourceType, IGalgameSourceService?>?)` replaces the static `App.GetService` lookup; pass `null` to restore. Always reset it in test teardown.
 - Replace static `FileHelper.Save/Load/Delete` calls inside a service with an injected `IFileService` (Core, already registered in DI) rooted at `AppStoragePaths.LocalDataPath` — see `BgTaskService`. `FileHelper` lazily resolves `App.GetService<IFileService>()`, which is fatal in tests; `AppStoragePaths` itself is test-safe (env-var override).
 - `BgTaskService.RegisterBgTaskType(Type, token)` is public so tests can register their own `BgTaskBase` subclasses for the `SaveBgTasksString`/`ResolvedBgTasksAsync` persistence loop (built-in registrations in the ctor go through the same method).
+- 计时任务按逻辑游戏 UUID 通过 `GetBgTask<RecordPlayTimeTask>(key)` 与 `OnSearch` 查找；`BgTaskService` 在任务列表锁内完成查重与入队，正常添加和托盘恢复共用该入口。不要将所有支持 `OnSearch` 的任务都自动去重，其他任务的检索可能是路径包含或通配匹配，而非唯一标识。`GameLaunchService` 的启动中标记另外覆盖尚未创建计时任务的异步启动阶段，并在 `finally` 中释放。
 - The `Task` returned by `IBgTaskService.AddBgTask` completes when the task finished but **never faults**: `BgTaskService.HandleBgTaskCompletionAsync` catches the task's exception, reports it through `IInfoService` and returns normally (after a 500ms delay). Awaiting it therefore tells you "done", not "succeeded" — a caller that must react only to success has to observe state the task itself wrote, or the task must do the write-back internally at its success point. A task that needs to push results back into live UI state can hold the (non-serialized) model object it was constructed from and update it inside `UiThreadInvokeHelper.InvokeAsync` — safe even for tasks started before the UI exists, since the helper falls back to inline execution.
 - For "did it succeed" checks on a completed sub-task, read `bgTask.Task.IsFaulted` (e.g. `SourceMoveTask` does this after awaiting the move sub-task). This is only reliable if the sub-task's `RunInternal` is declared `async`: a non-async `RunInternal` that throws before its first `return Task.Run(...)` escapes synchronously out of `BgTaskBase.Run()` **before** the `Task` property is assigned, leaving it as the default completed task — the failure is reported via `IInfoService` but `IsFaulted` stays false. Always write `protected override async Task RunInternal()` and `await` the inner work; never let precondition checks throw synchronously. (Regression test: `ZipSourceServiceTest.PackGameTask_ZipAlreadyExists_TaskFaults`.)
 - Inside long-running bg tasks, keep any "advisory" logging/telemetry wrapped in its own try/catch: a failure in a purely informational path (e.g. `App.GetService<IInfoService>().Log(...)` after the real work succeeded) would otherwise be caught by the task's outer handler and turn a success into a failure (and, for `PackGameTask`, would even delete the just-created archive).
