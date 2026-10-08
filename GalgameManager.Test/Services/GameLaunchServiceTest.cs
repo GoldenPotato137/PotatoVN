@@ -26,6 +26,43 @@ public class GameLaunchServiceTest : ServiceTestBase
         new(game, Path.Combine(TestDir, Guid.NewGuid().ToString("N")), new GalgameFolderSource());
 
     [Test]
+    public async Task AddPlayTimeTask_ActiveLogicalGame_DoesNotAddDuplicate()
+    {
+        Galgame game = new();
+        RecordPlayTimeTask active = new(Settings, GalgameCollectionService.Object) { Galgame = game };
+        RecordPlayTimeTask duplicate = new(Settings, GalgameCollectionService.Object)
+        {
+            Galgame = new Galgame { Uuid = game.Uuid },
+            InstallationId = Guid.NewGuid(),
+        };
+        BgTaskService.Setup(x => x.GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D"))).Returns(active);
+
+        await CreateService().AddPlayTimeTaskAsync(duplicate);
+
+        BgTaskService.Verify(x => x.AddBgTask(It.IsAny<BgTaskBase>()), Times.Never);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void AddPlayTimeTask_NoActiveTask_ReturnsBackgroundTaskCompletion(bool missingGame)
+    {
+        RecordPlayTimeTask task = new(Settings, GalgameCollectionService.Object)
+        {
+            Galgame = missingGame ? null : new Galgame(),
+        };
+        TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        BgTaskService.Setup(x => x.AddBgTask(task)).Returns(completion.Task);
+
+        Task result = CreateService().AddPlayTimeTaskAsync(task);
+
+        Assert.That(result, Is.SameAs(completion.Task));
+        BgTaskService.Verify(x => x.AddBgTask(task), Times.Once);
+        BgTaskService.Verify(x => x.GetBgTask<RecordPlayTimeTask>(It.IsAny<string>()),
+            missingGame ? Times.Never() : Times.Once());
+        completion.SetResult();
+    }
+
+    [Test]
     public async Task LaunchAsync_ActivePlayTimeTask_RejectsBeforeStartingProcess()
     {
         Galgame game = new();

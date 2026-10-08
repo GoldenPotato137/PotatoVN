@@ -32,6 +32,20 @@ public sealed class GameLaunchService(
         (GalgameCollectionService)gameCollectionService; // 逻辑游戏持久化与可执行文件选择服务
 
     /// <inheritdoc />
+    public Task AddPlayTimeTaskAsync(RecordPlayTimeTask task)
+    {
+        lock (_launchStateLock)
+        {
+            // 新启动与托盘恢复共用查重入口，检查和添加之间不允许另一计时请求插入。
+            if (task.Galgame is { } game &&
+                bgTaskService.GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D")) is not null)
+                return Task.CompletedTask;
+
+            return bgTaskService.AddBgTask(task);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task LaunchAsync(Galgame game, GalgameAndPath installation)
     {
         if (installation.Galgame != game || !installation.IsLocalInstallation)
@@ -177,7 +191,7 @@ public sealed class GameLaunchService(
             if (installation.Source is not null) sourceCollectionService.Save(installation.Source);
             await _gameService.SaveGalgameAsync(game);
 
-            _ = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId));
+            _ = AddPlayTimeTaskAsync(new RecordPlayTimeTask(game, process, installation.EntryId));
             // 即使当前没有生效规则，也保留轻量运行时任务，
             // 确保游戏运行期间首次启用或新增映射时可以立即生效。
             _ = bgTaskService.AddBgTask(new KeyMappingTask(game, process));

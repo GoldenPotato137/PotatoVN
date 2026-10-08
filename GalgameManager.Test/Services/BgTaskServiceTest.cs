@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Core.Services;
 using GalgameManager.Enums;
@@ -27,12 +28,30 @@ public class BgTaskServiceTest : ServiceTestBase
         _fileService.Delete(AppStoragePaths.LocalDataPath, BgTaskFileName);
     }
 
-    private BgTaskService CreateService()
+    private BgTaskService CreateService() => CreateService(out _);
+
+    private BgTaskService CreateService(out IGameLaunchService launchService)
     {
         ServiceCollection services = new();
         services.AddSingleton<ILocalSettingsService>(Settings);
         services.AddSingleton(GalgameCollectionService.Object);
-        return new BgTaskService(InfoService.Object, _fileService, services.BuildServiceProvider());
+        services.AddSingleton<IBgTaskService>(provider =>
+            new BgTaskService(InfoService.Object, _fileService, provider));
+        services.AddSingleton<IGameLaunchService>(provider =>
+        {
+            IBgTaskService bgTaskService = provider.GetRequiredService<IBgTaskService>();
+            IJumpListService jumpListService = Mock.Of<IJumpListService>();
+            IGalgameSourceCollectionService sourceService = Mock.Of<IGalgameSourceCollectionService>();
+            IMessenger messenger = new WeakReferenceMessenger();
+            GalgameCollectionService gameService = new(Settings, jumpListService, sourceService,
+                InfoService.Object, bgTaskService, messenger);
+            return new GameLaunchService(gameService, sourceService, Settings, jumpListService,
+                bgTaskService, InfoService.Object, messenger);
+        });
+        ServiceProvider provider = services.BuildServiceProvider();
+        BgTaskService result = (BgTaskService)provider.GetRequiredService<IBgTaskService>();
+        launchService = provider.GetRequiredService<IGameLaunchService>();
+        return result;
     }
 
     // 验证任务从添加到完成移除的完整生命周期：RunInternal被执行、BgTaskAdded/BgTaskRemoved按序触发、
@@ -94,9 +113,9 @@ public class BgTaskServiceTest : ServiceTestBase
     }
 
     [Test]
-    public async Task AddBgTask_ConcurrentPlayTimeDuplicates_OnlyOneRuns()
+    public async Task AddPlayTimeTask_ConcurrentDuplicates_OnlyOneRuns()
     {
-        BgTaskService service = CreateService();
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
         TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
         TaskCompletionSource start = new(TaskCreationOptions.RunContinuationsAsynchronously);
         Guid gameId = Guid.NewGuid();
@@ -114,7 +133,7 @@ public class BgTaskServiceTest : ServiceTestBase
         Task[] additions = tasks.Select(task => Task.Run(async () =>
         {
             await start.Task;
-            Task completion = service.AddBgTask(task);
+            Task completion = launchService.AddPlayTimeTaskAsync(task);
             Interlocked.Increment(ref attemptedCount);
             await completion;
         })).ToArray();
@@ -140,15 +159,15 @@ public class BgTaskServiceTest : ServiceTestBase
     }
 
     [Test]
-    public async Task AddBgTask_DuplicateAfterCompletion_RunsAgain()
+    public async Task AddPlayTimeTask_DuplicateAfterCompletion_RunsAgain()
     {
-        BgTaskService service = CreateService();
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
         Guid gameId = Guid.NewGuid();
         TestRecordPlayTimeTask first = new(Settings, GalgameCollectionService.Object) { GameId = gameId };
         TestRecordPlayTimeTask second = new(Settings, GalgameCollectionService.Object) { GameId = gameId };
 
-        await service.AddBgTask(first);
-        await service.AddBgTask(second);
+        await launchService.AddPlayTimeTaskAsync(first);
+        await launchService.AddPlayTimeTaskAsync(second);
 
         Assert.Multiple(() =>
         {
@@ -159,9 +178,9 @@ public class BgTaskServiceTest : ServiceTestBase
     }
 
     [Test]
-    public async Task AddBgTask_DifferentGames_RunTogether()
+    public async Task AddPlayTimeTask_DifferentGames_RunTogether()
     {
-        BgTaskService service = CreateService();
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
         TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
         TestRecordPlayTimeTask first = new(Settings, GalgameCollectionService.Object)
         {
@@ -172,7 +191,7 @@ public class BgTaskServiceTest : ServiceTestBase
             GameId = Guid.NewGuid(), Gate = gate,
         };
 
-        Task[] additions = [service.AddBgTask(first), service.AddBgTask(second)];
+        Task[] additions = [launchService.AddPlayTimeTaskAsync(first), launchService.AddPlayTimeTaskAsync(second)];
         try
         {
             Assert.That(service.GetBgTasks().Count(), Is.EqualTo(2));
@@ -185,9 +204,9 @@ public class BgTaskServiceTest : ServiceTestBase
     }
 
     [Test]
-    public async Task AddBgTask_SameGameDifferentInstallations_OnlyOneRuns()
+    public async Task AddPlayTimeTask_SameGameDifferentInstallations_OnlyOneRuns()
     {
-        BgTaskService service = CreateService();
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
         TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
         Galgame game = new();
         TestRecordPlayTimeTask first = new(Settings, GalgameCollectionService.Object)
@@ -198,10 +217,10 @@ public class BgTaskServiceTest : ServiceTestBase
         {
             Galgame = game, InstallationId = Guid.NewGuid(), Gate = gate,
         };
-        Task completion = service.AddBgTask(first);
+        Task completion = launchService.AddPlayTimeTaskAsync(first);
         try
         {
-            await service.AddBgTask(second);
+            await launchService.AddPlayTimeTaskAsync(second);
             Assert.Multiple(() =>
             {
                 Assert.That(first.RunCount, Is.EqualTo(1));
@@ -217,17 +236,17 @@ public class BgTaskServiceTest : ServiceTestBase
     }
 
     [Test]
-    public async Task AddBgTask_PlayTimeTaskFails_CanRunAgain()
+    public async Task AddPlayTimeTask_TaskFails_CanRunAgain()
     {
-        BgTaskService service = CreateService();
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
         Guid gameId = Guid.NewGuid();
         TestRecordPlayTimeTask first = new(Settings, GalgameCollectionService.Object)
         {
             GameId = gameId, ThrowOnRun = true,
         };
         TestRecordPlayTimeTask second = new(Settings, GalgameCollectionService.Object) { GameId = gameId };
-        await service.AddBgTask(first);
-        await service.AddBgTask(second);
+        await launchService.AddPlayTimeTaskAsync(first);
+        await launchService.AddPlayTimeTaskAsync(second);
         Assert.Multiple(() =>
         {
             Assert.That(first.Task.IsFaulted, Is.True);
@@ -331,14 +350,14 @@ public class BgTaskServiceTest : ServiceTestBase
     [Test]
     public async Task Resolve_ExistingPlayTimeTask_DoesNotStartAnother()
     {
-        BgTaskService service = CreateService();
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
         service.RegisterBgTaskType(typeof(TestRecordPlayTimeTask), "-record-test");
         TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
         TestRecordPlayTimeTask active = new(Settings, GalgameCollectionService.Object)
         {
             GameId = Guid.NewGuid(), Gate = gate,
         };
-        Task completion = service.AddBgTask(active);
+        Task completion = launchService.AddPlayTimeTaskAsync(active);
         string json = JsonConvert.SerializeObject(new { active.GameId });
         _fileService.Save(AppStoragePaths.LocalDataPath, BgTaskFileName, $"-record-test {json.ToBase64()} ");
         string file = Path.Combine(AppStoragePaths.LocalDataPath, BgTaskFileName);
@@ -352,6 +371,90 @@ public class BgTaskServiceTest : ServiceTestBase
         {
             gate.SetResult();
             await completion;
+        }
+    }
+
+    [Test]
+    public async Task AddBgTask_PlayTimeTasksWithSameGame_AreNotDeduplicatedByGenericService()
+    {
+        BgTaskService service = CreateService();
+        TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        Guid gameId = Guid.NewGuid();
+        TestRecordPlayTimeTask first = new(Settings, GalgameCollectionService.Object)
+        {
+            GameId = gameId, Gate = gate,
+        };
+        TestRecordPlayTimeTask second = new(Settings, GalgameCollectionService.Object)
+        {
+            GameId = gameId, Gate = gate,
+        };
+        Task[] additions = [service.AddBgTask(first), service.AddBgTask(second)];
+        try
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(service.GetBgTasks().Count(), Is.EqualTo(2));
+                Assert.That(first.RunCount, Is.EqualTo(1));
+                Assert.That(second.RunCount, Is.EqualTo(1));
+            });
+        }
+        finally
+        {
+            gate.SetResult();
+            await Task.WhenAll(additions);
+        }
+    }
+
+    [Test]
+    public async Task Resolve_ConcurrentPlayTimeAddition_OnlyOneRuns()
+    {
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
+        service.RegisterBgTaskType(typeof(TestRecordPlayTimeTask), "-record-test");
+        TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource start = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TestRecordPlayTimeTask.RecoveryGate = gate;
+        TestRecordPlayTimeTask active = new(Settings, GalgameCollectionService.Object)
+        {
+            GameId = Guid.NewGuid(), Gate = gate,
+        };
+        string json = JsonConvert.SerializeObject(new { active.GameId });
+        _fileService.Save(AppStoragePaths.LocalDataPath, BgTaskFileName, $"-record-test {json.ToBase64()} ");
+        string file = Path.Combine(AppStoragePaths.LocalDataPath, BgTaskFileName);
+        await WaitUntilAsync(() => File.Exists(file), "恢复文件未写入");
+        var attemptedCount = 0;
+        var addedCount = 0;
+        service.BgTaskAdded += _ => Interlocked.Increment(ref addedCount);
+        Task recovery = Task.Run(async () =>
+        {
+            await start.Task;
+            await service.ResolvedBgTasksAsync();
+            Interlocked.Increment(ref attemptedCount);
+        });
+        Task addition = Task.Run(async () =>
+        {
+            await start.Task;
+            Task completion = launchService.AddPlayTimeTaskAsync(active);
+            Interlocked.Increment(ref attemptedCount);
+            await completion;
+        });
+        start.SetResult();
+        try
+        {
+            await WaitUntilAsync(() => Volatile.Read(ref attemptedCount) == 2, "恢复与添加未完成检查");
+            Assert.Multiple(() =>
+            {
+                Assert.That(service.GetBgTasks().Count(), Is.EqualTo(1));
+                Assert.That(service.GetBgTasks().OfType<TestRecordPlayTimeTask>().Sum(task => task.RunCount),
+                    Is.EqualTo(1));
+                Assert.That(addedCount, Is.EqualTo(1));
+            });
+        }
+        finally
+        {
+            gate.SetResult();
+            await Task.WhenAll(recovery, addition);
+            await WaitUntilAsync(() => !service.GetBgTasks().Any(), "计时任务未完成清理");
+            TestRecordPlayTimeTask.RecoveryGate = null;
         }
     }
 
