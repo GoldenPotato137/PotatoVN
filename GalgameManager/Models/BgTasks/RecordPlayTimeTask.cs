@@ -28,11 +28,23 @@ public class RecordPlayTimeTask : BgTaskBase
     private HashSet<int>? _knownProcessIds; // 开始跟踪时已存在于安装目录的进程，复查时只附着新出现的进程
     private volatile bool _stopped;
 
-    private readonly ILocalSettingsService _localSettingsService = App.GetService<ILocalSettingsService>();
-    private readonly IGalgameCollectionService _gameService = App.GetService<IGalgameCollectionService>();
+    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IGalgameCollectionService _gameService;
     private int _minPlayTimeRecordThreshold;
 
-    public RecordPlayTimeTask(){}
+    public RecordPlayTimeTask()
+        : this(App.GetService<ILocalSettingsService>(), App.GetService<IGalgameCollectionService>())
+    {
+    }
+
+    /// <summary>
+    /// 使用明确的服务依赖创建计时任务。
+    /// </summary>
+    public RecordPlayTimeTask(ILocalSettingsService localSettingsService, IGalgameCollectionService gameService)
+    {
+        _localSettingsService = localSettingsService;
+        _gameService = gameService;
+    }
 
     /// <summary>
     /// 使用游戏的首选安装实例创建游玩时间记录任务。
@@ -51,6 +63,7 @@ public class RecordPlayTimeTask : BgTaskBase
     /// <param name="process">要跟踪的游戏进程</param>
     /// <param name="installationId">本次游玩使用的安装实例Id</param>
     public RecordPlayTimeTask(Galgame game, Process process, Guid? installationId)
+        : this()
     {
         Debug.Assert(game.IsLocalGame);
         try
@@ -206,6 +219,9 @@ public class RecordPlayTimeTask : BgTaskBase
             }
         });
     }
+
+    public override bool OnSearch(string key) =>
+        Galgame is not null && string.Equals(Galgame.Uuid.ToString("D"), key, StringComparison.OrdinalIgnoreCase);
 
     public override string Title { get; } = "RecordPlayTimeTask_Title".GetLocalized();
 }
