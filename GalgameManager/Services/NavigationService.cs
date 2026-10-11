@@ -155,6 +155,7 @@ public class NavigationService : INavigationService
                 frame.BackStack.Clear();
             }
 
+            CrashDiagnostics.AddBreadcrumb($"Navigated to {e.SourcePageType?.FullName}");
             if (frame.GetPageViewModel() is INavigationAware navigationAware)
             {
                 navigationAware.OnNavigatedTo(e.Parameter);

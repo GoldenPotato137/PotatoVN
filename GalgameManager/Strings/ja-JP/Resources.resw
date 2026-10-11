@@ -4244,4 +4244,17 @@
   <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
     <value>アーカイブ {0} をコピー: {1}</value>
   </data>
+  <data name="App_CrashLoop_Title" xml:space="preserve">
+    <value>PotatoVN のクラッシュが続いています</value>
+  </data>
+  <data name="App_CrashLoop_Msg" xml:space="preserve">
+    <value>PotatoVN は自動再起動の直後に再びクラッシュしたため、再起動ループを防ぐために自動再起動を停止しました。
+
+詳細な診断情報はログフォルダーに書き込まれました：
+{0}
+
+フォルダー内の最新のログファイルを開発者に送ってください（GitHub Issue）。
+
+今すぐログフォルダーを開きますか？</value>
+  </data>
 </root>

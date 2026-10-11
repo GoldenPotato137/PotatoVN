@@ -1,4 +1,5 @@
-﻿using Windows.ApplicationModel;
+﻿using System.Diagnostics;
+using Windows.ApplicationModel;
 using CommunityToolkit.Mvvm.Messaging;
 using GalgameManager.Activation;
 using GalgameManager.Contracts.Services;
@@ -62,6 +63,9 @@ public partial class App : Application
     public static WindowMode Status = WindowMode.Booting;
     public static event Action? OnAppClosing;
     public static DispatcherQueue DispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
+    /// <summary>安全模式（崩溃后自动重启）启动后在这段时间内再次崩溃，视为崩溃循环，不再自动重启</summary>
+    private static readonly TimeSpan CrashLoopThreshold = TimeSpan.FromSeconds(60);
+    private static bool _isHandlingUnhandledException;
 
     public App()
     {
@@ -185,21 +189,70 @@ public partial class App : Application
     private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
+        e.Handled = true;
+        if (_isHandlingUnhandledException) return; // 崩溃诊断探测过程中再次触发的异常，不重复处理
+        _isHandlingUnhandledException = true;
         try
         {
-            ILocalSettingsService localSettingsService = GetService<ILocalSettingsService>();
-            var errMsg = localSettingsService.ReadSettingAsync<string>(KeyValues.LastError).Result ?? string.Empty;
-            errMsg += (errMsg.Length > 0 ? "\n\n" : string.Empty) + e.Message + "\n" + e.Exception;
-            localSettingsService.SaveSettingAsync(KeyValues.LastError, errMsg);
+            ILocalSettingsService? localSettingsService = null;
+            try
+            {
+                localSettingsService = GetService<ILocalSettingsService>();
+                var errMsg = localSettingsService.ReadSettingAsync<string>(KeyValues.LastError).Result ?? string.Empty;
+                errMsg += (errMsg.Length > 0 ? "\n\n" : string.Empty) + e.Message + "\n" + e.Exception;
+                localSettingsService.SaveSettingAsync(KeyValues.LastError, errMsg);
+            }
+            catch
+            {
+                // 设置服务本身可能就是异常来源（如启动时设置数据库被占用），此时只能放弃记录
+            }
+            WriteCrashReport(e);
+            if (Status == WindowMode.Booting) return;
+            if (ActivationService.IsSafeMode() && CrashDiagnostics.Uptime < CrashLoopThreshold)
+            {
+                // 安全模式重启后很快又崩溃，说明重启解决不了问题：停止自动重启，避免无限重启循环（issue #742）
+                // 同时清掉崩溃记录，否则下次启动时弹出的崩溃通知可能再次触发同样的崩溃
+                localSettingsService?.RemoveSettingAsync(KeyValues.LastError);
+                ExitAfterCrashLoop(Path.Combine(AppStoragePaths.LocalDataPath, "Logs"));
+                return;
+            }
+            AppInstance.Restart("/safemode");
         }
         catch
         {
-            // 设置服务本身可能就是异常来源（如启动时设置数据库被占用），此时只能放弃记录
             // 不能让异常逃出本函数：WinUI 会把它再次交给本函数，无限递归直至栈溢出
         }
-        e.Handled = true;
-        if (Status != WindowMode.Booting)
-            AppInstance.Restart("/safemode");
+        finally
+        {
+            _isHandlingUnhandledException = false;
+        }
+    }
+
+    private static void WriteCrashReport(UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            CrashDiagnostics.WriteCrashReport(GetService<IInfoService>(), e.Exception, e.Message, MainWindow?.Content);
+        }
+        catch (Exception)
+        {
+            // 诊断信息尽力而为，不能影响后续的崩溃处理
+        }
+    }
+
+    private static void ExitAfterCrashLoop(string logFolder)
+    {
+        CrashDiagnostics.ShowCrashLoopMessage(logFolder);
+        try
+        {
+            SystemTray?.Dispose();
+            Serilog.Log.CloseAndFlush();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        Process.GetCurrentProcess().Kill();
     }
 
     /// <summary>
@@ -259,6 +312,7 @@ public partial class App : Application
     /// <param name="mode"></param>
     public static void SetWindowMode(WindowMode mode)
     {
+        CrashDiagnostics.AddBreadcrumb($"WindowMode -> {mode}");
         switch (mode)
         {
             case WindowMode.Normal:

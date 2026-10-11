@@ -4315,4 +4315,17 @@ If play time can record correctly, just cancel this popup.
   <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
     <value>Copy archive {0} to: {1}</value>
   </data>
+  <data name="App_CrashLoop_Title" xml:space="preserve">
+    <value>PotatoVN keeps crashing</value>
+  </data>
+  <data name="App_CrashLoop_Msg" xml:space="preserve">
+    <value>PotatoVN crashed again right after restarting, so automatic restart has been stopped to avoid a restart loop.
+
+Detailed diagnostics have been written to the log folder:
+{0}
+
+Please send the newest log file in that folder to the developers (GitHub issue).
+
+Open the log folder now?</value>
+  </data>
 </root>

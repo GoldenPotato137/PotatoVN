@@ -5116,4 +5116,17 @@
   <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
     <value>复制压缩包 {0} 到：{1}</value>
   </data>
+  <data name="App_CrashLoop_Title" xml:space="preserve">
+    <value>PotatoVN 连续崩溃</value>
+  </data>
+  <data name="App_CrashLoop_Msg" xml:space="preserve">
+    <value>PotatoVN 在自动重启后很快又崩溃了，为避免无限重启，已停止自动重启。
+
+详细的诊断信息已写入日志文件夹：
+{0}
+
+请将该文件夹中最新的 log 文件发给开发者（GitHub Issue）。
+
+是否现在打开日志文件夹？</value>
+  </data>
 </root>

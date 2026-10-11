@@ -298,7 +298,10 @@ public class ActivationService : IActivationService
         return false;
     }
 
-    private static bool IsSafeMode()
+    /// <summary>
+    /// 判断是否是崩溃后以安全模式自动重启的
+    /// </summary>
+    public static bool IsSafeMode()
     {
         AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
         ExtendedActivationKind kind = activatedArgs.Kind;
