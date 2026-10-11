@@ -25,6 +25,10 @@
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
+    <!-- 打 bundle（商店包）时不按语言拆分资源包：VS 会把语言资源包全部过滤掉，只剩 zh-CN 的 WinUI
+         Microsoft.ui.xaml.dll.mui 与应用字符串，其他系统语言下控件加载本地化资源时抛出
+         0x80073B01（ERROR_MUI_FILE_NOT_LOADED）而崩溃（issue #742）。因此只按缩放比例拆分 -->
+    <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
     <!-- TODO: 要处理该警告需要用到.Net Preview的特性，等特性稳定（进入正式版）后再处理 -->
     <NoWarn>MVVMTK0045</NoWarn>
 
