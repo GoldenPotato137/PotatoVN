@@ -1,12 +1,10 @@
 using System.Net;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using GalgameManager.Contracts.Services;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace GalgameManager.Helpers;
 
@@ -187,22 +185,21 @@ public static class DownloadHelper
         DirectoryInfo? targetFolder = null)
     {
         DataPackageView? data = Clipboard.GetContent();
-        Stream? inputStream = null;
+        IRandomAccessStream? inputStream = null;
         try
         {
             if (data.Contains(StandardDataFormats.Bitmap))
             {
                 RandomAccessStreamReference? bitmapRef = await data.GetBitmapAsync();
                 if (bitmapRef is null) return null;
-                IRandomAccessStreamWithContentType? randomAccessStream = await bitmapRef.OpenReadAsync();
-                inputStream = randomAccessStream.AsStreamForRead();
+                inputStream = await bitmapRef.OpenReadAsync();
             }
             else if (data.Contains(StandardDataFormats.StorageItems))
             {
                 IReadOnlyList<IStorageItem>? items = await data.GetStorageItemsAsync();
                 StorageFile? file = items?.OfType<StorageFile>().FirstOrDefault();
                 if (file is null) return null;
-                inputStream = await file.OpenStreamForReadAsync();
+                inputStream = await file.OpenReadAsync();
             }
             else
             {
@@ -210,33 +207,29 @@ public static class DownloadHelper
             }
 
             if (inputStream is null) return null;
-            if (inputStream.CanSeek) inputStream.Position = 0;
 
-            Image<Rgba32> image;
+            (byte[] Pixels, int Width, int Height) image;
             try
             {
-                image = Image.Load<Rgba32>(inputStream);
+                image = await DecodeImageAsync(inputStream);
             }
             catch
             {
                 return null;
             }
 
-            using (image)
+            StorageFolder localFolder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Images);
+            if (targetFolder != null)
             {
-                StorageFolder localFolder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Images);
-                if (targetFolder != null)
-                {
-                    if (!targetFolder.Exists) targetFolder.Create();
-                    localFolder = await StorageFolder.GetFolderFromPathAsync(targetFolder.FullName);
-                }
-
-                var safeName = $"{fileNameWithoutExtension}.png".RemoveInvalidChars();
-                StorageFile storageFile = await localFolder.CreateFileAsync(safeName, CreationCollisionOption.ReplaceExisting);
-                await using Stream fileStream = await storageFile.OpenStreamForWriteAsync();
-                await image.SaveAsPngAsync(fileStream);
-                return storageFile.Path;
+                if (!targetFolder.Exists) targetFolder.Create();
+                localFolder = await StorageFolder.GetFolderFromPathAsync(targetFolder.FullName);
             }
+
+            var safeName = $"{fileNameWithoutExtension}.png".RemoveInvalidChars();
+            StorageFile storageFile = await localFolder.CreateFileAsync(safeName, CreationCollisionOption.ReplaceExisting);
+            using IRandomAccessStream fileStream = await storageFile.OpenAsync(FileAccessMode.ReadWrite);
+            await EncodePngAsync(fileStream, image.Pixels, image.Width, image.Height);
+            return storageFile.Path;
         }
         finally
         {
@@ -254,42 +247,59 @@ public static class DownloadHelper
     ///     返回该像素的alpha (0.0 = 完全透明, 1.0 = 完全不透明)。
     /// </param>
     /// <param name="cutBottom">是否裁切底部30%（用来处理vndb游戏截图的对话框）</param>
-    public static void ProcessImage(string inputPath, string outputPath, bool cutBottom,
+    public static async Task ProcessImageAsync(string inputPath, string outputPath, bool cutBottom,
         Func<int, int, int, int, float>? transparencyFunction = null)
     {
-        using Image<Rgba32> image = Image.Load<Rgba32>(inputPath);
-        var newHeight = cutBottom ? (int)Math.Round(image.Height * (2.0 / 3.0)) : image.Height;
-        if (newHeight < 1) throw new ArgumentException("裁剪后的高度必须大于 0。");
-        Rectangle cropRectangle = new Rectangle(0, 0, image.Width, newHeight);
-        image.Mutate(ctx => ctx.Crop(cropRectangle));
+        (byte[] Pixels, int Width, int Height) image;
+        using (IRandomAccessStream input = File.OpenRead(inputPath).AsRandomAccessStream())
+            image = await DecodeImageAsync(input);
+        var width = image.Width;
+        var height = cutBottom ? (int)Math.Round(image.Height * (2.0 / 3.0)) : image.Height;
+        if (height < 1) throw new ArgumentException("裁剪后的高度必须大于 0。");
+        //像素按行紧密排列，只保留前height行即完成裁剪
+        var pixels = image.Pixels;
+        Array.Resize(ref pixels, width * height * 4);
 
         //应用基于坐标的透明度计算
-        ApplyPixelTransparency();
-        image.SaveAsPng(outputPath);
-        return;
-
-        void ApplyPixelTransparency()
+        for (var y = 0; y < height; y++)
         {
-            int width = image.Width, height = image.Height;
-            image.ProcessPixelRows(accessor =>
+            for (var x = 0; x < width; x++)
             {
-                for (var y = 0; y < height; y++)
-                {
-                    Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
-                    for (var x = 0; x < width; x++)
-                    {
-                        ref Rgba32 pixel = ref pixelRow[x];
-                        var originalAlpha = pixel.A;
-
-                        var factor = transparencyFunction is null
-                            ? CalcAlpha(x, y, width, height)
-                            : Math.Clamp(transparencyFunction(x, y, width, height), 0f, 1f);
-                        var newAlphaFloat = originalAlpha * factor;
-                        pixel.A = (byte)Math.Clamp(MathF.Round(newAlphaFloat), 0, 255);
-                    }
-                }
-            });
+                var alphaIndex = (y * width + x) * 4 + 3;
+                var factor = transparencyFunction is null
+                    ? CalcAlpha(x, y, width, height)
+                    : Math.Clamp(transparencyFunction(x, y, width, height), 0f, 1f);
+                var newAlphaFloat = pixels[alphaIndex] * factor;
+                pixels[alphaIndex] = (byte)Math.Clamp(MathF.Round(newAlphaFloat), 0, 255);
+            }
         }
+
+        using IRandomAccessStream output = File.Create(outputPath).AsRandomAccessStream();
+        await EncodePngAsync(output, pixels, width, height);
+    }
+
+    /// <summary>
+    /// 使用系统自带的解码器解码图像（多帧图像取首帧），按EXIF方向摆正并转换到sRGB。
+    /// </summary>
+    /// <returns>BGRA8、非预乘alpha、按行紧密排列的像素数据及其尺寸</returns>
+    private static async Task<(byte[] Pixels, int Width, int Height)> DecodeImageAsync(IRandomAccessStream stream)
+    {
+        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
+        PixelDataProvider pixelData = await decoder.GetPixelDataAsync(BitmapPixelFormat.Bgra8,
+            BitmapAlphaMode.Straight, new BitmapTransform(), ExifOrientationMode.RespectExifOrientation,
+            ColorManagementMode.ColorManageToSRgb);
+        return (pixelData.DetachPixelData(), (int)decoder.OrientedPixelWidth, (int)decoder.OrientedPixelHeight);
+    }
+
+    /// <summary>
+    /// 将BGRA8、非预乘alpha的像素数据编码为PNG写入流。
+    /// </summary>
+    private static async Task EncodePngAsync(IRandomAccessStream stream, byte[] pixels, int width, int height)
+    {
+        BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+        encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, (uint)width, (uint)height,
+            96, 96, pixels);
+        await encoder.FlushAsync();
     }
 
     private static float CalcAlpha(int col, int row, int width, int height)

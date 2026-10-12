@@ -79,7 +79,7 @@ public class PvnSyncTaskPullGame(
                         var finalHeaderPath = Path.Combine(
                             (await FileHelper.GetFolderAsync(FileHelper.FolderType.Images)).Path,
                             $"{item.Name ?? "unknown"}_Header.png".RemoveInvalidChars());
-                        await Task.Run(() =>
+                        await Task.Run(async () =>
                         {
                             if (!GetHeaderFromRssTask.ShouldProcess(item.HeaderImageUrl))
                                 File.Move(rawImagePath, finalHeaderPath, true);
@@ -87,7 +87,7 @@ public class PvnSyncTaskPullGame(
                             {
                                 // Image needs processing, apply the same logic as GetHeaderFromRssTask
                                 var fromSteam = item.HeaderImageUrl.Contains("cdn.akamai.steamstatic.com");
-                                DownloadHelper.ProcessImage(rawImagePath, finalHeaderPath, !fromSteam);
+                                await DownloadHelper.ProcessImageAsync(rawImagePath, finalHeaderPath, !fromSteam);
                                 if (File.Exists(rawImagePath)) File.Delete(rawImagePath);
                             }
                         });

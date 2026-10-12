@@ -51,7 +51,7 @@ public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
         var rawImage = await DownloadHelper.DownloadAndSaveImageWithDiffThread(url,
             fileNameWithoutExtension: $"{item.Name.Value?.RemoveInvalidChars() ?? string.Empty}_tmp");
         if (rawImage is null) return;
-        DownloadHelper.ProcessImage(rawImage, targetPath, !fromSteam);
+        await DownloadHelper.ProcessImageAsync(rawImage, targetPath, !fromSteam);
         var oldImg = item.HeaderImagePath.Value;
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
