@@ -32,6 +32,20 @@ public sealed class GameLaunchService(
         (GalgameCollectionService)gameCollectionService; // 逻辑游戏持久化与可执行文件选择服务
 
     /// <inheritdoc />
+    public Task AddPlayTimeTaskAsync(RecordPlayTimeTask task)
+    {
+        lock (_launchStateLock)
+        {
+            // 新启动与托盘恢复共用查重入口，检查和添加之间不允许另一计时请求插入。
+            if (task.Galgame is { } game &&
+                bgTaskService.GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D")) is not null)
+                return Task.CompletedTask;
+
+            return bgTaskService.AddBgTask(task);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task LaunchAsync(Galgame game, GalgameAndPath installation)
     {
         if (installation.Galgame != game || !installation.IsLocalInstallation)
@@ -186,7 +200,7 @@ public sealed class GameLaunchService(
             if (installation.Source is not null) sourceCollectionService.Save(installation.Source);
             await _gameService.SaveGalgameAsync(game);
 
-            Task playTimeTask = bgTaskService.AddBgTask(new RecordPlayTimeTask(game, process, installation.EntryId,
+            Task playTimeTask = AddPlayTimeTaskAsync(new RecordPlayTimeTask(game, process, installation.EntryId,
                 preExistingProcessIds, processRelay, launchWindowTracker));
             // 计时任务接管启动窗口追踪器；启动服务提前结束时不能停止仍在等待接力的观察。
             launchWindowTracker = null;
