@@ -5065,4 +5065,7 @@
   <data name="PluginStorePage_Downloads.ToolTipService.ToolTip" xml:space="preserve">
     <value>下载次数</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>“{0}”已在运行或正在记录游玩时间。</value>
+  </data>
 </root>
