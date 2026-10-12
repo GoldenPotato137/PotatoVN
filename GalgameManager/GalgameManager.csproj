@@ -34,6 +34,8 @@
     <WindowsAppSdkAutoInitialize>false</WindowsAppSdkAutoInitialize>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
     <WindowsAppSdkCompatibilityInitialize>false</WindowsAppSdkCompatibilityInitialize>
+    <!-- 编入 Microsoft.WindowsAppSDK.Release 等版本常量，供手动 Bootstrap 使用，避免硬编码运行时版本 -->
+    <WindowsAppSdkIncludeVersionInfo>true</WindowsAppSdkIncludeVersionInfo>
 
     <!-- 使用自定义入口（在 Application.Start 之前初始化 WinAppRuntime） -->
     <StartupObject>GalgameManager.BootstrapProgram</StartupObject>
