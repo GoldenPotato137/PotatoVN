@@ -71,18 +71,6 @@ public class ActivationService : IActivationService
 
     public async Task LaunchedAsync(object activationArgs)
     {
-        // 多实例启动，切换到第一实例，第一实例 App.OnActivated() 响应
-        IList<AppInstance> instances = AppInstance.GetInstances();
-        if (instances.Count > 1 && AppInstance.GetCurrent() != instances[0])
-        {
-            if (activationArgs is AppActivationArguments args)
-            {
-                await instances[0].RedirectActivationToAsync(args);
-            }
-            Application.Current.Exit();
-            return;
-        }
-
         // Execute tasks before activation.
         await InitializeAsync();
 

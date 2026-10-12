@@ -94,6 +94,8 @@ This section highlights important files and directories specific to the client a
 *   **`App.xaml` / `App.xaml.cs`**:
     *   `App.xaml`: Declares application-level resources and styles.
     *   `App.xaml.cs`: The application's entry point. Handles application lifecycle events (startup, activation, suspension), initializes services, and sets up the main window.
+        *   Single-instance redirect (`RedirectToMainInstanceAsync`) runs first in `OnLaunched`, before any `GetService` call. On unpackaged builds the `LocalSettingsService` ctor opens the LiteDB `Settings/pvn_settings.db`, which the first instance holds exclusively. Resolving any service that depends on it before the redirect therefore throws `IOException` in the second instance (MSIX is unaffected, as it keeps settings in `ApplicationData`). The tray-mode `/r` restart still sees itself as the only instance, so it is not redirected.
+        *   `App_UnhandledException` must never throw. If it does, WinUI reports the new exception back to the same handler, which recurses until the process dies with a stack overflow (0xC00000FD). Keep everything inside it best-effort.
 *   **`MainWindow.xaml` / `MainWindow.xaml.cs`**:
     *   `MainWindow.xaml`: Defines the XAML structure for the main application window.
     *   `MainWindow.xaml.cs`: Contains the code-behind logic for the main window, including event handlers and interaction with ViewModels.
@@ -288,6 +290,15 @@ Client services can be unit-tested in the plain NUnit process (no `App`, no WinA
 - UI assertions use stable AutomationIds on realized game, category-group, category, and source items plus scoped `winapp ui inspect` trees. Verify the exact Home game count/names; that group/source counts do not shrink; that historical group/category IDs or names survive; that category game counts match; and that a Status group exists. Match legacy system category groups by type because their display names are localized; only custom groups without historical IDs should fall back to name matching. End with `winapp ui send-keys alt+f4 --via send-input --allow-system-keys` and assert normal exit; do not inspect the upgraded LiteDB directly.
 - `CategoryService.LiteDbUpgrade` must run `UpdateGameIndexFormat` before deleting `data.categoryGroups.json`: v1.7.x categories identify games by path, and deleting the JSON first silently leaves migrated categories with zero games.
 - Keep this fixture under `Category("E2E")`; it launches the real WinUI process and should not run in the ordinary service-test loop.
+
+**Single-instance E2E (`GalgameManager.Test/Lifecycle/UnpackagedAppSingleInstanceTest.cs`):**
+- What it does:
+  - Starts the unpackaged exe and minimizes its window.
+  - Starts a second instance.
+  - Asserts the second exits with code 0, not a 0xC00000FD stack overflow.
+  - Asserts the first instance's window is restored.
+- It only uses Win32 (`Process.MainWindowHandle`, `ShowWindow`, `IsIconic`), so it does not need WinApp CLI.
+- Close any other running `GalgameManager.exe` built from the same output before running E2E tests. Otherwise the test's "first" instance redirects to that process and exits.
 
 **Known-untestable paths (avoid in unit tests, or refactor first):**
 - `BgTaskBase` subclasses are safe to *construct* in tests now (ctor injection), but their `ProcessItemAsync`/`RunInternal` still hit network, files, and `App` — never let them actually `Run`. Mocked `IBgTaskService.AddBgTask` does not run tasks, so tasks created via a mocked factory are only enqueued. Pattern for code paths that create tasks (e.g. `AddGameAsync` → `GetHeaderFromRssTask`): `BgTaskService.Setup(x => x.CreateBgTask<GetHeaderFromRssTask>(It.IsAny<object[]>())).Returns(() => new GetHeaderFromRssTask(service, pvnMock.Object, Settings))` — the real task instance takes the real service under test plus mocks (see `GalgameCollectionServiceTest.AddGameAsync_VirtualSource_AddsParsedGameToListAndDatabase`).
