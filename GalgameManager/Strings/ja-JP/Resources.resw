@@ -4193,4 +4193,7 @@
   <data name="StorePluginDialog_WaitingOffload" xml:space="preserve">
     <value>アプリを再起動してからプラグインを追加してください</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>「{0}」はすでに実行中か、プレイ時間を記録中です。</value>
+  </data>
 </root>

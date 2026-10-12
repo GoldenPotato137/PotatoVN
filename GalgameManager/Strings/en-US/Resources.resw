@@ -4264,4 +4264,7 @@ If play time can record correctly, just cancel this popup.
   <data name="StorePluginDialog_WaitingOffload" xml:space="preserve">
     <value>Please restart the app before adding plugins</value>
   </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>“{0}” is already running or its play time is being recorded.</value>
+  </data>
 </root>
