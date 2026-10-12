@@ -88,7 +88,10 @@ public class BgTaskService : IBgTaskService
         {
             ConnectProcessRelay(bgTask);
             await bgTask.RecoverFromJson();
-            _ = AddTaskInternal(bgTask);
+            // 计时任务交回启动服务处理游戏级规则，延迟解析以避免构造函数的循环依赖。
+            _ = bgTask is RecordPlayTimeTask playTimeTask
+                ? _serviceProvider.GetRequiredService<IGameLaunchService>().AddPlayTimeTaskAsync(playTimeTask)
+                : AddTaskInternal(bgTask);
         }
         _fileService.Delete(AppStoragePaths.LocalDataPath, FileName);
     }
@@ -142,11 +145,6 @@ public class BgTaskService : IBgTaskService
         {
             lock (_bgTasksLock)
             {
-                // 复用任务的检索规则，并将检查与入队放在同一把锁内，覆盖并发添加和托盘恢复。
-                if (bgTask is RecordPlayTimeTask { Galgame: { } game } &&
-                    GetBgTask<RecordPlayTimeTask>(game.Uuid.ToString("D")) is not null)
-                    return Task.CompletedTask;
-
                 ConnectProcessRelay(bgTask);
                 _bgTasks.Add(bgTask);
             }
