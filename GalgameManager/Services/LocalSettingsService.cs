@@ -564,6 +564,13 @@ public class LocalSettingsService : ILocalSettingsService
                     await SaveSettingAsync(KeyValues.LibraryFolderSortKey, libraryFolderSortKey);
                 if (pageSettings.LibraryFolderSortDescending is { } libraryFolderSortDescending)
                     await SaveSettingAsync(KeyValues.LibraryFolderSortDescending, libraryFolderSortDescending);
+                // 背景图本身已随导出包解压到 Background 文件夹
+                if (pageSettings.CustomBackgroundEnabled is { } customBackgroundEnabled)
+                    await SaveSettingAsync(KeyValues.CustomBackgroundEnabled, customBackgroundEnabled);
+                if (pageSettings.UseBannerAsBackground is { } useBannerAsBackground)
+                    await SaveSettingAsync(KeyValues.UseBannerAsBackground, useBannerAsBackground);
+                if (pageSettings.BackgroundStretchMode is { } backgroundStretchMode)
+                    await SaveSettingAsync(KeyValues.BackgroundStretchMode, (BackgroundStretchMode)backgroundStretchMode);
             }
 
             status.ImportPageSettings = true;

@@ -54,7 +54,7 @@ public class LocalSettingStatus
     public bool ImportCategory = true;
     /// staffService是否已处理过导入
     public bool ImportStaff = true;
-    /// 游戏列表页/库页设置（排序等）是否已处理过导入
+    /// 游戏列表页/库页设置（排序等）与背景图设置是否已处理过导入
     public bool ImportPageSettings = true;
     public void SetToExport()
     {
