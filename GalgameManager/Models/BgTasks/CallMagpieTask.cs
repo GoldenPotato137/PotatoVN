@@ -15,38 +15,97 @@ public class CallMagpieTask : BgTaskBase
     public string ProcessName { get; set; } = null!;
     public bool HashFinished { get; set; }
     private Process? _process;
+    private GameRuntimeProcessRelay? _processRelay;
+    private readonly HashSet<Process> _ownedProcesses = [];
 
-    public CallMagpieTask() { } // Just for serialization
+    public CallMagpieTask() { } // 仅用于后台任务序列化恢复
 
     public CallMagpieTask(Galgame game, Process process)
+        : this(game, process, null)
+    {
+    }
+
+    public CallMagpieTask(Galgame game, Process process, GameRuntimeProcessRelay? processRelay)
     {
         Galgame = game;
-        _process = process;
+        _process = processRelay is null ? process : null;
+        _processRelay = processRelay;
+        try
+        {
+            ProcessName = process.ProcessName;
+        }
+        catch
+        {
+            // 短命启动器退出后仍等待计时任务发布正式游戏进程。
+        }
     }
     
     protected async override Task RecoverFromJsonInternal()
     {
         await Task.CompletedTask;
-        _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
+        _process = _processRelay is null
+            ? Process.GetProcessesByName(ProcessName).FirstOrDefault()
+            : null;
+        if (_process is not null) _ownedProcesses.Add(_process);
     }
 
     protected async override Task RunInternal()
     {
+        try
+        {
+            await RunCoreAsync();
+        }
+        finally
+        {
+            foreach (Process process in _ownedProcesses) process.Dispose();
+            _ownedProcesses.Clear();
+        }
+    }
+
+    private async Task RunCoreAsync()
+    {
         if (Galgame is null) throw new PvnException("Galgame is null");
-        if (_process is null)
+        if (_process is null && _processRelay is null)
         {
             _process = Process.GetProcessesByName(ProcessName).FirstOrDefault();
             if (_process is null) throw new PvnException("Process not found");
+            _ownedProcesses.Add(_process);
+        }
+        if (_processRelay is not null)
+        {
+            Process? confirmed = await _processRelay.WaitForConfirmationAsync();
+            if (confirmed is not null) _ownedProcesses.Add(confirmed);
+            if (confirmed is null || !GameProcessDetector.IsAlive(confirmed) || HashFinished)
+            {
+                ChangeProgress(1, 1, string.Empty, false);
+                return;
+            }
+            _process = confirmed;
         }
         var magpiePath = await App.GetService<ILocalSettingsService>().ReadSettingAsync<string>(KeyValues.MagpiePath);
         if (string.IsNullOrEmpty(magpiePath)) throw new PvnException("CallMagpieTask_NoMagpiePath".GetLocalized());
         ChangeProgress(0, 1, "CallMagpieTask_LaunchingMagpie".GetLocalized());
         await MagpieHelper.LaunchMagpieAsync(magpiePath);
 
-        if (_process.HasExited || HashFinished) return;
-        ProcessName = _process.ProcessName;
+        if (_process is null || !GameProcessDetector.IsAlive(_process) || HashFinished) return;
+        try
+        {
+            ProcessName = _process.ProcessName;
+        }
+        catch
+        {
+            // 受保护进程可能拒绝读取名称，仍继续尝试通过窗口调用 Magpie。
+        }
         for (var retry = 0; retry < MaxRetryCount && !HashFinished; retry++)
         {
+            if (_processRelay?.IsCompleted == true) break;
+            if (_processRelay is not null)
+            {
+                Process? current = await _processRelay.WaitForConfirmationAsync();
+                if (current is not null) _ownedProcesses.Add(current);
+                if (current is null || !GameProcessDetector.IsAlive(current)) break;
+                _process = current;
+            }
             try
             {
                 ChangeProgress(0, 1, "CallMagpieTask_Trying".GetLocalized(retry));
@@ -56,13 +115,16 @@ public class CallMagpieTask : BgTaskBase
             catch (MagpieHelper.MagpieNoMainWinException)
             {
                 // 主窗口还没出现，等待一会儿
-                await Task.Delay(1000);
+                if (_processRelay is null) await Task.Delay(1000);
+                else await Task.WhenAny(_processRelay.Completion, Task.Delay(1000));
             }
         }
         ChangeProgress(1 ,1, "CallMagpieTask_ProgressMsg".GetLocalized(Galgame.Name.Value!));
     }
 
     public override string Title => "CallMagpieTask_Title".GetLocalized();
+
+    internal void FollowProcessRelay(GameRuntimeProcessRelay? relay) => _processRelay ??= relay;
 }
 
 public static class MagpieHelper
@@ -127,10 +189,10 @@ public static class MagpieHelper
         List<int> shortcuts = App.GetService<ILocalSettingsService>()
             .ReadSettingAsync<List<int>>(KeyValues.MagpieHotkeys).Result ?? [];
         InputSimulator keyboard = new();
-        // Press down all keys in the shortcut
+        // 依次按下快捷键。
         foreach (var shortcut in shortcuts)
             keyboard.Keyboard.KeyDown((VirtualKeyCode)shortcut);
-        // Release all keys in the shortcut (in reverse order is a common practice, though not strictly necessary for all cases)
+        // 按相反顺序释放快捷键。
         for (var i = shortcuts.Count - 1; i >= 0; i--)
             keyboard.Keyboard.KeyUp((VirtualKeyCode)shortcuts[i]);
     }
