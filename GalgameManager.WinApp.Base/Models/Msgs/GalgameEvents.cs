@@ -9,6 +9,12 @@ namespace GalgameManager.WinApp.Base.Models.Msgs;
 public class GalgamePlayedMessage(Galgame galgame) : ValueChangedMessage<Galgame>(galgame);
 
 /// <summary>
+/// 仅在启动弹窗判断完成、原生计时可以创建游玩时段后发送。
+/// 需要正式游玩生命周期的插件应优先监听此消息，而不是 <see cref="GalgamePlayedMessage"/>。
+/// </summary>
+public class GalgamePlayTimeRecordingStartedMessage(Galgame galgame) : ValueChangedMessage<Galgame>(galgame);
+
+/// <summary>
 /// 将游戏已保存映射状态的不可变副本传递给正在运行的按键映射任务。
 /// </summary>
 public class KeyMappingsChangedMessage : AsyncRequestMessage<bool>

@@ -9,33 +9,88 @@
     mc:Ignorable="d"
     Style="{ThemeResource DefaultContentDialogStyle}">
 
-    <Grid MaxHeight="300">
+    <Grid MaxHeight="{x:Bind DialogMaxHeight}" MinWidth="{x:Bind DialogMinWidth}"
+          Background="Transparent"
+          PointerPressed="DialogContentRoot_OnPointerPressed">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
-        <ListView Grid.Row="0" x:Name="ListView">
+
+        <TextBlock x:Name="DescriptionText" Grid.Row="0" x:Uid="EditPlayTimeDialog_Description"
+                   Margin="12,0,12,10" TextWrapping="Wrap"
+                   Visibility="{x:Bind PreciseVisibility}"
+                   Style="{ThemeResource DescriptionTextStyle}"/>
+
+        <Grid Grid.Row="1" ColumnSpacing="8" Margin="12,0,12,4"
+              Visibility="{x:Bind PreciseVisibility}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="104"/>
+                <ColumnDefinition Width="104"/>
+                <ColumnDefinition Width="104"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Uid="EditPlayTimeDialog_DateColumn"/>
+            <TextBlock Grid.Column="1" x:Uid="EditPlayTimeDialog_HourColumn"/>
+            <TextBlock Grid.Column="2" x:Uid="EditPlayTimeDialog_MinuteColumn"/>
+            <TextBlock Grid.Column="3" x:Uid="EditPlayTimeDialog_SecondColumn"
+                       Visibility="{x:Bind SecondsVisibility}"/>
+        </Grid>
+
+        <ListView Grid.Row="2" x:Name="PreciseListView"
+                  Visibility="{x:Bind PreciseVisibility}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:DisplayPlayTime">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="104"/>
+                            <ColumnDefinition Width="104"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Bind Date}" VerticalAlignment="Center"/>
+                        <NumberBox Grid.Column="1" Width="104" Value="{x:Bind Hours, Mode=TwoWay}"
+                                   Minimum="0" SpinButtonPlacementMode="Compact"/>
+                        <NumberBox Grid.Column="2" Width="104" Value="{x:Bind Minutes, Mode=TwoWay}"
+                                   Minimum="0" Maximum="59" SpinButtonPlacementMode="Compact"/>
+                        <NumberBox Grid.Column="3" Width="104" Value="{x:Bind Seconds, Mode=TwoWay}"
+                                   Visibility="{x:Bind SecondsVisibility}"
+                                   Minimum="0" Maximum="59" SpinButtonPlacementMode="Compact"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <ListView Grid.Row="2" x:Name="MinuteListView"
+                  Visibility="{x:Bind MinuteVisibility}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:DisplayPlayTime">
                     <StackPanel Orientation="Horizontal" Spacing="20">
                         <TextBlock Text="{x:Bind Date}" VerticalAlignment="Center" MinWidth="100"/>
-                        <NumberBox Value="{x:Bind PlayedTime, Mode=TwoWay}" 
-                                   VerticalAlignment="Center" Margin="0 5 0 5" MinWidth="70"
+                        <NumberBox Value="{x:Bind PlayedTime, Mode=TwoWay}"
+                                   VerticalAlignment="Center" Margin="0,5,0,5" MinWidth="70"
                                    SpinButtonPlacementMode="Inline" SmallChange="1" LargeChange="10"/>
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0 10 0 0">
+        <TextBlock x:Name="ValidationMessage" Grid.Row="3"
+                   Margin="0,8,0,0"
+                   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                   TextWrapping="Wrap" Visibility="Collapsed"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="10" Margin="0 10 0 0">
             <TextBlock x:Uid="EditPlayTimeDialog_PlayCountLabel" VerticalAlignment="Center"/>
             <NumberBox x:Name="PlayCountNumberBox" MinWidth="100" ValueChanged="PlayCountNumberBox_OnValueChanged"
                        SpinButtonPlacementMode="Inline" SmallChange="1" LargeChange="1"/>
         </StackPanel>
         
-        <Grid Grid.Row="2" Margin="0 5 0 -15">
+        <Grid Grid.Row="5" Margin="0,8,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
