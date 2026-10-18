@@ -61,6 +61,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     [NotifyCanExecuteChangedFor(nameof(ClearTextCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResetPathCommand))]
     [ObservableProperty] private bool _isLocalGame; //是否是本地游戏（而非云端同步过来/本地已删除的虚拟游戏）
+    [NotifyCanExecuteChangedFor(nameof(MoveToSourceCommand))]
+    [ObservableProperty] private bool _canMoveToSource; //是否有能移动到其他库的游戏文件（本地安装或压缩包）
     [ObservableProperty] private bool _isPhrasing;
     [ObservableProperty] private bool _hasSaveDirectory; //是否有检测到或设置的存档目录
     [ObservableProperty] private Visibility _showSingleExplorerButton = Visibility.Visible; //是否显示单个打开按钮
@@ -228,6 +230,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
             // 原理上来说是不会越界的，但莫名奇妙有用户反馈过越界问题
             _infoService.Info(InfoBarSeverity.Warning, $"Error setting open flags: {ex.Message}");
         }
+        IsLocalGame = game.IsLocalGame;
+        CanMoveToSource = game.SourceEntries.Any(SourceMoveTask.HasFiles);
         Installations.Clear();
         foreach (GalgameAndPath installation in Item?.LocalInstallations ?? [])
             Installations.Add(installation);
@@ -785,7 +789,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         await SaveAsync();
     }
 
-    [RelayCommand(CanExecute = nameof(IsLocalGame))]
+    [RelayCommand(CanExecute = nameof(CanMoveToSource))]
     private async Task MoveToSource()
     {
         if (Item is null) return;
@@ -794,8 +798,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         if (!dialog.Ok) return;
         try
         {
-            _sourceService.MoveAsync(dialog.MoveInSource, dialog.MoveInSource.Path,
-                dialog.MoveOutSource, Item, dialog.DeleteFiles);
+            // 目标路径交由对应库的service决定（如本地库为<库根>/<游戏文件夹名>）
+            _sourceService.MoveAsync(dialog.MoveInSource, null, dialog.MoveOutSource, Item, dialog.DeleteFiles);
         }
         catch (Exception e)
         {

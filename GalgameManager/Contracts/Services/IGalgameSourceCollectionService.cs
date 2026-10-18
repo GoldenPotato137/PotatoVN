@@ -16,7 +16,12 @@ public interface IGalgameSourceCollectionService
     /// 当库列表被修改（添加、删除）时触发
     /// </summary>
     public Action? OnSourceChanged { get; set; }
-    
+
+    /// <summary>
+    /// 当<see cref="MoveAsync"/>发起的移动任务结束时触发（失败时也会触发：可能已移入成功但移出失败，条目仍可能已变化）
+    /// </summary>
+    public event Action<Galgame>? GalgameMoved;
+
     /// <summary>
     /// 初始化
     /// </summary>

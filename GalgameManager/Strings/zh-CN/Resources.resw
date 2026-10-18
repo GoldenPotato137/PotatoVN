@@ -1859,9 +1859,7 @@
   <data name="SourceMoveTask_MovingIn" xml:space="preserve">
     <value>正在执行游戏搬入另一个源的任务</value>
   </data>
-  <data name="LocalFolderSourceService_MoveOutError" xml:space="preserve">
-    <value>一个游戏只能属于一个本地文件夹，要移入其他本地文件夹必须从当前本地文件夹中移出。</value>
-  </data>
+
   <data name="SourceMoveTask_MovingIn_Fail" xml:space="preserve">
     <value>移入源任务失败</value>
   </data>
@@ -5030,13 +5028,11 @@
     <value>压缩库以压缩包（zip/rar/7z）的形式保存游戏。把游戏移入压缩库时会压缩游戏文件夹；压缩包不能直接游玩，目前暂不支持移出游玩。</value>
   </data>
   <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
-    <value>游戏将被压缩为压缩包并存到 {0}</value>
+    <value>将游戏压缩为：{0}</value>
   </data>
-  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
-    <value>暂不支持从压缩库移出游戏，请改用目标本地库的从压缩包添加游戏。</value>
-  </data>
+
   <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
-    <value>该游戏没有可压缩的本地文件夹安装</value>
+    <value>该游戏没有可移入压缩库的本地文件夹或压缩包</value>
   </data>
   <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
     <value>同时删除磁盘上的文件（游戏文件夹/压缩包）</value>
@@ -5067,5 +5063,57 @@
   </data>
   <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
     <value>“{0}”已在运行或正在记录游玩时间。</value>
+  </data>
+  <data name="ZipSourceService_MoveOutDescription" xml:space="preserve">
+    <value>删除压缩包：{0}</value>
+  </data>
+  <data name="ZipSourceService_UnlinkDescription" xml:space="preserve">
+    <value>从压缩库中移除（保留压缩包）：{0}</value>
+  </data>
+  <data name="ZipSourceService_TargetExists" xml:space="preserve">
+    <value>目标压缩包已存在：{0}</value>
+  </data>
+
+  <data name="LocalFolderSourceService_UnpackInDescription" xml:space="preserve">
+    <value>解压压缩包 {0} 到：{1}</value>
+  </data>
+  <data name="LocalFolderSourceService_UnlinkDescription" xml:space="preserve">
+    <value>从本地库中移除（保留文件夹）：{0}</value>
+  </data>
+  <data name="LocalFolderSourceService_NoSourceToCopy" xml:space="preserve">
+    <value>该游戏没有可复制的本地文件夹或压缩包</value>
+  </data>
+  <data name="LocalFolderSourceService_TargetExists" xml:space="preserve">
+    <value>目标文件夹已存在：{0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Title" xml:space="preserve">
+    <value>删除压缩包任务</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Progress" xml:space="preserve">
+    <value>正在删除：{0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Success" xml:space="preserve">
+    <value>已删除压缩包：{0}</value>
+  </data>
+  <data name="UnpackGameTask_UnpackedTo" xml:space="preserve">
+    <value>已解压到：{0}</value>
+  </data>
+  <data name="UnpackGameTask_Failed" xml:space="preserve">
+    <value>解压失败（压缩包损坏、需要密码或磁盘空间不足）：{0}</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PackNotExist" xml:space="preserve">
+    <value>压缩包 {0} 不存在</value>
+  </data>
+  <data name="CopyPackTask_Title" xml:space="preserve">
+    <value>复制压缩包任务</value>
+  </data>
+  <data name="CopyPackTask_Progress" xml:space="preserve">
+    <value>正在复制 {0}</value>
+  </data>
+  <data name="CopyPackTask_Done" xml:space="preserve">
+    <value>已复制压缩包到 {0}</value>
+  </data>
+  <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
+    <value>复制压缩包 {0} 到：{1}</value>
   </data>
 </root>

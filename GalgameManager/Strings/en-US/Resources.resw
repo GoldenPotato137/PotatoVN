@@ -1756,9 +1756,7 @@ If play time can record correctly, just cancel this popup.
   <data name="SourceMoveTask_MovingIn" xml:space="preserve">
     <value>Moving game to another source</value>
   </data>
-  <data name="LocalFolderSourceService_MoveOutError" xml:space="preserve">
-    <value>A game can only belong to one local folder. To move it to another local folder, it must be moved out of the current local folder first.</value>
-  </data>
+
   <data name="SourceMoveTask_MovingIn_Fail" xml:space="preserve">
     <value>Move in source task failed</value>
   </data>
@@ -4118,13 +4116,11 @@ If play time can record correctly, just cancel this popup.
     <value>An archive library stores games as compressed archives (zip/rar/7z). When you move a game into it the game folder is compressed into an archive; the archive itself is not playable directly.'move out to play' is not supported yet.</value>
   </data>
   <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
-    <value>The game will be compressed into an archive in {0}</value>
+    <value>Pack the game into: {0}</value>
   </data>
-  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
-    <value>Moving a game out of an archive library is not supported yet. Use 'Add game from archive' on the target local library instead.</value>
-  </data>
+
   <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
-    <value>The game has no local folder installation to pack</value>
+    <value>The game has no local folder or archive to move into the archive library</value>
   </data>
   <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
     <value>Also delete the files on disk (game folder / archive)</value>
@@ -4266,5 +4262,57 @@ If play time can record correctly, just cancel this popup.
   </data>
   <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
     <value>“{0}” is already running or its play time is being recorded.</value>
+  </data>
+  <data name="ZipSourceService_MoveOutDescription" xml:space="preserve">
+    <value>Delete archive: {0}</value>
+  </data>
+  <data name="ZipSourceService_UnlinkDescription" xml:space="preserve">
+    <value>Remove from the archive library (keep the archive): {0}</value>
+  </data>
+  <data name="ZipSourceService_TargetExists" xml:space="preserve">
+    <value>Target archive already exists: {0}</value>
+  </data>
+
+  <data name="LocalFolderSourceService_UnpackInDescription" xml:space="preserve">
+    <value>Unpack {0} to: {1}</value>
+  </data>
+  <data name="LocalFolderSourceService_UnlinkDescription" xml:space="preserve">
+    <value>Remove from the local library (keep the folder): {0}</value>
+  </data>
+  <data name="LocalFolderSourceService_NoSourceToCopy" xml:space="preserve">
+    <value>The game has no local folder or archive to copy from</value>
+  </data>
+  <data name="LocalFolderSourceService_TargetExists" xml:space="preserve">
+    <value>Target folder already exists: {0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Title" xml:space="preserve">
+    <value>Delete Archive Task</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Progress" xml:space="preserve">
+    <value>Deleting: {0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Success" xml:space="preserve">
+    <value>Archive deleted: {0}</value>
+  </data>
+  <data name="UnpackGameTask_UnpackedTo" xml:space="preserve">
+    <value>Unpacked to: {0}</value>
+  </data>
+  <data name="UnpackGameTask_Failed" xml:space="preserve">
+    <value>Failed to unpack (archive corrupted, password required or not enough disk space): {0}</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PackNotExist" xml:space="preserve">
+    <value>Archive {0} does not exist</value>
+  </data>
+  <data name="CopyPackTask_Title" xml:space="preserve">
+    <value>Copy Archive Task</value>
+  </data>
+  <data name="CopyPackTask_Progress" xml:space="preserve">
+    <value>Copying {0}</value>
+  </data>
+  <data name="CopyPackTask_Done" xml:space="preserve">
+    <value>Archive copied to {0}</value>
+  </data>
+  <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
+    <value>Copy archive {0} to: {1}</value>
   </data>
 </root>

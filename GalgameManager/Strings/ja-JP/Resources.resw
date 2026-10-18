@@ -1756,9 +1756,7 @@
   <data name="SourceMoveTask_MovingIn" xml:space="preserve">
     <value>ゲームを別のソースへ移動する処理を実行中です</value>
   </data>
-  <data name="LocalFolderSourceService_MoveOutError" xml:space="preserve">
-    <value>1つのゲームは1つのローカルフォルダにのみ属することができます。他のローカルフォルダに移動するには、現在のローカルフォルダから移動する必要があります。</value>
-  </data>
+
   <data name="SourceMoveTask_MovingIn_Fail" xml:space="preserve">
     <value>ソースの移動タスクが失敗しました</value>
   </data>
@@ -4047,13 +4045,11 @@
     <value>アーカイブライブラリはゲームを圧縮ファイル（zip/rar/7z）として保存します。ゲームを移入するとフォルダが圧縮されます。アーカイブは直接プレイできず、現時点では「プレイのための移出」は未対応です。</value>
   </data>
   <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
-    <value>ゲームは圧縮されて {0} にアーカイブとして保存されます</value>
+    <value>ゲームを圧縮して保存: {0}</value>
   </data>
-  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
-    <value>アーカイブライブラリからのゲームの移出はまだサポートされていません。代わりに対象のローカルライブラリで「アーカイブからゲームを追加」を使用してください。</value>
-  </data>
+
   <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
-    <value>ゲームに圧縮可能なローカルフォルダインストールがありません</value>
+    <value>ゲームにアーカイブライブラリへ移動できるローカルフォルダーまたはアーカイブがありません</value>
   </data>
   <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
     <value>ディスク上のファイルも削除する（ゲームフォルダ/アーカイブ）</value>
@@ -4195,5 +4191,57 @@
   </data>
   <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
     <value>「{0}」はすでに実行中か、プレイ時間を記録中です。</value>
+  </data>
+  <data name="ZipSourceService_MoveOutDescription" xml:space="preserve">
+    <value>アーカイブを削除: {0}</value>
+  </data>
+  <data name="ZipSourceService_UnlinkDescription" xml:space="preserve">
+    <value>アーカイブライブラリから外す（アーカイブは残す）: {0}</value>
+  </data>
+  <data name="ZipSourceService_TargetExists" xml:space="preserve">
+    <value>移動先のアーカイブは既に存在します: {0}</value>
+  </data>
+
+  <data name="LocalFolderSourceService_UnpackInDescription" xml:space="preserve">
+    <value>{0} を解凍: {1}</value>
+  </data>
+  <data name="LocalFolderSourceService_UnlinkDescription" xml:space="preserve">
+    <value>ローカルライブラリから外す（フォルダーは残す）: {0}</value>
+  </data>
+  <data name="LocalFolderSourceService_NoSourceToCopy" xml:space="preserve">
+    <value>ゲームにコピー元のローカルフォルダーまたはアーカイブがありません</value>
+  </data>
+  <data name="LocalFolderSourceService_TargetExists" xml:space="preserve">
+    <value>移動先のフォルダーは既に存在します: {0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Title" xml:space="preserve">
+    <value>アーカイブ削除タスク</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Progress" xml:space="preserve">
+    <value>削除中: {0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Success" xml:space="preserve">
+    <value>アーカイブを削除しました: {0}</value>
+  </data>
+  <data name="UnpackGameTask_UnpackedTo" xml:space="preserve">
+    <value>解凍先: {0}</value>
+  </data>
+  <data name="UnpackGameTask_Failed" xml:space="preserve">
+    <value>解凍に失敗しました（アーカイブの破損、パスワードが必要、またはディスク容量不足）: {0}</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PackNotExist" xml:space="preserve">
+    <value>アーカイブ {0} は存在しません</value>
+  </data>
+  <data name="CopyPackTask_Title" xml:space="preserve">
+    <value>アーカイブコピータスク</value>
+  </data>
+  <data name="CopyPackTask_Progress" xml:space="preserve">
+    <value>{0} をコピーしています</value>
+  </data>
+  <data name="CopyPackTask_Done" xml:space="preserve">
+    <value>アーカイブを {0} にコピーしました</value>
+  </data>
+  <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
+    <value>アーカイブ {0} をコピー: {1}</value>
   </data>
 </root>

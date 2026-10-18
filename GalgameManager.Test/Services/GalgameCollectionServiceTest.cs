@@ -217,6 +217,28 @@ public class GalgameCollectionServiceTest : ServiceTestBase
         Assert.That(secondSubscriberCalled, Is.True);
     }
 
+    // 移动到其他库结束（库service的GalgameMoved）后应转为一次SourceEntries变更通知；已不在列表中的游戏不通知
+    [Test]
+    public async Task GalgameMoved_RaisesSourceEntriesMutation_OnlyForCurrentGames()
+    {
+        GalgameCollectionService service = await CreateInitializedServiceAsync();
+        Galgame game = CreateGame("虚拟游戏");
+        await service.AddVirtualGalgameAsync(game);
+        List<GalgameMutationEventArgs> mutations = [];
+        service.GalgameMutated += (_, args) => mutations.Add(args);
+
+        _galSrcService.Raise(x => x.GalgameMoved += null, game);
+        _galSrcService.Raise(x => x.GalgameMoved += null, CreateGame("不在列表中的游戏"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(mutations, Has.Count.EqualTo(1));
+            Assert.That(mutations[0].Game, Is.SameAs(game));
+            Assert.That(mutations[0].Changes, Is.EqualTo(GalgameChangeKind.SourceEntries));
+            Assert.That(mutations[0].Origin, Is.EqualTo(GalgameChangeOrigin.LocalOperation));
+        });
+    }
+
     // 验证添加游戏主流程（虚拟库）：搜刮信息合并进新游戏、加入列表并移入对应的库、
     // 在所有搜刮、来源关联和持久化完成后只触发一次统一变更事件
     [Test]

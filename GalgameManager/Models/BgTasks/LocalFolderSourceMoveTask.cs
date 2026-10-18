@@ -7,12 +7,14 @@ using GalgameManager.Models.Sources;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class LocalFolderSourceMoveInTask : BgTaskBase
+public class LocalFolderSourceMoveInTask : BgTaskBase, IMoveInTask
 {
     private readonly Galgame _game; // 要复制的逻辑游戏
     private readonly string _originPath; // 来源安装实例路径
     private readonly string _targetPath; // 目标安装实例路径
-    
+
+    public string ResultPath => _targetPath;
+
     /// <summary>
     /// 创建本地安装实例复制任务。
     /// </summary>
@@ -30,14 +32,32 @@ public class LocalFolderSourceMoveInTask : BgTaskBase
 
     protected async override Task RunInternal()
     {
-        await Task.CompletedTask;
         if (Utils.IsPathContained(_originPath, _targetPath))
             throw new PvnException("TargetPath is contained in originPath");
-        
-        FolderOperations.Copy(_originPath, _targetPath, info =>
+        if (Path.Exists(_targetPath))
+            throw new PvnException("LocalFolderSourceService_TargetExists".GetLocalized(_targetPath));
+
+        try
         {
-            ChangeProgress(0, 1, "LocalFolderSourceMoveTask_MoveIn_Progress".GetLocalized(info.FullName));
-        });
+            // BgTaskService在调用方线程上启动任务，复制必须放到后台线程，否则会卡住UI
+            await Task.Run(() => FolderOperations.Copy(_originPath, _targetPath, info =>
+            {
+                ChangeProgress(0, 1, "LocalFolderSourceMoveTask_MoveIn_Progress".GetLocalized(info.FullName));
+            }));
+        }
+        catch
+        {
+            // 目标文件夹在复制前不存在，失败时删除复制了一半的文件夹
+            try
+            {
+                if (Directory.Exists(_targetPath)) Directory.Delete(_targetPath, true);
+            }
+            catch
+            {
+                // ignore
+            }
+            throw;
+        }
 
         ChangeProgress(1, 1, "LocalFolderSourceMoveTask_MoveIn_Success".GetLocalized(_game.Name, _targetPath));
     }
@@ -60,15 +80,14 @@ public class LocalFolderSourceMoveOutTask : BgTaskBase
 
     protected async override Task RunInternal()
     {
-        await Task.CompletedTask;
         var root = _target.GetPath(_game);
         if (root is null) throw new PvnException("root is null"); //不应该发生
         if (!Directory.Exists(root)) throw new PvnException($"{root} not exists");
-        
-        FolderOperations.Delete(root, info =>
+
+        await Task.Run(() => FolderOperations.Delete(root, info =>
         {
             ChangeProgress(0, 1, "LocalFolderSourceMoveTask_MoveOut_Progress".GetLocalized(info.FullName));
-        });
+        }));
         
         ChangeProgress(1, 1, "LocalFolderSourceMoveTask_MoveOut_Success".GetLocalized(_game.Name, _target.Url));
     }

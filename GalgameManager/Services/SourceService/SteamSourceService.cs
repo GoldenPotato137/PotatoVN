@@ -76,8 +76,10 @@ public class SteamSourceService(IInfoService infoService) : IGalgameSourceServic
 
     public Task RemoveListenAsync(GalgameSourceBase source) => Task.CompletedTask;
 
-    public string GetMoveInDescription(GalgameSourceBase target, string targetPath) => string.Empty; //不支持
-    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame) => string.Empty; //不支持
+    public string GetMoveInDescription(GalgameSourceBase target, Galgame galgame, GalgameAndPath? sourceEntry) =>
+        string.Empty; //不支持
+    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame, bool deleteFiles) =>
+        string.Empty; //不支持
 
     public async Task<string> GetSourcePathAsync(string gamePath)
     {
@@ -91,8 +93,9 @@ public class SteamSourceService(IInfoService infoService) : IGalgameSourceServic
         throw new PvnException($"{gamePath} does not belong to any Steam library");
     }
 
+    // Steam库只能通过Steam安装游戏，不支持移入；移出时只解除关联，不会删除文件
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame) =>
-        "This source does not support move operation";
+        moveIn is SteamSource ? "This source does not support move operation" : null;
 
     public Task<string?> SelectPathInSourceAsync(GalgameSourceBase source) =>
         LocalFolderSourceService.FolderBaseSelectPathInSource(source);
