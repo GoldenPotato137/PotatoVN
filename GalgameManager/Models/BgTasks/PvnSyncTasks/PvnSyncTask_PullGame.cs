@@ -86,8 +86,8 @@ public class PvnSyncTaskPullGame(
                             else
                             {
                                 // Image needs processing, apply the same logic as GetHeaderFromRssTask
-                                var fromSteam = item.HeaderImageUrl.Contains("cdn.akamai.steamstatic.com");
-                                await DownloadHelper.ProcessImageAsync(rawImagePath, finalHeaderPath, !fromSteam);
+                                await DownloadHelper.ProcessImageAsync(rawImagePath, finalHeaderPath,
+                                    GetHeaderFromRssTask.ShouldCutBottom(item.HeaderImageUrl));
                                 if (File.Exists(rawImagePath)) File.Delete(rawImagePath);
                             }
                         });

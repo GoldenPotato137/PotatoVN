@@ -39,19 +39,28 @@ public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
         if (item.HeaderImagePath.IsLock) return;
         item.AutoFetchStatus.HeaderImage = true;
         await _gameService.SaveGalgameAsync(item);
-        var fromSteam = !string.IsNullOrEmpty(item.Ids[(int)RssType.Steam]) && item.Ids[(int)RssType.Steam] != "-1";
-        var url =  fromSteam?
-            await _steamParser.GetGalHeaderAsync(item):
-            await _vndbParser.GetGalHeaderAsync(item);
+        // 优先级：steam -> PotatoVN banner -> vndb截图，下载失败（如PotatoVN没有该游戏的banner，404）则顺延
+        List<Func<Task<string?>>> sources = [];
+        if (!string.IsNullOrEmpty(item.Ids[(int)RssType.Steam]) && item.Ids[(int)RssType.Steam] != "-1")
+            sources.Add(() => _steamParser.GetGalHeaderAsync(item));
+        sources.Add(async () =>
+            await _vndbParser.GetVndbIdAsync(item) is { } vid ? $"{PvnBannerUrlPrefix}{vid}.png" : null);
+        sources.Add(() => _vndbParser.GetGalHeaderAsync(item));
 
-        if (url is null) return;
+        string? url = null, rawImage = null;
+        foreach (Func<Task<string?>> source in sources)
+        {
+            url = await source();
+            rawImage = await DownloadHelper.DownloadAndSaveImageWithDiffThread(url,
+                fileNameWithoutExtension: $"{item.Name.Value?.RemoveInvalidChars() ?? string.Empty}_tmp");
+            if (rawImage is not null) break;
+        }
+
+        if (url is null || rawImage is null) return;
         item.HeaderImageUrl = url;
         var targetPath = Path.Combine((await FileHelper.GetFolderAsync(FileHelper.FolderType.Images)).Path,
             $"{item.Name.Value}_Header_{DateTime.Now.ToUnixTime()}.png".RemoveInvalidChars());
-        var rawImage = await DownloadHelper.DownloadAndSaveImageWithDiffThread(url,
-            fileNameWithoutExtension: $"{item.Name.Value?.RemoveInvalidChars() ?? string.Empty}_tmp");
-        if (rawImage is null) return;
-        await DownloadHelper.ProcessImageAsync(rawImage, targetPath, !fromSteam);
+        await DownloadHelper.ProcessImageAsync(rawImage, targetPath, ShouldCutBottom(url));
         var oldImg = item.HeaderImagePath.Value;
         await UiThreadInvokeHelper.InvokeAsync(() =>
         {
@@ -72,6 +81,17 @@ public class GetHeaderFromRssTask : QueueTaskBase<Galgame>, IGameProcessQueue
 
     protected override string ProgressWaitingMsg() => "GetHeaderFromRssTask_Progress_Waiting";
 
+    /// <summary>
+    /// PotatoVN自制banner图（无需裁切）的地址前缀，完整地址为{前缀}v{vndbId}.png，并非所有游戏都有
+    /// </summary>
+    private const string PvnBannerUrlPrefix = "https://statics.potatovn.net/banner/";
+
     public static bool ShouldProcess(string url) =>
-        url.Contains("cdn.akamai.steamstatic.com") || url.Contains("vndb.org");
+        url.Contains("cdn.akamai.steamstatic.com") || url.Contains("vndb.org") ||
+        url.StartsWith(PvnBannerUrlPrefix);
+
+    /// <summary>
+    /// 只有vndb截图需要裁掉底部的对话框，steam图与PotatoVN banner不需要
+    /// </summary>
+    public static bool ShouldCutBottom(string url) => url.Contains("vndb.org");
 }

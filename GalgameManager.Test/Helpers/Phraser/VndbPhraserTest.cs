@@ -101,6 +101,20 @@ public class VndbPhraserTest
     }
 
     [Test]
+    [TestCase("17", "v17")]
+    [TestCase("v17", "v17")]
+    [TestCase("r2166", "v1129")]
+    public async Task GetVndbId_ShouldNormalize_ToVnId(string storedId, string expectedVnId)
+    {
+        Galgame input = new("dummy");
+        input.Ids[(int)RssType.Vndb] = storedId;
+
+        var vnId = await _vndbPhraser.GetVndbIdAsync(input);
+
+        Assert.That(vnId, Is.EqualTo(expectedVnId));
+    }
+
+    [Test]
     [TestCase("紙の上の魔法使い", "High School Student Heroine", "Brother/Sister Romance")]
     [TestCase("Gyakuten Saiban", "Mystery", "Falsely Accused")]
     public async Task ParseGameWithIdandEnglishTest(string name, string expectedTag1, string expectedTag2)

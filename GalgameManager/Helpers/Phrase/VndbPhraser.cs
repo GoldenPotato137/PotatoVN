@@ -781,12 +781,7 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
 
     public async Task<string?> GetGalHeaderAsync(Galgame game)
     {
-        if (string.IsNullOrEmpty(game.Ids[(int)RssType.Vndb])) await TryGetId(game);
-        if (string.IsNullOrEmpty(game.Ids[(int)RssType.Vndb])) return null;
-        var id = game.Ids[(int)RssType.Vndb]!.StartsWith('v')
-            ? game.Ids[(int)RssType.Vndb]!
-            : "v" + game.Ids[(int)RssType.Vndb]!;
-        if (id.StartsWith('r')) id = await GetVndbIdFromReleaseId(id) ?? string.Empty; // 如果是releaseId，换成vndbId
+        var id = await GetVndbIdAsync(game);
         if (string.IsNullOrEmpty(id)) return null;
         return await GetHeader(id, 0);
 
@@ -825,11 +820,8 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
     public async Task<List<string>> GetGalHeadersAsync(Galgame game)
     {
         List<string> result = [];
-        if (string.IsNullOrEmpty(game.Ids[(int)RssType.Vndb])) await TryGetId(game);
-        if (string.IsNullOrEmpty(game.Ids[(int)RssType.Vndb])) return result;
-        var id = game.Ids[(int)RssType.Vndb]!.StartsWith('v')
-            ? game.Ids[(int)RssType.Vndb]!
-            : "v" + game.Ids[(int)RssType.Vndb]!;
+        var id = await GetVndbIdAsync(game);
+        if (string.IsNullOrEmpty(id)) return result;
 
         await GetHeader(id, 0);
         return result;
@@ -878,6 +870,19 @@ public class VndbPhraser : IGalInfoPhraser, IGalStatusSync, IGalCharacterPhraser
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// 获取游戏的vndbId（v开头）：没有id时尝试离线映射表，若存的是releaseId则换成对应的vndbId
+    /// </summary>
+    /// <returns>vndbId，获取不到时返回null</returns>
+    public async Task<string?> GetVndbIdAsync(Galgame game)
+    {
+        if (string.IsNullOrEmpty(game.Ids[(int)RssType.Vndb])) await TryGetId(game);
+        var id = game.Ids[(int)RssType.Vndb];
+        if (string.IsNullOrEmpty(id)) return null;
+        if (id.StartsWith('r')) return await GetVndbIdFromReleaseId(id);
+        return id.StartsWith('v') ? id : "v" + id;
     }
 
     /// 一个简单的wrapper，自动处理throttle，返回值为null时表示失败
