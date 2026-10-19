@@ -1,4 +1,5 @@
 using GalgameManager.Models;
+using Newtonsoft.Json;
 
 namespace GalgameManager.Test.Models;
 
@@ -73,6 +74,32 @@ public class StorePluginTest
     public void Downloads_WithoutVersions_IsZero()
     {
         Assert.That(CreatePlugin().Downloads, Is.Zero);
+    }
+
+    [Test]
+    public void ToInstallStorePlugin_WithManyVersions_FitsInMsixLocalSettings()
+    {
+        StorePlugin plugin = CreatePlugin(Enumerable.Range(0, 100).Select(i => $"1.{i}").ToArray());
+        plugin.Id = Guid.NewGuid();
+        plugin.Name = "游戏库增强";
+        plugin.DescriptionDetailed = new string('长', 5000);
+        foreach (StorePluginVersion v in plugin.Versions)
+            v.DownloadUrl = $"https://plugin.api.potatovn.net/api/universal/pvn-plugin/{plugin.RepoName}/plugin/{v.Version}/plugin.pvnplugin.zip";
+        StorePluginVersion version = plugin.Versions[0];
+
+        var json = JsonConvert.SerializeObject(new List<ToInstallStorePlugin> { ToInstallStorePlugin.Create(plugin, version) },
+            new JsonSerializerSettings());
+        ToInstallStorePlugin result = JsonConvert.DeserializeObject<List<ToInstallStorePlugin>>(json)!.Single();
+
+        Assert.Multiple(() =>
+        {
+            // LocalSettings单个设置上限8KB（UTF-16），留足余量给同时排队多个插件
+            Assert.That(json.Length * 2, Is.LessThan(1024));
+            Assert.That(result.Id, Is.EqualTo(plugin.Id));
+            Assert.That(result.Name, Is.EqualTo(plugin.Name));
+            Assert.That(result.Version, Is.EqualTo(version.Version));
+            Assert.That(result.DownloadUrl, Is.EqualTo(version.DownloadUrl));
+        });
     }
 
     /// <param name="versions">仓库里的版本号，按商店的约定从新到旧排列</param>

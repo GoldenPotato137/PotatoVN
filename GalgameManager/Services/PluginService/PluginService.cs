@@ -151,6 +151,7 @@ public partial class PluginService(
         _pluginDataDb = settingService.Database.GetCollection<PluginData>("plugin_data");
         PluginDir = new DirectoryInfo((await FileHelper.GetFolderAsync(FileHelper.FolderType.Plugins)).Path);
         if (!PluginDir.Exists) PluginDir.Create();
+        await Upgrade();
 
         // 先完成插件升级再加载插件
         try
@@ -159,7 +160,7 @@ public partial class PluginService(
                 await settingService.ReadSettingAsync<List<ToInstallStorePlugin>>(KeyValues.ToUpgradePlugin) ?? [];
             List<Task> tasks = [];
             foreach (ToInstallStorePlugin item in list)
-                tasks.Add(bgTaskService.AddBgTask(new InstallStorePluginTask(item.Plugin, item.Version)));
+                tasks.Add(bgTaskService.AddBgTask(new InstallStorePluginTask(item)));
             await Task.WhenAll(tasks);
         }
         catch (Exception e)
@@ -174,6 +175,50 @@ public partial class PluginService(
 
         // 确保启动阶段所有已启用的插件（如网络代理/拦截插件）完成加载与初始化，避免后续服务在未就绪状态下发起请求
         await bgTaskService.AddBgTask(new LoadPluginTask());
+    }
+
+    /// <summary>
+    /// 升级旧有设置
+    /// </summary>
+    private async Task Upgrade()
+    {
+        // 旧版本的待升级列表存的是整个StorePlugin，现在只存安装所需的字段
+        // 在旧版本里排了升级、没重启就更新了软件时，这里还会读到旧格式，需要转换过来
+        if (await settingService.ReadSettingAsync<bool>(KeyValues.ToUpgradePluginFormatUpgraded) == false)
+        {
+            try
+            {
+                // 旧格式：List<{ StorePlugin Plugin; StorePluginVersion Version }>，只取需要的字段
+                var template = new[]
+                {
+                    new
+                    {
+                        Plugin = new { Id = Guid.Empty, Name = string.Empty },
+                        Version = new StorePluginVersion(),
+                    },
+                };
+                var list = await ReadOldToUpgradePluginAsync(template);
+                if (list is not null)
+                    await settingService.SaveSettingAsync(KeyValues.ToUpgradePlugin, list.Select(p =>
+                        new ToInstallStorePlugin
+                        {
+                            Id = p.Plugin.Id,
+                            Name = p.Plugin.Name,
+                            Version = p.Version.Version,
+                            DownloadUrl = p.Version.DownloadUrl,
+                        }).ToList());
+            }
+            catch (Exception e)
+            {
+                infoService.Event(EventType.PluginError, InfoBarSeverity.Warning,
+                    "PluginService_UpgradePluginFailed".GetLocalized(), exception: e);
+                await settingService.RemoveSettingAsync(KeyValues.ToUpgradePlugin);
+            }
+            await settingService.SaveSettingAsync(KeyValues.ToUpgradePluginFormatUpgraded, true);
+        }
+
+        // 借模板推断匿名类型的类型参数
+        Task<T?> ReadOldToUpgradePluginAsync<T>(T _) => settingService.ReadSettingAsync<T>(KeyValues.ToUpgradePlugin);
     }
 
     public async Task LoadPluginAsync(PluginX plugin, bool load)
