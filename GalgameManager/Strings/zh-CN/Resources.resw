@@ -2527,12 +2527,6 @@
   <data name="GalgameSettingPage_GetInfoFromRssFailed" xml:space="preserve">
     <value>从数据源获取数据失败</value>
   </data>
-  <data name="SettingsPage_Download_Character.Title" xml:space="preserve">
-    <value>下载游戏角色信息</value>
-  </data>
-  <data name="SettingsPage_Download_Character.Description" xml:space="preserve">
-    <value>注意：同时下载大量游戏角色信息可能会导致API堵塞，这会导致需要更长时间才能完成下载</value>
-  </data>
   <data name="Galgame_GetCharacterInfo_RunningTasks" xml:space="preserve">
     <value>还有{0}个游戏等待下载角色信息</value>
   </data>
@@ -5134,5 +5128,29 @@
   </data>
   <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
     <value>优先使用PotatoVN提供的横幅图（Steam游戏除外），打开游戏详情页时会自动替换未锁定的横幅图</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Title" xml:space="preserve">
+    <value>下载范围选择</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Description" xml:space="preserve">
+    <value>选择获取游戏信息时要下载哪些部分</value>
+  </data>
+  <data name="DownloadScopeDialog.Title" xml:space="preserve">
+    <value>下载范围选择</value>
+  </data>
+  <data name="DownloadScopeDialog.PrimaryButtonText" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="DownloadScopeDialog.SecondaryButtonText" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="DownloadScopeDialog_StaffCheckBox.Content" xml:space="preserve">
+    <value>制作人详情</value>
+  </data>
+  <data name="DownloadScopeDialog_CharacterCheckBox.Content" xml:space="preserve">
+    <value>游戏角色详情</value>
+  </data>
+  <data name="DownloadScopeDialog_Note.Text" xml:space="preserve">
+    <value>注意：同时下载大量制作人或角色详情可能会导致API堵塞，这会导致需要更长时间才能完成下载</value>
   </data>
 </root>

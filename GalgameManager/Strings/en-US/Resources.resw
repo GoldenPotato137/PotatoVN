@@ -2378,12 +2378,6 @@ If play time can record correctly, just cancel this popup.
   <data name="GalgameSettingPage_GetInfoFromRssFailed" xml:space="preserve">
     <value>Failed to get data from data source</value>
   </data>
-  <data name="SettingsPage_Download_Character.Title" xml:space="preserve">
-    <value>Download Game Character Information</value>
-  </data>
-  <data name="SettingsPage_Download_Character.Description" xml:space="preserve">
-    <value>Note: Downloading a large amount of game character information simultaneously may cause API congestion, which will lead to longer download times to complete</value>
-  </data>
   <data name="Galgame_GetCharacterInfo_RunningTasks" xml:space="preserve">
     <value>There are {0} games waiting to download character info</value>
   </data>
@@ -4333,5 +4327,29 @@ Open the log folder now?</value>
   </data>
   <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
     <value>Prefer header images provided by PotatoVN (except for Steam games). Unlocked header images are replaced automatically when you open a game's page</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Title" xml:space="preserve">
+    <value>Download scope</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Description" xml:space="preserve">
+    <value>Choose which parts of the game information to download</value>
+  </data>
+  <data name="DownloadScopeDialog.Title" xml:space="preserve">
+    <value>Download scope</value>
+  </data>
+  <data name="DownloadScopeDialog.PrimaryButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="DownloadScopeDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DownloadScopeDialog_StaffCheckBox.Content" xml:space="preserve">
+    <value>Staff details</value>
+  </data>
+  <data name="DownloadScopeDialog_CharacterCheckBox.Content" xml:space="preserve">
+    <value>Game character details</value>
+  </data>
+  <data name="DownloadScopeDialog_Note.Text" xml:space="preserve">
+    <value>Note: Downloading a large amount of staff or character details simultaneously may cause API congestion, which will lead to longer download times</value>
   </data>
 </root>

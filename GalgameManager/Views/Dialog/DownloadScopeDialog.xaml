@@ -1,0 +1,17 @@
+<ContentDialog
+    x:Class="GalgameManager.Views.Dialog.DownloadScopeDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Uid="DownloadScopeDialog"
+    Style="{ThemeResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="6">
+        <CheckBox x:Name="StaffCheckBox" x:Uid="DownloadScopeDialog_StaffCheckBox" />
+        <CheckBox x:Name="CharacterCheckBox" x:Uid="DownloadScopeDialog_CharacterCheckBox" />
+        <TextBlock x:Uid="DownloadScopeDialog_Note"
+                   TextWrapping="Wrap"
+                   MaxWidth="400"
+                   HorizontalAlignment="Left"
+                   Style="{StaticResource DescriptionTextStyle}" />
+    </StackPanel>
+</ContentDialog>

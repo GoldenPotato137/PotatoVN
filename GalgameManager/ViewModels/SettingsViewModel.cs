@@ -171,7 +171,6 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         // _overrideLocalNameWithChinese = _localSettingsService.ReadSettingAsync<bool>(KeyValues.OverrideLocalNameWithChinese).Result;
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         _downloadPlayStatusWhenPhrasing = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing).Result;
-        _downloadCharacters = _localSettingsService.ReadSettingAsync<bool>(KeyValues.DownloadCharacters).Result;
         _usePvnBanner = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UsePvnBanner).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
@@ -766,7 +765,6 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     // [ObservableProperty] private bool _overrideLocalNameWithChinese;
     [ObservableProperty] private bool _autoCategory;
     [ObservableProperty] private bool _downloadPlayStatusWhenPhrasing;
-    [ObservableProperty] private bool _downloadCharacters;
     [ObservableProperty] private bool _usePvnBanner;
 
     // partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
@@ -777,7 +775,16 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
     partial void OnDownloadPlayStatusWhenPhrasingChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SyncPlayStatusWhenPhrasing, value);
 
-    partial void OnDownloadCharactersChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.DownloadCharacters, value);
+    [RelayCommand]
+    private async Task SetDownloadScopeAsync()
+    {
+        DownloadScopeDialog dialog = new(
+            await _localSettingsService.ReadSettingAsync<bool>(KeyValues.DownloadStaffs),
+            await _localSettingsService.ReadSettingAsync<bool>(KeyValues.DownloadCharacters));
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+        await _localSettingsService.SaveSettingAsync(KeyValues.DownloadStaffs, dialog.DownloadStaffs);
+        await _localSettingsService.SaveSettingAsync(KeyValues.DownloadCharacters, dialog.DownloadCharacters);
+    }
 
     partial void OnUsePvnBannerChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UsePvnBanner, value);
 

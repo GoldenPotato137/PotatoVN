@@ -2383,12 +2383,6 @@
   <data name="GalgameSettingPage_GetInfoFromRssFailed" xml:space="preserve">
     <value>データソースからのデータ取得に失敗しました</value>
   </data>
-  <data name="SettingsPage_Download_Character.Title" xml:space="preserve">
-    <value>ゲームキャラクター情報をダウンロード</value>
-  </data>
-  <data name="SettingsPage_Download_Character.Description" xml:space="preserve">
-    <value>注意：大量のゲームキャラクター情報を同時にダウンロードすると、APIが詰まり、ダウンロード完了に時間がかかる場合があります</value>
-  </data>
   <data name="Galgame_GetCharacterInfo_RunningTasks" xml:space="preserve">
     <value>あと{0}個のゲームがキャラクター情報のダウンロードを待っています</value>
   </data>
@@ -4262,5 +4256,29 @@
   </data>
   <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
     <value>PotatoVNが提供するヘッダー画像を優先して使用します（Steamゲームを除く）。ゲーム詳細ページを開くと、ロックされていないヘッダー画像が自動的に置き換えられます</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Title" xml:space="preserve">
+    <value>ダウンロード範囲</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Description" xml:space="preserve">
+    <value>ゲーム情報を取得する際にダウンロードする内容を選択します</value>
+  </data>
+  <data name="DownloadScopeDialog.Title" xml:space="preserve">
+    <value>ダウンロード範囲</value>
+  </data>
+  <data name="DownloadScopeDialog.PrimaryButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="DownloadScopeDialog.SecondaryButtonText" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="DownloadScopeDialog_StaffCheckBox.Content" xml:space="preserve">
+    <value>スタッフ詳細</value>
+  </data>
+  <data name="DownloadScopeDialog_CharacterCheckBox.Content" xml:space="preserve">
+    <value>ゲームキャラクター詳細</value>
+  </data>
+  <data name="DownloadScopeDialog_Note.Text" xml:space="preserve">
+    <value>注意：大量のスタッフ詳細やキャラクター詳細を同時にダウンロードすると、APIが詰まり、ダウンロード完了に時間がかかる場合があります</value>
   </data>
 </root>
