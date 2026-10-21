@@ -35,6 +35,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     private readonly IInfoService _infoService;
     private readonly IPluginService _pluginService;
     private readonly IGameLaunchService _gameLaunchService; // 按明确安装实例启动游戏
+    private readonly IBgTaskService _bgTaskService;
     [ObservableProperty] private Galgame? _item;
     /// <summary>
     /// 当前逻辑游戏安装实例的界面集合，仅供界面读取。
@@ -93,7 +94,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
     public GalgameViewModel(IGalgameCollectionService dataCollectionService, IStaffService staffService,
         INavigationService navigationService, ILocalSettingsService localSettingsService,
         IPvnService pvnService, IInfoService infoService, IGalgameSourceCollectionService sourceService,
-        IPluginService pluginService, IGameLaunchService gameLaunchService)
+        IPluginService pluginService, IGameLaunchService gameLaunchService, IBgTaskService bgTaskService)
     {
         _galgameService = (GalgameCollectionService)dataCollectionService;
         _sourceService = (GalgameSourceCollectionService)sourceService;
@@ -104,6 +105,7 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         _infoService = infoService;
         _pluginService = pluginService;
         _gameLaunchService = gameLaunchService;
+        _bgTaskService = bgTaskService;
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -166,6 +168,8 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
                 if (Item is null) return;
                 if (Item.HeaderImagePath.Value is null && !Item.AutoFetchStatus.HeaderImage)
                     _ = _galgameService.ParseGalInfoAsync(Item, type: GameParseType.HeaderImage);
+                else
+                    _ = TryUsePvnBannerAsync(Item);
                 if (_staffService.GetStaffs(Item).Count == 0 && !Item.AutoFetchStatus.Staff)
                     _ = _staffService.ParseStaffAsync(Item);
             }
@@ -174,6 +178,23 @@ public partial class GalgameViewModel : ObservableObject, INavigationAware
         {
             _infoService.Event(EventType.PageError, InfoBarSeverity.Error, "Oops, something went wrong", e);
         }
+    }
+
+    /// <summary>
+    /// 满足条件时（见<see cref="GetHeaderFromRssTask.NeedPvnBannerAsync"/>）在后台将横幅图替换为PotatoVN banner
+    /// </summary>
+    private async Task TryUsePvnBannerAsync(Galgame game)
+    {
+        if (!await GetHeaderFromRssTask.NeedPvnBannerAsync(game, _localSettingsService)) return;
+        GetHeaderFromRssTask? task = _bgTaskService.GetBgTask<GetHeaderFromRssTask>(string.Empty);
+        if (task is not null)
+        {
+            task.AddGalgameForPvnBanner(game);
+            return;
+        }
+        task = _bgTaskService.CreateBgTask<GetHeaderFromRssTask>();
+        task.AddGalgameForPvnBanner(game);
+        _ = _bgTaskService.AddBgTask(task);
     }
 
     public void OnNavigatedFrom()

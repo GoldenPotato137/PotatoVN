@@ -93,6 +93,8 @@ public static class KeyValues
     public const string OverrideLocalNameWithChinese = "overrideLocalNameWithChinese";
     public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string DownloadCharacters = "fetchCharacters"; //bool, 搜刮时是否获取角色信息
+    public const string UsePvnBanner = "usePvnBanner"; //bool, 是否使用PotatoVN banner作为横幅图
+    public const string PvnBannerReplacedMap = "pvnBannerReplacedMap"; //Dictionary<Guid,bool>, 游戏横幅图是否已替换为PotatoVN banner，key为游戏uuid
     public const string MixedPhraserOrder = "mixedPhraserOrder"; //MixedPhraserOrder,混合搜刮器的顺序
     public const string MixedPhraserEnabled = "mixedPhraserEnabled"; //MixedPhraserEnabled,混合搜刮器各个搜刮器的启用状态
     public const string MixedPhraserTimeout = "mixedPhraserTimeout"; //int, 混合搜刮器统一最长等待秒数，0表示不限制

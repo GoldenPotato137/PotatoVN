@@ -5129,4 +5129,10 @@
 
 是否现在打开日志文件夹？</value>
   </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Title" xml:space="preserve">
+    <value>使用PotatoVN横幅图</value>
+  </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
+    <value>优先使用PotatoVN提供的横幅图（Steam游戏除外），打开游戏详情页时会自动替换未锁定的横幅图</value>
+  </data>
 </root>

@@ -306,6 +306,11 @@
                                     <!-- 下载游戏角色信息 -->
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_Character"
                                                                 IsOn="{x:Bind ViewModel.DownloadCharacters, Mode=TwoWay}"/>
+
+                                    <!-- 使用PotatoVN横幅图 -->
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_UsePvnBanner"
+                                                                IsOn="{x:Bind ViewModel.UsePvnBanner, Mode=TwoWay}"
+                                                                Margin="0, 13, 0, 0"/>
                                     <!-- 覆盖名字
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />

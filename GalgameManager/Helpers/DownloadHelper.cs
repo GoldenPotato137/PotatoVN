@@ -19,16 +19,17 @@ public static class DownloadHelper
     /// <param name="onException">失败时回调，若为Http异常则等到重试次数满后触发，否则在有异常时立刻触发</param>
     /// <param name="client">下载图片时使用的client，若不提供则使用软件默认client</param>
     /// <param name="targetFolder">保存图片的位置，若不指定则使用数据目录的images文件夹</param>
+    /// <param name="timeout">单次下载（含读取完整图片）的超时时间，若不指定则为10s</param>
     /// <returns>本地文件路径, 如果下载失败则返回null</returns>
     public static async Task<string?> DownloadAndSaveImageAsync(string? imageUrl, int retry = 0,
         string? fileNameWithoutExtension = null, Action<Exception>? onException = null, HttpClient? client = null,
-        DirectoryInfo? targetFolder = null)
+        DirectoryInfo? targetFolder = null, TimeSpan? timeout = null)
     {
         try
         {
             if (imageUrl == null) return null;
             HttpClient httpClient = client ?? Utils.GetDefaultHttpClient();
-            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(10)); //10s超时
+            using CancellationTokenSource cts = new(timeout ?? TimeSpan.FromSeconds(10));
             HttpResponseMessage response = await httpClient.GetAsync(imageUrl, cts.Token);
             response.EnsureSuccessStatusCode();
 
@@ -81,7 +82,7 @@ public static class DownloadHelper
                 {
                     await Task.Delay(1000);
                     return await DownloadAndSaveImageAsync(imageUrl, retry + 1, fileNameWithoutExtension, onException,
-                        targetFolder: targetFolder, client: client);
+                        targetFolder: targetFolder, client: client, timeout: timeout);
                 }
             }
             onException?.Invoke(e);
@@ -91,10 +92,10 @@ public static class DownloadHelper
 
     public static Task<string?> DownloadAndSaveImageWithDiffThread(string? imageUrl, int retry = 0,
         string? fileNameWithoutExtension = null, Action<Exception>? onException = null, HttpClient? client = null,
-        DirectoryInfo? targetFolder = null)
+        DirectoryInfo? targetFolder = null, TimeSpan? timeout = null)
     {
         return Task.Run(() => DownloadAndSaveImageAsync(imageUrl, retry, fileNameWithoutExtension, onException,
-            client, targetFolder));
+            client, targetFolder, timeout));
     }
 
     /// <summary>

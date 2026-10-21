@@ -4257,4 +4257,10 @@
 
 今すぐログフォルダーを開きますか？</value>
   </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Title" xml:space="preserve">
+    <value>PotatoVNのヘッダー画像を使用</value>
+  </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
+    <value>PotatoVNが提供するヘッダー画像を優先して使用します（Steamゲームを除く）。ゲーム詳細ページを開くと、ロックされていないヘッダー画像が自動的に置き換えられます</value>
+  </data>
 </root>

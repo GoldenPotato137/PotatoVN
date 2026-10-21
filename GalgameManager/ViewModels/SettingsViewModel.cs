@@ -172,6 +172,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         _autoCategory = _localSettingsService.ReadSettingAsync<bool>(KeyValues.AutoCategory).Result;
         _downloadPlayStatusWhenPhrasing = _localSettingsService.ReadSettingAsync<bool>(KeyValues.SyncPlayStatusWhenPhrasing).Result;
         _downloadCharacters = _localSettingsService.ReadSettingAsync<bool>(KeyValues.DownloadCharacters).Result;
+        _usePvnBanner = _localSettingsService.ReadSettingAsync<bool>(KeyValues.UsePvnBanner).Result;
         //LIBRARY
         _galgameCollectionService = ((GalgameCollectionService?)galgameService)!;
         _galgameCollectionService.MetaSavedEvent += SetSaveMetaPopUp;
@@ -766,6 +767,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [ObservableProperty] private bool _autoCategory;
     [ObservableProperty] private bool _downloadPlayStatusWhenPhrasing;
     [ObservableProperty] private bool _downloadCharacters;
+    [ObservableProperty] private bool _usePvnBanner;
 
     // partial void OnOverrideLocalNameChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.OverrideLocalName, value);
 
@@ -776,6 +778,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     partial void OnDownloadPlayStatusWhenPhrasingChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.SyncPlayStatusWhenPhrasing, value);
 
     partial void OnDownloadCharactersChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.DownloadCharacters, value);
+
+    partial void OnUsePvnBannerChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.UsePvnBanner, value);
 
     partial void OnVndbTranslateTagsChanged(bool value) => _localSettingsService.SaveSettingAsync(KeyValues.VndbTranslateTags, value);
 

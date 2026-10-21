@@ -312,6 +312,7 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)"";
             case KeyValues.AutoCategory:
             case KeyValues.DownloadCharacters:
+            case KeyValues.UsePvnBanner:
                 return (T?)(object)true;
             case KeyValues.OverrideLocalNameWithChinese:
             case KeyValues.MemoryImprove:

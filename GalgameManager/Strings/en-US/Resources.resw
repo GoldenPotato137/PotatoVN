@@ -4328,4 +4328,10 @@ Please send the newest log file in that folder to the developers (GitHub issue).
 
 Open the log folder now?</value>
   </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Title" xml:space="preserve">
+    <value>Use PotatoVN Header Images</value>
+  </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
+    <value>Prefer header images provided by PotatoVN (except for Steam games). Unlocked header images are replaced automatically when you open a game's page</value>
+  </data>
 </root>
