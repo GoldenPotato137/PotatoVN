@@ -33,4 +33,5 @@ public class PackageVersion
 public class PackageDetailVersion : PackageVersion
 {
     [JsonProperty("createdAt")] public DateTime CreatedAt { get; set; }
+    [JsonProperty("downloads")] public long Downloads { get; set; }
 }

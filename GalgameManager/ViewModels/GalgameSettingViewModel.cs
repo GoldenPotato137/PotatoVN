@@ -315,10 +315,7 @@ public partial class GalgameSettingViewModel : ObservableObject, INavigationAwar
             Gal.HeaderImagePath.Value = null;
             var targetPath = Path.Combine((await FileHelper.GetFolderAsync(FileHelper.FolderType.Images)).Path,
                 $"{Gal.Name.Value}_Header_{DateTime.Now.ToUnixTime()}.png");
-            await Task.Run(() =>
-            {
-                DownloadHelper.ProcessImage(imagePath, targetPath, false);
-            });
+            await Task.Run(() => DownloadHelper.ProcessImageAsync(imagePath, targetPath, false));
             Gal.HeaderImagePath.Value = targetPath;
             Gal.HeaderImageUrl = imgUrl; //若imgUrl不为空，说明是从网络获取的图片，优先使用URL以便同步服务上传；若imgUrl为空，同步系统会上传选择图片
             if (await _settingsService.ReadSettingAsync<bool>(KeyValues.SyncGames) &&

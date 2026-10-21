@@ -93,6 +93,9 @@ public static class KeyValues
     public const string OverrideLocalNameWithChinese = "overrideLocalNameWithChinese";
     public const string SyncPlayStatusWhenPhrasing = "syncPlayStatusWhenPhrasing"; //bool, 是否在获取游戏信息时同步游玩状态
     public const string DownloadCharacters = "fetchCharacters"; //bool, 搜刮时是否获取角色信息
+    public const string UsePvnBanner = "usePvnBanner"; //bool, 是否使用PotatoVN banner作为横幅图
+    public const string PvnBannerReplacedMap = "pvnBannerReplacedMap"; //Dictionary<Guid,bool>, 游戏横幅图是否已替换为PotatoVN banner，key为游戏uuid
+    public const string DownloadStaffs = "fetchStaffs"; //bool, 搜刮时是否获取制作人详情
     public const string MixedPhraserOrder = "mixedPhraserOrder"; //MixedPhraserOrder,混合搜刮器的顺序
     public const string MixedPhraserEnabled = "mixedPhraserEnabled"; //MixedPhraserEnabled,混合搜刮器各个搜刮器的启用状态
     public const string MixedPhraserTimeout = "mixedPhraserTimeout"; //int, 混合搜刮器统一最长等待秒数，0表示不限制
@@ -179,7 +182,7 @@ public static class KeyValues
 
     //是否执行过某种升级, bool
     public const string DataStatus = "dataStatus"; //LocalSettingStatus, 用于描述某PotatoVN数据的状态
-    public const string PageSettings = "pageSettings"; //PageSettings, 随导出打包的游戏列表页/库页设置（排序等），导入时读回
+    public const string PageSettings = "pageSettings"; //PageSettings, 随导出打包的游戏列表页/库页设置（排序等）与背景图设置，导入时读回
     public const string IdFromMixedUpgraded = "idFromMixedUpgraded"; //其他信息源id从mixed中获取
     public const string SaveFormatUpgraded = "saveFormatUpgraded"; //设置格式升级
     public const string SortKeysUpgraded = "sortKeysUpgraded"; //排序格式升级
@@ -187,6 +190,7 @@ public static class KeyValues
     public const string OAuthUpgraded2 = "OAuthUpgraded2"; //BgmOAuth升级2
     public const string SavePathUpgraded = "savePathUpgraded"; //存档路径升级
     public const string GameSyncUpgraded = "gameSyncUpgraded"; //游戏同步升级
+    public const string ToUpgradePluginFormatUpgraded = "toUpgradePluginFormatUpgraded"; //待升级插件列表格式升级
     public const string MixedPhraserOrderVersion = "mixedPhraserOrderVersion"; //int，当前配置中的混合搜刮器顺序的版本
     public const string HideYearReport2026 = "hideYearReport2026"; //bool, 是否隐藏年报入口（隐藏2025年末打开的）
 

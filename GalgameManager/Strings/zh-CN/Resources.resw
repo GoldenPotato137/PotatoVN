@@ -1859,9 +1859,7 @@
   <data name="SourceMoveTask_MovingIn" xml:space="preserve">
     <value>正在执行游戏搬入另一个源的任务</value>
   </data>
-  <data name="LocalFolderSourceService_MoveOutError" xml:space="preserve">
-    <value>一个游戏只能属于一个本地文件夹，要移入其他本地文件夹必须从当前本地文件夹中移出。</value>
-  </data>
+
   <data name="SourceMoveTask_MovingIn_Fail" xml:space="preserve">
     <value>移入源任务失败</value>
   </data>
@@ -2528,12 +2526,6 @@
   </data>
   <data name="GalgameSettingPage_GetInfoFromRssFailed" xml:space="preserve">
     <value>从数据源获取数据失败</value>
-  </data>
-  <data name="SettingsPage_Download_Character.Title" xml:space="preserve">
-    <value>下载游戏角色信息</value>
-  </data>
-  <data name="SettingsPage_Download_Character.Description" xml:space="preserve">
-    <value>注意：同时下载大量游戏角色信息可能会导致API堵塞，这会导致需要更长时间才能完成下载</value>
   </data>
   <data name="Galgame_GetCharacterInfo_RunningTasks" xml:space="preserve">
     <value>还有{0}个游戏等待下载角色信息</value>
@@ -5030,13 +5022,11 @@
     <value>压缩库以压缩包（zip/rar/7z）的形式保存游戏。把游戏移入压缩库时会压缩游戏文件夹；压缩包不能直接游玩，目前暂不支持移出游玩。</value>
   </data>
   <data name="ZipSourceService_MoveInDescription" xml:space="preserve">
-    <value>游戏将被压缩为压缩包并存到 {0}</value>
+    <value>将游戏压缩为：{0}</value>
   </data>
-  <data name="ZipSourceService_MoveOutNotSupported" xml:space="preserve">
-    <value>暂不支持从压缩库移出游戏，请改用目标本地库的从压缩包添加游戏。</value>
-  </data>
+
   <data name="ZipSourceService_NoLocalInstallation" xml:space="preserve">
-    <value>该游戏没有可压缩的本地文件夹安装</value>
+    <value>该游戏没有可移入压缩库的本地文件夹或压缩包</value>
   </data>
   <data name="ChangeSourceDialog_DeleteFiles.Content" xml:space="preserve">
     <value>同时删除磁盘上的文件（游戏文件夹/压缩包）</value>
@@ -5058,5 +5048,109 @@
   </data>
   <data name="ChangeSourceDialog_NoTargetSource" xml:space="preserve">
     <value>没有可移动到的目标库，请先添加另一个库。</value>
+  </data>
+  <data name="AutoExportService_Paused" xml:space="preserve">
+    <value>自动导出失败，下次启动软件前不再自动导出</value>
+  </data>
+  <data name="PluginStorePage_Downloads.ToolTipService.ToolTip" xml:space="preserve">
+    <value>下载次数</value>
+  </data>
+  <data name="GalgamePage_Play_AlreadyRunning" xml:space="preserve">
+    <value>“{0}”已在运行或正在记录游玩时间。</value>
+  </data>
+  <data name="ZipSourceService_MoveOutDescription" xml:space="preserve">
+    <value>删除压缩包：{0}</value>
+  </data>
+  <data name="ZipSourceService_UnlinkDescription" xml:space="preserve">
+    <value>从压缩库中移除（保留压缩包）：{0}</value>
+  </data>
+  <data name="ZipSourceService_TargetExists" xml:space="preserve">
+    <value>目标压缩包已存在：{0}</value>
+  </data>
+
+  <data name="LocalFolderSourceService_UnpackInDescription" xml:space="preserve">
+    <value>解压压缩包 {0} 到：{1}</value>
+  </data>
+  <data name="LocalFolderSourceService_UnlinkDescription" xml:space="preserve">
+    <value>从本地库中移除（保留文件夹）：{0}</value>
+  </data>
+  <data name="LocalFolderSourceService_NoSourceToCopy" xml:space="preserve">
+    <value>该游戏没有可复制的本地文件夹或压缩包</value>
+  </data>
+  <data name="LocalFolderSourceService_TargetExists" xml:space="preserve">
+    <value>目标文件夹已存在：{0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Title" xml:space="preserve">
+    <value>删除压缩包任务</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Progress" xml:space="preserve">
+    <value>正在删除：{0}</value>
+  </data>
+  <data name="ZipSourceMoveOutTask_Success" xml:space="preserve">
+    <value>已删除压缩包：{0}</value>
+  </data>
+  <data name="UnpackGameTask_UnpackedTo" xml:space="preserve">
+    <value>已解压到：{0}</value>
+  </data>
+  <data name="UnpackGameTask_Failed" xml:space="preserve">
+    <value>解压失败（压缩包损坏、需要密码或磁盘空间不足）：{0}</value>
+  </data>
+  <data name="GalgameFolder_UnpackGame_PackNotExist" xml:space="preserve">
+    <value>压缩包 {0} 不存在</value>
+  </data>
+  <data name="CopyPackTask_Title" xml:space="preserve">
+    <value>复制压缩包任务</value>
+  </data>
+  <data name="CopyPackTask_Progress" xml:space="preserve">
+    <value>正在复制 {0}</value>
+  </data>
+  <data name="CopyPackTask_Done" xml:space="preserve">
+    <value>已复制压缩包到 {0}</value>
+  </data>
+  <data name="ZipSourceService_CopyInDescription" xml:space="preserve">
+    <value>复制压缩包 {0} 到：{1}</value>
+  </data>
+  <data name="App_CrashLoop_Title" xml:space="preserve">
+    <value>PotatoVN 连续崩溃</value>
+  </data>
+  <data name="App_CrashLoop_Msg" xml:space="preserve">
+    <value>PotatoVN 在自动重启后很快又崩溃了，为避免无限重启，已停止自动重启。
+
+详细的诊断信息已写入日志文件夹：
+{0}
+
+请将该文件夹中最新的 log 文件发给开发者（GitHub Issue）。
+
+是否现在打开日志文件夹？</value>
+  </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Title" xml:space="preserve">
+    <value>使用PotatoVN横幅图</value>
+  </data>
+  <data name="SettingsPage_Download_UsePvnBanner.Description" xml:space="preserve">
+    <value>优先使用PotatoVN提供的横幅图（Steam游戏除外），打开游戏详情页时会自动替换未锁定的横幅图</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Title" xml:space="preserve">
+    <value>下载范围选择</value>
+  </data>
+  <data name="SettingsPage_Download_Scope.Description" xml:space="preserve">
+    <value>选择获取游戏信息时要下载哪些部分</value>
+  </data>
+  <data name="DownloadScopeDialog.Title" xml:space="preserve">
+    <value>下载范围选择</value>
+  </data>
+  <data name="DownloadScopeDialog.PrimaryButtonText" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="DownloadScopeDialog.SecondaryButtonText" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="DownloadScopeDialog_StaffCheckBox.Content" xml:space="preserve">
+    <value>制作人详情</value>
+  </data>
+  <data name="DownloadScopeDialog_CharacterCheckBox.Content" xml:space="preserve">
+    <value>游戏角色详情</value>
+  </data>
+  <data name="DownloadScopeDialog_Note.Text" xml:space="preserve">
+    <value>注意：同时下载大量制作人或角色详情可能会导致API堵塞，这会导致需要更长时间才能完成下载</value>
   </data>
 </root>

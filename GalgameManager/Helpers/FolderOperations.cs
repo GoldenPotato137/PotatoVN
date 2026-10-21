@@ -151,25 +151,22 @@ public static class FolderOperations
     /// <exception cref="DirectoryNotFoundException">path不存在</exception>
     public static void Delete(string path, Action<FileInfo>? onDelete = null)
     {
-        if(!Directory.Exists(path)) throw new DirectoryNotFoundException();
-        Queue<string> queue = new();
-        queue.Enqueue(path);
-        while(queue.Count > 0)
+        if (IsSymbolicLink(path)) // 放在存在性检查前：目标已不存在的失效链接也只删除链接本身
         {
-            var p = queue.Dequeue();
-            if (IsSymbolicLink(p))
-                File.Delete(p);
-            else
-            {
-                foreach(var file in Directory.GetFiles(p))
-                {
-                    onDelete?.Invoke(new FileInfo(file));
-                    File.Delete(file);
-                }
-            }
-            foreach(var dir in Directory.GetDirectories(p))
-                queue.Enqueue(dir);
+            Directory.Delete(path); // 只删除链接本身，不进入链接指向的文件夹
+            return;
         }
+        if(!Directory.Exists(path)) throw new DirectoryNotFoundException();
+        foreach (var file in Directory.GetFiles(path))
+        {
+            FileInfo info = new(file);
+            onDelete?.Invoke(info);
+            if (info.IsReadOnly && info.LinkTarget is null) info.IsReadOnly = false; // 只读文件无法直接删除
+            info.Delete();
+        }
+        // 先自底向上删完子文件夹，最后删除自身（非递归的Directory.Delete要求文件夹已为空）
+        foreach (var dir in Directory.GetDirectories(path))
+            Delete(dir, onDelete);
         Directory.Delete(path);
     }
     

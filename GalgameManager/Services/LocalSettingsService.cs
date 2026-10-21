@@ -312,6 +312,8 @@ public class LocalSettingsService : ILocalSettingsService
                 return (T?)(object)"";
             case KeyValues.AutoCategory:
             case KeyValues.DownloadCharacters:
+            case KeyValues.UsePvnBanner:
+            case KeyValues.DownloadStaffs:
                 return (T?)(object)true;
             case KeyValues.OverrideLocalNameWithChinese:
             case KeyValues.MemoryImprove:
@@ -536,52 +538,6 @@ public class LocalSettingsService : ILocalSettingsService
         return failedFolder.FullName;
     }
 
-    public async Task StartupAsync()
-    {
-        try
-        {
-            if (await ReadSettingAsync<bool>(KeyValues.AutoExport))
-            {
-                DateTime lastExportTime = await ReadSettingAsync<DateTime>(KeyValues.LastExportTime);
-                var interval = await ReadSettingAsync<double>(KeyValues.AutoExportInterval);
-                if ((DateTime.Now - lastExportTime).TotalHours > interval)
-                {
-                    var path = await ReadSettingAsync<string>(KeyValues.AutoExportPath);
-                    if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return;
-
-                    // 滚动备份
-                    var maxBackupNumber = await ReadSettingAsync<int?>(KeyValues.MaxBackupNumber) ?? 999;
-                    List<string> files = Directory.GetFiles(path, "*.pvnExport.zip").ToList();
-                    if (files.Count >= maxBackupNumber)
-                    {
-                        files.Sort((x, y) =>
-                            File.GetCreationTime(x).CompareTo(File.GetCreationTime(y)));
-                        for (var i = 0; i <= files.Count - maxBackupNumber; i++)
-                        {
-                            try
-                            {
-                                File.Delete(files[i]);
-                            }
-                            catch (Exception e)
-                            {
-                                App.GetService<IInfoService>().DeveloperEvent(e: e);
-                            }
-                        }
-                    }
-
-                    IBgTaskService bgTaskService = App.GetService<IBgTaskService>();
-                    if (bgTaskService.GetBgTask<Models.BgTasks.ExportTask>(string.Empty) is not null) return;
-                    await bgTaskService.AddBgTask(new Models.BgTasks.ExportTask(path));
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            App.GetService<IInfoService>().DeveloperEvent(e: e);
-        }
-
-    }
-
     public async Task ImportPageSettingsAsync()
     {
         try
@@ -610,6 +566,13 @@ public class LocalSettingsService : ILocalSettingsService
                     await SaveSettingAsync(KeyValues.LibraryFolderSortKey, libraryFolderSortKey);
                 if (pageSettings.LibraryFolderSortDescending is { } libraryFolderSortDescending)
                     await SaveSettingAsync(KeyValues.LibraryFolderSortDescending, libraryFolderSortDescending);
+                // 背景图本身已随导出包解压到 Background 文件夹
+                if (pageSettings.CustomBackgroundEnabled is { } customBackgroundEnabled)
+                    await SaveSettingAsync(KeyValues.CustomBackgroundEnabled, customBackgroundEnabled);
+                if (pageSettings.UseBannerAsBackground is { } useBannerAsBackground)
+                    await SaveSettingAsync(KeyValues.UseBannerAsBackground, useBannerAsBackground);
+                if (pageSettings.BackgroundStretchMode is { } backgroundStretchMode)
+                    await SaveSettingAsync(KeyValues.BackgroundStretchMode, (BackgroundStretchMode)backgroundStretchMode);
             }
 
             status.ImportPageSettings = true;

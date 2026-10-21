@@ -60,6 +60,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _infoService = infoService;
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
+        _galSrcService.GalgameMoved += OnGalgameMoved;
         _bus = bus;
         _bus.Register<PluginLoadArgs>(this, OnPluginLoaded);
 
@@ -309,6 +310,14 @@ public partial class GalgameCollectionService : IGalgameCollectionService
                     "Failed On Calling GalgameMutated", e);
             }
         }
+    }
+
+    /// 移动到其他库会直接修改游戏的来源条目，移动结束后转为一次来源变更通知以刷新UI
+    private async void OnGalgameMoved(Galgame galgame)
+    {
+        if (!IsCurrentGameInstance(galgame)) return;
+        await RaiseGalgameMutatedAsync(new GalgameMutationEventArgs(galgame, GalgameChangeKind.SourceEntries,
+            GalgameChangeOrigin.LocalOperation));
     }
 
     public async Task<Galgame> ParseGalInfoOnlyAsync(Galgame galgame, RssType rssType = RssType.None, bool requireConfirm = false)
@@ -1074,16 +1083,21 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         }
     }
 
-    private void OnPluginLoaded(object recipient, PluginLoadArgs message)
+    private async void OnPluginLoaded(object recipient, PluginLoadArgs message)
     {
         try
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
-            if (message.Plugin is not IParserProvider provider) return;
-            IGalInfoPhraser parser = provider.GetPhraser();
-            RssType type = parser.GetPhraseType();
-            PhraserList[(int)type] = parser;
-            EnumExtension.Register(type.GetType(), (int)type, provider.ParserName);
+            if (message.Plugin is IParserProvider provider)
+            {
+                IGalInfoPhraser parser = provider.GetPhraser();
+                RssType type = parser.GetPhraseType();
+                PhraserList[(int)type] = parser;
+                EnumExtension.Register(type.GetType(), (int)type, provider.ParserName);
+            }
+
+            // 插件加载后（可能包含网络代理插件注册了 DefaultProxy），刷新内置 Bangumi 数据源以应用最新代理
+            PhraserList[(int)RssType.Bangumi].UpdateData(await GetBgmData());
         }
         catch (Exception e)
         {

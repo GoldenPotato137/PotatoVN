@@ -80,7 +80,10 @@ public class BgTaskService : IBgTaskService
             BgTaskBase? bgTask = CreateBgTaskShell(bgTaskType, Utils.FromBase64(argStrings[++i]));
             if (bgTask is null) continue;
             await bgTask.RecoverFromJson();
-            _ = AddTaskInternal(bgTask);
+            // 计时任务交回启动服务处理游戏级规则，延迟解析以避免构造函数的循环依赖。
+            _ = bgTask is RecordPlayTimeTask playTimeTask
+                ? _serviceProvider.GetRequiredService<IGameLaunchService>().AddPlayTimeTaskAsync(playTimeTask)
+                : AddTaskInternal(bgTask);
         }
         _fileService.Delete(AppStoragePaths.LocalDataPath, FileName);
     }

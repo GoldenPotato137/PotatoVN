@@ -23,6 +23,7 @@ public class GalgameSourceCollectionService(
 {
     public Action<GalgameSourceBase>? OnSourceDeleted { get; set; }
     public Action? OnSourceChanged { get; set; }
+    public event Action<Galgame>? GalgameMoved;
 
     private ObservableCollection<GalgameSourceBase> _galgameSources = new();
 
@@ -350,13 +351,10 @@ public class GalgameSourceCollectionService(
                     new DirectoryInfo(installation.Path).Delete(true);
             });
         }
-        if (installation.Source is GalgameZipSource)
+        if (installation.Source is GalgameZipSource zipSource)
         {
-            return Task.Run(() =>
-            {
-                if (File.Exists(installation.Path))
-                    File.Delete(installation.Path);
-            });
+            // 同时删除分卷与压缩库sidecar元数据
+            return Task.Run(() => ZipSourceService.DeletePackFiles(zipSource.Path, installation.Path));
         }
         throw new PvnException("MultiInstall_DeleteFiles_LocalFolderOnly".GetLocalized());
     }
@@ -385,8 +383,14 @@ public class GalgameSourceCollectionService(
             moveOutSrc = null;
         }
         SourceMoveTask task = new(game, moveInSrc, moveInPath, moveOutSrc, deleteFiles);
-        bgTaskService.AddBgTask(task);
+        _ = RunMoveTaskAsync();
         return task;
+
+        async Task RunMoveTaskAsync()
+        {
+            await bgTaskService.AddBgTask(task); // 任务结束（含失败）后才返回，且不会抛出异常
+            GalgameMoved?.Invoke(game);
+        }
     }
 
     public string GetSourcePath(GalgameSourceType type, string gamePath)

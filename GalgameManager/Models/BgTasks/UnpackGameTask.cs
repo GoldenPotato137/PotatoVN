@@ -4,6 +4,7 @@ using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Models.Sources;
+using Newtonsoft.Json;
 using SevenZip;
 using SharpCompress.Archives;
 using SharpCompress.Common;
@@ -12,38 +13,48 @@ using SharpCompress.Readers;
 
 namespace GalgameManager.Models.BgTasks;
 
-public class UnpackGameTask : BgTaskBase
+public class UnpackGameTask : BgTaskBase, IMoveInTask
 {
     public string PackPath = string.Empty;
     public string? Password = string.Empty;
     public string GameName = string.Empty;
     public string TargetPath = null!;
+    /// 解压完成后是否把游戏添加到库中；移动游戏时为false，由SourceMoveTask把解压结果登记到原游戏上
+    public bool AddToLibrary = true;
     /// 临时解压文件夹，序列化用，防止启动任务后最小化到后台后重新生成任务时再次生成新的临时文件夹
-    public string TmpDirName = Path.GetRandomFileName(); 
-    
-    private StorageFile? _pack;
+    public string TmpDirName = Path.GetRandomFileName();
+
+    [JsonIgnore] public string ResultPath => Path.Combine(TargetPath, GameName);
+
     private static bool _7ZInit;
 
     public UnpackGameTask() { }
-    
+
     /// <param name="pack">压缩包</param>
     /// <param name="targetPath">解压位置，最终会解压到：targetPath/gameName</param>
     /// <param name="gameName"></param>
     /// <param name="password">压缩包密码，若没有可不填</param>
-    public UnpackGameTask(StorageFile pack, string targetPath,string gameName, string? password = null)
+    public UnpackGameTask(StorageFile pack, string targetPath, string gameName, string? password = null)
+        : this(pack.Path, targetPath, gameName, password)
     {
-        _pack = pack;
+    }
+
+    /// <param name="packPath">压缩包（分卷压缩包为第一卷）路径</param>
+    /// <param name="targetPath">解压位置，最终会解压到：targetPath/gameName</param>
+    /// <param name="gameName"></param>
+    /// <param name="password">压缩包密码，若没有可不填</param>
+    public UnpackGameTask(string packPath, string targetPath, string gameName, string? password = null)
+    {
+        PackPath = packPath;
         TargetPath = targetPath;
-        PackPath = pack.Path;
         GameName = gameName;
         Password = password;
     }
-    
-    protected async override Task RecoverFromJsonInternal()
+
+    protected override Task RecoverFromJsonInternal()
     {
         try
         {
-            _pack = await StorageFile.GetFileFromPathAsync(PackPath);
             if (Directory.Exists(Path.Combine(TargetPath, TmpDirName)))
                 Directory.Delete(Path.Combine(TargetPath, TmpDirName), true);
         }
@@ -51,13 +62,18 @@ public class UnpackGameTask : BgTaskBase
         {
             //ignore
         }
+        return Task.CompletedTask;
     }
 
     /// 注意：必须为async方法，前置检查的异常才会被捕获进返回的Task（BgTaskBase.Task），
     /// 否则同步抛出的异常会导致Task属性停留在默认的CompletedTask，调用方无法感知失败
     protected override async Task RunInternal()
     {
-        if(_pack is null || GameName == string.Empty) return;
+        if (!File.Exists(PackPath) || GameName == string.Empty)
+        {
+            if (AddToLibrary) return;
+            throw new PvnException("GalgameFolder_UnpackGame_PackNotExist".GetLocalized(PackPath));
+        }
         if (!Directory.Exists(TargetPath))
             throw new PvnException("GalgameFolder_UnpackGame_PathNotExist".GetLocalized(TargetPath));
         var saveDirectory = Path.Combine(TargetPath, GameName); // 游戏保存路径
@@ -72,25 +88,32 @@ public class UnpackGameTask : BgTaskBase
             try
             {
                 ChangeProgress(0, 1, "GalgameFolder_UnpackGame_Start".GetLocalized());
-                if (_pack.FileType == ".7z" || _pack.FileType == ".001")
+                // SharpCompress解压固实压缩的包（7z）时有严重性能问题，使用另一种方案解压
+                var extension = Path.GetExtension(PackPath).ToLowerInvariant();
+                if (extension is ".7z" or ".001")
                     await Unzip7Z(tmpDir);
                 else
                     await UnZip(tmpDir);
 
-                // SharpCompress解压固实压缩的包（7z）时有严重性能问题，使用另一种方案解压
-                if (Directory.GetDirectories(tmpDir).Length == 1) // 压缩包内为完整的文件夹
+                // 压缩包内只有一个文件夹（没有零散文件）时视为完整的游戏文件夹，否则整体作为游戏文件夹
+                if (Directory.GetDirectories(tmpDir).Length == 1 && Directory.GetFiles(tmpDir).Length == 0)
                     Directory.Move(Directory.GetDirectories(tmpDir)[0], saveDirectory);
-                else // 压缩包内为零散文件
+                else
                     Directory.Move(tmpDir, saveDirectory);
 
                 ChangeProgress(0, 1, "GalgameFolder_UnpackGame_Done".GetLocalized());
-                await UiThreadInvokeHelper.InvokeAsync(async Task () =>
+                if (AddToLibrary)
                 {
-                    // AddGameAsync内部会优先尝试从本地meta备份（含压缩库sidecar）读取游戏信息，无需联网解析
-                    await App.GetService<IGalgameCollectionService>()
-                        .AddGameAsync(GalgameSourceType.LocalFolder, saveDirectory, true);
-                });
-                ChangeProgress(1, 1, string.Empty);
+                    await UiThreadInvokeHelper.InvokeAsync(async Task () =>
+                    {
+                        // 新游戏会走正常的元数据获取流程；从压缩库移动时AddToLibrary为false，由SourceMoveTask登记到原游戏
+                        await App.GetService<IGalgameCollectionService>()
+                            .AddGameAsync(GalgameSourceType.LocalFolder, saveDirectory, true);
+                    });
+                    ChangeProgress(1, 1, string.Empty);
+                }
+                else
+                    ChangeProgress(1, 1, "UnpackGameTask_UnpackedTo".GetLocalized(saveDirectory));
 
                 if (StartFromBg && await App.GetService<ILocalSettingsService>()
                                     .ReadSettingAsync<bool>(KeyValues.NotifyWhenUnpackGame)
@@ -100,9 +123,12 @@ public class UnpackGameTask : BgTaskBase
                         "UnpackGameTask_Done_Msg".GetLocalized(GameName, saveDirectory));
                 }
             }
-            catch (Exception) //密码错误或压缩包损坏
+            catch (Exception e) //密码错误或压缩包损坏
             {
                 ChangeProgress(-1, 1, string.Empty);
+                // 移动游戏时调用方需要感知失败，以免把不存在的路径登记到游戏上
+                if (!AddToLibrary)
+                    throw new PvnException("UnpackGameTask_Failed".GetLocalized(e.Message));
             }
             finally
             {
@@ -114,7 +140,7 @@ public class UnpackGameTask : BgTaskBase
     private async Task Unzip7Z(string tmpDir)
     {
         Init();
-        using SevenZipExtractor extractor = new(_pack!.Path, Password);
+        using SevenZipExtractor extractor = new(PackPath, Password);
         if (!extractor.Check()) throw new PvnException("password incorrect or pack broken");
         var totalFileCnt = extractor.ArchiveFileData.Count;
         var finishedCnt = 0;
@@ -147,7 +173,9 @@ public class UnpackGameTask : BgTaskBase
     {
         await Task.CompletedTask;
         var finishedCnt = 0;
-        using IArchive archive = ArchiveFactory.OpenArchive(_pack!.Path, new ReaderOptions { Password = Password });
+        // 必须显式关闭底层文件流（ReaderOptions默认LeaveStreamOpen），否则压缩包会一直被占用，无法在移动后删除
+        using IArchive archive = ArchiveFactory.OpenArchive(PackPath,
+            new ReaderOptions { Password = Password, LeaveStreamOpen = false });
         List<IArchiveEntry> entries = archive.Entries.Where(entry => !entry.IsDirectory).ToList();
         var totalFileCnt = entries.Count;
         ExtractionOptions options = new()

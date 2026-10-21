@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converter:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
+        <converter:DownloadCountToStringConverter x:Key="DownloadCountToStringConverter" />
         <converter:ImagePathConverter x:Key="ImagePathConverter" />
         <converter:StorePluginStatusToOpacityConverter x:Key="StorePluginStatusToOpacityConverter" />
         <converter:StorePluginStatusToTextConverter x:Key="StorePluginStatusToTextConverter" />
@@ -78,20 +79,40 @@
                                                        TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                                        Margin="0,4,0,0" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
 
-                                            <!-- Release Date -->
-                                            <TextBlock Grid.Row="2" Text="{x:Bind ReleaseDate, Mode=OneWay, Converter={StaticResource DateTimeToStringConverter}}"
-                                                       Style="{ThemeResource CaptionTextBlockStyle}"
-                                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                       HorizontalAlignment="Left"/>
+                                            <!-- 日期与下载数优先完整显示，空间不够时（如英文/日文的较长状态文本）由状态标签截断 -->
+                                            <Grid Grid.Row="2" ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
 
-                                            <!-- Status -->
-                                            <Grid Grid.Row="2" HorizontalAlignment="Right"
-                                                  Opacity="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToOpacityConverter}}">
-                                                <Border Background="{ThemeResource SystemControlBackgroundAccentBrush}" CornerRadius="4" Padding="6 2">
-                                                    <TextBlock Text="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToTextConverter}}"
+                                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                                    <!-- Release Date -->
+                                                    <TextBlock Text="{x:Bind ReleaseDate, Mode=OneWay, Converter={StaticResource DateTimeToStringConverter}}"
                                                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                                               Foreground="White"/>
-                                                </Border>
+                                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+
+                                                    <!-- Downloads: 所有版本下载次数之和 -->
+                                                    <StackPanel x:Uid="PluginStorePage_Downloads" Orientation="Horizontal" Spacing="4"
+                                                                Background="Transparent">
+                                                        <FontIcon Glyph="&#xE896;" FontSize="12" VerticalAlignment="Center"
+                                                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                                                        <TextBlock Text="{x:Bind Downloads, Converter={StaticResource DownloadCountToStringConverter}}"
+                                                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <!-- Status -->
+                                                <Grid Grid.Column="1" HorizontalAlignment="Right"
+                                                      Opacity="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToOpacityConverter}}">
+                                                    <Border Background="{ThemeResource SystemControlBackgroundAccentBrush}" CornerRadius="4" Padding="6 2">
+                                                        <TextBlock Text="{x:Bind Status, Mode=OneWay, Converter={StaticResource StorePluginStatusToTextConverter}}"
+                                                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                                                                   Foreground="White"/>
+                                                    </Border>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
                                     </Grid>

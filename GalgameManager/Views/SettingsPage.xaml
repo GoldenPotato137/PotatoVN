@@ -303,9 +303,17 @@
                                                                 IsOn="{x:Bind ViewModel.IgnoreFetchResult, Mode=TwoWay}"
                                                                 Margin="0, 0, 0, 13"/>
 
-                                    <!-- 下载游戏角色信息 -->
-                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_Character"
-                                                                IsOn="{x:Bind ViewModel.DownloadCharacters, Mode=TwoWay}"/>
+                                    <!-- 下载范围选择 -->
+                                    <control:Setting x:Uid="SettingsPage_Download_Scope">
+                                        <Button Content="Go"
+                                                MinWidth="{StaticResource ButtonMinWidth}"
+                                                Command="{x:Bind ViewModel.SetDownloadScopeCommand}"/>
+                                    </control:Setting>
+
+                                    <!-- 使用PotatoVN横幅图 -->
+                                    <local:SettingToggleSwitch x:Uid="SettingsPage_Download_UsePvnBanner"
+                                                                IsOn="{x:Bind ViewModel.UsePvnBanner, Mode=TwoWay}"
+                                                                Margin="0, 13, 0, 0"/>
                                     <!-- 覆盖名字
                                     <local:SettingToggleSwitch x:Uid="SettingsPage_Download_OverrideName"
                                     IsOn="{x:Bind ViewModel.OverrideLocalName, Mode=TwoWay}" />

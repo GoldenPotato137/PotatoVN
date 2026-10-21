@@ -30,6 +30,8 @@ public partial class StorePlugin : ObservableObject
     [ObservableProperty] private DateTime _releaseDate;
     /// 插件各个版本与下载链接
     public List<StorePluginVersion> Versions { get; set; } = [];
+    /// 插件所有版本的下载次数之和
+    public long Downloads => Versions.Sum(v => v.Downloads);
     /// 插件类别
     public List<PluginType> Types { get; set; } = [];
 
@@ -68,10 +70,26 @@ public class StorePluginVersion
     public Version Version = new();
     public string DownloadUrl = string.Empty;
     public DateTime ReleaseDate;
+    public long Downloads;
 }
 
+/// <summary>
+/// 待升级的插件（<see cref="KeyValues.ToUpgradePlugin"/>），只保存安装所需的最少信息。<br/>
+/// MSIX下这个列表存在LocalSettings里，单个设置不能超过8KB，
+/// 不能直接存整个<see cref="StorePlugin"/>（含详细描述与全部历史版本，版本一多就会超限）
+/// </summary>
 public class ToInstallStorePlugin
 {
-    public StorePlugin Plugin = null!;
-    public StorePluginVersion Version = null!;
+    public Guid Id;
+    public string Name = string.Empty;
+    public Version Version = new();
+    public string DownloadUrl = string.Empty;
+
+    public static ToInstallStorePlugin Create(StorePlugin plugin, StorePluginVersion version) => new()
+    {
+        Id = plugin.Id,
+        Name = plugin.Name,
+        Version = version.Version,
+        DownloadUrl = version.DownloadUrl,
+    };
 }

@@ -42,6 +42,7 @@ public class InfoService : IInfoService
 
     public void Event(EventType type, InfoBarSeverity infoBarSeverity, string title, Exception? exception = null, string? msg = null, Action? callbackAction = null, string? callbackButtonText = null)
     {
+        CrashDiagnostics.AddBreadcrumb($"Event {type}/{infoBarSeverity}: {title}");
         UiThreadInvokeHelper.Invoke(async () =>
         {
             Log(infoBarSeverity, $"{title}: {exception?.ToString() ?? msg}");

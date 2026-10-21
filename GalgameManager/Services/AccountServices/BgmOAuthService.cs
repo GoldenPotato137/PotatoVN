@@ -1,4 +1,4 @@
-﻿using Windows.Foundation;
+using Windows.Foundation;
 using Windows.System;
 using GalgameManager.Contracts.Services;
 using GalgameManager.Enums;
@@ -20,6 +20,8 @@ public class BgmOAuthService : IBgmOAuthService
     private readonly IConfiguration _config;
     private readonly TimeSpan _minRefreshTime = new(2, 0, 0, 0);
     private bool _isInitialized;
+    
+    private bool _lastRefreshNetworkError;
     
     public event Action<BgmOAuthStatus>? OnAuthResultChange;
 
@@ -46,8 +48,8 @@ public class BgmOAuthService : IBgmOAuthService
                 // Try to refresh the token and check if it's valid
                 bool refreshSuccess = await RefreshAccountAsync();
                 
-                // If refresh failed, it means the refresh token is invalid/expired
-                if (!refreshSuccess)
+                // If refresh failed due to token invalidation (not temporary network/server error)
+                if (!refreshSuccess && !_lastRefreshNetworkError)
                 {
                     // Notify user that they need to logout and login again
                     _infoService.Event(EventType.BgmOAuthEvent, InfoBarSeverity.Warning,
@@ -150,6 +152,7 @@ public class BgmOAuthService : IBgmOAuthService
     
     public async Task<bool> RefreshAccountAsync()
     {
+        _lastRefreshNetworkError = false;
         BgmAccount? account = await _localSettingsService.ReadSettingAsync<BgmAccount>(KeyValues.BangumiAccount);
         if (string.IsNullOrEmpty(account?.BangumiRefreshToken)) return false;
         HttpClient client = GetHttpClient();
@@ -158,7 +161,14 @@ public class BgmOAuthService : IBgmOAuthService
             HttpResponseMessage response = await client.GetAsync(new Uri(await BaseUriAsync(), 
                 "bangumi/refresh").AddQuery("refreshToken", account.BangumiRefreshToken));
             if (response.IsSuccessStatusCode == false)
+            {
+                // 仅当明确返回 4xx 时才视为 Token 失效；5xx 或网关超时等属于临时网络/服务端异常
+                if ((int)response.StatusCode >= 500)
+                {
+                    _lastRefreshNetworkError = true;
+                }
                 throw new Exception(await response.Content.ReadAsStringAsync());
+            }
             JObject json = JObject.Parse(await response.Content.ReadAsStringAsync());
             account.BangumiAccessToken = json["token"]!.ToString();
             account.BangumiRefreshToken = json["refreshToken"]!.ToString();
@@ -168,7 +178,11 @@ public class BgmOAuthService : IBgmOAuthService
         }
         catch(Exception e)
         {
-            _infoService.Event(EventType.BgmOAuthEvent, e is HttpRequestException ? InfoBarSeverity.Warning 
+            if (e is HttpRequestException or TaskCanceledException or TimeoutException or OperationCanceledException)
+            {
+                _lastRefreshNetworkError = true;
+            }
+            _infoService.Event(EventType.BgmOAuthEvent, e is HttpRequestException or TaskCanceledException ? InfoBarSeverity.Warning 
                     :InfoBarSeverity.Error, "BgmOAuthService_RefreshFailed".GetLocalized(), e);
             return false;
         }
@@ -247,7 +261,7 @@ public class BgmOAuthService : IBgmOAuthService
         _pvnService ??= App.GetService<IPvnService>();
         PvnServerInfo? serverInfo = await _pvnService.GetServerInfoAsync();
         if (serverInfo?.BangumiOauth2Enable == true) return _pvnService.BaseUri;
-        return new Uri(_config["PotatoVNOfficialServer"]!);
+        return new Uri(_config["Urls:PotatoVNOfficialServer"]!);
     }
 
     private static HttpClient GetHttpClient()
