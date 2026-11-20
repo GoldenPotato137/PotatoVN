@@ -1,4 +1,5 @@
-﻿using GalgameManager.Server.Models;
+﻿using GalgameManager.Server.Exceptions;
+using GalgameManager.Server.Models;
 
 namespace GalgameManager.Server.Contracts;
 
@@ -30,10 +31,12 @@ public interface IUserRepository
     /// <summary>
     /// 添加用户
     /// </summary>
+    /// <exception cref="DuplicateUserException">用户名或BangumiId与已有用户重复</exception>
     public Task<User> AddUserAsync(User user);
-    
+
     /// <summary>
     /// 更新用户信息
     /// </summary>
+    /// <exception cref="DuplicateUserException">用户名或BangumiId与已有用户重复，此时user会被恢复为数据库中的值</exception>
     public Task<User> UpdateUserAsync(User user);
 }

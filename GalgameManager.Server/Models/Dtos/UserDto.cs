@@ -11,6 +11,8 @@ public class UserDto(User user)
     public UserType Type { get; set; } = user.Type;
     /// <summary>用户所属的BangumiId，若为0则表示未绑定</summary>>
     public int BangumiId { get; set; } = user.BangumiId;
+    /// <summary>用户是否设置了密码，通过第三方账户注册的用户默认没有密码，此时修改密码无需填写旧密码</summary>
+    public bool HasPassword { get; set; } = string.IsNullOrEmpty(user.PasswordHash) == false;
     /// <summary>用户头像URL，可能为null</summary>>
     public string? Avatar { get; set; }
     public long UsedSpace { get; set; } = user.UsedSpace;
