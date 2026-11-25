@@ -136,6 +136,7 @@ public partial class LocalInstallationConfig : ObservableObject
     [ObservableProperty] private bool _highDpi; // 是否启用高DPI替代缩放
     [ObservableProperty] private GamePortablePath? _detectedSavePath; // 当前实例的探测存档路径
     [ObservableProperty] private string? _savePath; // 当前实例的云存档本地路径
+    [ObservableProperty] private bool _delayPlayTimeUntilMainWindow; // 声明/启动器窗口切换后再开始计时
     [ObservableProperty] private DateTime _lastSuccessfulLaunchTime = DateTime.MinValue; // 上次成功启动时间
 
     /// <summary>
@@ -153,6 +154,7 @@ public partial class LocalInstallationConfig : ObservableObject
         HighDpi = HighDpi,
         DetectedSavePath = DetectedSavePath,
         SavePath = SavePath,
+        DelayPlayTimeUntilMainWindow = DelayPlayTimeUntilMainWindow,
         LastSuccessfulLaunchTime = LastSuccessfulLaunchTime,
     };
 

@@ -177,6 +177,14 @@
                                              ToolTipService.ToolTip="就把他当成cmd来用就行了" />
                                 </Grid>
                             </control:Panel>
+                            <!-- 启动弹窗期间暂不计时 -->
+                            <control:Panel Visibility="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
+                                <control:Setting x:Uid="GalgameSettingPage_DelayPlayTimeUntilMainWindow">
+                                    <ToggleSwitch
+                                        IsOn="{x:Bind ViewModel.SelectedInstallationConfig.DelayPlayTimeUntilMainWindow,
+                                        Mode=TwoWay, FallbackValue=False}" />
+                                </control:Setting>
+                            </control:Panel>
                             <!-- 后台时静音游戏 -->
                             <control:Panel>
                                 <Grid ColumnDefinitions="Auto,*,Auto">

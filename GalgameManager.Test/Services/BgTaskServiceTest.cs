@@ -476,6 +476,138 @@ public class BgTaskServiceTest : ServiceTestBase
         Assert.That(task.OnSearch(key), Is.False);
     }
 
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task AddBgTask_AuxiliaryTask_OnlySharesSameGameSession(bool differentGame)
+    {
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
+        TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TestRecordPlayTimeTask record = new(Settings, GalgameCollectionService.Object)
+        {
+            GameId = Guid.NewGuid(), Gate = gate,
+        };
+        TestKeyMappingTask mapping = new()
+        {
+            GameId = differentGame ? Guid.NewGuid() : record.GameId, Gate = gate,
+        };
+        Task recordTask = launchService.AddPlayTimeTaskAsync(record);
+        Task mappingTask = service.AddBgTask(mapping);
+        try
+        {
+            Assert.That(mapping.ConnectedRelay is not null, Is.EqualTo(!differentGame));
+            if (!differentGame)
+                Assert.That(mapping.ConnectedRelay, Is.SameAs(GetRecordRelay(record)));
+        }
+        finally
+        {
+            gate.SetResult();
+            await Task.WhenAll(recordTask, mappingTask);
+        }
+    }
+
+    [TestCase(false, false)]
+    [TestCase(true, false)]
+    [TestCase(false, true)]
+    [TestCase(true, true)]
+    public async Task Resolve_AuxiliarySavedFirst_ConnectsToSingleActiveRecord(bool duplicateRecord,
+        bool alreadyRunning)
+    {
+        BgTaskService service = CreateService(out IGameLaunchService launchService);
+        service.RegisterBgTaskType(typeof(TestRecordPlayTimeTask), "-record-test");
+        service.RegisterBgTaskType(typeof(TestKeyMappingTask), "-key-test");
+        service.RegisterBgTaskType(typeof(TestGameMuteTask), "-mute-test");
+        service.RegisterBgTaskType(typeof(TestCallMagpieTask), "-magpie-test");
+        TestRecordPlayTimeTask.RecoveryGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TestKeyMappingTask.RecoveryGate = TestRecordPlayTimeTask.RecoveryGate;
+        Guid gameId = Guid.NewGuid();
+        TestRecordPlayTimeTask? active = alreadyRunning
+            ? new TestRecordPlayTimeTask(Settings, GalgameCollectionService.Object)
+            {
+                GameId = gameId, Gate = TestRecordPlayTimeTask.RecoveryGate,
+            }
+            : null;
+        Task activeCompletion = active is null ? Task.CompletedTask : launchService.AddPlayTimeTaskAsync(active);
+        string json = JsonConvert.SerializeObject(new { GameId = gameId });
+        string recordData = $"-record-test {json.ToBase64()} ";
+        _fileService.Save(AppStoragePaths.LocalDataPath, BgTaskFileName,
+            $"-key-test {json.ToBase64()} -mute-test {json.ToBase64()} -magpie-test {json.ToBase64()} " +
+            recordData + (duplicateRecord ? recordData : string.Empty));
+        try
+        {
+            await WaitUntilAsync(() => File.Exists(Path.Combine(AppStoragePaths.LocalDataPath, BgTaskFileName)),
+                "恢复文件未写入");
+            await service.ResolvedBgTasksAsync();
+            TestRecordPlayTimeTask record = service.GetBgTasks().OfType<TestRecordPlayTimeTask>().Single();
+            TestKeyMappingTask mapping = service.GetBgTasks().OfType<TestKeyMappingTask>().Single();
+            Assert.That(record.RunCount, Is.EqualTo(1));
+            if (active is not null) Assert.That(record, Is.SameAs(active));
+            Assert.That(mapping.ConnectedRelay, Is.SameAs(GetRecordRelay(record)));
+            Assert.That(GetAuxiliaryRelay(typeof(GameMuteTask), service.GetBgTasks().OfType<TestGameMuteTask>().Single()),
+                Is.SameAs(GetRecordRelay(record)));
+            Assert.That(GetAuxiliaryRelay(typeof(CallMagpieTask), service.GetBgTasks().OfType<TestCallMagpieTask>().Single()),
+                Is.SameAs(GetRecordRelay(record)));
+        }
+        finally
+        {
+            TestRecordPlayTimeTask.RecoveryGate.SetResult();
+            await activeCompletion;
+        }
+        await WaitUntilAsync(() => !service.GetBgTasks().Any(), "恢复任务未结束");
+        TestRecordPlayTimeTask.RecoveryGate = null;
+        TestKeyMappingTask.RecoveryGate = null;
+    }
+
+    private static object? GetRecordRelay(RecordPlayTimeTask task) => typeof(RecordPlayTimeTask)
+        .GetProperty("ProcessRelay", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .GetValue(task);
+
+    private static object? GetAuxiliaryRelay(Type type, object task) => type
+        .GetField("_processRelay", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .GetValue(task);
+
+    public class TestKeyMappingTask : KeyMappingTask
+    {
+        public static TaskCompletionSource? RecoveryGate { get; set; }
+        public Guid GameId
+        {
+            get => Galgame?.Uuid ?? Guid.Empty;
+            set => Galgame = new Galgame { Uuid = value };
+        }
+        [JsonIgnore] public TaskCompletionSource? Gate { get; set; }
+        [JsonIgnore] public object? ConnectedRelay => typeof(KeyMappingTask)
+            .GetField("_processRelay", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(this);
+        protected override async Task RecoverFromJsonInternal()
+        {
+            Gate = RecoveryGate;
+            await base.RecoverFromJsonInternal();
+        }
+        protected override async Task RunInternal()
+        {
+            if (Gate is not null) await Gate.Task;
+        }
+    }
+
+    public class TestGameMuteTask : GameMuteTask
+    {
+        public Guid GameId
+        {
+            get => Galgame?.Uuid ?? Guid.Empty;
+            set => Galgame = new Galgame { Uuid = value };
+        }
+        protected override Task RunInternal() => TestKeyMappingTask.RecoveryGate!.Task;
+    }
+
+    public class TestCallMagpieTask : CallMagpieTask
+    {
+        public Guid GameId
+        {
+            get => Galgame?.Uuid ?? Guid.Empty;
+            set => Galgame = new Galgame { Uuid = value };
+        }
+        protected override Task RunInternal() => TestKeyMappingTask.RecoveryGate!.Task;
+    }
+
     public class TestBgTask : BgTaskBase
     {
         public string? Marker { get; set; }
