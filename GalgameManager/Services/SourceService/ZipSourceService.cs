@@ -16,17 +16,17 @@ public class ZipSourceService(IInfoService infoService, IGalgameSourceCollection
         GalgameAndPath? sourceEntry = null)
     {
         if (target is not GalgameZipSource zipSource) throw new ArgumentException("target is not GalgameZipSource");
-        sourceEntry ??= game.PreferredLocalInstallation;
-        if (sourceEntry is null || !Directory.Exists(sourceEntry.Path))
+        sourceEntry ??= SourceMoveTask.ResolveSourceEntry(game, null);
+        // 来源为压缩包（其他压缩库）时原样复制所有分卷，不解压重压
+        if (sourceEntry?.Source is GalgameZipSource)
+            return new CopyPackTask(game, sourceEntry, zipSource);
+        if (sourceEntry is not { IsLocalInstallation: true } || !Directory.Exists(sourceEntry.Path))
             throw new PvnException("ZipSourceService_NoLocalInstallation".GetLocalized());
         // 移入即压缩到 <库根>/<当前文件夹名>.zip，不支持指定目标路径
-        var zipPath = Path.Combine(zipSource.Path,
-            $"{new DirectoryInfo(sourceEntry.Path).Name.RemoveInvalidChars()}.zip");
-        return new PackGameTask(game, sourceEntry, zipSource, zipPath);
+        return new PackGameTask(game, sourceEntry, zipSource, GetPackPath(zipSource, sourceEntry));
     }
 
-    public BgTaskBase MoveOutAsync(GalgameSourceBase target, Galgame game) =>
-        throw new PvnException("ZipSourceService_MoveOutNotSupported".GetLocalized());
+    public BgTaskBase MoveOutAsync(GalgameSourceBase target, Galgame game) => new ZipSourceMoveOutTask(game, target);
 
     public async Task SaveMetaAsync(Galgame game, GalgameSourceBase? targetSource = null)
     {
@@ -63,7 +63,7 @@ public class ZipSourceService(IInfoService infoService, IGalgameSourceCollection
                 {
                     if (source.GetPath(game) is not { } packPath) continue;
                     var metaPath = GetMetaPath(source.Path, packPath);
-                    if (!Directory.Exists(metaPath)) return;
+                    if (!Directory.Exists(metaPath)) continue;
                     Directory.Delete(metaPath, true);
                     infoService.Log(msg: $"[ZipSourceService] remove meta folder {metaPath}");
                 }
@@ -94,10 +94,21 @@ public class ZipSourceService(IInfoService infoService, IGalgameSourceCollection
 
     public Task RemoveListenAsync(GalgameSourceBase source) => Task.CompletedTask;
 
-    public string GetMoveInDescription(GalgameSourceBase target, string targetPath) =>
-        "ZipSourceService_MoveInDescription".GetLocalized(target.Path);
+    public string GetMoveInDescription(GalgameSourceBase target, Galgame galgame, GalgameAndPath? sourceEntry)
+    {
+        if (sourceEntry is null) return string.Empty;
+        return sourceEntry.Source is GalgameZipSource
+            ? "ZipSourceService_CopyInDescription".GetLocalized(sourceEntry.Path, GetPackPath(target, sourceEntry))
+            : "ZipSourceService_MoveInDescription".GetLocalized(GetPackPath(target, sourceEntry));
+    }
 
-    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame) => string.Empty; //不支持
+    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame, bool deleteFiles)
+    {
+        var path = target.GetPath(galgame) ?? string.Empty;
+        return deleteFiles
+            ? "ZipSourceService_MoveOutDescription".GetLocalized(path)
+            : "ZipSourceService_UnlinkDescription".GetLocalized(path);
+    }
 
     public Task<string> GetSourcePathAsync(string gamePath)
     {
@@ -113,9 +124,20 @@ public class ZipSourceService(IInfoService infoService, IGalgameSourceCollection
 
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame)
     {
-        if (moveIn?.SourceType == GalgameSourceType.LocalZip && galgame.LocalInstallations.Count == 0)
+        if (moveIn is not GalgameZipSource target) return null;
+        GalgameAndPath? sourceEntry = SourceMoveTask.ResolveSourceEntry(galgame, moveOut);
+        if (sourceEntry?.Source is GalgameZipSource)
+        {
+            if (!File.Exists(sourceEntry.Path))
+                return "GalgameFolder_UnpackGame_PackNotExist".GetLocalized(sourceEntry.Path);
+            // 任意一个分卷在目标库中已存在都不能复制
+            var existing = GetCopyVolumes(target, sourceEntry.Path).Select(v => v.To).FirstOrDefault(Path.Exists);
+            return existing is null ? null : "ZipSourceService_TargetExists".GetLocalized(existing);
+        }
+        if (sourceEntry is not { IsLocalInstallation: true } || !Directory.Exists(sourceEntry.Path))
             return "ZipSourceService_NoLocalInstallation".GetLocalized();
-        return null;
+        var packPath = GetPackPath(target, sourceEntry);
+        return Path.Exists(packPath) ? "ZipSourceService_TargetExists".GetLocalized(packPath) : null;
     }
 
     public Task<string?> SelectPathInSourceAsync(GalgameSourceBase source) =>
@@ -124,6 +146,34 @@ public class ZipSourceService(IInfoService infoService, IGalgameSourceCollection
     /// 获取某个压缩包对应的元数据备份文件夹路径：&lt;库根&gt;/.PotatoVN/&lt;包名&gt;
     public static string GetMetaPath(string sourceRoot, string packPath) =>
         Path.Combine(sourceRoot, MetaFolderName, GalgameZipSource.GetPackName(packPath));
+
+    /// 移入压缩库后的压缩包路径：本地安装压缩为 &lt;库根&gt;/&lt;来源文件夹名&gt;.zip；
+    /// 来源为压缩包时原名复制到 &lt;库根&gt;/&lt;压缩包（第一卷）文件名&gt;
+    public static string GetPackPath(GalgameSourceBase target, GalgameAndPath sourceEntry) =>
+        sourceEntry.Source is GalgameZipSource
+            ? Path.Combine(target.Path, Path.GetFileName(sourceEntry.Path))
+            : Path.Combine(target.Path, $"{new DirectoryInfo(sourceEntry.Path).Name.RemoveInvalidChars()}.zip");
+
+    /// 把压缩包复制到另一个压缩库时，每个分卷的来源与目标路径（目标为 &lt;库根&gt;/&lt;分卷文件名&gt;）
+    public static List<(string From, string To)> GetCopyVolumes(GalgameSourceBase target, string packPath) =>
+        GalgameZipSource.GetVolumePaths(packPath)
+            .Select(volume => (volume, Path.Combine(target.Path, Path.GetFileName(volume))))
+            .ToList();
+
+    /// 删除压缩包的所有分卷及其元数据备份文件夹
+    /// <param name="sourceRoot">压缩库根目录</param>
+    /// <param name="packPath">压缩包（第一卷）路径</param>
+    /// <param name="onDelete">删除每个分卷前的回调，参数为分卷路径</param>
+    public static void DeletePackFiles(string sourceRoot, string packPath, Action<string>? onDelete = null)
+    {
+        foreach (var volume in GalgameZipSource.GetVolumePaths(packPath))
+        {
+            onDelete?.Invoke(volume);
+            File.Delete(volume);
+        }
+        var metaPath = GetMetaPath(sourceRoot, packPath);
+        if (Directory.Exists(metaPath)) Directory.Delete(metaPath, true);
+    }
 
     private static string? GetSourcePathFromPath(string packPath) =>
         new FileInfo(packPath).Directory?.FullName;

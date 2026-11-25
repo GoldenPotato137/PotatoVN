@@ -81,7 +81,9 @@ public partial class PluginStoreViewModel(
                 {
                     List<ToInstallStorePlugin> list = await settingsService.ReadSettingAsync<List<ToInstallStorePlugin>>
                                                           (KeyValues.ToUpgradePlugin) ?? [];
-                    list.Add(new ToInstallStorePlugin{Plugin = clickedItem, Version = version});
+                    // 同一个插件只保留最后一次选择的版本，否则启动时会有两个任务并发往同一个目录里装
+                    list.RemoveAll(p => p.Id == clickedItem.Id);
+                    list.Add(ToInstallStorePlugin.Create(clickedItem, version));
                     await settingsService.SaveSettingAsync(KeyValues.ToUpgradePlugin, list);
                     infoService.Info(InfoBarSeverity.Success, "PluginStorePage_UpgradeQueued".GetLocalized());
                     return;

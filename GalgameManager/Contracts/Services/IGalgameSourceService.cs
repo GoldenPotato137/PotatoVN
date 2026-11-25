@@ -12,13 +12,15 @@ public interface IGalgameSourceService
     /// <param name="target">目标库</param>
     /// <param name="game">游戏</param>
     /// <param name="targetPath">目标路径，若为null则表示服务可自行决定路径</param>
-    /// <param name="sourceEntry">复制文件时使用的来源安装实例</param>
-    /// <returns>负责执行物理移入操作的后台任务</returns>
+    /// <param name="sourceEntry">复制文件时使用的来源条目（本地安装或压缩包）</param>
+    /// <returns>负责执行物理移入操作的后台任务；若其实现<see cref="IMoveInTask"/>，调用方以其
+    /// <see cref="IMoveInTask.ResultPath"/>登记新条目</returns>
     public BgTaskBase MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null,
         GalgameAndPath? sourceEntry = null);
     
     /// <summary>
-    /// 将游戏移出某个库，应该直接返回一个BgTaskBase（SourceMoveTaskBase）实例
+    /// 物理移出：删除游戏在某个库中的文件，应该直接返回一个BgTaskBase（SourceMoveTaskBase）实例 <br/>
+    /// 只有用户选择同时删除磁盘文件时才会被调用，条目本身的移除由调用方负责
     /// </summary>
     /// <param name="target">目标库</param>
     /// <param name="game">游戏</param>
@@ -70,10 +72,11 @@ public interface IGalgameSourceService
     /// 获取移入描述 <br/>
     /// 该方法只会在移动游戏对话框中被调用
     /// </summary>
-    /// <param name="target"></param>
-    /// <param name="targetPath"></param>
+    /// <param name="target">要移入的库</param>
+    /// <param name="galgame">游戏</param>
+    /// <param name="sourceEntry">复制文件时使用的来源条目（见<see cref="SourceMoveTask.ResolveSourceEntry"/>）</param>
     /// <returns></returns>
-    public string GetMoveInDescription(GalgameSourceBase target, string targetPath);
+    public string GetMoveInDescription(GalgameSourceBase target, Galgame galgame, GalgameAndPath? sourceEntry);
 
     /// <summary>
     /// 获取将游戏移出某个库的描述 <br/>
@@ -81,8 +84,9 @@ public interface IGalgameSourceService
     /// </summary>
     /// <param name="target"></param>
     /// <param name="galgame"></param>
+    /// <param name="deleteFiles">是否同时删除磁盘文件</param>
     /// <returns></returns>
-    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame);
+    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame, bool deleteFiles);
 
     /// <summary>
     /// 从游戏路径获取其源应该在的路径
@@ -92,7 +96,8 @@ public interface IGalgameSourceService
 
     /// <summary>
     /// 检查移动操作是否合法，若合法返回null，否则返回错误信息 <br/>
-    /// 该方法只会在移动游戏对话框中被调用
+    /// 该方法只会在移动游戏对话框中被调用；移入库与移出库对应的service都会被调用，
+    /// 实现时只需检查与本service负责的库相关的部分
     /// </summary>
     /// <param name="moveIn">要移入的库</param>
     /// <param name="moveOut">要移出的库</param>

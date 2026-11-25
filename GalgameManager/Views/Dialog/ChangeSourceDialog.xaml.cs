@@ -6,6 +6,7 @@ using GalgameManager.Enums;
 using GalgameManager.Helpers;
 using GalgameManager.Helpers.Converter;
 using GalgameManager.Models;
+using GalgameManager.Models.BgTasks;
 using GalgameManager.Models.Sources;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,13 +19,14 @@ public sealed partial class ChangeSourceDialog
     public List<GalgameSourceBase> Sources { get; }
     public List<GalgameSourceBase> GalgameSources { get; }
     public bool Ok { get; private set; }
-    public string TargetPath => _targetPath;
     public GalgameSourceBase MoveInSource => Sources[SelectSourceIndex];
     public GalgameSourceBase? MoveOutSource => RemoveFromSource && GalgameSources.Count > 0
         ? GalgameSources[RemoveFromSourceIndex]
         : null;
-    /// 是否物理删除移出实例对应的磁盘文件（游戏文件夹/压缩包）
-    public bool DeleteFiles => DeleteFilesCheckBox.IsChecked == true;
+    /// 是否物理删除移出实例对应的磁盘文件（游戏文件夹/压缩包）；为false时只解除游戏与原库的关联
+    public bool DeleteFiles => DeleteFilesChecked && CanDeleteFiles;
+    /// 只有移出本地库（游戏文件夹）或压缩库（压缩包）时才能选择删除磁盘文件
+    private bool CanDeleteFiles => RemoveFromSource && MoveOutSource is GalgameFolderSource or GalgameZipSource;
 
     [ObservableProperty] private int _selectSourceIndex;
     [ObservableProperty] private Visibility _spacePanelVisibility = Visibility.Collapsed;
@@ -35,13 +37,13 @@ public sealed partial class ChangeSourceDialog
     [ObservableProperty] private int _removeFromSourceIndex;
     [ObservableProperty] private Visibility _removePanelVisibility = Visibility.Collapsed;
     [ObservableProperty] private Visibility _deleteFilesPanelVisibility = Visibility.Collapsed;
+    [ObservableProperty] private bool _deleteFilesChecked;
     [ObservableProperty] private string _moveInDescription = string.Empty;
     [ObservableProperty] private string? _moveOutDescription;
     [ObservableProperty] private Visibility _operatePanelDescriptionVisibility = Visibility.Collapsed;
     [ObservableProperty] private string? _warningText;
 
     private readonly Galgame _game;
-    private string _targetPath = string.Empty;
     private (long total, long used) _space;
 
     public ChangeSourceDialog(Galgame game)
@@ -62,6 +64,8 @@ public sealed partial class ChangeSourceDialog
             Sources.Remove(s);
 
         GalgameSources = _game.Sources.ToList();
+        // 默认选中第0项时SelectSourceIndex不会发生变化，需手动刷新一次，否则打开后确定按钮、操作预览与警告都不会出现
+        Opened += (_, _) => OnSelectSourceIndexChanged(SelectSourceIndex);
     }
 
     async partial void OnSelectSourceIndexChanged(int value)
@@ -77,7 +81,6 @@ public sealed partial class ChangeSourceDialog
             }
             Update();
             GalgameSourceBase selectedSource = Sources[value];
-            _targetPath = selectedSource.Path;
             IGalgameSourceService service = SourceServiceFactory.GetSourceService(selectedSource.SourceType);
             // 空间
             SpacePanelVisibility = Visibility.Collapsed;
@@ -98,6 +101,9 @@ public sealed partial class ChangeSourceDialog
     // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnRemoveFromSourceIndexChanged(int value) => Update();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnDeleteFilesCheckedChanged(bool value) => Update();
+
     private void Update()
     {
         //容量相关
@@ -110,11 +116,15 @@ public sealed partial class ChangeSourceDialog
                 CapacityToStringConverter.Convert(_space.total));
             SpacePanelVisibility = Visibility.Visible;
         }
-        //警告文本及判断是否允许点击确定按钮
+        //警告文本及判断是否允许点击确定按钮：移入、移出两侧的service各自检查自己负责的部分
         if (Sources.Count > 0 && SelectSourceIndex < Sources.Count)
         {
             WarningText = SourceServiceFactory.GetSourceService(MoveInSource.SourceType)
-                .CheckMoveOperateValid(MoveInSource, MoveOutSource, _game);
+                              .CheckMoveOperateValid(MoveInSource, MoveOutSource, _game)
+                          ?? (MoveOutSource is { } moveOut
+                              ? SourceServiceFactory.GetSourceService(moveOut.SourceType)
+                                  .CheckMoveOperateValid(MoveInSource, moveOut, _game)
+                              : null);
             IsPrimaryButtonEnabled = WarningText is null;
         }
         else
@@ -126,19 +136,17 @@ public sealed partial class ChangeSourceDialog
         //移出源面板相关
         RemovePanelVisibility = (GalgameSources.Count > 0).ToVisibility();
         //删除磁盘文件面板相关：移出本地库（游戏文件夹）或压缩库（压缩包）时可选择同时删除磁盘文件
-        DeleteFilesPanelVisibility = RemoveFromSource && MoveOutSource is GalgameFolderSource or GalgameZipSource
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        DeleteFilesPanelVisibility = CanDeleteFiles.ToVisibility();
         //操作提示面板相关
         OperatePanelDescriptionVisibility = IsPrimaryButtonEnabled.ToVisibility();
         MoveInDescription = IsPrimaryButtonEnabled
-            ? SourceServiceFactory.GetSourceService(MoveInSource.SourceType)
-                .GetMoveInDescription(MoveInSource, _targetPath)
+            ? SourceServiceFactory.GetSourceService(MoveInSource.SourceType).GetMoveInDescription(MoveInSource,
+                _game, SourceMoveTask.ResolveSourceEntry(_game, MoveOutSource))
             : string.Empty;
         if (RemoveFromSource && MoveOutSource is { } selectedMoveOutSource)
         {
             MoveOutDescription = SourceServiceFactory.GetSourceService(selectedMoveOutSource.SourceType)
-                .GetMoveOutDescription(selectedMoveOutSource, _game);
+                .GetMoveOutDescription(selectedMoveOutSource, _game, DeleteFiles);
         }
         else
             MoveOutDescription = null;

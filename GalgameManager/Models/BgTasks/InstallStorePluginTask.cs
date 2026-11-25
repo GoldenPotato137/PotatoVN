@@ -36,16 +36,22 @@ public class InstallStorePluginTask : BgTaskBase
     }
 
     public InstallStorePluginTask(StorePlugin plugin, StorePluginVersion version)
+        : this(ToInstallStorePlugin.Create(plugin, version))
     {
         _storePlugin = plugin;
+    }
+
+    /// 启动时执行排队的升级用，这时没有商店条目需要回写
+    public InstallStorePluginTask(ToInstallStorePlugin plugin)
+    {
         PluginName = plugin.Name;
-        DownloadUrl = version.DownloadUrl;
+        DownloadUrl = plugin.DownloadUrl;
 
         IPluginService pluginService = App.GetService<IPluginService>();
         // 插件目录：pluginService.PluginDir/{pluginName}
         var folderName = FileHelper.RemoveInvalidFileNameChars(plugin.Name);
         PluginFolderPath = Path.Combine(pluginService.PluginDir.FullName, folderName);
-        _version = version.Version;
+        _version = plugin.Version;
         _pluginId = plugin.Id;
     }
 

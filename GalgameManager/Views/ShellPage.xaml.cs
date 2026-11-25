@@ -258,7 +258,7 @@ public sealed partial class ShellPage : Page
         try
         {
             var folder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Background);
-            var destFile = await folder.CreateFileAsync("custom.jpg", CreationCollisionOption.ReplaceExisting);
+            var destFile = await folder.CreateFileAsync(FileHelper.CustomBackgroundFileName, CreationCollisionOption.ReplaceExisting);
             var srcFile = await StorageFile.GetFileFromPathAsync(imagePath);
             await srcFile.CopyAndReplaceAsync(destFile);
 
@@ -278,7 +278,7 @@ public sealed partial class ShellPage : Page
         try
         {
             var folder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Background);
-            var file = await folder.GetFileAsync("custom.jpg");
+            var file = await folder.GetFileAsync(FileHelper.CustomBackgroundFileName);
             if (file != null)
             {
                 var bitmap = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
@@ -301,7 +301,7 @@ public sealed partial class ShellPage : Page
         try
         {
             var folder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Background);
-            var file = await folder.TryGetItemAsync("custom.jpg");
+            var file = await folder.TryGetItemAsync(FileHelper.CustomBackgroundFileName);
             if (file != null)
             {
                 await file.DeleteAsync();

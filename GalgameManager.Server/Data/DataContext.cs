@@ -24,7 +24,11 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         modelBuilder.Entity<StaffGame>()
             .HasOne(sg => sg.Game).WithMany(g => g.StaffGames)
             .HasForeignKey(sg => sg.GameId);
-        
+
+        modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
+        // BangumiId为0表示未绑定bgm账户，不参与唯一约束
+        modelBuilder.Entity<User>().HasIndex(u => u.BangumiId).IsUnique().HasFilter("\"BangumiId\" <> 0");
+
         base.OnModelCreating(modelBuilder);
     }
 }

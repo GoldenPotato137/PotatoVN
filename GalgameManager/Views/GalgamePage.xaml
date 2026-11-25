@@ -379,8 +379,9 @@
                     </AppBarButton>
                     <!-- 移入另一个源 -->
                     <AppBarButton x:Uid="GalgamePage_MoveToAnotherSource"
+                                  AutomationProperties.AutomationId="GalgamePage_MoveToAnotherSourceButton"
                                   Command="{x:Bind ViewModel.MoveToSourceCommand}"
-                                  IsEnabled="{x:Bind ViewModel.IsLocalGame, Mode=OneWay}">
+                                  IsEnabled="{x:Bind ViewModel.CanMoveToSource, Mode=OneWay}">
                         <AppBarButton.Icon>
                             <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DE;" />
                         </AppBarButton.Icon>

@@ -25,9 +25,10 @@ public class VirtualSourceService : IGalgameSourceService
 
     public Task RemoveListenAsync(GalgameSourceBase source) => Task.CompletedTask;
 
-    public string GetMoveInDescription(GalgameSourceBase target, string targetPath) => string.Empty;
+    public string GetMoveInDescription(GalgameSourceBase target, Galgame galgame, GalgameAndPath? sourceEntry) =>
+        string.Empty;
 
-    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame) => string.Empty;
+    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame, bool deleteFiles) => string.Empty;
     public Task<string> GetSourcePathAsync(string gamePath) => Task.FromResult(string.Empty);
 
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame) => null;

@@ -22,13 +22,14 @@
         <StackPanel Orientation="Horizontal" Spacing="20">
             <TextBlock x:Uid="ChangeSourceDialog_TargetSource" VerticalAlignment="Center" />
             <ComboBox MinWidth="320" VerticalAlignment="Center"
+                      AutomationProperties.AutomationId="ChangeSourceDialog_TargetSourceComboBox"
                       ItemsSource="{x:Bind Sources}"
                       SelectedIndex="{x:Bind SelectSourceIndex, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="sources:GalgameSourceBase">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <FontIcon FontFamily="Segoe Fluent Icons"
-                                      Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyph}}" />
+                                      Glyph="{x:Bind Converter={StaticResource SourceTypeGlyph}}" />
                             <TextBlock Text="{x:Bind SourceType, Converter={StaticResource EnumToString}}" />
                             <TextBlock Text="{x:Bind Path}" />
                         </StackPanel>
@@ -55,15 +56,17 @@
         <StackPanel Orientation="Horizontal" Spacing="20" Margin="0 10 0 0 "
                     Visibility="{x:Bind RemovePanelVisibility, Mode=OneWay}">
             <CheckBox x:Uid="ChangeSourceDialog_RemoveFromSource"
+                      AutomationProperties.AutomationId="ChangeSourceDialog_RemoveFromSourceCheckBox"
                       IsChecked="{x:Bind RemoveFromSource, Mode=TwoWay}"
                       VerticalAlignment="Center" />
-            <ComboBox ItemsSource="{x:Bind GalgameSources}"
+            <ComboBox AutomationProperties.AutomationId="ChangeSourceDialog_RemoveFromSourceComboBox"
+                      ItemsSource="{x:Bind GalgameSources}"
                       SelectedIndex="{x:Bind RemoveFromSourceIndex, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="sources:GalgameSourceBase">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <FontIcon FontFamily="Segoe Fluent Icons"
-                                      Glyph="{x:Bind SourceType, Converter={StaticResource SourceTypeGlyph}}" />
+                                      Glyph="{x:Bind Converter={StaticResource SourceTypeGlyph}}" />
                             <TextBlock Text="{x:Bind Path}" />
                         </StackPanel>
                     </DataTemplate>
@@ -74,7 +77,9 @@
         <!-- 同时删除磁盘文件（仅在从本地库/压缩库移出时可见） -->
         <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,0,0,10"
                     Visibility="{x:Bind DeleteFilesPanelVisibility, Mode=OneWay}">
-            <CheckBox x:Name="DeleteFilesCheckBox" x:Uid="ChangeSourceDialog_DeleteFiles"
+            <CheckBox x:Uid="ChangeSourceDialog_DeleteFiles"
+                      AutomationProperties.AutomationId="ChangeSourceDialog_DeleteFilesCheckBox"
+                      IsChecked="{x:Bind DeleteFilesChecked, Mode=TwoWay}"
                       VerticalAlignment="Center" />
         </StackPanel>
 
@@ -83,9 +88,9 @@
                                        Visibility="{x:Bind OperatePanelDescriptionVisibility, Mode=OneWay}">
             <TextBlock x:Uid="ChangeSourceDialog_OperateDescription"
                        Style="{StaticResource DescriptionTextStyle}" />
-            <TextBlock Style="{StaticResource DescriptionTextStyle}" 
+            <TextBlock Style="{StaticResource DescriptionTextStyle}" TextWrapping="Wrap" MaxWidth="620"
                        Text="{x:Bind MoveInDescription, Mode=OneWay}"/>
-            <TextBlock Style="{StaticResource DescriptionTextStyle}"
+            <TextBlock Style="{StaticResource DescriptionTextStyle}" TextWrapping="Wrap" MaxWidth="620"
                        Text="{x:Bind MoveOutDescription, Mode=OneWay}"
                        Visibility="{x:Bind MoveOutDescription, Mode=OneWay,
                        Converter={StaticResource AnyToVisibility}}" />

@@ -41,11 +41,24 @@ public class LocalFolderSourceService : IGalgameSourceService
     public BgTaskBase MoveInAsync(GalgameSourceBase target, Galgame game, string? targetPath = null,
         GalgameAndPath? sourceEntry = null)
     {
-        if (targetPath is null) throw new PvnException("targetPath is null");
         if (target is not GalgameFolderSource) throw new ArgumentException("target is not GalgameFolderSource");
         sourceEntry ??= game.PreferredLocalInstallation;
         if (sourceEntry is null) throw new PvnException("source installation is null");
+        targetPath ??= GetMoveInPath(target, sourceEntry);
+        // 来源为压缩包时解压到目标位置，否则复制游戏文件夹
+        if (sourceEntry.Source is GalgameZipSource)
+            return new UnpackGameTask(sourceEntry.Path, Path.GetDirectoryName(targetPath)!,
+                Path.GetFileName(targetPath)) { AddToLibrary = false };
         return new LocalFolderSourceMoveInTask(game, sourceEntry.Path, targetPath);
+    }
+
+    /// 移入本地库时游戏的默认存放位置：&lt;库根&gt;/&lt;来源文件夹名或压缩包名&gt;
+    public static string GetMoveInPath(GalgameSourceBase target, GalgameAndPath sourceEntry)
+    {
+        var name = sourceEntry.Source is GalgameZipSource
+            ? GalgameZipSource.GetPackName(sourceEntry.Path)
+            : new DirectoryInfo(sourceEntry.Path).Name;
+        return Path.Combine(target.Path, name.RemoveInvalidChars());
     }
 
     public BgTaskBase MoveOutAsync(GalgameSourceBase target, Galgame game)
@@ -215,24 +228,35 @@ public class LocalFolderSourceService : IGalgameSourceService
         await Task.CompletedTask;
     }
 
-    public string GetMoveInDescription(GalgameSourceBase target, string targetPath)
+    public string GetMoveInDescription(GalgameSourceBase target, Galgame galgame, GalgameAndPath? sourceEntry)
     {
-        return "LocalFolderSourceService_MoveInDescription".GetLocalized(targetPath);
+        if (sourceEntry is null) return string.Empty;
+        var targetPath = GetMoveInPath(target, sourceEntry);
+        return sourceEntry.Source is GalgameZipSource
+            ? "LocalFolderSourceService_UnpackInDescription".GetLocalized(sourceEntry.Path, targetPath)
+            : "LocalFolderSourceService_MoveInDescription".GetLocalized(targetPath);
     }
 
-    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame)
+    public string GetMoveOutDescription(GalgameSourceBase target, Galgame galgame, bool deleteFiles)
     {
         var path = target.GetPath(galgame) ?? string.Empty;
-        return "LocalFolderSourceService_MoveOutDescription".GetLocalized(path);
+        return deleteFiles
+            ? "LocalFolderSourceService_MoveOutDescription".GetLocalized(path)
+            : "LocalFolderSourceService_UnlinkDescription".GetLocalized(path);
     }
 
     public Task<string> GetSourcePathAsync(string gamePath) => Task.FromResult(Directory.GetParent(gamePath)!.FullName);
 
     public string? CheckMoveOperateValid(GalgameSourceBase? moveIn, GalgameSourceBase? moveOut, Galgame galgame)
     {
-        if (moveIn?.SourceType == GalgameSourceType.LocalFolder && galgame.LocalInstallations.Count == 0)
-            return "LocalFolderSourceService_MoveOutError".GetLocalized();
-        return null;
+        if (moveIn is not GalgameFolderSource target) return null;
+        GalgameAndPath? sourceEntry = SourceMoveTask.ResolveSourceEntry(galgame, moveOut);
+        var sourceExists = sourceEntry?.Source is GalgameZipSource
+            ? File.Exists(sourceEntry.Path)
+            : sourceEntry is not null && Directory.Exists(sourceEntry.Path);
+        if (!sourceExists) return "LocalFolderSourceService_NoSourceToCopy".GetLocalized();
+        var targetPath = GetMoveInPath(target, sourceEntry!);
+        return Path.Exists(targetPath) ? "LocalFolderSourceService_TargetExists".GetLocalized(targetPath) : null;
     }
 
     public Task<string?> SelectPathInSourceAsync(GalgameSourceBase source) => FolderBaseSelectPathInSource(source);

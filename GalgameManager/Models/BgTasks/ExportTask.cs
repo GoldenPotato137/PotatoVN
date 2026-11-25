@@ -47,8 +47,8 @@ public class ExportTask (string targetPath) : BgTaskBase
             await _settingService.AddToExportAsync(KeyValues.DataStatus, status);
             // 导出主页设置
             await _settingService.AddToExportDirectlyAsync(KeyValues.MultiStreamPageList);
-            // 导出游戏列表页/库页设置（排序等）
-            await ExportPageSettingsAsync();
+            // 导出游戏列表页/库页设置（排序等）与背景图
+            await ExportPageSettingsAsync(await ExportCustomBackgroundAsync());
             
             await _fileService.WaitForWriteFinishAsync();
 
@@ -66,10 +66,36 @@ public class ExportTask (string targetPath) : BgTaskBase
     }
 
     /// <summary>
-    /// 收集游戏列表页/库页的设置（排序等），打包进导出文件；导入时由
+    /// 把自定义背景图复制进导出包的Background文件夹，导入解压后会直接落在数据目录中的同一位置
+    /// </summary>
+    /// <returns>是否打包了背景图</returns>
+    private async Task<bool> ExportCustomBackgroundAsync()
+    {
+        try
+        {
+            StorageFolder folder = await FileHelper.GetFolderAsync(FileHelper.FolderType.Background);
+            if (await folder.TryGetItemAsync(FileHelper.CustomBackgroundFileName) is not StorageFile image)
+                return false;
+            StorageFolder tmp = await _settingService.GetTmpExportFolder();
+            StorageFolder target = await tmp.CreateFolderAsync(FileHelper.FolderType.Background.ToString(),
+                CreationCollisionOption.OpenIfExists);
+            await image.CopyAsync(target, image.Name, NameCollisionOption.ReplaceExisting);
+            return true;
+        }
+        catch (Exception e)
+        {
+            // 背景图复制失败不应让整个导出（以及自动备份）失败
+            App.GetService<IInfoService>().DeveloperEvent(e: e);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 收集游戏列表页/库页的设置（排序等）与背景图设置，打包进导出文件；导入时由
     /// <see cref="Services.LocalSettingsService.ImportPageSettingsAsync"/> 读回
     /// </summary>
-    private async Task ExportPageSettingsAsync()
+    /// <param name="backgroundExported">是否打包了自定义背景图</param>
+    private async Task ExportPageSettingsAsync(bool backgroundExported)
     {
         PageSettings pageSettings = new()
         {
@@ -82,6 +108,11 @@ public class ExportTask (string targetPath) : BgTaskBase
             LibraryGameSortDescending = await _settingService.ReadSettingAsync<bool>(KeyValues.LibraryGameSortDescending),
             LibraryFolderSortKey = await _settingService.ReadSettingAsync<int>(KeyValues.LibraryFolderSortKey),
             LibraryFolderSortDescending = await _settingService.ReadSettingAsync<bool>(KeyValues.LibraryFolderSortDescending),
+            // 没能打包背景图时不要在导入端启用自定义背景
+            CustomBackgroundEnabled = backgroundExported &&
+                                      await _settingService.ReadSettingAsync<bool>(KeyValues.CustomBackgroundEnabled),
+            UseBannerAsBackground = await _settingService.ReadSettingAsync<bool>(KeyValues.UseBannerAsBackground),
+            BackgroundStretchMode = await _settingService.ReadSettingAsync<int>(KeyValues.BackgroundStretchMode),
         };
         await _settingService.AddToExportAsync(KeyValues.PageSettings, pageSettings);
     }

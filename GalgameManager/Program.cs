@@ -20,8 +20,10 @@ public static class BootstrapProgram
         {
             try
             {
-                // Windows App SDK 1.8 => 0x0001_0008
-                Bootstrap.Initialize(0x00010008);
+                // 版本取自所引用 Windows App SDK 包生成的常量，升级 SDK 时会自动跟随，不要硬编码
+                Bootstrap.Initialize(Microsoft.WindowsAppSDK.Release.MajorMinor,
+                    Microsoft.WindowsAppSDK.Release.VersionTag,
+                    new PackageVersion(Microsoft.WindowsAppSDK.Runtime.Version.UInt64));
                 AppDomain.CurrentDomain.ProcessExit += (_, _) =>
                 {
                     try

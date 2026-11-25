@@ -233,6 +233,7 @@ public class StaffService : IStaffService
                 OnGameStaffChanged?.Invoke(galgame);
             });
 
+            if (!await _settingsService.ReadSettingAsync<bool>(KeyValues.DownloadStaffs)) return;
             GetStaffFromRssTask? task = _bgTaskService.GetBgTask<GetStaffFromRssTask>(string.Empty);
             if (task is null)
             {

@@ -135,6 +135,9 @@ public static class FileHelper
         return File.Exists(targetPath) ? targetPath : defaultReturn;
     }
 
+    /// 自定义背景图在<see cref="FolderType.Background"/>文件夹中的文件名
+    public const string CustomBackgroundFileName = "custom.jpg";
+
     public enum FolderType
     {
         Root,

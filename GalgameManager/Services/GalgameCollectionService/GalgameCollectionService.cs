@@ -60,6 +60,7 @@ public partial class GalgameCollectionService : IGalgameCollectionService
         _infoService = infoService;
         _bgTaskService = bgTaskService;
         _galSrcService = galgameSourceService;
+        _galSrcService.GalgameMoved += OnGalgameMoved;
         _bus = bus;
         _bus.Register<PluginLoadArgs>(this, OnPluginLoaded);
 
@@ -309,6 +310,14 @@ public partial class GalgameCollectionService : IGalgameCollectionService
                     "Failed On Calling GalgameMutated", e);
             }
         }
+    }
+
+    /// 移动到其他库会直接修改游戏的来源条目，移动结束后转为一次来源变更通知以刷新UI
+    private async void OnGalgameMoved(Galgame galgame)
+    {
+        if (!IsCurrentGameInstance(galgame)) return;
+        await RaiseGalgameMutatedAsync(new GalgameMutationEventArgs(galgame, GalgameChangeKind.SourceEntries,
+            GalgameChangeOrigin.LocalOperation));
     }
 
     public async Task<Galgame> ParseGalInfoOnlyAsync(Galgame galgame, RssType rssType = RssType.None, bool requireConfirm = false)

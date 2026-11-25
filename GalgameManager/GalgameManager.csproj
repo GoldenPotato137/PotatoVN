@@ -25,6 +25,10 @@
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
+    <!-- 打 bundle（商店包）时不按语言拆分资源包：VS 会把语言资源包全部过滤掉，只剩 zh-CN 的 WinUI
+         Microsoft.ui.xaml.dll.mui 与应用字符串，其他系统语言下控件加载本地化资源时抛出
+         0x80073B01（ERROR_MUI_FILE_NOT_LOADED）而崩溃（issue #742）。因此只按缩放比例拆分 -->
+    <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
     <!-- TODO: 要处理该警告需要用到.Net Preview的特性，等特性稳定（进入正式版）后再处理 -->
     <NoWarn>MVVMTK0045</NoWarn>
 
@@ -34,6 +38,8 @@
     <WindowsAppSdkAutoInitialize>false</WindowsAppSdkAutoInitialize>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
     <WindowsAppSdkCompatibilityInitialize>false</WindowsAppSdkCompatibilityInitialize>
+    <!-- 编入 Microsoft.WindowsAppSDK.Release 等版本常量，供手动 Bootstrap 使用，避免硬编码运行时版本 -->
+    <WindowsAppSdkIncludeVersionInfo>true</WindowsAppSdkIncludeVersionInfo>
 
     <!-- 使用自定义入口（在 Application.Start 之前初始化 WinAppRuntime） -->
     <StartupObject>GalgameManager.BootstrapProgram</StartupObject>
@@ -173,8 +179,8 @@
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="SharpCompress" Version="0.48.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.13" />
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
     <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
